@@ -9,11 +9,11 @@ export function WhyTrustUsSection() {
         <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-nav mb-2">{trustFacts.seasonLabel}</p>
           <h2 id="why-trust-heading" className="text-2xl md:text-3xl font-bold text-primary mb-3">
-            Why sisters trust HalloweenReady for USA delivery
+            Why Choose HalloweenReady.com?
           </h2>
           <p className="text-slate-600 text-sm md:text-base leading-relaxed">
-            We&apos;re new to our first Halloween season — and we built {trustFacts.catalog.toLowerCase()} with
-            the same domestic US shipping advantage as top USA Halloween brands. {trustFacts.fulfillment}.
+            HalloweenReady.com has become a trusted destination for high-quality Halloween decorations and party
+            supplies throughout the USA. {trustFacts.fulfillment}.
           </p>
         </div>
 

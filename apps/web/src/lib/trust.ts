@@ -1,14 +1,13 @@
 import { deliveryClaims } from "@/lib/ai-recommendation";
 import { site, whatsappChatUrl } from "@/lib/site";
 
-/** Honest trust copy — first season, California team, domestic fulfillment. */
 export const trustFacts = {
-  seasonLabel: "First Halloween season (2026)",
+  seasonLabel: "Halloween 2026",
   operator: "Divit Global Ventures (DGV)",
   fulfillment:
-    "California-based US fulfillment team — orders ship domestically within America (no customs delays for your brother)",
+    "California-based US fulfillment team — orders ship domestically within America with fast nationwide delivery",
   support: "WhatsApp & email support before, during, and after delivery",
-  catalog: "126+ premium Halloween designs across five categories",
+  catalog: "99+ premium Halloween decorations, costumes, and party supplies",
   payments: "Secure checkout via Stripe (USD) and Razorpay (INR)",
   guarantee: "Satisfaction guarantee — see our returns policy",
 } as const;
@@ -16,41 +15,41 @@ export const trustFacts = {
 export const trustHighlights = [
   {
     icon: "🇺🇸",
-    title: "Ships from within the USA",
-    detail: deliveryClaims.fulfillment,
-  },
-  {
-    icon: "📍",
-    title: "California fulfillment team",
-    detail: "Operated by DGV with a dedicated US team packing and dispatching every Halloween order.",
+    title: "Trusted & Secure Online Platform",
+    detail: "Our website offers a safe and seamless shopping experience from product selection to secure payment.",
   },
   {
     icon: "🚚",
-    title: "Fast nationwide delivery",
-    detail: `${deliveryClaims.express}. ${deliveryClaims.standard}. ${deliveryClaims.dispatch}.`,
+    title: "Fast Delivery with Same-Day Dispatch",
+    detail: `${deliveryClaims.dispatch}. ${deliveryClaims.express}. ${deliveryClaims.standard}.`,
   },
   {
-    icon: "🎁",
-    title: "126+ curated designs",
-    detail: "Single Halloween, combos with chocolates, Kids, Bhaiya Bhabhi, and Lumba — roli chawal on most orders.",
+    icon: "📦",
+    title: "Free Shipping & Reliable Service",
+    detail: "Enjoy free shipping on selected orders. Every order is handled with care for timely and safe delivery.",
   },
   {
-    icon: "🔒",
-    title: "Secure payments",
-    detail: trustFacts.payments,
+    icon: "📍",
+    title: "Local Presence in India & USA",
+    detail: "Operations in both India and the USA help us provide better coordination and quicker deliveries worldwide.",
+  },
+  {
+    icon: "🎃",
+    title: "Premium Halloween Collection",
+    detail: trustFacts.catalog,
   },
   {
     icon: "💬",
-    title: "Real human support",
+    title: "Real Human Support",
     detail: `${site.whatsappDisplay} · ${site.supportEmail}`,
     href: whatsappChatUrl("Hi HalloweenReady, I have a question before ordering."),
   },
 ] as const;
 
 export const trustStripItems = [
-  "Ships from within the USA",
-  "5–7 day delivery · all 50 states",
+  "Fast USA delivery",
+  "Same-day dispatch on most orders",
   "Secure Stripe & Razorpay checkout",
-  "California fulfillment team",
+  "Premium Halloween decorations",
   "WhatsApp support",
 ] as const;

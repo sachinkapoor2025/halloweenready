@@ -44,12 +44,12 @@ export function CustomerReviews({ showIntro = true }: CustomerReviewsProps) {
     <section className="bg-white border-t border-slate-100 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary mb-3 md:mb-4">
-          Loved by Brothers &amp; Sisters
+          Loved by Halloween Enthusiasts
         </h2>
         {showIntro && (
           <p className="text-slate-600 text-sm md:text-base max-w-2xl mb-8 md:mb-10 leading-relaxed">
-            Stories from sisters who sent Halloween to brothers across the USA — domestic delivery, thoughtful packaging,
-            and on-time Halloween gifts.{" "}
+            Real stories from customers who transformed their homes and parties with HalloweenReady decorations
+            and party supplies.{" "}
             <Link href="/reviews" className="text-nav font-semibold hover:underline">
               Share your review →
             </Link>

@@ -3,33 +3,31 @@
 @import "tailwindcss/utilities";
 
 :root {
-  --foreground: #f8fafc;
-  --background: #0f0618;
+  --foreground: #111827;
+  --background: #ffffff;
   --primary: #1a0a2e;
   --nav: #ff6b00;
-  --accent: #39ff14;
-  --muted: #94a3b8;
-  --spooky-purple: #7c3aed;
+  --accent: #e11d48;
+  --muted: #6b7280;
 }
 
 body {
   color: var(--foreground);
-  background: linear-gradient(180deg, #0f0618 0%, #1a0a2e 40%, #0f0618 100%);
-  min-height: 100vh;
+  background: var(--background);
 }
 
 @layer components {
   .btn-nav {
-    @apply inline-flex items-center justify-center rounded-full bg-nav text-white font-semibold text-sm px-4 py-2 hover:bg-orange-500 transition whitespace-nowrap shadow-spooky;
+    @apply inline-flex items-center justify-center rounded-full bg-nav text-white font-semibold text-sm px-4 py-2 hover:bg-orange-600 transition whitespace-nowrap;
   }
   .btn-nav-active {
-    @apply bg-primary ring-2 ring-accent;
+    @apply bg-primary;
   }
   .btn-cart {
-    @apply inline-flex items-center justify-center rounded-full bg-nav text-white font-semibold text-sm px-5 py-2.5 hover:bg-orange-500 transition disabled:opacity-50 shadow-spooky;
+    @apply inline-flex items-center justify-center rounded-full bg-nav text-white font-semibold text-sm px-5 py-2.5 hover:bg-orange-600 transition disabled:opacity-50;
   }
   .btn-spooky {
-    @apply inline-flex items-center justify-center rounded-lg bg-accent text-primary font-bold px-6 py-3 hover:shadow-glow transition;
+    @apply inline-flex items-center justify-center rounded-lg bg-nav text-white font-bold px-6 py-3 hover:bg-orange-600 transition;
   }
   .btn-outline-spooky {
     @apply inline-flex items-center justify-center rounded-lg border-2 border-nav text-nav font-semibold px-6 py-3 hover:bg-nav hover:text-white transition;
@@ -38,7 +36,7 @@ body {
     animation: hero-fade-in 0.45s ease-out;
   }
   .card-spooky {
-    @apply bg-primary/80 border border-nav/30 rounded-xl backdrop-blur-sm;
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
   }
 }
 

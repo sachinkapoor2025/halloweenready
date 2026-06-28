@@ -29,8 +29,8 @@ export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }
 
   if (variant === "inline") {
     return (
-      <p className="text-sm text-slate-200">
-        <span className="font-semibold text-accent">Halloween 2026:</span> October 31
+      <p className="text-sm text-slate-600">
+        <span className="font-semibold text-primary">Halloween 2026:</span> October 31
         {daysToHalloween > 0 && (
           <>
             {" "}
@@ -53,14 +53,14 @@ export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }
         {daysToHalloween > 0 && (
           <>
             {" "}
-            · <span className="font-semibold text-accent">{daysToHalloween} days to go</span>
+            · <span className="font-semibold text-orange-200">{daysToHalloween} days to go</span>
           </>
         )}
         {daysToOrder !== null && daysToOrder > 0 && daysToOrder <= 21 && (
           <> · Order by Oct 25 for guaranteed delivery</>
         )}
         {" · "}
-        <Link href="/halloween-guide" className="underline underline-offset-2 hover:text-accent">
+        <Link href="/halloween-guide" className="underline underline-offset-2 hover:text-orange-200">
           Halloween guide
         </Link>
       </p>

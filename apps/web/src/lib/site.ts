@@ -1,11 +1,9 @@
-import { cdnUploadUrl } from "@halloweenready/shared";
-
 export const site = {
   name: "HalloweenReady",
   domain: "halloweenready.com",
-  tagline: "Halloween Costumes & Decor — Ships Across the USA | Fast Delivery",
+  tagline: "Halloween Decorations & Party Supplies — Fast USA Delivery",
   description:
-    "HalloweenReady.com — your top-rated online Halloween store for USA delivery. Premium costumes, spooky decor, candy, accessories, and party supplies. Ships domestically within the US with 2–5 day delivery to major cities. Order costumes and decor from anywhere worldwide.",
+    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery across the USA. Premium-quality products for haunted houses, yard displays, and Halloween parties.",
   supportEmail: "support@halloweenready.com",
   phone: "+1 (555) 019-BOO",
   whatsapp: "15550190266",
@@ -13,16 +11,15 @@ export const site = {
   logoSrc: "/logo.png",
   primaryColor: "#1a0a2e",
   navBlue: "#ff6b00",
-  accentColor: "#39ff14",
+  accentColor: "#e11d48",
 } as const;
 
 export const navItems = [
   { label: "Home", href: "/" },
-  { label: "Costumes", href: "/categories/costumes", category: "costumes" },
-  { label: "Decorations", href: "/categories/decorations", category: "decorations" },
-  { label: "Candy & Treats", href: "/categories/candy-treats", category: "candy-treats" },
-  { label: "Accessories", href: "/categories/accessories", category: "accessories" },
-  { label: "Party Supplies", href: "/categories/party-supplies", category: "party-supplies" },
+  { label: "Home Decorations", href: "/categories/home-decoration", category: "home-decoration" },
+  { label: "Costumes", href: "/categories/costumesandaccessories", category: "costumesandaccessories" },
+  { label: "Party Supplies", href: "/categories/partysupplier", category: "partysupplier" },
+  { label: "Toys & Novelty", href: "/categories/toysandnovelty", category: "toysandnovelty" },
   { label: "Halloween Guide", href: "/halloween-guide" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
@@ -42,60 +39,51 @@ export const cityLinks = [
 
 export const homeBanners = [
   {
-    src: "https://images.unsplash.com/photo-1509557847840-b669961de142?w=1600&q=80",
-    alt: "Halloween costumes and spooky decor — shop HalloweenReady USA delivery",
-    href: "/products?category=costumes",
+    src: "/banners/bannerpage1.png",
+    alt: "Celebrate Halloween in Style — HalloweenReady USA delivery",
+    href: "/products",
     eyebrow: "HALLOWEEN 2026 · USA SHIPPING",
-    title: "Spooktacular Costumes Delivered Across the",
-    titleAccent: "USA",
+    title: "Celebrate Halloween in",
+    titleAccent: "Style",
     description:
-      "Premium adult and kids costumes with express shipping to all 50 states. Same-day dispatch on most orders before Oct 25.",
-    cta: "Shop Costumes",
-    pill: "Costumes · Decor · Candy · Party Supplies",
+      "Premium Halloween decorations, costumes, and party supplies with fast shipping across all 50 states.",
+    cta: "Shop Halloween",
+    pill: "Decorations · Costumes · Party Supplies · Fast USA delivery",
   },
   {
-    src: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1600&q=80",
-    alt: "Halloween decorations and haunted house props",
-    href: "/products?category=decorations",
+    src: "/banners/bannerpage2.png",
+    alt: "Halloween decorations and party supplies — HalloweenReady",
+    href: "/categories/home-decoration",
     eyebrow: "HAUNT YOUR HOME",
-    title: "Transform Your Home Into a",
-    titleAccent: "Haunted House",
+    title: "Transform Your Space Into a",
+    titleAccent: "Spooky Wonderland",
     description:
-      "Inflatable ghosts, LED pumpkins, fog machines, and yard decor — everything you need for the ultimate Halloween display.",
+      "Inflatable ghosts, LED pumpkins, skeletons, and yard decor — everything for the ultimate Halloween display.",
     cta: "Shop Decorations",
-    pill: "Indoor & outdoor decor · Fast USA delivery",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=1600&q=80",
-    alt: "Halloween candy and party supplies for trick-or-treat",
-    href: "/products?category=candy-treats",
-    eyebrow: "TRICK OR TREAT",
-    title: "Candy, Treats & Party",
-    titleAccent: "Essentials",
-    description:
-      "Bulk candy assortments, treat bags, and party supplies for Halloween night. Delivered before October 31.",
-    cta: "Shop Candy & Treats",
-    pill: "Party supplies · Accessories · Halloween guide",
+    pill: "Indoor & outdoor decor · Same-day dispatch on most orders",
   },
 ] as const;
 
 export const promoBanners = [
   {
-    src: cdnUploadUrl("2026/06/review-picture-2.png"),
+    src: "https://halloweenready.com/wp-content/uploads/2026/03/revire-1.webp",
     alt: "Happy Halloween customers",
   },
   {
-    src: "https://picsum.photos/seed/halloween-promo/768/1152",
+    src: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-3-768x1152-1.webp",
     alt: "Halloween party celebration",
   },
 ] as const;
 
 export const homeCategoryOrder = [
-  "costumes",
-  "decorations",
-  "candy-treats",
-  "accessories",
-  "party-supplies",
+  "home-decoration",
+  "costumesandaccessories",
+  "partysupplier",
+  "toysandnovelty",
+  "candlesandfragrance",
+  "jewellryandaccessories",
+  "lifestyleandwearable",
+  "printedandpapercrafts",
 ] as const;
 
 export const categoryOrder = homeCategoryOrder;
@@ -111,67 +99,63 @@ export function whatsappChatUrl(message = "Hi HalloweenReady, I need help with m
 
 export const testimonials = [
   {
-    name: "Sarah",
-    rating: 5,
-    timeAgo: "2 days ago",
-    image: "https://picsum.photos/seed/halloween-review-1/200/200",
-    text: "Ordered three kids costumes for our California block party — they arrived in 3 days and the quality blew us away. My son's werewolf costume was the hit of the neighborhood!",
-  },
-  {
-    name: "Mike",
-    rating: 5,
-    timeAgo: "1 week ago",
-    image: "https://picsum.photos/seed/halloween-review-2/200/200",
-    text: "The inflatable graveyard set transformed our front yard in Houston. HalloweenReady shipped fast and everything was easy to set up. Already planning next year's order.",
-  },
-  {
-    name: "Jessica",
-    rating: 5,
+    name: "Neha",
+    rating: 4,
     timeAgo: "2 weeks ago",
-    image: "https://picsum.photos/seed/halloween-review-3/200/200",
-    text: "Bulk candy assortment arrived fresh and well-packed in New York. Perfect for our office Halloween party. Great prices and reliable delivery before Oct 31.",
+    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-1.webp",
+    text: "I ordered several outdoor Halloween decorations from HalloweenReady.com and was impressed by the quality. Everything arrived quickly and looked amazing in my yard.",
   },
   {
-    name: "David",
-    rating: 5,
+    name: "Anjali",
+    rating: 4,
     timeAgo: "3 weeks ago",
-    image: "https://picsum.photos/seed/halloween-review-4/200/200",
-    text: "Couple's costume set plus fog machine — delivered to Chicago in time for our Halloween bash. Customer support helped me pick sizes. Highly recommend HalloweenReady.",
+    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-4.webp",
+    text: "The hanging ghost decorations and inflatable pumpkins were a huge hit with the neighborhood. Great prices and fast delivery.",
+  },
+  {
+    name: "Pooja",
+    rating: 3,
+    timeAgo: "1 month ago",
+    image: "https://halloweenready.com/wp-content/uploads/2026/03/revire-1.webp",
+    text: "HalloweenReady.com made decorating so easy. The products were exactly as described and helped us create the perfect haunted house.",
+  },
+  {
+    name: "Meera",
+    rating: 4,
+    timeAgo: "1 month ago",
+    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-3-768x1152-1.webp",
+    text: "Excellent customer service and fantastic Halloween products. My family loved the decorations, and we received so many compliments.",
   },
 ] as const;
 
 export const faqs = [
   {
-    q: "What is the best website to buy Halloween costumes in the USA?",
-    a: "HalloweenReady.com is a top choice for USA Halloween shopping because we ship domestically from US warehouses — no international delays. We offer costumes, decor, candy, accessories, and party supplies with 2–5 day delivery to major metros and nationwide shipping to all 50 states.",
+    q: "How quickly do you ship Halloween decorations?",
+    a: "Most orders are processed quickly and shipped within standard business timeframes. Delivery times vary based on location and shipping method selected.",
   },
   {
-    q: "Does HalloweenReady ship from within the USA?",
-    a: "Yes. HalloweenReady uses domestic US fulfillment. Order from anywhere worldwide; we ship inside America so your Halloween gear arrives quickly without customs delays.",
+    q: "Do you offer outdoor Halloween decorations?",
+    a: "Yes, we offer a wide range of outdoor decorations including inflatables, yard signs, tombstones, lighting, and large display props.",
   },
   {
-    q: "How long does Halloween delivery take in the USA?",
-    a: "Express delivery in 2–3 business days to major US metros. Nationwide delivery to all 50 states in 3–5 business days. Order by October 25 for guaranteed pre-Halloween delivery.",
+    q: "Are your Halloween products suitable for parties?",
+    a: "Absolutely. We offer party supplies, tableware, decorations, banners, balloons, and themed accessories for Halloween events of all sizes.",
   },
   {
-    q: "When should I order for Halloween 2026?",
-    a: "Halloween 2026 is October 31, 2026. Order costumes by October 20 and decor or candy by October 25 for guaranteed on-time delivery. Popular items sell out early — shop in October for best selection.",
+    q: "Can I decorate both indoor and outdoor spaces?",
+    a: "Yes. Our collection includes products specifically designed for both indoor and outdoor Halloween decorating.",
   },
   {
-    q: "Do you sell adult and kids Halloween costumes?",
-    a: "Yes. Our costume collection includes adult, teen, kids, and toddler sizes — classic horror, pop culture, funny, and group costume sets for the whole family.",
+    q: "Do you sell inflatable Halloween decorations?",
+    a: "Yes. We carry a variety of inflatable pumpkins, ghosts, skeletons, and other popular Halloween characters.",
   },
   {
-    q: "Can I buy Halloween decorations and props?",
-    a: "Yes. Shop inflatable yard decor, LED pumpkins, skeletons, fog machines, window clings, and indoor haunted house props — all with fast USA shipping.",
+    q: "What are your most popular Halloween categories?",
+    a: "Our best-selling categories include hanging decorations, inflatables, skeletons, lighting, yard décor, party supplies, and trick-or-treat accessories.",
   },
   {
-    q: "Do you sell bulk Halloween candy for trick-or-treat?",
-    a: "Yes. We offer bulk candy assortments, chocolate mixes, gummy packs, and treat bag bundles perfect for handing out on Halloween night.",
-  },
-  {
-    q: "Do you deliver to California, New York, and Texas?",
-    a: "Yes. We deliver Halloween orders to all 50 US states including California, New York, Texas, Florida, New Jersey, Illinois, and every other state.",
+    q: "Does HalloweenReady ship across the USA?",
+    a: "Yes. We deliver Halloween orders to all 50 US states with fast domestic fulfillment.",
   },
   {
     q: "What payment methods do you accept?",
@@ -179,6 +163,10 @@ export const faqs = [
   },
   {
     q: "Can I trust HalloweenReady for Halloween shopping?",
-    a: "HalloweenReady offers secure checkout, WhatsApp and email support, domestic USA shipping, and a satisfaction guarantee. Read customer reviews at halloweenready.com/reviews or contact us before ordering.",
+    a: "HalloweenReady offers secure checkout, WhatsApp and email support, domestic USA shipping, and a satisfaction guarantee.",
+  },
+  {
+    q: "When should I order for Halloween 2026?",
+    a: "Halloween 2026 is October 31, 2026. Order decor and party supplies by October 25 for guaranteed pre-Halloween delivery.",
   },
 ] as const;

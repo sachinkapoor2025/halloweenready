@@ -14,7 +14,7 @@ import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Costumes & Decor Online | USA Shipping",
+  title: "Halloween Decorations & Party Supplies Online | USA Shipping",
   description: site.description,
   path: "/",
 });
@@ -45,38 +45,39 @@ export default async function HomePage() {
   }));
 
   return (
-    <div>
+    <div className="bg-white">
       <JsonLd data={[faqJsonLd(faqs), howToShopHalloweenJsonLd()]} />
       <BannerCarousel banners={homeBanners} />
       <TrustStrip />
 
-      <section className="max-w-4xl mx-auto px-4 py-10 text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-accent mb-4">
-          Halloween Costumes & Decor — Fast USA Delivery
-        </h1>
-        <p className="text-slate-300 leading-relaxed mb-4">
-          {site.name} delivers premium Halloween costumes, spooky decor, candy, accessories, and party supplies
-          across all 50 United States. Shop adult and kids costumes, yard inflatables, bulk candy, and party
-          essentials with 2–5 business day domestic shipping.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3 text-sm">
-          <Link href="/halloween-guide" className="text-nav font-semibold hover:underline">
-            Halloween Guide 2026 →
-          </Link>
-          <Link href="/categories/costumes" className="text-nav font-semibold hover:underline">
-            Shop costumes →
-          </Link>
-          <Link href="/shipping" className="text-nav font-semibold hover:underline">
-            Shipping info →
+      <FastSellingSection products={products} />
+
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl md:text-2xl font-bold text-primary">
+            Celebrate Halloween in Style 🎃👻
+          </h2>
+          <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
+            View All →
           </Link>
         </div>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+            {products.slice(0, 20).map((p) => (
+              <HomeProductCard key={p.slug} product={p} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-slate-500 py-12">
+            Products could not be loaded. Confirm Amplify env var{" "}
+            <code className="bg-slate-100 px-1 rounded text-slate-800">NEXT_PUBLIC_API_URL</code> is set and redeploy.
+          </p>
+        )}
       </section>
-
-      <FastSellingSection products={products} />
 
       {productsByCategory.map((section) =>
         section.products.length > 0 ? (
-          <section key={section.slug} className="max-w-7xl mx-auto px-4 py-8">
+          <section key={section.slug} className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-100">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl md:text-2xl font-bold text-primary capitalize">{section.name}</h2>
               <Link href={`/categories/${section.slug}`} className="text-nav font-semibold text-sm hover:underline">
@@ -92,21 +93,14 @@ export default async function HomePage() {
         ) : null
       )}
 
-      {products.length === 0 && (
-        <p className="text-center text-slate-500 py-12">
-          Products could not be loaded. Confirm Amplify env var{" "}
-          <code className="bg-slate-100 px-1 rounded">NEXT_PUBLIC_API_URL</code> is set and redeploy.
-        </p>
-      )}
-
       <WhyTrustUsSection />
 
       <CustomerReviews />
 
       <HomeSeoSection />
 
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-primary text-center mb-2">More Questions?</h2>
+      <section className="max-w-7xl mx-auto px-4 py-12 bg-white">
+        <h2 className="text-2xl font-bold text-primary text-center mb-2">FAQ</h2>
         <p className="text-center text-sm text-slate-500 mb-6">
           Quick answers below — or{" "}
           <Link href="/faq" className="text-nav hover:underline">

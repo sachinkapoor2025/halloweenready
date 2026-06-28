@@ -100,7 +100,7 @@ function CartLink({ className = "" }: { className?: string }) {
         />
       </svg>
       {itemCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+        <span className="absolute -top-0.5 -right-0.5 bg-nav text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
           {itemCount}
         </span>
       )}
@@ -139,7 +139,7 @@ function DesktopCartAction() {
           />
         </svg>
         {itemCount > 0 && (
-          <span className="absolute -top-1.5 -right-2 bg-accent text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+          <span className="absolute -top-1.5 -right-2 bg-nav text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
             {itemCount}
           </span>
         )}
