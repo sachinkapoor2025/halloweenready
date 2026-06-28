@@ -1,4 +1,4 @@
-// File: /Users/sachinkapoor/Desktop/HR_EC/Halloweenready/apps/web/src/app/faq/page.tsx
+// File: /Users/sachinkapoor/Desktop/HR_EC/halloweenready/apps/web/src/app/faq/page.tsx
 import * as entry from '../../../../src/app/faq/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

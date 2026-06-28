@@ -1,4 +1,4 @@
-// File: /Users/sachinkapoor/Desktop/HR_EC/Halloweenready/apps/web/src/app/api/geo/route.ts
+// File: /Users/sachinkapoor/Desktop/HR_EC/halloweenready/apps/web/src/app/api/geo/route.ts
 import * as entry from '../../../../../src/app/api/geo/route.js'
 import type { NextRequest } from 'next/server.js'
 

@@ -109,7 +109,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/Users/sachinkapoor/Desktop/HR_EC/Halloweenready",
+    "outputFileTracingRoot": "/Users/sachinkapoor/Desktop/HR_EC/halloweenready",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -302,10 +302,10 @@
       "/shared"
     ],
     "turbopack": {
-      "root": "/Users/sachinkapoor/Desktop/HR_EC/Halloweenready"
+      "root": "/Users/sachinkapoor/Desktop/HR_EC/halloweenready"
     }
   },
-  "appDir": "/Users/sachinkapoor/Desktop/HR_EC/Halloweenready/apps/web",
+  "appDir": "/Users/sachinkapoor/Desktop/HR_EC/halloweenready/apps/web",
   "relativeAppDir": "apps/web",
   "files": [
     ".next/routes-manifest.json",
