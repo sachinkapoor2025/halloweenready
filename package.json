@@ -18,6 +18,7 @@
     "seed:inventory": "tsx scripts/seed-inventory.ts",
     "fix:seo-descriptions": "tsx scripts/fix-seo-descriptions.ts",
     "migrate:images": "tsx scripts/migrate-images-to-s3.ts",
+    "import:backup-images": "tsx scripts/import-backup-product-images.ts",
     "sync:public-uploads": "tsx scripts/sync-public-uploads.ts",
     "rewrite:product-images": "tsx scripts/rewrite-product-image-urls.ts",
     "migrate:multitable": "tsx scripts/migrate-to-multitable.ts",
@@ -31,6 +32,7 @@
     "@aws-sdk/client-s3": "^3.716.0",
     "@aws-sdk/lib-dynamodb": "^3.716.0",
     "concurrently": "^9.1.2",
+    "sharp": "^0.35.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
