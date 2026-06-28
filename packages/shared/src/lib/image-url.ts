@@ -80,14 +80,7 @@ export function uploadsRelativePath(url: string): string | null {
   return m ? m[1] : null;
 }
 
-/** Parse Amazon image id from WooCommerce filenames like imgi_55_61NF5mMYP7L._SL1500_.png */
-export function amazonImageIdFromFilename(filename: string): string | null {
-  const m = filename.match(/imgi_\d+_([A-Za-z0-9+-]+?)(?:[._-]|\.(?:png|jpe?g|webp))/i);
-  if (m) return m[1];
-  const m2 = filename.match(/imgi_\d+_([A-Za-z0-9+-]{8,})/i);
-  return m2 ? m2[1] : null;
-}
-
-export function amazonMediaUrl(imageId: string, size = "SL1500"): string {
-  return `https://m.media-amazon.com/images/I/${imageId}._${size}_.jpg`;
+/** WooCommerce Amazon-import filenames — copyrighted product photos; do not fetch or hotlink. */
+export function isAmazonImportedFilename(filename: string): boolean {
+  return /^imgi_/i.test(filename);
 }

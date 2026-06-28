@@ -13,6 +13,5 @@ export declare function resolveProductImageUrl(url: string | undefined | null, c
 export declare function resolveProductImageUrls(urls: string[] | undefined | null, cdnBase?: string): string[];
 /** Extract path after uploads/ from any known product image URL. */
 export declare function uploadsRelativePath(url: string): string | null;
-/** Parse Amazon image id from WooCommerce filenames like imgi_55_61NF5mMYP7L._SL1500_.png */
-export declare function amazonImageIdFromFilename(filename: string): string | null;
-export declare function amazonMediaUrl(imageId: string, size?: string): string;
+/** WooCommerce Amazon-import filenames — copyrighted product photos; do not fetch or hotlink. */
+export declare function isAmazonImportedFilename(filename: string): boolean;

@@ -1,35 +1,44 @@
 /**
  * Download catalog product images into apps/web/public/uploads for Amplify static hosting.
- * WordPress is retired and S3/CloudFront bucket is empty (403) — this fixes images on deploy.
  *
- * Sources tried per file:
- *  1. Already on disk under public/uploads
- *  2. Amazon m.media-amazon.com (imgi_* filenames from WooCommerce imports)
- *  3. WORDPRESS_ORIGIN or WP_HOST + Host header (legacy LiteSpeed server)
- *  4. Generic Halloween placeholder (Unsplash) for remaining files
+ * Copyright-safe only — does NOT fetch Amazon product photos, WordPress media, or Wayback archives.
+ * Missing or unsafe files receive a public-domain Halloween placeholder.
+ *
+ * Sources (in order):
+ *  1. Already on disk (if large enough and not an Amazon-import filename)
+ *  2. Committed _placeholder.jpg or Wikimedia Commons public-domain pumpkin
+ *
+ * See scripts/data/IMAGE-LICENSES.md for license details.
  *
  * Usage:
  *   npm run sync:public-uploads
- *   WORDPRESS_ORIGIN=http://157.66.191.12 npm run sync:public-uploads
  */
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "fs";
 import { dirname, join, basename } from "path";
-import {
-  amazonImageIdFromFilename,
-  amazonMediaUrl,
-  uploadsRelativePath,
-} from "@halloweenready/shared";
+import { uploadsRelativePath } from "@halloweenready/shared";
 
 const CATALOG_PATH = join(process.cwd(), "scripts/data/halloweenready-catalog.json");
 const PUBLIC_ROOT = join(process.cwd(), "apps/web/public/uploads");
 const PLACEHOLDER_PATH = join(PUBLIC_ROOT, "_placeholder.jpg");
 
-const WP_ORIGIN = process.env.WORDPRESS_ORIGIN?.replace(/\/$/, "") ?? "http://157.66.191.12";
-const WP_HOST = process.env.WORDPRESS_HOST ?? "halloweenready.com";
+/** Files smaller than this are treated as broken 1×1 placeholders. */
+const MIN_VALID_BYTES = 8000;
 
-async function fetchBuffer(url: string, headers?: Record<string, string>): Promise<Buffer | null> {
+/**
+ * WooCommerce Amazon-import filenames embed m.media-amazon.com image IDs — not licensed for reuse.
+ * @see packages/shared/src/lib/image-url.ts (amazon helpers removed from sync flow)
+ */
+function isCopyrightRiskFilename(filename: string): boolean {
+  return /^imgi_/i.test(filename);
+}
+
+/** Wikimedia Commons — Pumpkin (cropped), CC0 / public domain. */
+const WIKIMEDIA_PUMPKIN_PLACEHOLDER =
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pumpkin_%28cropped%29.jpg/800px-Pumpkin_%28cropped%29.jpg";
+
+async function fetchBuffer(url: string): Promise<Buffer | null> {
   try {
-    const res = await fetch(url, { headers, redirect: "follow" });
+    const res = await fetch(url, { redirect: "follow" });
     if (!res.ok) return null;
     const type = res.headers.get("content-type") ?? "";
     if (!type.startsWith("image/")) return null;
@@ -39,60 +48,52 @@ async function fetchBuffer(url: string, headers?: Record<string, string>): Promi
   }
 }
 
-async function downloadPlaceholder(force = false): Promise<void> {
+async function downloadPlaceholder(force = false): Promise<Buffer> {
   if (!force && existsSync(PLACEHOLDER_PATH)) {
-    const stat = readFileSync(PLACEHOLDER_PATH);
-    if (stat.length > 8000) return;
+    const existing = readFileSync(PLACEHOLDER_PATH);
+    if (existing.length >= MIN_VALID_BYTES) return existing;
   }
+
   mkdirSync(dirname(PLACEHOLDER_PATH), { recursive: true });
-  const sources = [
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pumpkin_%28cropped%29.jpg/800px-Pumpkin_%28cropped%29.jpg",
-    "https://images.unsplash.com/photo-1509555859105-59ef3736c1c3?w=800&h=800&fit=crop",
-  ];
-  for (const url of sources) {
-    const buf = await fetchBuffer(url);
-    if (buf && buf.length > 8000) {
-      writeFileSync(PLACEHOLDER_PATH, buf);
-      console.log(`  ✓ placeholder saved (${Math.round(buf.length / 1024)} KB)`);
-      return;
+
+  const buf = await fetchBuffer(WIKIMEDIA_PUMPKIN_PLACEHOLDER);
+  if (buf && buf.length >= MIN_VALID_BYTES) {
+    writeFileSync(PLACEHOLDER_PATH, buf);
+    console.log(`  ✓ placeholder saved from Wikimedia (${Math.round(buf.length / 1024)} KB)`);
+    return buf;
+  }
+
+  if (existsSync(PLACEHOLDER_PATH)) {
+    const committed = readFileSync(PLACEHOLDER_PATH);
+    if (committed.length >= MIN_VALID_BYTES) {
+      console.log("  ✓ using committed _placeholder.jpg");
+      return committed;
     }
   }
-  if (existsSync(PLACEHOLDER_PATH) && readFileSync(PLACEHOLDER_PATH).length > 8000) {
-    console.log("  ✓ using committed _placeholder.jpg");
-    return;
-  }
-  throw new Error("Could not download a usable placeholder image — commit apps/web/public/uploads/_placeholder.jpg");
+
+  throw new Error(
+    "Could not obtain a usable placeholder — commit apps/web/public/uploads/_placeholder.jpg"
+  );
 }
 
-function isTinyPlaceholderFile(path: string): boolean {
-  if (!existsSync(path)) return true;
-  return readFileSync(path).length < 8000;
+function isSafeExistingFile(path: string): boolean {
+  if (!existsSync(path)) return false;
+  if (readFileSync(path).length < MIN_VALID_BYTES) return false;
+  if (isCopyrightRiskFilename(basename(path))) return false;
+  return true;
 }
 
-async function resolveImageBytes(relativePath: string): Promise<{ buf: Buffer; source: string } | null> {
+async function resolveImageBytes(
+  relativePath: string,
+  placeholder: Buffer
+): Promise<{ buf: Buffer; source: string }> {
   const dest = join(PUBLIC_ROOT, relativePath);
-  if (existsSync(dest) && !isTinyPlaceholderFile(dest)) {
+
+  if (isSafeExistingFile(dest)) {
     return { buf: readFileSync(dest), source: "existing" };
   }
 
-  const filename = basename(relativePath);
-  const amazonId = amazonImageIdFromFilename(filename);
-  if (amazonId) {
-    for (const size of ["SL1500", "SL1000", "SX679", "AC_SL1001"]) {
-      const buf = await fetchBuffer(amazonMediaUrl(amazonId, size));
-      if (buf) return { buf, source: `amazon:${amazonId}` };
-    }
-  }
-
-  const wpUrl = `${WP_ORIGIN}/wp-content/uploads/${relativePath}`;
-  let buf = await fetchBuffer(wpUrl, { Host: WP_HOST });
-  if (buf) return { buf, source: "wordpress" };
-
-  if (existsSync(PLACEHOLDER_PATH)) {
-    return { buf: readFileSync(PLACEHOLDER_PATH), source: "placeholder" };
-  }
-
-  throw new Error("Placeholder image missing — run downloadPlaceholder first");
+  return { buf: placeholder, source: "placeholder" };
 }
 
 async function main() {
@@ -114,7 +115,9 @@ async function main() {
   }
 
   console.log(`Syncing ${paths.size} product images → ${PUBLIC_ROOT}`);
-  await downloadPlaceholder(true);
+  console.log("Copyright-safe mode: Amazon / WordPress / Wayback fetching disabled.\n");
+
+  const placeholder = await downloadPlaceholder(true);
 
   let ok = 0;
   let failed = 0;
@@ -124,34 +127,26 @@ async function main() {
     const dest = join(PUBLIC_ROOT, rel);
     mkdirSync(dirname(dest), { recursive: true });
 
-    const needsRefresh = !existsSync(dest) || isTinyPlaceholderFile(dest);
+    try {
+      const result = await resolveImageBytes(rel, placeholder);
 
-    if (!needsRefresh && existsSync(dest)) {
-      bySource.existing = (bySource.existing ?? 0) + 1;
+      if (result.source !== "existing") {
+        writeFileSync(dest, result.buf);
+      }
+
+      bySource[result.source] = (bySource[result.source] ?? 0) + 1;
       ok++;
-      continue;
-    }
-
-    const result = await resolveImageBytes(rel);
-    if (!result) {
+    } catch {
       console.warn(`  ✗ ${rel}`);
       failed++;
-      continue;
     }
-
-    if (result.source !== "existing") {
-      writeFileSync(dest, result.buf);
-    }
-    bySource[result.source.startsWith("amazon") ? "amazon" : result.source] =
-      (bySource[result.source.startsWith("amazon") ? "amazon" : result.source] ?? 0) + 1;
-    ok++;
   }
 
   console.log("\nDone.");
   console.log(`  OK: ${ok}, failed: ${failed}`);
   console.log("  Sources:", bySource);
   console.log("\nCommit apps/web/public/uploads/ and redeploy Amplify.");
-  console.log("Keep NEXT_PUBLIC_IMAGE_MODE=static (default) until S3 is populated.");
+  console.log("Replace placeholders with your own product photos when available.");
 }
 
 main().catch((err) => {

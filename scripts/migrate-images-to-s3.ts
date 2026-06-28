@@ -1,7 +1,11 @@
 /**
- * Migrate WordPress product/media images to S3 + CloudFront and update DynamoDB.
+ * Migrate product/media images to S3 + CloudFront and update DynamoDB.
  *
  * Why: halloweenready.com now points to Amplify (Next.js). Old wp-content URLs 404.
+ *
+ * COPYRIGHT: Only upload images you own or are licensed to use commercially.
+ * Do NOT migrate Amazon product photos or scraped third-party media.
+ * For copyright-safe local placeholders use: npm run sync:public-uploads
  *
  * Usage (after exporting wp-content/uploads from WordPress hosting):
  *   ENVIRONMENT=prod \
