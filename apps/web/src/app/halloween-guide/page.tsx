@@ -82,7 +82,7 @@ export default function HalloweenGuidePage() {
 
       <section className="max-w-4xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold text-accent mb-6">Why Shop Halloween Early?</h2>
-        <div className="space-y-4 text-slate-300 leading-relaxed">
+        <div className="space-y-4 text-slate-600 leading-relaxed">
           <p>
             Popular costumes and decor sell out fast every October. Ordering early guarantees size availability,
             on-time delivery, and less stress as Halloween night approaches.
@@ -103,7 +103,7 @@ export default function HalloweenGuidePage() {
                 {item.step}
               </span>
               <h3 className="font-bold text-accent mb-2">{item.title}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">{item.text}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
             </div>
           ))}
         </div>
@@ -115,7 +115,7 @@ export default function HalloweenGuidePage() {
           {costumeIdeas.map((idea) => (
             <div key={idea.title} className="p-5 card-spooky">
               <h3 className="font-bold text-nav mb-2">{idea.title}</h3>
-              <p className="text-sm text-slate-300">{idea.text}</p>
+              <p className="text-sm text-slate-600">{idea.text}</p>
             </div>
           ))}
         </div>
@@ -123,7 +123,7 @@ export default function HalloweenGuidePage() {
 
       <section className="max-w-4xl mx-auto px-4 py-10 border-t border-nav/20">
         <h2 className="text-2xl font-bold text-accent mb-4">Halloween Delivery by City</h2>
-        <p className="text-slate-300 leading-relaxed mb-6">
+        <p className="text-slate-600 leading-relaxed mb-6">
           We deliver Halloween costumes, decor, and candy to major US metros and nationwide.
           Select your city for local delivery details:
         </p>
@@ -162,7 +162,7 @@ export default function HalloweenGuidePage() {
           {faqs.slice(0, 6).map((f) => (
             <details key={f.q} className="card-spooky p-5">
               <summary className="font-semibold text-nav cursor-pointer text-sm">{f.q}</summary>
-              <p className="text-slate-300 text-sm mt-3 leading-relaxed">{f.a}</p>
+              <p className="text-slate-600 text-sm mt-3 leading-relaxed">{f.a}</p>
             </details>
           ))}
         </div>

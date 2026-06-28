@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 
 type Variant = "compact" | "full";
 
@@ -67,10 +66,6 @@ export function TrustBadges({ variant = "full", className = "" }: { variant?: Va
             </div>
           );
         })}
-      </div>
-      <div>
-        <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1.5">Secure payments</p>
-        <PaymentMethodIcons />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import { SecureCheckoutBadge } from "@/components/SecureCheckoutBadge";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { CheckoutLegalNotice } from "@/components/CheckoutLegalNotice";
 import { TrustBadges } from "@/components/TrustBadges";
-import { resolveImageUrl } from "@/lib/images";
+import { ProductImage } from "@/components/ProductImage";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
 import type { DisplayCurrency } from "@/lib/currency-context";
 
@@ -114,12 +114,7 @@ export default function CartPage() {
                       href={`/products/${item.productSlug}`}
                       className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-slate-50 border border-slate-100"
                     >
-                      {item.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No image</div>
-                      )}
+                      <ProductImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </Link>
 
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">

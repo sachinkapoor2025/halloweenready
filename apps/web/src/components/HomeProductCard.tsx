@@ -8,7 +8,7 @@ import { WishlistButton } from "@/components/WishlistButton";
 import { FastSellingBadge } from "@/components/FastSellingBadge";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
-import { resolveImageUrl } from "@/lib/images";
+import { ProductImage } from "@/components/ProductImage";
 
 export function HomeProductCard({
   product,
@@ -36,16 +36,11 @@ export function HomeProductCard({
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
         <WishlistButton product={product} />
         <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
-          {product.images?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={resolveImageUrl(product.images[0])}
-              alt={product.name}
-              className="absolute inset-0 h-full w-full object-cover object-center"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">No image</div>
-          )}
+          <ProductImage
+            src={product.images?.[0]}
+            alt={product.name}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
         </Link>
       </div>
       <Link href={`/products/${product.slug}`} className="block flex-1">

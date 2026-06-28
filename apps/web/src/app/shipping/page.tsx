@@ -17,7 +17,7 @@ export default function ShippingPage() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <JsonLd data={howToShopHalloweenJsonLd()} />
       <h1 className="text-3xl font-bold text-accent mb-6">Shipping & Delivery</h1>
-      <div className="space-y-6 text-slate-300 leading-relaxed">
+      <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
           {site.name} delivers Halloween costumes, decor, candy, and party supplies to{" "}
           <strong>all 50 United States</strong> via <strong>domestic US fulfillment</strong>. Your order ships inside

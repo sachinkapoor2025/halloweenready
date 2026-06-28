@@ -16,7 +16,7 @@ export default function AboutPage() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <JsonLd data={aboutPageJsonLd()} />
       <h1 className="text-3xl font-bold text-accent mb-6">About {site.name}</h1>
-      <div className="space-y-6 text-slate-300 leading-relaxed">
+      <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
           <strong>{site.name}</strong> ({site.domain}) is a dedicated online Halloween store built for one purpose:
           helping families and party hosts across the United States celebrate Halloween with premium costumes, spooky
@@ -36,7 +36,7 @@ export default function AboutPage() {
         </ul>
         <h2 className="text-xl font-bold text-accent pt-4">What we offer</h2>
         <ul className="list-disc list-inside space-y-2">
-          <li>25+ sample Halloween products across five categories (more coming soon)</li>
+          <li>99+ Halloween products across eight categories</li>
           <li>Costumes, Decorations, Candy & Treats, Accessories, and Party Supplies</li>
           <li>Adult, teen, and kids sizes</li>
           <li>Secure payments via Razorpay and Stripe</li>
@@ -68,7 +68,7 @@ export default function AboutPage() {
           <Link
             key={slug}
             href={`/categories/${slug}`}
-            className="px-4 py-2 rounded-full border border-nav/40 text-sm hover:border-nav capitalize text-slate-200"
+            className="px-4 py-2 rounded-full border border-slate-200 text-sm hover:border-nav capitalize text-slate-700 bg-slate-50"
           >
             {slug.replace(/-/g, " ")}
           </Link>

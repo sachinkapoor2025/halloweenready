@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { resolveImageUrls } from "@/lib/images";
+import { PRODUCT_IMAGE_FALLBACK, resolveImageUrls } from "@/lib/images";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -67,7 +67,30 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const isDesktop = useDesktopHoverZoom();
 
   const imgs = resolveImageUrls(images);
-  const current = imgs[selected] ?? "";
+  const [broken, setBroken] = useState<Record<string, true>>({});
+
+  useEffect(() => {
+    setBroken({});
+  }, [images]);
+
+  const displaySrc = useCallback(
+    (src: string) => (broken[src] ? PRODUCT_IMAGE_FALLBACK : src),
+    [broken]
+  );
+
+  const markBroken = useCallback((src: string) => {
+    setBroken((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
+  }, []);
+
+  const handleImageLoad = useCallback(
+    (src: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const img = e.currentTarget;
+      if (img.naturalWidth <= 8 && img.naturalHeight <= 8) markBroken(src);
+    },
+    [markBroken]
+  );
+
+  const current = displaySrc(imgs[selected] ?? "");
 
   const updateBounds = useCallback(() => {
     const container = containerRef.current;
@@ -198,7 +221,11 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             ref={imgRef}
             src={current}
             alt={`${alt} — image ${selected + 1} of ${imgs.length}`}
-            onLoad={() => setImageBounds(updateBounds())}
+            onLoad={(e) => {
+              handleImageLoad(imgs[selected] ?? "")(e);
+              setImageBounds(updateBounds());
+            }}
+            onError={() => markBroken(imgs[selected] ?? "")}
             className="w-full h-full object-contain p-2 transition-transform duration-200 group-hover:scale-[1.02] md:group-hover:scale-100 select-none"
             draggable={false}
           />
@@ -273,7 +300,13 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={displaySrc(src)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onLoad={handleImageLoad(src)}
+                  onError={() => markBroken(src)}
+                />
               </button>
             ))}
           </div>
@@ -324,6 +357,8 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             alt={alt}
             className="max-w-full max-h-[85vh] object-contain"
             onClick={(e) => e.stopPropagation()}
+            onLoad={handleImageLoad(imgs[selected] ?? "")}
+            onError={() => markBroken(imgs[selected] ?? "")}
           />
 
           {imgs.length > 1 && (
@@ -341,7 +376,13 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <img
+                  src={displaySrc(src)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onLoad={handleImageLoad(src)}
+                  onError={() => markBroken(src)}
+                />
                 </button>
               ))}
             </div>

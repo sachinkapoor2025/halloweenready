@@ -5,7 +5,7 @@ import type { Product } from "@halloweenready/shared";
 import { WishlistButton } from "@/components/WishlistButton";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
-import { resolveImageUrl } from "@/lib/images";
+import { ProductImage } from "@/components/ProductImage";
 
 export function ProductCard({ product }: { product: Product }) {
   const { format } = useCurrency();
@@ -21,12 +21,7 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-square bg-slate-50 flex items-center justify-center text-slate-400">
         <WishlistButton product={product} />
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
-          {product.images?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={resolveImageUrl(product.images[0])} alt={product.name} className="w-full h-full object-cover" />
-          ) : (
-            <span>No image</span>
-          )}
+          <ProductImage src={product.images?.[0]} alt={product.name} className="w-full h-full object-cover" />
         </Link>
       </div>
       <Link href={`/products/${product.slug}`} className="block p-4">

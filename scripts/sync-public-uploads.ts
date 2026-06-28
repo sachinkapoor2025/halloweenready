@@ -39,33 +39,41 @@ async function fetchBuffer(url: string, headers?: Record<string, string>): Promi
   }
 }
 
-async function downloadPlaceholder(): Promise<void> {
-  if (existsSync(PLACEHOLDER_PATH)) return;
+async function downloadPlaceholder(force = false): Promise<void> {
+  if (!force && existsSync(PLACEHOLDER_PATH)) {
+    const stat = readFileSync(PLACEHOLDER_PATH);
+    if (stat.length > 8000) return;
+  }
   mkdirSync(dirname(PLACEHOLDER_PATH), { recursive: true });
   const sources = [
-    "https://images.unsplash.com/photo-1509555859105-59ef3736c1c3?w=800&h=800&fit=crop",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pumpkin_%28cropped%29.jpg/800px-Pumpkin_%28cropped%29.jpg",
+    "https://images.unsplash.com/photo-1509555859105-59ef3736c1c3?w=800&h=800&fit=crop",
   ];
   for (const url of sources) {
     const buf = await fetchBuffer(url);
-    if (buf) {
+    if (buf && buf.length > 8000) {
       writeFileSync(PLACEHOLDER_PATH, buf);
-      console.log("  ✓ placeholder saved");
+      console.log(`  ✓ placeholder saved (${Math.round(buf.length / 1024)} KB)`);
       return;
     }
   }
-  // 1×1 orange PNG fallback
-  const minimal = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-    "base64"
-  );
-  writeFileSync(PLACEHOLDER_PATH, minimal);
-  console.log("  ✓ minimal placeholder saved");
+  if (existsSync(PLACEHOLDER_PATH) && readFileSync(PLACEHOLDER_PATH).length > 8000) {
+    console.log("  ✓ using committed _placeholder.jpg");
+    return;
+  }
+  throw new Error("Could not download a usable placeholder image — commit apps/web/public/uploads/_placeholder.jpg");
+}
+
+function isTinyPlaceholderFile(path: string): boolean {
+  if (!existsSync(path)) return true;
+  return readFileSync(path).length < 8000;
 }
 
 async function resolveImageBytes(relativePath: string): Promise<{ buf: Buffer; source: string } | null> {
   const dest = join(PUBLIC_ROOT, relativePath);
-  if (existsSync(dest)) return { buf: readFileSync(dest), source: "existing" };
+  if (existsSync(dest) && !isTinyPlaceholderFile(dest)) {
+    return { buf: readFileSync(dest), source: "existing" };
+  }
 
   const filename = basename(relativePath);
   const amazonId = amazonImageIdFromFilename(filename);
@@ -84,11 +92,7 @@ async function resolveImageBytes(relativePath: string): Promise<{ buf: Buffer; s
     return { buf: readFileSync(PLACEHOLDER_PATH), source: "placeholder" };
   }
 
-  const minimal = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-    "base64"
-  );
-  return { buf: minimal, source: "placeholder-minimal" };
+  throw new Error("Placeholder image missing — run downloadPlaceholder first");
 }
 
 async function main() {
@@ -110,7 +114,7 @@ async function main() {
   }
 
   console.log(`Syncing ${paths.size} product images → ${PUBLIC_ROOT}`);
-  await downloadPlaceholder();
+  await downloadPlaceholder(true);
 
   let ok = 0;
   let failed = 0;
@@ -119,6 +123,14 @@ async function main() {
   for (const rel of paths) {
     const dest = join(PUBLIC_ROOT, rel);
     mkdirSync(dirname(dest), { recursive: true });
+
+    const needsRefresh = !existsSync(dest) || isTinyPlaceholderFile(dest);
+
+    if (!needsRefresh && existsSync(dest)) {
+      bySource.existing = (bySource.existing ?? 0) + 1;
+      ok++;
+      continue;
+    }
 
     const result = await resolveImageBytes(rel);
     if (!result) {
