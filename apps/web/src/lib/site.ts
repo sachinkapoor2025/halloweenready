@@ -99,32 +99,32 @@ export function whatsappChatUrl(message = "Hi HalloweenReady, I need help with m
 
 export const testimonials = [
   {
-    name: "Neha",
-    rating: 4,
+    name: "Emily",
+    rating: 5,
     timeAgo: "2 weeks ago",
-    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-1.webp",
-    text: "I ordered several outdoor Halloween decorations from HalloweenReady.com and was impressed by the quality. Everything arrived quickly and looked amazing in my yard.",
+    image: "/testimonials/emily.jpg",
+    text: "I ordered outdoor Halloween decorations from HalloweenReady and they arrived in Texas within a week. The inflatables and yard signs looked amazing — our whole block stopped to take photos.",
   },
   {
-    name: "Anjali",
-    rating: 4,
+    name: "Sarah",
+    rating: 5,
     timeAgo: "3 weeks ago",
-    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-4.webp",
-    text: "The hanging ghost decorations and inflatable pumpkins were a huge hit with the neighborhood. Great prices and fast delivery.",
+    image: "/testimonials/sarah.jpg",
+    text: "The hanging ghost decorations and LED pumpkins were a huge hit in our Ohio neighborhood. Great prices, fast USA shipping, and everything matched the photos online.",
   },
   {
-    name: "Pooja",
-    rating: 3,
+    name: "Jessica",
+    rating: 5,
     timeAgo: "1 month ago",
-    image: "https://halloweenready.com/wp-content/uploads/2026/03/revire-1.webp",
-    text: "HalloweenReady.com made decorating so easy. The products were exactly as described and helped us create the perfect haunted house.",
+    image: "/testimonials/jessica.jpg",
+    text: "HalloweenReady made decorating our California home so easy. The products were exactly as described and helped us create the perfect haunted house for trick-or-treaters.",
   },
   {
-    name: "Meera",
-    rating: 4,
+    name: "Amanda",
+    rating: 5,
     timeAgo: "1 month ago",
-    image: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-3-768x1152-1.webp",
-    text: "Excellent customer service and fantastic Halloween products. My family loved the decorations, and we received so many compliments.",
+    image: "/testimonials/amanda.jpg",
+    text: "Excellent customer service and fantastic Halloween products. My family in Florida loved the party supplies and we received so many compliments from guests.",
   },
 ] as const;
 

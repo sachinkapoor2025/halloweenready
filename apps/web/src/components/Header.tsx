@@ -210,7 +210,7 @@ export function Header() {
       </div>
 
       {/* Desktop top bar */}
-      <div className="hidden md:grid max-w-7xl mx-auto px-4 py-3 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-6">
+      <div className="hidden md:grid max-w-7xl mx-auto px-4 py-2.5 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
         <SiteLogoLink size="desktop" priority />
 
         <div className="w-full max-w-2xl mx-auto">

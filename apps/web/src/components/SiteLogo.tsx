@@ -3,8 +3,8 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 
 const LOGO = {
-  desktop: { width: 180, height: 60, className: "h-12 w-auto max-w-[180px] object-contain" },
-  mobile: { width: 160, height: 52, className: "h-11 w-auto max-w-[160px] object-contain" },
+  desktop: { width: 280, height: 72, className: "h-16 w-auto max-w-[280px] object-contain" },
+  mobile: { width: 220, height: 56, className: "h-14 w-auto max-w-[220px] object-contain" },
 } as const;
 
 type SiteLogoProps = {
