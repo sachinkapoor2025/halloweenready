@@ -1,4 +1,5 @@
 import type { Product } from "@halloweenready/shared";
+import { uploadsRelativePath } from "@halloweenready/shared";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
 import {
@@ -7,18 +8,70 @@ import {
   getCatalogProductsByCategory,
 } from "./catalog-fallback";
 
+function dedupeImageUrls(urls: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    const key = uploadsRelativePath(url) ?? url.trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(url);
+  }
+  return out;
+}
+
+function imageMatchesProductSlug(url: string, slug: string): boolean {
+  const rel = uploadsRelativePath(url) ?? url;
+  return rel.includes(slug);
+}
+
+function countSlugMatchedImages(images: string[], slug: string): number {
+  return images.filter((url) => imageMatchesProductSlug(url, slug)).length;
+}
+
+/** Prefer the richer / slug-matched image set — catalog JSON is updated with imports before ISR pages refresh. */
+function pickBestImages(
+  apiImages: string[] | undefined,
+  catalogImages: string[] | undefined,
+  slug: string
+): string[] {
+  const api = apiImages ?? [];
+  const catalog = catalogImages ?? [];
+  if (api.length === 0) return catalog;
+  if (catalog.length === 0) return api;
+
+  const apiMatches = countSlugMatchedImages(api, slug);
+  const catalogMatches = countSlugMatchedImages(catalog, slug);
+  if (catalogMatches > apiMatches) return catalog;
+  if (apiMatches > catalogMatches) return api;
+  if (catalog.length > api.length) return catalog;
+  if (api.length > catalog.length) return api;
+
+  const merged = dedupeImageUrls([...api, ...catalog]);
+  return merged.length > api.length ? merged : api;
+}
+
+function mergeWithCatalog(product: Product): Product {
+  const catalog = getCatalogProduct(product.slug);
+  if (!catalog?.images?.length) return product;
+  const images = pickBestImages(product.images, catalog.images, product.slug);
+  if (images === product.images) return product;
+  return { ...product, images };
+}
+
 /** Map stored wp-content paths to CloudFront CDN URLs for display. */
 function withDisplayImages(product: Product): Product {
-  const resolved = resolveImageUrls(product.images);
+  const merged = mergeWithCatalog(product);
+  const resolved = resolveImageUrls(merged.images);
   return {
-    ...product,
-    images: resolved.length > 0 ? resolved : product.images ?? [],
+    ...merged,
+    images: resolved.length > 0 ? resolved : merged.images ?? [],
   };
 }
 
 export async function loadProduct(slug: string): Promise<Product | null> {
   try {
-    const data = await api<{ product: Product }>(`/products/${slug}`, { revalidate: 3600 });
+    const data = await api<{ product: Product }>(`/products/${slug}`, { revalidate: false });
     return withDisplayImages(data.product);
   } catch {
     const catalog = getCatalogProduct(slug);

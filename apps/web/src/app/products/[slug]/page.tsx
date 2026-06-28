@@ -14,8 +14,8 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/** Allow ISR — avoids static-to-dynamic crash on client navigation (no-store fetch). */
-export const revalidate = 3600;
+/** Fresh product/images from API + catalog merge (listing pages are already force-dynamic). */
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   const slugs = getStaticProductSlugs();
