@@ -20,12 +20,14 @@ export async function loadRelatedProducts(categorySlug: string, excludeSlug: str
     const data = await api<{ products: Product[] }>(`/products?category=${categorySlug}`, {
       revalidate: 3600,
     });
-    return data.products.filter((p) => p.slug !== excludeSlug).slice(0, 5);
+    const related = data.products.filter((p) => p.slug !== excludeSlug).slice(0, 5);
+    if (related.length > 0) return related;
   } catch {
-    return getCatalogProductsByCategory(categorySlug)
-      .filter((p) => p.slug !== excludeSlug)
-      .slice(0, 5);
+    // fall through to catalog
   }
+  return getCatalogProductsByCategory(categorySlug)
+    .filter((p) => p.slug !== excludeSlug)
+    .slice(0, 5);
 }
 
 /** Prefer catalog slugs at build time — avoids CI/API rate-limit prerender failures. */

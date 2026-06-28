@@ -1,6 +1,6 @@
 import { PutCommand, GetCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { createCategorySchema, updateCategorySchema, categoryKeys, type Category } from "@halloweenready/shared";
+import { createCategorySchema, updateCategorySchema, categoryKeys, categorySlugVariants, type Category } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
 import { ok, created, badRequest, notFound, forbidden } from "../lib/response";
 import { getAuth } from "../lib/auth";
@@ -66,15 +66,17 @@ export async function getCategory(event: APIGatewayProxyEventV2) {
   const slug = event.pathParameters?.slug;
   if (!slug) return badRequest("Slug required");
 
-  const result = await docClient.send(
-    new GetCommand({
-      TableName: PRODUCTS_TABLE,
-      Key: { PK: categoryKeys.pk(slug), SK: categoryKeys.sk() },
-    })
-  );
+  for (const candidate of categorySlugVariants(slug)) {
+    const result = await docClient.send(
+      new GetCommand({
+        TableName: PRODUCTS_TABLE,
+        Key: { PK: categoryKeys.pk(candidate), SK: categoryKeys.sk() },
+      })
+    );
+    if (result.Item) return ok({ category: result.Item });
+  }
 
-  if (!result.Item) return notFound("Category not found");
-  return ok({ category: result.Item });
+  return notFound("Category not found");
 }
 
 export async function updateCategory(event: APIGatewayProxyEventV2) {

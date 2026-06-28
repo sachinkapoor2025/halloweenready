@@ -16,8 +16,8 @@ export default function BlogPage() {
     <div className="max-w-5xl mx-auto px-4 py-12 overflow-x-hidden">
       <h1 className="text-3xl font-bold text-primary mb-2">Halloween Guides & Blog</h1>
       <p className="text-slate-600 mb-8">
-        Expert guides on sending Halloween to USA, Halloween traditions, and choosing the perfect Halloween for your
-        brother.
+        Expert guides on Halloween costumes, decorations, party planning, and shopping for USA delivery from
+        HalloweenReady.
       </p>
       <div className="grid gap-6 sm:grid-cols-2">
         {blogPosts.map((post) => (

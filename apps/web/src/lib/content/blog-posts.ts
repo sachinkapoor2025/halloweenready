@@ -19,8 +19,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Planning your Halloween look? Here are the best costume ideas for the whole family.",
     publishedAt: "2026-09-01",
     updatedAt: "2026-09-15",
-    image: "https://images.unsplash.com/photo-1509557847840-b669961de142?w=1200&q=80",
-    relatedCategory: "costumes",
+    image: "/banners/bannerpage1.png",
+    relatedCategory: "costumesandaccessories",
     sections: [
       {
         paragraphs: [
@@ -46,8 +46,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Create a spooky display neighbors will remember — indoor and outdoor decor tips.",
     publishedAt: "2026-09-10",
     updatedAt: "2026-09-10",
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&q=80",
-    relatedCategory: "decorations",
+    image: "/banners/bannerpage2.png",
+    relatedCategory: "home-decoration",
     sections: [
       {
         paragraphs: [
@@ -65,8 +65,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Stock up on candy before October 31 with our bulk buying guide.",
     publishedAt: "2026-09-12",
     updatedAt: "2026-09-12",
-    image: "https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=1200&q=80",
-    relatedCategory: "candy-treats",
+    image: "https://halloweenready.com/wp-content/uploads/2026/05/bannerpage1.png",
+    relatedCategory: "partysupplier",
     sections: [
       {
         paragraphs: [
@@ -84,8 +84,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Host the ultimate Halloween bash with our party planning checklist.",
     publishedAt: "2026-09-18",
     updatedAt: "2026-09-18",
-    image: "https://picsum.photos/seed/halloween-party/1200/675",
-    relatedCategory: "party-supplies",
+    image: "https://halloweenready.com/wp-content/uploads/2026/05/bannerpage2.png",
+    relatedCategory: "partysupplier",
     sections: [
       {
         paragraphs: [
@@ -103,8 +103,8 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Running out of time? These quick costume ideas ship fast across the USA.",
     publishedAt: "2026-10-01",
     updatedAt: "2026-10-01",
-    image: "https://images.unsplash.com/photo-1509245856770-c74770715254?w=1200&q=80",
-    relatedCategory: "accessories",
+    image: "/banners/bannerpage1.png",
+    relatedCategory: "costumesandaccessories",
     sections: [
       {
         paragraphs: [

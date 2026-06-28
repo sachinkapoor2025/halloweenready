@@ -10,6 +10,8 @@ import { TrustStrip } from "@/components/TrustStrip";
 import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
 import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
+import { getCatalogProducts } from "@/lib/catalog-fallback";
+import { categorySlugVariants } from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
@@ -37,12 +39,21 @@ export default async function HomePage() {
     categories = [];
   }
 
+  const catalogProducts = getCatalogProducts();
+  if (catalogProducts.length > 0) {
+    const apiBySlug = new Map(products.map((p) => [p.slug, p]));
+    products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
+  }
+
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
-  const productsByCategory = homeCategoryOrder.map((slug) => ({
-    slug,
-    name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
-    products: products.filter((p) => p.categorySlug === slug),
-  }));
+  const productsByCategory = homeCategoryOrder.map((slug) => {
+    const variants = new Set(categorySlugVariants(slug));
+    return {
+      slug,
+      name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
+      products: products.filter((p) => variants.has(p.categorySlug)),
+    };
+  });
 
   return (
     <div className="bg-white">

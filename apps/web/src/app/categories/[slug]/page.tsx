@@ -9,6 +9,7 @@ import { CategoryContentSection } from "@/components/CategoryContentSection";
 import { JsonLd } from "@/components/JsonLd";
 import { getCategoryContent } from "@/lib/content/category-content";
 import { getCategoryRichContent } from "@/lib/content/category-rich-content";
+import { getCatalogCategory, getCatalogProductsByCategory } from "@/lib/catalog-fallback";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
@@ -25,21 +26,23 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const fallback = getCatalogCategory(slug);
   try {
     const data = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: 3600 });
     const c = data.category;
     return pageMetadata({
-      title: `${c.name} — Send to USA | Free Shipping`,
+      title: `${c.name} — Halloween Decor & Supplies | USA Shipping`,
       description:
         c.seoDescription ??
         c.description?.slice(0, 160) ??
-        `Shop ${c.name} with fast USA delivery from HalloweenReady. Premium designs, roli chawal included.`,
+        `Shop ${c.name} with fast USA delivery from HalloweenReady.`,
       path: `/categories/${slug}`,
     });
   } catch {
+    const name = fallback?.name ?? slug.replace(/-/g, " ");
     return pageMetadata({
-      title: `${slug.replace(/-/g, " ")} Halloween USA`,
-      description: `Shop ${slug.replace(/-/g, " ")} with USA delivery from HalloweenReady.`,
+      title: `${name} — Halloween USA`,
+      description: `Shop ${name} with USA delivery from HalloweenReady.`,
       path: `/categories/${slug}`,
     });
   }
@@ -52,20 +55,35 @@ export default async function CategoryPage({ params }: Props) {
   let products: Product[] = [];
 
   try {
-    const [catData, prodData] = await Promise.all([
-      api<{ category: Category }>(`/categories/${slug}`, { revalidate: 3600 }),
-      api<{ products: Product[] }>(`/products?category=${slug}`, { revalidate: 3600 }),
-    ]);
+    const catData = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: 3600 });
     category = catData.category;
+  } catch {
+    category = getCatalogCategory(slug) ?? null;
+  }
+
+  try {
+    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, { revalidate: 3600 });
     products = prodData.products;
   } catch {
-    if (!categoryOrder.includes(slug as (typeof categoryOrder)[number])) notFound();
+    products = [];
+  }
+
+  if (products.length === 0) {
+    products = getCatalogProductsByCategory(slug);
+  }
+
+  if (!category) {
+    category = getCatalogCategory(slug) ?? null;
+  }
+
+  if (!category && products.length === 0 && !categoryOrder.includes(slug as (typeof categoryOrder)[number])) {
+    notFound();
   }
 
   const name = category?.name ?? slug.replace(/-/g, " ");
   const baseDescription =
     category?.description?.trim() ||
-    `Browse our ${name} collection — Halloween products delivered to all 50 US states. Order online from India, UK, Canada, or anywhere worldwide.`;
+    `Browse our ${name} collection — Halloween products delivered to all 50 US states.`;
   const extra = getCategoryContent(slug);
   const rich = getCategoryRichContent(slug);
 
@@ -88,7 +106,7 @@ export default async function CategoryPage({ params }: Props) {
         ]}
       />
       <Breadcrumbs items={crumbs} />
-      <h1 className="text-3xl font-bold text-primary mb-8">{name} — Send to USA</h1>
+      <h1 className="text-3xl font-bold text-primary mb-8">{name}</h1>
 
       {products.length > 0 ? (
         <Suspense fallback={<p className="text-slate-500">Loading products…</p>}>
@@ -146,11 +164,11 @@ export default async function CategoryPage({ params }: Props) {
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
-                Order from India, UK, Canada, Australia — we deliver inside USA
+                Premium decorations, costumes, and party supplies
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
-                Complimentary roli and chawal with most Halloween items
+                Same-day dispatch on most orders
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>

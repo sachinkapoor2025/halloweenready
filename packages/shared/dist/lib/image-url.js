@@ -5,8 +5,8 @@ exports.getProductCdnBase = getProductCdnBase;
 exports.cdnUploadUrl = cdnUploadUrl;
 exports.resolveProductImageUrl = resolveProductImageUrl;
 exports.resolveProductImageUrls = resolveProductImageUrls;
-/** CloudFront distribution for product/media images (from halloweenready-prod stack). */
-exports.DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
+/** CloudFront distribution for product/media images (halloweenready-prod stack). */
+exports.DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
 function getProductCdnBase(cdnBase) {
     const fromArg = cdnBase?.trim();
     if (fromArg)
@@ -25,13 +25,17 @@ function cdnUploadUrl(relativePath, cdnBase) {
     const clean = relativePath.replace(/^\/+/, "");
     return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
-/** Rewrite legacy WordPress media URLs to the CDN mirror. */
+/** Resolve product image URLs for display. */
 function resolveProductImageUrl(url, cdnBase) {
     if (!url)
         return "";
     const trimmed = url.trim();
     if (!trimmed)
         return "";
+    // Serve live WordPress media directly — CDN mirror may not contain every asset yet.
+    if (/halloweenready\.com\/wp-content\/uploads/i.test(trimmed)) {
+        return trimmed.replace(/^http:\/\//i, "https://");
+    }
     const cdn = getProductCdnBase(cdnBase);
     if (trimmed.startsWith(cdn))
         return trimmed;

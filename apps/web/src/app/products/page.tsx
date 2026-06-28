@@ -9,6 +9,12 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 import { homeCategoryOrder, orderCategories } from "@/lib/site";
+import {
+  getCatalogCategories,
+  getCatalogProducts,
+  getCatalogProductsByCategory,
+} from "@/lib/catalog-fallback";
+import { categorySlugVariants } from "@halloweenready/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -17,25 +23,21 @@ interface Props {
 }
 
 const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
-  costumes: {
-    title: "Halloween Costumes USA — Adult & Kids",
-    description: "Shop adult, teen, and kids Halloween costumes with fast USA delivery from HalloweenReady.",
+  "home-decoration": {
+    title: "Halloween Home Decorations USA",
+    description: "Shop spooky home decorations, yard props, and indoor Halloween decor with fast USA delivery.",
   },
-  decorations: {
-    title: "Halloween Decorations USA — Yard & Indoor",
-    description: "Inflatable ghosts, LED pumpkins, skeletons, and fog machines — spooky decor with USA shipping.",
+  costumesandaccessories: {
+    title: "Halloween Costumes & Accessories USA",
+    description: "Shop adult, teen, and kids Halloween costumes and accessories with fast USA delivery.",
   },
-  "candy-treats": {
-    title: "Halloween Candy & Treats USA — Bulk Trick-or-Treat",
-    description: "Bulk candy assortments and treat bag bundles for Halloween night with fast USA delivery.",
+  partysupplier: {
+    title: "Halloween Party Supplies USA",
+    description: "Plates, banners, balloons, and themed tableware for Halloween parties.",
   },
-  accessories: {
-    title: "Halloween Accessories USA — Masks, Wigs & Makeup",
-    description: "Wigs, masks, makeup kits, and finishing touches to complete any Halloween look.",
-  },
-  "party-supplies": {
-    title: "Halloween Party Supplies USA — Plates, Banners & More",
-    description: "Orange and black plates, banners, balloons, and themed tableware for Halloween parties.",
+  toysandnovelty: {
+    title: "Halloween Toys & Novelty USA",
+    description: "Fun Halloween toys, games, and novelty items for kids and parties.",
   },
 };
 
@@ -89,6 +91,20 @@ export default async function ProductsPage({ searchParams }: Props) {
     categories = [];
   }
 
+  if (categories.length === 0) {
+    categories = getCatalogCategories();
+  }
+
+  const catalogProducts = getCatalogProducts();
+  if (catalogProducts.length > 0) {
+    if (category) {
+      if (products.length === 0) products = getCatalogProductsByCategory(category);
+    } else if (!search) {
+      const apiBySlug = new Map(products.map((p) => [p.slug, p]));
+      products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
+    }
+  }
+
   const h1 = search
     ? `Search: ${search}`
     : category
@@ -97,11 +113,14 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const sortedCategories = orderCategories(categories);
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
-  const productsByCategory = homeCategoryOrder.map((slug) => ({
-    slug,
-    name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
-    products: products.filter((p) => p.categorySlug === slug),
-  }));
+  const productsByCategory = homeCategoryOrder.map((slug) => {
+    const variants = new Set(categorySlugVariants(slug));
+    return {
+      slug,
+      name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
+      products: products.filter((p) => variants.has(p.categorySlug)),
+    };
+  });
   const showGrouped = !search && !category;
 
   return (
@@ -118,8 +137,8 @@ export default async function ProductsPage({ searchParams }: Props) {
       </div>
       {!search && !category && (
         <p className="text-slate-600 mb-8 max-w-2xl">
-          Halloween products for Halloween — delivered to all 50 US states. Order from India, UK, Canada, or
-          anywhere; enter your brother&apos;s US address at checkout.
+          Browse Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery
+          across all 50 US states.
         </p>
       )}
 

@@ -1,12 +1,14 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import type { Product } from "@halloweenready/shared";
+import { categorySlugVariants, type Category, type Product } from "@halloweenready/shared";
 
 interface CatalogFile {
+  categories: Category[];
   products: Product[];
 }
 
-let cached: Product[] | null = null;
+let cachedCategories: Category[] | null = null;
+let cachedProducts: Product[] | null = null;
 
 function resolveCatalogPath(): string | null {
   const candidates = [
@@ -17,23 +19,35 @@ function resolveCatalogPath(): string | null {
   return candidates.find((p) => existsSync(p)) ?? null;
 }
 
-/** Read bundled catalog JSON — reliable during CI static generation when API is rate-limited. */
-export function getCatalogProducts(): Product[] {
-  if (cached) return cached;
+function loadCatalogFile(): CatalogFile {
   const path = resolveCatalogPath();
-  if (!path) {
-    cached = [];
-    return cached;
-  }
-  const data = JSON.parse(readFileSync(path, "utf-8")) as CatalogFile;
-  cached = data.products ?? [];
-  return cached;
+  if (!path) return { categories: [], products: [] };
+  return JSON.parse(readFileSync(path, "utf-8")) as CatalogFile;
+}
+
+/** Read bundled catalog JSON — reliable when API is empty or category metadata is missing. */
+export function getCatalogProducts(): Product[] {
+  if (cachedProducts) return cachedProducts;
+  cachedProducts = loadCatalogFile().products ?? [];
+  return cachedProducts;
+}
+
+export function getCatalogCategories(): Category[] {
+  if (cachedCategories) return cachedCategories;
+  cachedCategories = loadCatalogFile().categories ?? [];
+  return cachedCategories;
 }
 
 export function getCatalogProduct(slug: string): Product | undefined {
   return getCatalogProducts().find((p) => p.slug === slug);
 }
 
+export function getCatalogCategory(slug: string): Category | undefined {
+  const variants = categorySlugVariants(slug);
+  return getCatalogCategories().find((c) => variants.includes(c.slug));
+}
+
 export function getCatalogProductsByCategory(categorySlug: string): Product[] {
-  return getCatalogProducts().filter((p) => p.categorySlug === categorySlug);
+  const variants = new Set(categorySlugVariants(categorySlug));
+  return getCatalogProducts().filter((p) => variants.has(p.categorySlug));
 }

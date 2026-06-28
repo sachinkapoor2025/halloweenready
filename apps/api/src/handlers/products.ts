@@ -6,6 +6,7 @@ import {
   bulkProductRowSchema,
   productKeys,
   DEFAULT_PRODUCT_INVENTORY,
+  categorySlugVariants,
   type Product,
 } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
@@ -14,6 +15,18 @@ import { getAuth } from "../lib/auth";
 import { withResolvedProductImages, resolveProductImageUrl } from "../lib/images";
 import { syncInventoryAlertState } from "../lib/inventory";
 
+async function queryProductsByCategorySlug(categorySlug: string): Promise<Product[]> {
+  const result = await docClient.send(
+    new QueryCommand({
+      TableName: PRODUCTS_TABLE,
+      IndexName: "GSI1",
+      KeyConditionExpression: "GSI1PK = :pk",
+      ExpressionAttributeValues: { ":pk": productKeys.gsi1pk(categorySlug) },
+    })
+  );
+  return (result.Items ?? []) as Product[];
+}
+
 export async function listProducts(event: APIGatewayProxyEventV2) {
   const category = event.queryStringParameters?.category;
   const search = event.queryStringParameters?.search?.toLowerCase();
@@ -21,15 +34,16 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   let items: Product[] = [];
 
   if (category) {
-    const result = await docClient.send(
-      new QueryCommand({
-        TableName: PRODUCTS_TABLE,
-        IndexName: "GSI1",
-        KeyConditionExpression: "GSI1PK = :pk",
-        ExpressionAttributeValues: { ":pk": productKeys.gsi1pk(category) },
-      })
-    );
-    items = (result.Items ?? []) as Product[];
+    const seen = new Set<string>();
+    for (const slug of categorySlugVariants(category)) {
+      const batch = await queryProductsByCategorySlug(slug);
+      for (const item of batch) {
+        if (!seen.has(item.slug)) {
+          seen.add(item.slug);
+          items.push(item);
+        }
+      }
+    }
   } else {
     const result = await docClient.send(
       new ScanCommand({

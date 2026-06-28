@@ -14,18 +14,30 @@ const response_1 = require("../lib/response");
 const auth_1 = require("../lib/auth");
 const images_1 = require("../lib/images");
 const inventory_1 = require("../lib/inventory");
+async function queryProductsByCategorySlug(categorySlug) {
+    const result = await db_1.docClient.send(new lib_dynamodb_1.QueryCommand({
+        TableName: db_1.PRODUCTS_TABLE,
+        IndexName: "GSI1",
+        KeyConditionExpression: "GSI1PK = :pk",
+        ExpressionAttributeValues: { ":pk": shared_1.productKeys.gsi1pk(categorySlug) },
+    }));
+    return (result.Items ?? []);
+}
 async function listProducts(event) {
     const category = event.queryStringParameters?.category;
     const search = event.queryStringParameters?.search?.toLowerCase();
     let items = [];
     if (category) {
-        const result = await db_1.docClient.send(new lib_dynamodb_1.QueryCommand({
-            TableName: db_1.PRODUCTS_TABLE,
-            IndexName: "GSI1",
-            KeyConditionExpression: "GSI1PK = :pk",
-            ExpressionAttributeValues: { ":pk": shared_1.productKeys.gsi1pk(category) },
-        }));
-        items = (result.Items ?? []);
+        const seen = new Set();
+        for (const slug of (0, shared_1.categorySlugVariants)(category)) {
+            const batch = await queryProductsByCategorySlug(slug);
+            for (const item of batch) {
+                if (!seen.has(item.slug)) {
+                    seen.add(item.slug);
+                    items.push(item);
+                }
+            }
+        }
     }
     else {
         const result = await db_1.docClient.send(new lib_dynamodb_1.ScanCommand({

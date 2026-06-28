@@ -9,7 +9,7 @@
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { productKeys, categoryKeys, configKeys, defaultPaymentConfig, metaDescription } from "@halloweenready/shared";
 
 const CATALOG_PATH = join(process.cwd(), "scripts/data/halloweenready-catalog.json");
@@ -311,6 +311,26 @@ async function importToDb(catalog: { categories: CatalogCategory[]; products: Ca
         },
       })
     );
+  }
+
+  const keepSlugs = new Set(catalog.products.map((p) => p.slug));
+  const existing = await docClient.send(
+    new ScanCommand({
+      TableName: PRODUCTS_TABLE,
+      FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+      ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+    })
+  );
+  for (const item of existing.Items ?? []) {
+    const slug = String(item.slug ?? "");
+    if (slug && !keepSlugs.has(slug)) {
+      await docClient.send(
+        new DeleteCommand({
+          TableName: PRODUCTS_TABLE,
+          Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+        })
+      );
+    }
   }
 
   await docClient.send(

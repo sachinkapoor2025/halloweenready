@@ -62,13 +62,15 @@ async function getCategory(event) {
     const slug = event.pathParameters?.slug;
     if (!slug)
         return (0, response_1.badRequest)("Slug required");
-    const result = await db_1.docClient.send(new lib_dynamodb_1.GetCommand({
-        TableName: db_1.PRODUCTS_TABLE,
-        Key: { PK: shared_1.categoryKeys.pk(slug), SK: shared_1.categoryKeys.sk() },
-    }));
-    if (!result.Item)
-        return (0, response_1.notFound)("Category not found");
-    return (0, response_1.ok)({ category: result.Item });
+    for (const candidate of (0, shared_1.categorySlugVariants)(slug)) {
+        const result = await db_1.docClient.send(new lib_dynamodb_1.GetCommand({
+            TableName: db_1.PRODUCTS_TABLE,
+            Key: { PK: shared_1.categoryKeys.pk(candidate), SK: shared_1.categoryKeys.sk() },
+        }));
+        if (result.Item)
+            return (0, response_1.ok)({ category: result.Item });
+    }
+    return (0, response_1.notFound)("Category not found");
 }
 async function updateCategory(event) {
     const auth = (0, auth_1.getAuth)(event);

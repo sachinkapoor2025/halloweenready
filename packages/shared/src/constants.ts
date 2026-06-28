@@ -89,6 +89,28 @@ export const LOW_STOCK_ALERT_EMAIL = "dgv@mydgv.com";
 /** Minimum units sold to show in "Fast Selling" section and badge. */
 export const FAST_SELLING_THRESHOLD = 10;
 
+/** WooCommerce slugs on halloweenready.com plus legacy app slugs. */
+export const CATEGORY_SLUG_ALIASES: Record<string, string[]> = {
+  "home-decoration": ["home-decoration", "decorations"],
+  costumesandaccessories: ["costumesandaccessories", "costumes", "accessories"],
+  partysupplier: ["partysupplier", "party-supplies"],
+  toysandnovelty: ["toysandnovelty"],
+  candlesandfragrance: ["candlesandfragrance"],
+  jewellryandaccessories: ["jewellryandaccessories"],
+  lifestyleandwearable: ["lifestyleandwearable"],
+  printedandpapercrafts: ["printedandpapercrafts"],
+  decorations: ["home-decoration", "decorations"],
+  costumes: ["costumesandaccessories", "costumes"],
+  "party-supplies": ["partysupplier", "party-supplies"],
+  "candy-treats": ["partysupplier", "candy-treats"],
+  accessories: ["costumesandaccessories", "jewellryandaccessories", "accessories"],
+};
+
+export function categorySlugVariants(slug: string): string[] {
+  const variants = CATEGORY_SLUG_ALIASES[slug];
+  return variants ? [...new Set([slug, ...variants])] : [slug];
+}
+
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export type PaymentRegion = (typeof PAYMENT_REGIONS)[keyof typeof PAYMENT_REGIONS];

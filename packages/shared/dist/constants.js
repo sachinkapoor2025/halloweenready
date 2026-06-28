@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
+exports.CATEGORY_SLUG_ALIASES = exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
+exports.categorySlugVariants = categorySlugVariants;
 exports.ORDER_STATUS = {
     PENDING_PAYMENT: "pending_payment",
     PAID: "paid",
@@ -79,3 +80,23 @@ exports.LOW_STOCK_THRESHOLD = 10;
 exports.LOW_STOCK_ALERT_EMAIL = "dgv@mydgv.com";
 /** Minimum units sold to show in "Fast Selling" section and badge. */
 exports.FAST_SELLING_THRESHOLD = 10;
+/** WooCommerce slugs on halloweenready.com plus legacy app slugs. */
+exports.CATEGORY_SLUG_ALIASES = {
+    "home-decoration": ["home-decoration", "decorations"],
+    costumesandaccessories: ["costumesandaccessories", "costumes", "accessories"],
+    partysupplier: ["partysupplier", "party-supplies"],
+    toysandnovelty: ["toysandnovelty"],
+    candlesandfragrance: ["candlesandfragrance"],
+    jewellryandaccessories: ["jewellryandaccessories"],
+    lifestyleandwearable: ["lifestyleandwearable"],
+    printedandpapercrafts: ["printedandpapercrafts"],
+    decorations: ["home-decoration", "decorations"],
+    costumes: ["costumesandaccessories", "costumes"],
+    "party-supplies": ["partysupplier", "party-supplies"],
+    "candy-treats": ["partysupplier", "candy-treats"],
+    accessories: ["costumesandaccessories", "jewellryandaccessories", "accessories"],
+};
+function categorySlugVariants(slug) {
+    const variants = exports.CATEGORY_SLUG_ALIASES[slug];
+    return variants ? [...new Set([slug, ...variants])] : [slug];
+}
