@@ -1,7 +1,7 @@
 version = 0.1
 
 [default.deploy.parameters]
-stack_name = "halloweenready-dev"
+stack_name = "halloweenready"
 resolve_s3 = true
 s3_prefix = "halloweenready"
 region = "us-east-1"
