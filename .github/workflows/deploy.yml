@@ -61,6 +61,11 @@ jobs:
         env:
           ENVIRONMENT: prod
 
+      - name: Rewrite product image URLs to CloudFront CDN
+        run: npm run rewrite:product-images
+        env:
+          ENVIRONMENT: prod
+
   deploy-web:
     runs-on: ubuntu-latest
     needs: deploy-api

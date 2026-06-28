@@ -65,7 +65,7 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Stock up on candy before October 31 with our bulk buying guide.",
     publishedAt: "2026-09-12",
     updatedAt: "2026-09-12",
-    image: "https://halloweenready.com/wp-content/uploads/2026/05/bannerpage1.png",
+    image: "/banners/bannerpage1.png",
     relatedCategory: "partysupplier",
     sections: [
       {
@@ -84,7 +84,7 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Host the ultimate Halloween bash with our party planning checklist.",
     publishedAt: "2026-09-18",
     updatedAt: "2026-09-18",
-    image: "https://halloweenready.com/wp-content/uploads/2026/05/bannerpage2.png",
+    image: "/banners/bannerpage2.png",
     relatedCategory: "partysupplier",
     sections: [
       {

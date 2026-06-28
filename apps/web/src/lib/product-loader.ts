@@ -7,15 +7,12 @@ import {
   getCatalogProductsByCategory,
 } from "./catalog-fallback";
 
-/** Prefer catalog WordPress image URLs; always resolve for display on the web. */
+/** Map stored wp-content paths to CloudFront CDN URLs for display. */
 function withDisplayImages(product: Product): Product {
-  const catalog = getCatalogProduct(product.slug);
-  const sourceImages =
-    catalog?.images?.length ? catalog.images : product.images?.length ? product.images : [];
-  const resolved = resolveImageUrls(sourceImages);
+  const resolved = resolveImageUrls(product.images);
   return {
     ...product,
-    images: resolved.length > 0 ? resolved : sourceImages,
+    images: resolved.length > 0 ? resolved : product.images ?? [],
   };
 }
 

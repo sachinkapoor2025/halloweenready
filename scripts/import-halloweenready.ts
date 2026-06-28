@@ -10,10 +10,13 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { productKeys, categoryKeys, configKeys, defaultPaymentConfig, metaDescription } from "@halloweenready/shared";
+import { productKeys, categoryKeys, configKeys, defaultPaymentConfig, metaDescription, resolveProductImageUrls } from "@halloweenready/shared";
 
 const CATALOG_PATH = join(process.cwd(), "scripts/data/halloweenready-catalog.json");
-const WC_BASE = "https://halloweenready.com/wp-json/wc/store/v1";
+/** Legacy WooCommerce — only used with --refresh when WordPress is still reachable. */
+const WC_BASE = process.env.WORDPRESS_ORIGIN
+  ? `${process.env.WORDPRESS_ORIGIN.replace(/\/$/, "")}/wp-json/wc/store/v1`
+  : "https://halloweenready.com/wp-json/wc/store/v1";
 
 const MAIN_CATEGORY_SLUGS = new Set([
   "home-decoration",
@@ -217,7 +220,7 @@ function toCatalogProduct(p: WcProduct, fallbackCategorySlug: string): CatalogPr
     compareAtPrice: p.on_sale && regular > price ? regular : undefined,
     currency: p.prices.currency_code === "INR" ? "INR" : "USD",
     categorySlug: explicitCat?.slug ?? fallbackCategorySlug,
-    images: p.images.map((img) => img.src).filter(Boolean),
+    images: resolveProductImageUrls(p.images.map((img) => img.src).filter(Boolean)),
     sku: p.sku || undefined,
     inventory: 200,
     tags: p.tags.map((t) => t.name),
@@ -348,6 +351,19 @@ async function importToDb(catalog: { categories: CatalogCategory[]; products: Ca
   console.log(`Imported ${catalog.categories.length} categories, ${catalog.products.length} products → ${PRODUCTS_TABLE}`);
 }
 
+function withCdnImages(catalog: {
+  categories: CatalogCategory[];
+  products: CatalogProduct[];
+}): { categories: CatalogCategory[]; products: CatalogProduct[] } {
+  return {
+    ...catalog,
+    products: catalog.products.map((p) => ({
+      ...p,
+      images: resolveProductImageUrls(p.images),
+    })),
+  };
+}
+
 async function main() {
   const fetchOnly = process.argv.includes("--fetch-only");
   const refresh = process.argv.includes("--refresh");
@@ -358,12 +374,24 @@ async function main() {
     catalog = JSON.parse(readFileSync(CATALOG_PATH, "utf-8"));
     console.log(`Using cached catalog: ${catalog.products.length} products`);
   } else {
-    console.log("Fetching catalog from halloweenready.com...");
-    catalog = await fetchCatalog();
+    console.log(`Fetching catalog from ${WC_BASE}...`);
+    try {
+      catalog = await fetchCatalog();
+    } catch (err) {
+      if (existsSync(CATALOG_PATH)) {
+        console.warn("Live WooCommerce fetch failed — using cached catalog JSON.", err);
+        catalog = JSON.parse(readFileSync(CATALOG_PATH, "utf-8"));
+      } else {
+        throw err;
+      }
+    }
+    catalog = withCdnImages(catalog);
     mkdirSync(join(process.cwd(), "scripts/data"), { recursive: true });
     writeFileSync(CATALOG_PATH, JSON.stringify(catalog, null, 2));
     console.log(`Saved ${CATALOG_PATH} (${catalog.products.length} products)`);
   }
+
+  catalog = withCdnImages(catalog);
 
   if (!fetchOnly) {
     await importToDb(catalog);

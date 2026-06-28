@@ -29,6 +29,8 @@ const BUCKET = process.env.UPLOAD_BUCKET;
 const CDN = process.env.CLOUDFRONT_DOMAIN?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 const WP_ORIGIN = process.env.WORDPRESS_ORIGIN?.replace(/\/$/, "");
 const LOCAL_UPLOADS = process.env.LOCAL_UPLOADS_DIR;
+const CATALOG_PATH =
+  process.env.CATALOG_PATH ?? join(process.cwd(), "scripts/data/halloweenready-catalog.json");
 
 const MIME: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -39,7 +41,7 @@ const MIME: Record<string, string> = {
 };
 
 function wpPathFromUrl(url: string): string | null {
-  const m = url.match(/\/wp-content\/uploads\/(.+)$/i);
+  const m = url.match(/(?:\/wp-content\/uploads\/|cloudfront\.net\/uploads\/)(.+)$/i);
   return m ? m[1] : null;
 }
 
@@ -136,8 +138,9 @@ async function main() {
   }
   if (!LOCAL_UPLOADS && !WP_ORIGIN) {
     console.error(
-      "Set LOCAL_UPLOADS_DIR (exported wp-content/uploads folder) or WORDPRESS_ORIGIN (old WordPress URL)."
+      "Set LOCAL_UPLOADS_DIR (exported wp-content/uploads from old WordPress host) or WORDPRESS_ORIGIN."
     );
+    console.error("WordPress is no longer on halloweenready.com — export uploads from cPanel/hosting backup.");
     process.exit(1);
   }
 
@@ -147,6 +150,24 @@ async function main() {
   );
 
   const cache = new Map<string, string>();
+
+  if (existsSync(CATALOG_PATH)) {
+    const catalog = JSON.parse(readFileSync(CATALOG_PATH, "utf-8")) as {
+      products?: { images?: string[] }[];
+    };
+    const paths = new Set<string>();
+    for (const p of catalog.products ?? []) {
+      for (const img of p.images ?? []) {
+        const rel = wpPathFromUrl(img);
+        if (rel) paths.add(rel);
+      }
+    }
+    console.log(`Pre-syncing ${paths.size} unique images from catalog JSON...`);
+    for (const rel of paths) {
+      await ensureUploaded(s3, rel, cache);
+    }
+  }
+
   let updated = 0;
   let lastKey: Record<string, unknown> | undefined;
 

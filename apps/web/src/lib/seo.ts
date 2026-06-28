@@ -103,14 +103,14 @@ export function organizationJsonLd() {
     "@id": `${siteUrl}/#organization`,
     name: site.name,
     url: siteUrl,
-    logo: site.logoSrc,
+    logo: canonical(site.logoSrc),
     description: site.description,
     email: site.supportEmail,
     telephone: site.phone,
     sameAs: [
       "https://www.facebook.com/halloweenready/",
       "https://www.instagram.com/halloweenready/",
-      `https://www.${site.domain}`,
+      siteUrl,
     ],
     areaServed: { "@type": "Country", name: "United States" },
     knowsAbout: [

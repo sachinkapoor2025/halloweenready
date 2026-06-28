@@ -1,5 +1,5 @@
 /** Production API — fallback when Amplify build env vars are missing */
-export const PROD_API_URL = "https://foqu2ap4qi.execute-api.us-east-1.amazonaws.com/prod";
+export const PROD_API_URL = "https://c70qsnpe4g.execute-api.us-east-1.amazonaws.com/prod";
 
 /** Amplify default URL for the branch being built (dev vs main). */
 export function getAmplifyBranchUrl(): string | undefined {
@@ -42,12 +42,12 @@ export function getSiteUrl(): string {
   const amplifyBranch = getAmplifyBranchUrl();
   if (amplifyBranch && process.env.NODE_ENV === "production") return amplifyBranch;
 
-  if (process.env.NODE_ENV === "production") return "https://www.halloweenready.com";
+  if (process.env.NODE_ENV === "production") return "https://halloweenready.com";
   return "http://localhost:3000";
 }
 
-/** Production CDN for WordPress media migrated to S3/CloudFront. */
-export const PROD_CDN_URL = "https://d301af4ndyn9qx.cloudfront.net";
+/** Production CDN — S3/CloudFront mirror for product images (WordPress no longer serves media). */
+export const PROD_CDN_URL = "https://d2lfdzx32wxe94.cloudfront.net";
 
 /** CloudFront (or cdn.halloweenready.com) base for product/media images migrated off WordPress. */
 export function getCdnUrl(): string {

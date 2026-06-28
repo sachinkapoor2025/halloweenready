@@ -66,11 +66,11 @@ export const homeBanners = [
 
 export const promoBanners = [
   {
-    src: "https://halloweenready.com/wp-content/uploads/2026/03/revire-1.webp",
+    src: "/banners/bannerpage1.png",
     alt: "Happy Halloween customers",
   },
   {
-    src: "https://halloweenready.com/wp-content/uploads/2026/03/coustomer-3-768x1152-1.webp",
+    src: "/banners/bannerpage2.png",
     alt: "Halloween party celebration",
   },
 ] as const;
