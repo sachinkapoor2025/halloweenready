@@ -101,66 +101,94 @@ export function BannerCarousel({ banners }: { banners: readonly HomeBanner[] }) 
     >
       <div className="relative overflow-hidden bg-white border-b border-slate-100">
         <div className="relative max-w-7xl mx-auto lg:grid lg:grid-cols-[2fr_3fr] lg:gap-6 lg:items-center lg:px-4 lg:py-4">
-          {/* Banner image */}
-          <div className="order-1 lg:order-2 relative w-full">
-            <div className="relative w-full aspect-[5/2] sm:aspect-[1024/420] overflow-hidden bg-slate-900/5">
-              {banners.map((b, i) => (
-                <div
-                  key={b.src}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                    i === index ? "opacity-100 z-10" : "opacity-0 z-0"
-                  }`}
-                  aria-hidden={i !== index}
+          {/* Banner image — 903×489 assets; object-contain keeps headline/footer text visible */}
+          <div className="order-1 lg:order-2 relative w-full min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {banners.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => goTo(index - 1)}
+                  className="hidden sm:flex shrink-0 h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
+                  aria-label="Previous slide"
                 >
-                  {b.href ? (
-                    <Link href={b.href} className="block h-full w-full" tabIndex={i === index ? 0 : -1}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              <div className="relative flex-1 min-w-0 aspect-[903/489] rounded-lg overflow-hidden bg-[#1a0a12]">
+                {banners.map((b, i) => (
+                  <div
+                    key={b.src}
+                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                      i === index ? "opacity-100 z-10" : "opacity-0 z-0"
+                    }`}
+                    aria-hidden={i !== index}
+                  >
+                    {b.href ? (
+                      <Link href={b.href} className="block h-full w-full" tabIndex={i === index ? 0 : -1}>
+                        <Image
+                          src={b.src}
+                          alt={b.alt}
+                          fill
+                          className="object-contain object-center"
+                          sizes="(max-width: 1024px) 100vw, 55vw"
+                          priority={i === 0}
+                        />
+                      </Link>
+                    ) : (
                       <Image
                         src={b.src}
                         alt={b.alt}
                         fill
-                        className="object-cover object-center"
-                        sizes="(max-width: 1024px) 100vw, 60vw"
+                        className="object-contain object-center"
+                        sizes="(max-width: 1024px) 100vw, 55vw"
                         priority={i === 0}
                       />
-                    </Link>
-                  ) : (
-                    <Image
-                      src={b.src}
-                      alt={b.alt}
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 1024px) 100vw, 60vw"
-                      priority={i === 0}
-                    />
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
 
               {banners.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => goTo(index - 1)}
-                    className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
-                    aria-label="Previous slide"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => goTo(index + 1)}
-                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
-                    aria-label="Next slide"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => goTo(index + 1)}
+                  className="hidden sm:flex shrink-0 h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
+                  aria-label="Next slide"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               )}
             </div>
+
+            {banners.length > 1 && (
+              <div className="flex sm:hidden justify-center gap-4 mt-3">
+                <button
+                  type="button"
+                  onClick={() => goTo(index - 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
+                  aria-label="Previous slide"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo(index + 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-md border border-blue-100 hover:bg-nav hover:text-white transition"
+                  aria-label="Next slide"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Copy */}
