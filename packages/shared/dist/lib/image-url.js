@@ -2,9 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_PRODUCT_CDN = void 0;
 exports.getProductCdnBase = getProductCdnBase;
+exports.staticUploadUrl = staticUploadUrl;
 exports.cdnUploadUrl = cdnUploadUrl;
 exports.resolveProductImageUrl = resolveProductImageUrl;
 exports.resolveProductImageUrls = resolveProductImageUrls;
+exports.uploadsRelativePath = uploadsRelativePath;
+exports.amazonImageIdFromFilename = amazonImageIdFromFilename;
+exports.amazonMediaUrl = amazonMediaUrl;
 /** CloudFront distribution for product/media images (halloweenready-prod stack). */
 exports.DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
 function decodeUrlEntities(url) {
@@ -26,14 +30,23 @@ function getProductCdnBase(cdnBase) {
         return fromEnv.replace(/\/$/, "");
     return exports.DEFAULT_PRODUCT_CDN;
 }
+/** Static path served from apps/web/public/uploads (Amplify). */
+function staticUploadUrl(relativePath) {
+    const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
+    return `/uploads/${clean}`;
+}
 /** Build a CDN URL from a path under wp-content/uploads (e.g. 2026/03/photo.jpg). */
 function cdnUploadUrl(relativePath, cdnBase) {
     const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
     return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
+function imageDeliveryMode() {
+    const mode = (process.env.NEXT_PUBLIC_IMAGE_MODE ?? "static").trim().toLowerCase();
+    return mode === "cdn" ? "cdn" : "static";
+}
 /**
- * Rewrite legacy WordPress media URLs to the S3/CloudFront CDN.
- * WordPress is no longer hosted on halloweenready.com — wp-content paths 404 there.
+ * Rewrite legacy WordPress / CloudFront paths to a working URL.
+ * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
  */
 function resolveProductImageUrl(url, cdnBase) {
     if (!url)
@@ -41,16 +54,38 @@ function resolveProductImageUrl(url, cdnBase) {
     const trimmed = decodeUrlEntities(url.trim());
     if (!trimmed)
         return "";
-    const cdn = getProductCdnBase(cdnBase);
-    if (trimmed.startsWith(cdn))
+    if (trimmed.startsWith("/uploads/"))
         return trimmed;
+    const cdn = getProductCdnBase(cdnBase);
+    if (trimmed.startsWith(cdn)) {
+        const rel = trimmed.slice(cdn.length).replace(/^\/uploads\//, "");
+        return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : trimmed;
+    }
     const uploadsMatch = trimmed.match(/(?:cloudfront\.net\/uploads|wp-content\/uploads)\/(.+)$/i);
-    if (uploadsMatch)
-        return cdnUploadUrl(uploadsMatch[1], cdn);
+    if (uploadsMatch) {
+        const rel = uploadsMatch[1];
+        return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : cdnUploadUrl(rel, cdn);
+    }
     return trimmed.replace(/^http:\/\//i, "https://");
 }
 function resolveProductImageUrls(urls, cdnBase) {
     if (!urls?.length)
         return [];
     return urls.map((u) => resolveProductImageUrl(u, cdnBase)).filter(Boolean);
+}
+/** Extract path after uploads/ from any known product image URL. */
+function uploadsRelativePath(url) {
+    const m = decodeUrlEntities(url.trim()).match(/(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i);
+    return m ? m[1] : null;
+}
+/** Parse Amazon image id from WooCommerce filenames like imgi_55_61NF5mMYP7L._SL1500_.png */
+function amazonImageIdFromFilename(filename) {
+    const m = filename.match(/imgi_\d+_([A-Za-z0-9+-]+?)(?:[._-]|\.(?:png|jpe?g|webp))/i);
+    if (m)
+        return m[1];
+    const m2 = filename.match(/imgi_\d+_([A-Za-z0-9+-]{8,})/i);
+    return m2 ? m2[1] : null;
+}
+function amazonMediaUrl(imageId, size = "SL1500") {
+    return `https://m.media-amazon.com/images/I/${imageId}._${size}_.jpg`;
 }

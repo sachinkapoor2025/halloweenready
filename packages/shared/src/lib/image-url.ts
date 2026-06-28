@@ -23,26 +23,45 @@ export function getProductCdnBase(cdnBase?: string): string {
   return DEFAULT_PRODUCT_CDN;
 }
 
+/** Static path served from apps/web/public/uploads (Amplify). */
+export function staticUploadUrl(relativePath: string): string {
+  const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
+  return `/uploads/${clean}`;
+}
+
 /** Build a CDN URL from a path under wp-content/uploads (e.g. 2026/03/photo.jpg). */
 export function cdnUploadUrl(relativePath: string, cdnBase?: string): string {
   const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
   return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
 
+function imageDeliveryMode(): "static" | "cdn" {
+  const mode = (process.env.NEXT_PUBLIC_IMAGE_MODE ?? "static").trim().toLowerCase();
+  return mode === "cdn" ? "cdn" : "static";
+}
+
 /**
- * Rewrite legacy WordPress media URLs to the S3/CloudFront CDN.
- * WordPress is no longer hosted on halloweenready.com — wp-content paths 404 there.
+ * Rewrite legacy WordPress / CloudFront paths to a working URL.
+ * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
  */
 export function resolveProductImageUrl(url: string | undefined | null, cdnBase?: string): string {
   if (!url) return "";
   const trimmed = decodeUrlEntities(url.trim());
   if (!trimmed) return "";
 
+  if (trimmed.startsWith("/uploads/")) return trimmed;
+
   const cdn = getProductCdnBase(cdnBase);
-  if (trimmed.startsWith(cdn)) return trimmed;
+  if (trimmed.startsWith(cdn)) {
+    const rel = trimmed.slice(cdn.length).replace(/^\/uploads\//, "");
+    return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : trimmed;
+  }
 
   const uploadsMatch = trimmed.match(/(?:cloudfront\.net\/uploads|wp-content\/uploads)\/(.+)$/i);
-  if (uploadsMatch) return cdnUploadUrl(uploadsMatch[1], cdn);
+  if (uploadsMatch) {
+    const rel = uploadsMatch[1];
+    return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : cdnUploadUrl(rel, cdn);
+  }
 
   return trimmed.replace(/^http:\/\//i, "https://");
 }
@@ -53,4 +72,22 @@ export function resolveProductImageUrls(
 ): string[] {
   if (!urls?.length) return [];
   return urls.map((u) => resolveProductImageUrl(u, cdnBase)).filter(Boolean);
+}
+
+/** Extract path after uploads/ from any known product image URL. */
+export function uploadsRelativePath(url: string): string | null {
+  const m = decodeUrlEntities(url.trim()).match(/(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i);
+  return m ? m[1] : null;
+}
+
+/** Parse Amazon image id from WooCommerce filenames like imgi_55_61NF5mMYP7L._SL1500_.png */
+export function amazonImageIdFromFilename(filename: string): string | null {
+  const m = filename.match(/imgi_\d+_([A-Za-z0-9+-]+?)(?:[._-]|\.(?:png|jpe?g|webp))/i);
+  if (m) return m[1];
+  const m2 = filename.match(/imgi_\d+_([A-Za-z0-9+-]{8,})/i);
+  return m2 ? m2[1] : null;
+}
+
+export function amazonMediaUrl(imageId: string, size = "SL1500"): string {
+  return `https://m.media-amazon.com/images/I/${imageId}._${size}_.jpg`;
 }

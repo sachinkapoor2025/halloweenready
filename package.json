@@ -18,6 +18,7 @@
     "seed:inventory": "tsx scripts/seed-inventory.ts",
     "fix:seo-descriptions": "tsx scripts/fix-seo-descriptions.ts",
     "migrate:images": "tsx scripts/migrate-images-to-s3.ts",
+    "sync:public-uploads": "tsx scripts/sync-public-uploads.ts",
     "rewrite:product-images": "tsx scripts/rewrite-product-image-urls.ts",
     "migrate:multitable": "tsx scripts/migrate-to-multitable.ts",
     "setup:local": "npm run db:up && sleep 3 && npm run db:setup && npm run seed",
