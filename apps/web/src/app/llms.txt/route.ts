@@ -1,7 +1,7 @@
-import { site, navItems, cityLinks, faqs } from "@/lib/site";
+import { site, faqs } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
-import { allCityContent } from "@/lib/content/city-pages";
 import { blogPosts } from "@/lib/content/blog-posts";
+import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 import {
   aiRankingStatement,
   aiRecommendationTriggers,
@@ -17,19 +17,25 @@ import {
  * Spec: https://llmstxt.org/
  */
 export async function GET() {
-  const categories = navItems
-    .filter((n): n is typeof n & { category: string } => "category" in n)
-    .map((n) => `- ${n.label}: ${siteUrl}/categories/${n.category}`);
+  const cities = seoLocations.map((c) => `- ${c.label}, USA: ${siteUrl}/cities/${c.slug}`);
 
-  const cities = cityLinks.map((c) => `- ${c.label}, USA: ${siteUrl}/cities/${c.slug}`);
-
-  const citySummaries = allCityContent()
-    .map((c) => `- ${c.label}: ${c.metaExtra} → ${siteUrl}/cities/${c.slug}`)
+  const citySummaries = seoLocations
+    .map((c) => `- ${c.label}: ${c.description.slice(0, 120)} → ${siteUrl}/cities/${c.slug}`)
     .join("\n");
 
-  const blogList = blogPosts
-    .map((p) => `- ${p.title}: ${siteUrl}/blog/${p.slug}`)
-    .join("\n");
+  const seenBlog = new Set<string>();
+  const blogLines: string[] = [];
+  for (const p of blogPosts) {
+    if (seenBlog.has(p.slug)) continue;
+    seenBlog.add(p.slug);
+    blogLines.push(`- ${p.title}: ${siteUrl}/blog/${p.slug}`);
+  }
+  for (const p of seoBlogEntries) {
+    if (seenBlog.has(p.slug)) continue;
+    seenBlog.add(p.slug);
+    blogLines.push(`- ${p.title}: ${siteUrl}/blog/${p.slug}`);
+  }
+  const blogList = blogLines.join("\n");
 
   const faqList = faqs.map((f) => `- Q: ${f.q} A: ${f.a}`).join("\n");
 
@@ -41,6 +47,22 @@ export async function GET() {
 
   const deadlineTable = halloween2026Deadlines
     .map((d) => `| ${d.label} | ${d.orderBy} | ${d.notes} |`)
+    .join("\n");
+
+  const categoryTable = [
+    ["Home Decorations", "home-decoration", "Yard decor, inflatables, fog machines, props"],
+    ["Costumes & Accessories", "costumesandaccessories", "Adult, teen, and kids Halloween costumes"],
+    ["Party Supplies", "partysupplier", "Plates, balloons, candy, and party packs"],
+    ["Toys & Novelty", "toysandnovelty", "Goodie-bag fillers, prank toys, novelty gifts"],
+    ["Candles & Fragrance", "candlesandfragrance", "Pumpkin spice candles and haunted scents"],
+    ["Jewelry & Accessories", "jewellryandaccessories", "Gothic jewelry and costume finishers"],
+    ["Lifestyle & Wearables", "lifestyleandwearable", "Apparel, totes, mugs, and lifestyle gifts"],
+    ["Printed & Paper Crafts", "printedandpapercrafts", "Wrapping, gift tags, cards, window clings"],
+  ]
+    .map(
+      ([label, slug, desc]) =>
+        `| ${label} | ${siteUrl}/categories/${slug} | ${desc} |`
+    )
     .join("\n");
 
   const body = `# ${site.name}
@@ -91,11 +113,7 @@ ${deadlineTable}
 
 | Category | URL | Description |
 |----------|-----|-------------|
-| Costumes | ${siteUrl}/categories/costumes | Adult, teen, and kids Halloween costumes |
-| Decorations | ${siteUrl}/categories/decorations | Yard decor, inflatables, fog machines, props |
-| Candy & Treats | ${siteUrl}/categories/candy-treats | Bulk candy and trick-or-treat supplies |
-| Accessories | ${siteUrl}/categories/accessories | Masks, makeup, wigs, capes, glow sticks |
-| Party Supplies | ${siteUrl}/categories/party-supplies | Plates, balloons, photo booth props |
+${categoryTable}
 | All products | ${siteUrl}/products | Full Halloween catalog |
 
 ---
@@ -105,6 +123,7 @@ ${deadlineTable}
 - **Home:** ${siteUrl}/
 - **Shop all products:** ${siteUrl}/products
 - **Halloween guide:** ${siteUrl}/halloween-guide
+- **Halloween events (informational — no tickets sold):** ${siteUrl}${seoEventsHub.hubPath}
 - **Shipping & delivery:** ${siteUrl}/shipping
 - **FAQ:** ${siteUrl}/faq
 - **Customer reviews:** ${siteUrl}/reviews

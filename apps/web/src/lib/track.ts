@@ -30,6 +30,8 @@ let queue: QueuedEvent[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 let clientMeta: Record<string, string> | null = null;
 let geoPromise: Promise<void> | null = null;
+let pageEnteredAt = 0;
+let currentPath = "";
 
 function endpoint(): string {
   return `${getApiUrl()}/events`;
@@ -133,14 +135,78 @@ export function track(payload: TrackPayload): void {
   scheduleFlush(payload.immediate);
 }
 
-export const trackPageView = (path?: string) =>
+/** Record time spent on the current page (called before navigation or tab close). */
+export function trackPageLeave(path?: string): void {
+  if (typeof window === "undefined" || !pageEnteredAt) return;
+  const durationMs = Date.now() - pageEnteredAt;
+  if (durationMs < 500) return;
+
+  track({
+    type: EVENT_TYPES.SESSION_PING,
+    path: path ?? currentPath,
+    metadata: { durationMs: String(durationMs) },
+    immediate: true,
+  });
+}
+
+/**
+ * Heartbeat for engagement milestones (e.g. Discount of the Day shown after 10s).
+ * Ensures admin visitor duration is at least `minDurationMs` when the event fires.
+ */
+export function trackSessionHeartbeat(
+  reason: string,
+  minDurationMs = 0,
+  path?: string
+): void {
+  if (typeof window === "undefined") return;
+  const elapsed = pageEnteredAt ? Date.now() - pageEnteredAt : minDurationMs;
+  const durationMs = Math.max(elapsed, minDurationMs);
+  if (durationMs < 500) return;
+
+  track({
+    type: EVENT_TYPES.SESSION_PING,
+    path: path ?? currentPath ?? window.location.pathname,
+    metadata: {
+      durationMs: String(durationMs),
+      reason,
+      // Floor mode: admin duration should be at least this, not summed on top of leave pings
+      durationMode: reason === "daily_deal_shown" ? "floor" : "add",
+    },
+    immediate: true,
+  });
+}
+
+export function beginPageTiming(path?: string): void {
+  if (typeof window === "undefined") return;
+  currentPath = path ?? window.location.pathname + window.location.search;
+  pageEnteredAt = Date.now();
+}
+
+export const trackPageView = (path?: string) => {
+  getClientMetadata();
   track({ type: EVENT_TYPES.PAGE_VIEW, path, immediate: true });
+  beginPageTiming(path);
+};
 export const trackProductView = (productSlug: string) =>
   track({ type: EVENT_TYPES.PRODUCT_VIEW, productSlug });
 export const trackSearch = (query: string, resultCount: number) =>
   track({ type: EVENT_TYPES.SEARCH, query, resultCount });
-export const trackCartAdd = (productSlug: string, value?: number) =>
-  track({ type: EVENT_TYPES.CART_ADD, productSlug, value });
+export const trackCartAdd = (
+  productSlug: string,
+  value?: number,
+  contact?: { name?: string; email?: string; phone?: string }
+) =>
+  track({
+    type: EVENT_TYPES.CART_ADD,
+    productSlug,
+    value,
+    metadata: {
+      ...(contact?.name?.trim() ? { name: contact.name.trim() } : {}),
+      ...(contact?.email?.trim() ? { email: contact.email.trim() } : {}),
+      ...(contact?.phone?.trim() ? { phone: contact.phone.trim() } : {}),
+    },
+    immediate: true,
+  });
 export const trackCartRemove = (productSlug: string) =>
   track({ type: EVENT_TYPES.CART_REMOVE, productSlug });
 export const trackCheckoutStart = (value?: number) =>
@@ -150,6 +216,7 @@ declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
     gtag?: (...args: unknown[]) => void;
+    gtagSendEvent?: (url: string) => boolean;
     fbq?: (...args: unknown[]) => void;
     uetq?: unknown[] & { push: (...args: unknown[]) => void };
   }
@@ -178,6 +245,12 @@ function pushPurchaseToAdPixels(value: number, metadata?: Record<string, string>
 
   try {
     window.gtag?.("event", "purchase", payload);
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    window.gtag?.("event", "conversion_event_purchase_2", payload);
   } catch {
     /* ignore */
   }

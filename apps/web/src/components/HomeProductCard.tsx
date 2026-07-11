@@ -22,7 +22,7 @@ export function HomeProductCard({
   const fastSelling = showFastSellingBadge || isFastSelling(product);
 
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow relative flex h-full flex-col">
+    <div className="card-spooky overflow-hidden relative flex h-full flex-col">
       {discount !== null && (
         <span className="absolute top-3 left-3 z-10 bg-nav text-white text-xs font-bold px-2 py-1 rounded">
           {discount}% OFF

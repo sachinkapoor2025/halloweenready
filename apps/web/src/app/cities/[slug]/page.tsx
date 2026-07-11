@@ -6,8 +6,13 @@ import { HomeProductCard } from "@/components/HomeProductCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CityContentSection } from "@/components/CityContentSection";
 import { JsonLd } from "@/components/JsonLd";
-import { cityLinks, site } from "@/lib/site";
+import { cityLinks } from "@/lib/site";
 import { getCityContent } from "@/lib/content/city-pages";
+import {
+  allSeoLocationSlugs,
+  cityKeywordsMeta,
+  getSeoLocation,
+} from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
 import type { Product } from "@halloweenready/shared";
@@ -17,29 +22,27 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return cityLinks.map((c) => ({ slug: c.slug }));
+  return allSeoLocationSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const city = cityLinks.find((c) => c.slug === slug);
-  const content = getCityContent(slug);
-  if (!city) return { title: "City" };
+  const loc = getSeoLocation(slug);
+  if (!loc) return { title: "City" };
   return pageMetadata({
-    title: `Shop Halloween to ${city.label} USA | Fast Delivery`,
-    description:
-      content?.metaExtra ??
-      `Shop Halloween to ${city.label}, USA with ${site.name}. Premium Halloween items, 5–7 day delivery, roli chawal included. Order from India worldwide.`,
+    title: loc.title,
+    description: loc.description,
     path: `/cities/${slug}`,
-    keywords: `halloween costumes ${city.label}, Halloween delivery ${city.label}, halloween decor ${city.label}, trick or treat ${city.label}, HalloweenReady, halloweenready.com`,
+    keywords: cityKeywordsMeta(slug),
+    absoluteTitle: true,
   });
 }
 
 export default async function CityPage({ params }: Props) {
   const { slug } = await params;
-  const city = cityLinks.find((c) => c.slug === slug);
+  const loc = getSeoLocation(slug);
   const content = getCityContent(slug);
-  if (!city || !content) notFound();
+  if (!loc || !content) notFound();
 
   let products: Product[] = [];
   try {
@@ -53,7 +56,7 @@ export default async function CityPage({ params }: Props) {
 
   const crumbs = [
     { label: "Home", href: "/" },
-    { label: `Halloween to ${city.label}` },
+    { label: `Halloween to ${loc.label}` },
   ];
 
   return (
@@ -62,14 +65,14 @@ export default async function CityPage({ params }: Props) {
         data={[
           breadcrumbJsonLd(crumbs.map((c) => ({ name: c.label, path: c.href ?? `/cities/${slug}` }))),
           faqJsonLd(content.faqs),
-          serviceAreaJsonLd({ label: city.label, slug, state: content.state }),
+          serviceAreaJsonLd({ label: loc.label, slug, state: content.state }),
         ]}
       />
       <Breadcrumbs items={crumbs} />
-      <h1 className="text-3xl font-bold text-primary mb-2">Shop Halloween to {city.label}, USA</h1>
+      <h1 className="text-3xl font-bold text-primary mb-2">{content.headline || loc.h1}</h1>
       <p className="text-slate-600 mb-8 max-w-3xl">
-        Premium Halloween delivery to {city.label} in 5–7 business days. Order from India, UK, Canada, or
-        anywhere — we ship domestically within America.
+        Premium Halloween delivery to {loc.label} in 2–5 business days. Shop from anywhere in the USA —
+        we ship domestically so your order arrives before October 31.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

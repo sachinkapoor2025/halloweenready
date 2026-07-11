@@ -22,7 +22,7 @@ exports.checkoutSchema = zod_1.z.object({
     checkoutCurrency: zod_1.z.enum(["USD", "INR"]).optional(),
     /** Live USD→INR rate shown to the customer (optional; server validates). */
     usdInrRate: zod_1.z.number().positive().max(200).optional(),
-    /** Welcome or promo coupon (e.g. RAKHI-ABC123). */
+    /** Welcome or promo coupon (e.g. BOO-ABC123). */
     couponCode: zod_1.z.string().min(4).max(32).optional(),
 });
 const orderStatusEnum = zod_1.z.enum([

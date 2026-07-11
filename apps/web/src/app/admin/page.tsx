@@ -98,10 +98,10 @@ export default function AdminDashboard() {
             <section className="bg-white border rounded-xl p-5">
               <h2 className="font-semibold mb-1">Traffic ({days}d)</h2>
               <p className="text-xs text-slate-500 mb-4">Daily page views and purchases</p>
-              <BarChart data={trafficChart} showSecondary height={180} />
+              <BarChart data={trafficChart} showSecondary height={180} primaryColor="#ff6b00" />
               <ChartLegend
                 items={[
-                  { color: "#183a68", label: "Page views" },
+                  { color: "#ff6b00", label: "Page views" },
                   { color: "#16a34a", label: "Purchases" },
                 ]}
               />
@@ -113,6 +113,7 @@ export default function AdminDashboard() {
               <AreaChart
                 data={(data?.trafficByDay ?? []).map((d) => ({ label: d.day, value: d.pageViews }))}
                 height={180}
+                color="#ff6b00"
               />
             </section>
 
@@ -148,7 +149,7 @@ export default function AdminDashboard() {
           { href: "/admin/products", title: "Products", desc: "Add, edit, bulk upload" },
           { href: "/admin/categories", title: "Categories", desc: "Organize catalog" },
           { href: "/admin/leads", title: "Customer Leads", desc: "Partial captures" },
-          { href: "/admin/welcome-leads", title: "Welcome Email Leads", desc: "10% coupon signups" },
+          { href: "/admin/welcome-leads", title: "Discount of the Day", desc: "Spin-wheel coupon signups" },
           { href: "/admin/payments", title: "Payment Config", desc: "Stripe / Razorpay" },
         ].map((item) => (
           <Link

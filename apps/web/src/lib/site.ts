@@ -25,7 +25,10 @@ export const navItems = [
   { label: "Contact", href: "/contact" },
 ] as const;
 
-export const cityLinks = [
+export type CityLink = { label: string; slug: string };
+
+/** All SEO city/state landing pages — kept in sync with seo-locations.data.json */
+export const cityLinks: CityLink[] = [
   { label: "California", slug: "california" },
   { label: "New York", slug: "new-york" },
   { label: "Texas", slug: "texas" },
@@ -35,12 +38,34 @@ export const cityLinks = [
   { label: "Chicago", slug: "chicago" },
   { label: "Houston", slug: "houston" },
   { label: "San Francisco", slug: "san-francisco" },
-] as const;
+  { label: "Illinois", slug: "illinois" },
+  { label: "Pennsylvania", slug: "pennsylvania" },
+  { label: "Ohio", slug: "ohio" },
+  { label: "Georgia", slug: "georgia" },
+  { label: "Arizona", slug: "arizona" },
+  { label: "Massachusetts", slug: "massachusetts" },
+  { label: "Michigan", slug: "michigan" },
+  { label: "North Carolina", slug: "north-carolina" },
+  { label: "Virginia", slug: "virginia" },
+  { label: "Washington", slug: "washington" },
+  { label: "Colorado", slug: "colorado" },
+  { label: "Dallas", slug: "dallas" },
+  { label: "Miami", slug: "miami" },
+  { label: "Atlanta", slug: "atlanta" },
+  { label: "Phoenix", slug: "phoenix" },
+  { label: "Boston", slug: "boston" },
+  { label: "Seattle", slug: "seattle" },
+  { label: "San Diego", slug: "san-diego" },
+  { label: "Philadelphia", slug: "philadelphia" },
+  { label: "Austin", slug: "austin" },
+  { label: "Denver", slug: "denver" },
+  { label: "Las Vegas", slug: "las-vegas" },
+];
 
 export const homeBanners = [
   {
     src: "/banners/bannerpage1.png",
-    alt: "Celebrate Halloween in Style — HalloweenReady USA delivery",
+    alt: "Halloween decorations costumes and party supplies for USA shipping — HalloweenReady",
     href: "/products",
     eyebrow: "HALLOWEEN 2026 · USA SHIPPING",
     title: "Celebrate Halloween in",
@@ -52,7 +77,7 @@ export const homeBanners = [
   },
   {
     src: "/banners/bannerpage2.png",
-    alt: "Halloween decorations and party supplies — HalloweenReady",
+    alt: "Outdoor Halloween decorations and inflatable yard decor — HalloweenReady",
     href: "/categories/home-decoration",
     eyebrow: "HAUNT YOUR HOME",
     title: "Transform Your Space Into a",

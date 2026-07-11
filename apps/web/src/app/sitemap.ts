@@ -2,8 +2,39 @@ import type { MetadataRoute } from "next";
 import { api } from "@/lib/api";
 import type { Product } from "@halloweenready/shared";
 import { siteUrl } from "@/lib/env";
-import { cityLinks, categoryOrder } from "@/lib/site";
+import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
+import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
+
+/** Handwritten + SEO blog posts, deduped by slug. */
+function mergedBlogRoutes(): MetadataRoute.Sitemap {
+  const seen = new Set<string>();
+  const routes: MetadataRoute.Sitemap = [];
+
+  for (const p of blogPosts) {
+    if (seen.has(p.slug)) continue;
+    seen.add(p.slug);
+    routes.push({
+      url: `${siteUrl}/blog/${p.slug}`,
+      lastModified: new Date(p.updatedAt),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    });
+  }
+
+  for (const p of seoBlogEntries) {
+    if (seen.has(p.slug)) continue;
+    seen.add(p.slug);
+    routes.push({
+      url: `${siteUrl}/blog/${p.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    });
+  }
+
+  return routes;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -15,6 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/shipping`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/halloween-guide`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    {
+      url: `${siteUrl}${seoEventsHub.hubPath}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     { url: `${siteUrl}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
@@ -33,19 +70,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const cityRoutes = cityLinks.map((c) => ({
-    url: `${siteUrl}/cities/${c.slug}`,
+  const cityRoutes = allSeoLocationSlugs().map((slug) => ({
+    url: `${siteUrl}/cities/${slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.75,
   }));
 
-  const blogRoutes = blogPosts.map((p) => ({
-    url: `${siteUrl}/blog/${p.slug}`,
-    lastModified: new Date(p.updatedAt),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  const blogRoutes = mergedBlogRoutes();
 
   try {
     const productsData = await api<{ products: Product[] }>("/products");

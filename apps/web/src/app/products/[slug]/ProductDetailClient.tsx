@@ -53,7 +53,7 @@ function ShareButton({ title, url }: { title: string; url: string }) {
       onClick={() => void share()}
       aria-label="Share product"
       title={copied ? "Link copied!" : "Share"}
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded border-2 border-nav bg-white text-nav hover:bg-blue-50 transition active:scale-95"
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded border-2 border-nav bg-white text-nav hover:bg-orange-50 transition active:scale-95"
     >
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} aria-hidden>
         <path

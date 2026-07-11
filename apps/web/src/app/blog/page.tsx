@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { blogPosts } from "@/lib/content/blog-posts";
+import { listAllBlogPosts } from "@/lib/content/seo-blog";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -12,6 +12,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function BlogPage() {
+  const posts = listAllBlogPosts();
   return (
     <div className="max-w-5xl mx-auto px-4 py-12 overflow-x-hidden">
       <h1 className="text-3xl font-bold text-primary mb-2">Halloween Guides & Blog</h1>
@@ -20,7 +21,7 @@ export default function BlogPage() {
         HalloweenReady.
       </p>
       <div className="grid gap-6 sm:grid-cols-2">
-        {blogPosts.map((post) => (
+        {posts.map((post) => (
           <article
             key={post.slug}
             className="border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition bg-white flex flex-col"

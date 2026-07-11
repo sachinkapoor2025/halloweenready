@@ -15,28 +15,28 @@ export declare const accountAddressSchema: z.ZodObject<{
     isDefault: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
     id: string;
     isDefault: boolean;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
     label?: string | undefined;
 }, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
     id: string;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
     label?: string | undefined;
     isDefault?: boolean | undefined;
 }>;
@@ -87,26 +87,26 @@ export declare const accountAddressInputSchema: z.ZodObject<{
     isDefault: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
     label?: string | undefined;
     isDefault?: boolean | undefined;
 }, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
     label?: string | undefined;
     isDefault?: boolean | undefined;
 }>;
@@ -125,26 +125,26 @@ export declare const accountAddressUpdateSchema: z.ZodObject<{
     isDefault: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     name?: string | undefined;
+    email?: string | undefined;
+    phone?: string | undefined;
     line1?: string | undefined;
     line2?: string | undefined;
     city?: string | undefined;
     state?: string | undefined;
     postalCode?: string | undefined;
     country?: string | undefined;
-    phone?: string | undefined;
-    email?: string | undefined;
     label?: string | undefined;
     isDefault?: boolean | undefined;
 }, {
     name?: string | undefined;
+    email?: string | undefined;
+    phone?: string | undefined;
     line1?: string | undefined;
     line2?: string | undefined;
     city?: string | undefined;
     state?: string | undefined;
     postalCode?: string | undefined;
     country?: string | undefined;
-    phone?: string | undefined;
-    email?: string | undefined;
     label?: string | undefined;
     isDefault?: boolean | undefined;
 }>;

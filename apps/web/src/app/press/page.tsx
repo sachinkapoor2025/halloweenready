@@ -24,20 +24,20 @@ export default function PressPage() {
         <section>
           <h2 className="text-xl font-bold text-primary mb-3">About {site.name}</h2>
           <p>
-            {site.name} ({siteUrl}) is a dedicated online Halloween store operated by Divit Global Ventures, helping
-            sisters worldwide send Halloween products to brothers across all 50 US states. Domestic US fulfillment
-            delivers in 5–7 business days — sisters order from India, UK, Canada, Australia, and worldwide.
+            {site.name} ({siteUrl}) is a dedicated online Halloween store operated by Divit Global Ventures, shipping
+            Halloween decorations, costumes, and party supplies across all 50 US states. Domestic US fulfillment
+            delivers in 5–7 business days — shoppers order from the USA and worldwide.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-primary mb-3">Key facts</h2>
           <ul className="list-disc pl-5 space-y-2 text-sm">
-            <li>126+ Halloween designs across Single, Combo, Kids, Bhaiya Bhabhi, and Lumba categories</li>
+            <li>99+ Halloween products across decor, costumes, party supplies, and novelty</li>
             <li>USA domestic shipping to all 50 states in 5–7 business days</li>
-            <li>Halloween 2026: August 28, 2026</li>
+            <li>Halloween 2026: October 31, 2026</li>
             <li>Payments: Stripe (USD) and Razorpay (INR)</li>
-            <li>Fulfillment: San Jose, CA area — US domestic delivery</li>
+            <li>Fulfillment: California-based US domestic delivery</li>
           </ul>
         </section>
 
@@ -56,9 +56,9 @@ export default function PressPage() {
         <section>
           <h2 className="text-xl font-bold text-primary mb-3">Suggested story angles</h2>
           <ul className="list-disc pl-5 space-y-2 text-sm">
-            <li>First dedicated Halloween-to-USA e-commerce platform for the NRI diaspora</li>
-            <li>How sisters in India bridge distance for Halloween with same-week US delivery</li>
-            <li>Halloween combos with premium chocolates — modern gifting for NRI families</li>
+            <li>Dedicated Halloween e-commerce with fast USA domestic shipping</li>
+            <li>How families prep haunted yards and parties with same-week delivery</li>
+            <li>Premium Halloween decor and costumes for 2026 season shopping</li>
           </ul>
         </section>
 

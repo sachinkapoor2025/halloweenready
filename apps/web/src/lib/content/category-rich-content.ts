@@ -1,4 +1,5 @@
 /** Rich SEO layout content for category pages (mirrors city page structure). */
+import { productKeywordsForCategory } from "./seo-data";
 
 export interface CategoryRichContent {
   slug: string;
@@ -14,24 +15,127 @@ export interface CategoryRichContent {
 }
 
 const relatedAll = [
-  { label: "Costumes", href: "/categories/costumes", text: "Adult and kids Halloween costumes." },
-  { label: "Decorations", href: "/categories/decorations", text: "Yard decor, inflatables, and haunted props." },
-  { label: "Candy & Treats", href: "/categories/candy-treats", text: "Bulk candy and treat bags." },
-  { label: "Accessories", href: "/categories/accessories", text: "Masks, makeup, and costume finishing touches." },
-  { label: "Party Supplies", href: "/categories/party-supplies", text: "Plates, balloons, and party packs." },
+  {
+    label: "Home Decorations",
+    href: "/categories/home-decoration",
+    text: "Yard decor, inflatables, and haunted indoor props.",
+  },
+  {
+    label: "Costumes & Accessories",
+    href: "/categories/costumesandaccessories",
+    text: "Adult, kids, and group Halloween costumes.",
+  },
+  {
+    label: "Party Supplies",
+    href: "/categories/partysupplier",
+    text: "Tableware, balloons, candy, and party packs.",
+  },
+  {
+    label: "Toys & Novelty",
+    href: "/categories/toysandnovelty",
+    text: "Goodie-bag fillers, prank toys, and spooky gifts.",
+  },
+  {
+    label: "Candles & Fragrance",
+    href: "/categories/candlesandfragrance",
+    text: "Pumpkin spice candles and haunted house scents.",
+  },
+  {
+    label: "Jewelry & Accessories",
+    href: "/categories/jewellryandaccessories",
+    text: "Gothic jewelry and costume finishing touches.",
+  },
+  {
+    label: "Lifestyle & Wearables",
+    href: "/categories/lifestyleandwearable",
+    text: "Halloween apparel, totes, and everyday gifts.",
+  },
+  {
+    label: "Printed & Paper Crafts",
+    href: "/categories/printedandpapercrafts",
+    text: "Wrapping paper, gift tags, cards, and window clings.",
+  },
 ];
 
 function relatedExcept(slug: string) {
-  return relatedAll.filter((c) => !c.href.endsWith(slug));
+  return relatedAll.filter((c) => !c.href.endsWith(`/${slug}`)).slice(0, 4);
+}
+
+function topKeywordPhrase(slug: string): string {
+  const kws = productKeywordsForCategory(slug).slice(0, 3);
+  if (kws.length === 0) return "Halloween essentials";
+  if (kws.length === 1) return kws[0];
+  if (kws.length === 2) return `${kws[0]} and ${kws[1]}`;
+  return `${kws[0]}, ${kws[1]}, and ${kws[2]}`;
 }
 
 export const categoryRichContent: Record<string, CategoryRichContent> = {
-  costumes: {
-    slug: "costumes",
+  "home-decoration": {
+    slug: "home-decoration",
+    headline: "Halloween Decorations — Yard & Indoor Props | USA Shipping",
+    intro: [
+      `Shop ${topKeywordPhrase("home-decoration")} for haunted homes and yard displays. Inflatables, LED pumpkins, skeletons, and fog machines ship fast across all 50 US states.`,
+      "Indoor and outdoor decor ships from domestic warehouses — order by October 25 to set up before trick-or-treat night.",
+    ],
+    delivery: {
+      heading: "Halloween Decor Delivery",
+      paragraphs: [
+        "Decor items ship in 2–5 business days nationwide. Large inflatables include stakes and blowers unless noted otherwise.",
+        "Popular destinations include California, Texas, Florida, New York, and Illinois — with delivery to every US state.",
+      ],
+    },
+    highlights: {
+      heading: "Top Decoration Picks",
+      items: [
+        "Inflatable yard ghosts and pumpkins with LED lights",
+        "LED pumpkin pathway stakes and string lights",
+        "Fog machines for indoor or covered outdoor haunts",
+        "Life-size skeleton and graveyard prop sets",
+        "Reusable window spider web clings and banners",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Decor at HalloweenReady",
+      bullets: [
+        "Indoor and outdoor options in one catalog",
+        "Fast domestic USA shipping",
+        "Quality props that last multiple seasons",
+        "Bundle decor with costumes and party supplies",
+      ],
+    },
+    howTo: {
+      heading: "Tips for Halloween Home Decor",
+      steps: [
+        "Start with a focal piece — inflatable or graveyard set.",
+        "Add pathway lighting for safety and atmosphere.",
+        "Use fog machines indoors or in covered outdoor areas.",
+        "Layer window clings and smaller props for detail.",
+        "Order by Oct 25 for setup time before Halloween.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Where can I buy outdoor Halloween decorations online with USA shipping?",
+        a: "HalloweenReady ships outdoor yard decor — inflatables, tombstones, and LED stakes — to all 50 US states with domestic fulfillment.",
+      },
+      {
+        q: "Do inflatable Halloween decorations include stakes and blowers?",
+        a: "Yes. Our inflatables typically include stakes, tethers, and blower units unless a product page notes otherwise.",
+      },
+      {
+        q: "When should I order Halloween yard decor for Halloween 2026?",
+        a: "Order by October 25, 2026 for guaranteed pre-Halloween delivery so you have time to set up your display.",
+      },
+    ],
+    relatedCategories: relatedExcept("home-decoration"),
+  },
+
+  costumesandaccessories: {
+    slug: "costumesandaccessories",
     headline: "Halloween Costumes — Adult & Kids | USA Delivery",
     intro: [
-      "Shop premium Halloween costumes for adults, teens, and kids. From classic vampires and witches to skeleton bodysuits and pirate captains — find the perfect look for Halloween 2026.",
-      "Order online from anywhere worldwide. Enter your US shipping address at checkout and we deliver domestically within America in 2–5 business days.",
+      `Browse ${topKeywordPhrase("costumesandaccessories")} for parties, trick-or-treat, and group looks. From classic vampires and witches to pop-culture sets — find your Halloween 2026 outfit here.`,
+      "Order online from anywhere. Enter your US shipping address at checkout and we deliver domestically within America in 2–5 business days.",
     ],
     delivery: {
       heading: "Costume Delivery Across the USA",
@@ -46,7 +150,7 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
         "Adult horror classics — vampires, witches, skeletons",
         "Kids costumes — werewolves, superheroes, cartoons",
         "Group and couple costumes — pirates, zombies, haunted themes",
-        "Last-minute bodysuits and capes — fast shipping options",
+        "Last-minute bodysuits, capes, and accessory kits",
       ],
     },
     whyUs: {
@@ -71,203 +175,43 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
     },
     faqs: [
       {
-        q: "Do you sell adult and kids costumes?",
-        a: "Yes. We carry adult, teen, kids, and toddler costume sizes across many themes.",
+        q: "Can I order adult and kids Halloween costumes online for USA delivery?",
+        a: "Yes. We carry adult, teen, kids, and toddler sizes across classic horror, funny, and group themes with domestic US shipping.",
       },
       {
-        q: "How early should I order a Halloween costume?",
-        a: "Order by October 20, 2026 for guaranteed delivery before Halloween night.",
+        q: "How early should I buy a Halloween costume for Halloween 2026?",
+        a: "Order by October 20, 2026 for guaranteed delivery before Halloween night — popular sizes sell out mid-October.",
+      },
+      {
+        q: "Do you sell last-minute Halloween costume delivery in the USA?",
+        a: "Yes. Many costumes and accessories ship in 2–5 business days nationwide. Order ASAP in late October for the best chance of arrival before Oct 31.",
       },
     ],
-    relatedCategories: relatedExcept("costumes"),
+    relatedCategories: relatedExcept("costumesandaccessories"),
   },
-  decorations: {
-    slug: "decorations",
-    headline: "Halloween Decorations — Yard & Indoor Props | USA Shipping",
+
+  partysupplier: {
+    slug: "partysupplier",
+    headline: "Halloween Party Supplies — Tableware, Balloons & Candy",
     intro: [
-      "Create a haunted home with inflatable ghosts, LED pumpkin lights, fog machines, skeleton graveyard sets, and spider web clings.",
-      "Indoor and outdoor decor ships fast across all 50 US states from domestic warehouses.",
-    ],
-    delivery: {
-      heading: "Halloween Decor Delivery",
-      paragraphs: [
-        "Decor items ship in 2–5 business days nationwide. Large inflatables include stakes and blowers.",
-        "Order yard decor by October 25 to set up before trick-or-treat night.",
-      ],
-    },
-    highlights: {
-      heading: "Top Decoration Picks",
-      items: [
-        "12ft inflatable ghosts with LED lights",
-        "LED pumpkin pathway stakes",
-        "Fog machines with remote control",
-        "Skeleton graveyard prop sets",
-        "Reusable window spider web clings",
-      ],
-    },
-    whyUs: {
-      heading: "Why Shop Decor at HalloweenReady",
-      bullets: [
-        "Indoor and outdoor options",
-        "Fast domestic USA shipping",
-        "Quality props that last multiple seasons",
-        "Bundle decor with costumes in one order",
-      ],
-    },
-    howTo: {
-      heading: "Tips for Halloween Home Decor",
-      steps: [
-        "Start with a focal piece — inflatable or graveyard set.",
-        "Add pathway lighting for safety and atmosphere.",
-        "Use fog machines indoors or in covered outdoor areas.",
-        "Layer window clings and smaller props for detail.",
-        "Order by Oct 25 for setup time before Halloween.",
-      ],
-    },
-    faqs: [
-      {
-        q: "Do inflatables include everything needed?",
-        a: "Yes. Our inflatables include stakes, tethers, and blower units unless noted otherwise.",
-      },
-      {
-        q: "Can I use fog machines outdoors?",
-        a: "Yes, in covered or wind-sheltered areas. Check product specs for outdoor suitability.",
-      },
-    ],
-    relatedCategories: relatedExcept("decorations"),
-  },
-  "candy-treats": {
-    slug: "candy-treats",
-    headline: "Halloween Candy & Treats — Bulk Assortments | USA Delivery",
-    intro: [
-      "Stock up for trick-or-treat with bulk candy assortments, chocolate variety packs, gummy mixes, and pre-filled treat bags.",
-      "Fresh candy shipped domestically across all 50 US states — order before October 25 for Halloween night.",
-    ],
-    delivery: {
-      heading: "Candy Delivery for Halloween",
-      paragraphs: [
-        "Candy orders ship in 2–5 business days. Bulk packs are sealed for freshness.",
-        "Ideal for home bowls, school events, and office Halloween parties.",
-      ],
-    },
-    highlights: {
-      heading: "Popular Candy Options",
-      items: [
-        "5 lb mixed Halloween candy assortments",
-        "Chocolate mini bar variety packs",
-        "Gummy worms and bats mixes",
-        "Pre-filled treat bags for trick-or-treat",
-        "Limited edition seasonal candy",
-      ],
-    },
-    whyUs: {
-      heading: "Why Buy Candy from HalloweenReady",
-      bullets: [
-        "Bulk options for trick-or-treat",
-        "Fresh, well-packed shipments",
-        "Nut-free options available",
-        "Combine with costumes and decor in one order",
-      ],
-    },
-    howTo: {
-      heading: "Trick-or-Treat Planning Tips",
-      steps: [
-        "Estimate 2–3 pieces per expected visitor.",
-        "Order bulk assortments for variety.",
-        "Add pre-filled bags for quick handouts.",
-        "Store candy in a cool, dry place until Halloween.",
-        "Order by Oct 25 for delivery before Oct 31.",
-      ],
-    },
-    faqs: [
-      {
-        q: "Do you sell bulk Halloween candy?",
-        a: "Yes. Shop 3 lb and 5 lb assortments plus variety packs for trick-or-treat.",
-      },
-      {
-        q: "Is the candy fresh?",
-        a: "We ship sealed bulk packs from US fulfillment centers for maximum freshness.",
-      },
-    ],
-    relatedCategories: relatedExcept("candy-treats"),
-  },
-  accessories: {
-    slug: "accessories",
-    headline: "Halloween Accessories — Masks, Makeup & More",
-    intro: [
-      "Complete your costume with latex masks, witch hats, face paint palettes, glow sticks, and universal capes.",
-      "Accessories ship fast with costumes and decor — one order, one delivery.",
-    ],
-    delivery: {
-      heading: "Accessory Delivery",
-      paragraphs: [
-        "Small accessories ship quickly in 2–5 business days to all US states.",
-        "Pair accessories with costumes for a complete Halloween look.",
-      ],
-    },
-    highlights: {
-      heading: "Top Accessories",
-      items: [
-        "Realistic latex horror masks",
-        "Face paint and glitter palettes",
-        "Witch hats and broom kits",
-        "Glow stick safety necklaces",
-        "Universal black hooded capes",
-      ],
-    },
-    whyUs: {
-      heading: "Why Shop Accessories Here",
-      bullets: [
-        "Finish any costume with one stop",
-        "Quality masks and makeup kits",
-        "Glow sticks for trick-or-treat safety",
-        "Fast USA shipping",
-      ],
-    },
-    howTo: {
-      heading: "How to Choose Accessories",
-      steps: [
-        "Start with your base costume.",
-        "Add a mask or face paint for impact.",
-        "Include hat or cape if needed.",
-        "Grab glow sticks for outdoor trick-or-treat.",
-        "Checkout with domestic USA shipping.",
-      ],
-    },
-    faqs: [
-      {
-        q: "Are face paints safe for skin?",
-        a: "Our palettes use cosmetic-grade face paint suitable for Halloween makeup.",
-      },
-      {
-        q: "Do masks fit most adults?",
-        a: "Most latex masks are one-size with elastic straps. Check product descriptions for details.",
-      },
-    ],
-    relatedCategories: relatedExcept("accessories"),
-  },
-  "party-supplies": {
-    slug: "party-supplies",
-    headline: "Halloween Party Supplies — Tableware & Decor",
-    intro: [
-      "Host a haunted party with themed tableware, balloon garlands, treat buckets, photo booth props, and complete party packs.",
-      "Party supplies delivered across the USA in time for your Halloween celebration.",
+      `Host a haunted party with ${topKeywordPhrase("partysupplier")}. Themed tableware, balloon garlands, treat bowls, and photo booth props ship across the USA.`,
+      "Bundle plates, candy, and decor in one order for a single domestic delivery before your Halloween celebration.",
     ],
     delivery: {
       heading: "Party Supply Delivery",
       paragraphs: [
-        "Party packs and individual supplies ship in 2–5 business days.",
+        "Party packs and individual supplies ship in 2–5 business days to all 50 states.",
         "Order by October 25 for pre-Halloween party setup.",
       ],
     },
     highlights: {
       heading: "Party Must-Haves",
       items: [
-        "Haunted mansion party packs (serves 16)",
+        "Haunted mansion party packs for groups",
         "Orange and black balloon garland kits",
-        "Trick-or-treat bucket 4-packs",
-        "Table runners and placemat sets",
-        "Photo booth prop sets",
+        "Trick-or-treat buckets and candy bowls",
+        "Table runners, plates, cups, and napkins",
+        "Photo booth prop sets for guests",
       ],
     },
     whyUs: {
@@ -275,7 +219,7 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
       bullets: [
         "Complete party packs for easy setup",
         "Themed tableware and decor",
-        "Photo booth props for memorable parties",
+        "Candy and treat options in the same catalog",
         "Fast domestic shipping",
       ],
     },
@@ -291,15 +235,319 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
     },
     faqs: [
       {
-        q: "Do party packs include everything?",
-        a: "Party packs include plates, cups, napkins, tablecloth, and banner for the listed guest count.",
+        q: "Where can I buy Halloween party supplies with USA delivery?",
+        a: "Shop tableware, balloons, candy bowls, and party packs at HalloweenReady — we ship to all 50 US states with domestic fulfillment.",
       },
       {
-        q: "Can I combine party supplies with costumes?",
+        q: "Do Halloween party packs include plates and cups?",
+        a: "Most party packs include plates, cups, napkins, a tablecloth or runner, and a banner for the listed guest count — check each product page for details.",
+      },
+      {
+        q: "Can I combine party supplies with costumes in one order?",
         a: "Yes. Add everything to one cart for a single USA delivery.",
       },
     ],
-    relatedCategories: relatedExcept("party-supplies"),
+    relatedCategories: relatedExcept("partysupplier"),
+  },
+
+  toysandnovelty: {
+    slug: "toysandnovelty",
+    headline: "Halloween Toys & Novelty Gifts | Fast USA Shipping",
+    intro: [
+      `Stock goodie bags and party favors with ${topKeywordPhrase("toysandnovelty")}. Spooky fidget toys, prank props, and novelty gifts ship fast nationwide.`,
+      "Ideal for classroom treats, office parties, and trick-or-treat fillers — order ahead for Halloween 2026.",
+    ],
+    delivery: {
+      heading: "Novelty Toy Delivery",
+      paragraphs: [
+        "Toys and novelty items ship in 2–5 business days across all 50 US states.",
+        "Bulk filler packs are popular in October — order early for school and community events.",
+      ],
+    },
+    highlights: {
+      heading: "Popular Novelty Picks",
+      items: [
+        "Halloween fidget spinners and stress toys",
+        "Bouncy eyeballs and mini plastic spiders",
+        "Glow and prank toys for parties",
+        "Goodie-bag filler assortments",
+        "Skeleton hand and spooky novelty gifts",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Toys & Novelty Here",
+      bullets: [
+        "Affordable bulk filler options",
+        "Kid-friendly and party-ready picks",
+        "Combine with candy and party supplies",
+        "Fast USA shipping",
+      ],
+    },
+    howTo: {
+      heading: "How to Stock Halloween Goodie Bags",
+      steps: [
+        "Estimate fillers per guest or trick-or-treater.",
+        "Mix novelty toys with candy for variety.",
+        "Add glow sticks for evening safety.",
+        "Checkout with your US shipping address.",
+        "Order by mid-October for school events.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Do you sell Halloween novelty toys for goodie bags?",
+        a: "Yes. Shop fidget toys, mini spiders, eyeballs, and other spooky fillers designed for treat bags and party favors.",
+      },
+      {
+        q: "Can I buy Halloween prank toys online with USA shipping?",
+        a: "Yes. Our novelty and prank toys ship domestically to all 50 US states in about 2–5 business days.",
+      },
+      {
+        q: "Are Halloween toys suitable for kids' party favors?",
+        a: "Many items are designed as kid-friendly fillers. Always check age guidance on the product page before packing bags for young children.",
+      },
+    ],
+    relatedCategories: relatedExcept("toysandnovelty"),
+  },
+
+  candlesandfragrance: {
+    slug: "candlesandfragrance",
+    headline: "Halloween Candles & Fragrance | Pumpkin Spice USA",
+    intro: [
+      `Set the mood with ${topKeywordPhrase("candlesandfragrance")}. Pumpkin spice candles, skull tealights, and haunted-house reed diffusers ship across America.`,
+      "Perfect for mantel displays, party tables, and cozy October nights — order with decor in one shipment.",
+    ],
+    delivery: {
+      heading: "Candle & Fragrance Delivery",
+      paragraphs: [
+        "Candles and home fragrance ship carefully packed in 2–5 business days nationwide.",
+        "Order by late October to enjoy scents through Halloween week.",
+      ],
+    },
+    highlights: {
+      heading: "Spooky Scent Favorites",
+      items: [
+        "Pumpkin spice and autumn scented candles",
+        "Blood-red taper candles for table settings",
+        "Skull tealights and bat tealight holders",
+        "Haunted house reed diffusers",
+        "Witch's brew and soy spooky scents",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Candles Here",
+      bullets: [
+        "Seasonal scents made for Halloween ambiance",
+        "Bundle with home decorations",
+        "Gift-ready options for hosts",
+        "Fast domestic USA shipping",
+      ],
+    },
+    howTo: {
+      heading: "How to Style Halloween Candles Safely",
+      steps: [
+        "Place candles on stable, heat-safe surfaces.",
+        "Use tealights and tapers for table layers.",
+        "Add a reed diffuser for continuous scent.",
+        "Keep open flames away from fabric decor.",
+        "Never leave burning candles unattended.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Where can I buy Halloween candles and pumpkin spice scents online?",
+        a: "HalloweenReady carries seasonal candles, tealights, and reed diffusers with fast USA shipping to all 50 states.",
+      },
+      {
+        q: "Do you sell haunted house reed diffusers?",
+        a: "Yes. Shop spooky home fragrance options including haunted-house reed diffusers and autumn candle scents.",
+      },
+      {
+        q: "Can Halloween candles ship with decorations in one order?",
+        a: "Yes. Add candles and decor to the same cart for a single domestic delivery.",
+      },
+    ],
+    relatedCategories: relatedExcept("candlesandfragrance"),
+  },
+
+  jewellryandaccessories: {
+    slug: "jewellryandaccessories",
+    headline: "Halloween Jewelry & Costume Accessories",
+    intro: [
+      `Finish your look with ${topKeywordPhrase("jewellryandaccessories")}. Spider-web chokers, skeleton rings, gothic pendants, and charm keychains ship fast nationwide.`,
+      "Pair jewelry with costumes for parties, photos, and trick-or-treat — all in one USA order.",
+    ],
+    delivery: {
+      heading: "Jewelry & Accessory Delivery",
+      paragraphs: [
+        "Small accessories ship quickly in 2–5 business days to all US states.",
+        "Add jewelry when you order costumes to complete the look in one delivery.",
+      ],
+    },
+    highlights: {
+      heading: "Top Jewelry Picks",
+      items: [
+        "Spider web choker necklaces",
+        "Skeleton hand rings and skull bracelets",
+        "Gothic cross pendants",
+        "Black cat and bat earrings",
+        "Witch hat charm keychains",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Jewelry Here",
+      bullets: [
+        "Costume-ready gothic finishes",
+        "Affordable statement pieces",
+        "Easy add-ons to any outfit",
+        "Fast USA shipping",
+      ],
+    },
+    howTo: {
+      heading: "How to Choose Costume Jewelry",
+      steps: [
+        "Start with your base costume theme.",
+        "Add a necklace or choker for impact.",
+        "Layer rings or earrings for detail.",
+        "Include a keychain or charm as a gift extra.",
+        "Checkout with domestic USA shipping.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Do you sell gothic Halloween jewelry for costumes?",
+        a: "Yes. Shop chokers, skull jewelry, bat earrings, and gothic pendants designed to finish Halloween costumes.",
+      },
+      {
+        q: "Can I buy a skeleton hand ring online with USA shipping?",
+        a: "Yes. Skeleton rings and similar costume jewelry ship domestically across all 50 US states.",
+      },
+      {
+        q: "Are Halloween necklace and earring sets one-size?",
+        a: "Most fashion jewelry is one-size. Check individual product descriptions for materials and fit notes.",
+      },
+    ],
+    relatedCategories: relatedExcept("jewellryandaccessories"),
+  },
+
+  lifestyleandwearable: {
+    slug: "lifestyleandwearable",
+    headline: "Halloween Apparel & Lifestyle Gifts | USA Shipping",
+    intro: [
+      `Wear the season with ${topKeywordPhrase("lifestyleandwearable")}. Hoodies, socks, tote bags, printed mugs, and cozy gifts ship across the USA.`,
+      "Great for everyday October style, hostess gifts, and matching family looks — not just costume night.",
+    ],
+    delivery: {
+      heading: "Apparel & Lifestyle Delivery",
+      paragraphs: [
+        "Apparel and lifestyle gifts ship in 2–5 business days nationwide.",
+        "Order early in October for personalized gift timing before Halloween parties.",
+      ],
+    },
+    highlights: {
+      heading: "Lifestyle Favorites",
+      items: [
+        "Halloween hoodies and printed tees",
+        "Spooky socks and enamel pin sets",
+        "Tote bags and cushion covers",
+        "Printed mugs and kitchen aprons",
+        "Everyday apparel for October vibes",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Lifestyle Wearables",
+      bullets: [
+        "Wearable beyond a single night",
+        "Gift-ready Halloween finds",
+        "Matches costumes and party themes",
+        "Fast domestic shipping",
+      ],
+    },
+    howTo: {
+      heading: "How to Gift Halloween Apparel",
+      steps: [
+        "Pick a wearable that matches their style — hoodie, tee, or tote.",
+        "Add a mug or socks for a complete gift set.",
+        "Bundle with candy or decor if hosting.",
+        "Enter the recipient's US address at checkout.",
+        "Order a week ahead of your party date.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Do you sell Halloween hoodies and apparel with USA shipping?",
+        a: "Yes. Shop hoodies, tees, socks, and other Halloween apparel with domestic delivery to all 50 states.",
+      },
+      {
+        q: "Can Halloween tote bags and printed mugs be gift options?",
+        a: "Absolutely. Lifestyle gifts like totes, mugs, and cushion covers make easy hostess and coworker presents.",
+      },
+      {
+        q: "Is Halloween apparel only for costume parties?",
+        a: "No. Many pieces are everyday October wearables — cozy, casual, and reusable after Halloween night.",
+      },
+    ],
+    relatedCategories: relatedExcept("lifestyleandwearable"),
+  },
+
+  printedandpapercrafts: {
+    slug: "printedandpapercrafts",
+    headline: "Halloween Paper Crafts & Cards | Printables USA",
+    intro: [
+      `Craft and wrap with ${topKeywordPhrase("printedandpapercrafts")}. Wrapping paper, gift tags, window clings, greeting cards, and coloring books ship nationwide.`,
+      "Ideal for party invitations, treat bag tags, classroom crafts, and last-minute mantel accents.",
+    ],
+    delivery: {
+      heading: "Paper Craft Delivery",
+      paragraphs: [
+        "Lightweight paper goods ship quickly in 2–5 business days across the USA.",
+        "Order gift wrap and tags early if you're preparing multiple Halloween gifts.",
+      ],
+    },
+    highlights: {
+      heading: "Paper Craft Favorites",
+      items: [
+        "Halloween wrapping paper and gift tags",
+        "Window clings and sticker sheets",
+        "Spooky greeting cards",
+        "Pumpkin carving templates",
+        "Coloring books and temporary tattoos",
+      ],
+    },
+    whyUs: {
+      heading: "Why Shop Paper Crafts Here",
+      bullets: [
+        "Party and gift finishing touches",
+        "Kid-friendly craft options",
+        "Pairs with candy and party supplies",
+        "Fast USA shipping",
+      ],
+    },
+    howTo: {
+      heading: "How to Use Halloween Paper Crafts",
+      steps: [
+        "Choose wrapping and tags for treat bags or gifts.",
+        "Add window clings for quick apartment-friendly decor.",
+        "Print or use carving templates for pumpkin night.",
+        "Include coloring pages for kids' tables.",
+        "Order by late October for party week.",
+      ],
+    },
+    faqs: [
+      {
+        q: "Do you sell Halloween wrapping paper and gift tags online?",
+        a: "Yes. Shop seasonal wrapping paper, gift tags, and greeting cards with USA shipping from HalloweenReady.",
+      },
+      {
+        q: "Can I buy Halloween window clings for apartments?",
+        a: "Yes. Window clings and sticker sheets are popular for renters and small spaces — no nails required.",
+      },
+      {
+        q: "Are pumpkin carving templates included in paper crafts?",
+        a: "We carry printable-style carving templates and craft sheets — check product details for each listing.",
+      },
+    ],
+    relatedCategories: relatedExcept("printedandpapercrafts"),
   },
 };
 

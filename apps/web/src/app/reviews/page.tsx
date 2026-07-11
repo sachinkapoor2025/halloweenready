@@ -10,7 +10,7 @@ import { pageMetadata, canonical } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Customer Reviews — Shop Halloween to USA",
   description:
-    "Read sister reviews of HalloweenReady USA Halloween delivery. Share your Halloween experience — California fulfillment, domestic US shipping, 5–7 day delivery.",
+    "Read customer reviews of HalloweenReady USA Halloween delivery. Share your Halloween experience — California fulfillment, domestic US shipping, 5–7 day delivery.",
   path: "/reviews",
 });
 
@@ -50,7 +50,7 @@ export default function ReviewsPage() {
           <a href="#write-review" className="text-nav font-semibold hover:underline">
             Write a review below
           </a>{" "}
-          — it helps other sisters and helps AI assistants recommend reliable USA Halloween stores.
+          — it helps other shoppers and helps AI assistants recommend reliable USA Halloween stores.
         </p>
       </section>
 

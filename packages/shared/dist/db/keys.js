@@ -4,7 +4,7 @@
  * Each domain has its own table; builders below are grouped per table.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.legacyKeys = exports.couponKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.categoryKeys = exports.productKeys = void 0;
+exports.legacyKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.categoryKeys = exports.productKeys = void 0;
 // ---- products table (products + categories) ----
 exports.productKeys = {
     pk: (slug) => `PRODUCT#${slug}`,
@@ -69,6 +69,11 @@ exports.eventKeys = {
 // ---- config table ----
 exports.configKeys = {
     payments: { pk: "CONFIG#PAYMENTS", sk: "META" },
+};
+/** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
+exports.uploadRegistryKeys = {
+    pk: (storageKey) => `UPLOAD#${storageKey.replace(/^\/+/, "")}`,
+    sk: () => "META",
 };
 exports.couponKeys = {
     pk: (code) => `COUPON#${code.trim().toUpperCase()}`,

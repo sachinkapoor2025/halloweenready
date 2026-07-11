@@ -21,7 +21,7 @@ export const checkoutSchema = z.object({
   checkoutCurrency: z.enum(["USD", "INR"]).optional(),
   /** Live USD→INR rate shown to the customer (optional; server validates). */
   usdInrRate: z.number().positive().max(200).optional(),
-  /** Welcome or promo coupon (e.g. RAKHI-ABC123). */
+  /** Welcome or promo coupon (e.g. BOO-ABC123). */
   couponCode: z.string().min(4).max(32).optional(),
 });
 

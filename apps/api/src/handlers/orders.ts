@@ -30,6 +30,7 @@ import {
   markCouponUsed,
   validateCouponRecord,
 } from "./coupons";
+import { upsertSessionProfile } from "../lib/customer-profile";
 
 type StoredOrder = Order & {
   PK: string;
@@ -62,12 +63,6 @@ function normalizeEmail(email?: string): string | undefined {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : undefined;
 }
 
-function pickContactField(incoming?: string, existing?: string): string | undefined {
-  const next = incoming?.trim();
-  if (next) return next;
-  return existing;
-}
-
 export async function captureLead(event: APIGatewayProxyEventV2) {
   if ((event.body?.length ?? 0) > 16 * 1024) return badRequest("Payload too large");
   const body = JSON.parse(event.body ?? "{}");
@@ -78,10 +73,24 @@ export async function captureLead(event: APIGatewayProxyEventV2) {
   const sessionId = parsed.data.sessionId;
   const email = normalizeEmail(parsed.data.email);
 
-  let welcomeCoupon: { code: string; expiresAt: string; discountPercent: number } | undefined;
+  let welcomeCoupon:
+    | {
+        code: string;
+        expiresAt: string;
+        discountPercent: number;
+        reused?: boolean;
+        alreadyClaimedToday?: boolean;
+      }
+    | undefined;
   let leadPayload = parsed.data;
-  if (parsed.data.source === "newsletter" && email) {
-    welcomeCoupon = await issueWelcomeCoupon({ email, sessionId });
+  if (parsed.data.source === "newsletter") {
+    if (!email) return badRequest("Enter a valid email address to generate a coupon");
+    const requested = Number(parsed.data.metadata?.discountPercent);
+    welcomeCoupon = await issueWelcomeCoupon({
+      email,
+      sessionId,
+      discountPercent: Number.isFinite(requested) ? requested : undefined,
+    });
     leadPayload = {
       ...parsed.data,
       metadata: {
@@ -89,6 +98,8 @@ export async function captureLead(event: APIGatewayProxyEventV2) {
         couponCode: welcomeCoupon.code,
         couponExpiresAt: welcomeCoupon.expiresAt,
         discountPercent: String(welcomeCoupon.discountPercent),
+        alreadyClaimedToday: welcomeCoupon.alreadyClaimedToday ? "true" : "false",
+        offer: "discount_of_the_day",
       },
     };
   }
@@ -111,31 +122,11 @@ export async function captureLead(event: APIGatewayProxyEventV2) {
     })
   );
 
-  const existing = await docClient.send(
-    new GetCommand({
-      TableName: CUSTOMERS_TABLE,
-      Key: { PK: customerKeys.pk(sessionId), SK: customerKeys.profileSk() },
-    })
-  );
-  const prev = existing.Item ?? {};
-
-  // session identity rollup — merge so partial field updates don't wipe other fields
-  await docClient.send(
-    new PutCommand({
-      TableName: CUSTOMERS_TABLE,
-      Item: {
-        sessionId,
-        PK: customerKeys.pk(sessionId),
-        SK: customerKeys.profileSk(),
-        createdAt: (prev.createdAt as string) ?? timestamp,
-        lastSeenAt: timestamp,
-        updatedAt: timestamp,
-        name: pickContactField(leadPayload.name, prev.name as string | undefined),
-        email: email ?? (prev.email as string | undefined),
-        phone: pickContactField(leadPayload.phone, prev.phone as string | undefined),
-      },
-    })
-  );
+  await upsertSessionProfile(sessionId, {
+    name: leadPayload.name,
+    email: leadPayload.email,
+    phone: leadPayload.phone,
+  });
 
   const emailResult = await notifyAdminLead(leadPayload);
   const emailRequired = leadPayload.source === "contact" || leadPayload.source === "newsletter";
@@ -219,11 +210,20 @@ export async function checkout(event: APIGatewayProxyEventV2) {
   const orderId = uuidv4();
   const timestamp = now();
   const auth = getAuth(event);
+  const sessionId = getSessionId(event);
+
+  if (sessionId) {
+    await upsertSessionProfile(sessionId, {
+      name: parsed.data.shippingAddress.name,
+      email: parsed.data.shippingAddress.email,
+      phone: parsed.data.shippingAddress.phone,
+    });
+  }
 
   const order: Order = {
     orderId,
     userId: auth?.userId,
-    sessionId: getSessionId(event),
+    sessionId,
     items: orderItems,
     subtotal,
     discount,

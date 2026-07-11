@@ -34,7 +34,7 @@ function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
               <Link
                 key={c.slug}
                 href={`/cities/${c.slug}`}
-                className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-nav whitespace-nowrap"
+                className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-nav whitespace-nowrap"
                 onClick={() => {
                   setOpen(false);
                   onNavigate?.();
@@ -297,7 +297,7 @@ export function Header() {
                 className={`block rounded-lg px-4 py-3 text-sm font-semibold ${
                   isActive(item.href, "category" in item ? item.category : undefined)
                     ? "bg-nav text-white"
-                    : "text-primary hover:bg-blue-50 hover:text-nav"
+                    : "text-primary hover:bg-orange-50 hover:text-nav"
                 }`}
               >
                 {item.label}
@@ -310,7 +310,7 @@ export function Header() {
               className={`block rounded-lg px-4 py-3 text-sm font-semibold ${
                 pathname === "/wishlist"
                   ? "bg-nav text-white"
-                  : "text-primary hover:bg-blue-50 hover:text-nav"
+                  : "text-primary hover:bg-orange-50 hover:text-nav"
               }`}
             >
               Wish Lists
@@ -321,7 +321,7 @@ export function Header() {
                   type="button"
                   onClick={() => setCitiesOpen((v) => !v)}
                   className={`w-full flex items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold ${
-                    citiesOpen ? "bg-nav text-white" : "text-primary hover:bg-blue-50 hover:text-nav"
+                    citiesOpen ? "bg-nav text-white" : "text-primary hover:bg-orange-50 hover:text-nav"
                   }`}
                 >
                   Cities
@@ -334,7 +334,7 @@ export function Header() {
                         key={c.slug}
                         href={`/cities/${c.slug}`}
                         onClick={closeMenu}
-                        className="block rounded-lg px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-nav"
+                        className="block rounded-lg px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-nav"
                       >
                         Halloween to {c.label}
                       </Link>

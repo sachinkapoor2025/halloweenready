@@ -14,8 +14,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/** Fresh product/images from API + catalog merge (listing pages are already force-dynamic). */
+/** Product images can be changed from admin and should appear on the storefront immediately. */
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateStaticParams() {
   const slugs = getStaticProductSlugs();
