@@ -467,6 +467,9 @@ export default function AdminProductsPage() {
                             <div className="flex flex-wrap gap-2">
                               {p.images.map((imageUrl, index) => {
                                 const deleteKey = `${p.slug}:${imageUrl}`;
+                                const displayUrl = resolveImageUrl(imageUrl);
+                                const isPlaceholder =
+                                  isPlaceholderProductImage(imageUrl) || isPlaceholderProductImage(displayUrl);
                                 return (
                                   <div
                                     key={`${imageUrl}-${index}`}
@@ -474,11 +477,12 @@ export default function AdminProductsPage() {
                                   >
                                     <span className="mb-1 block text-[10px] font-semibold text-slate-500">
                                       Image {index + 1}
+                                      {isPlaceholder ? " (placeholder)" : ""}
                                     </span>
                                     <div className="h-12 w-full overflow-hidden rounded bg-white">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
-                                        src={imageUrl}
+                                        src={displayUrl}
                                         alt={`${p.name} image ${index + 1}`}
                                         className="h-full w-full object-cover"
                                       />
