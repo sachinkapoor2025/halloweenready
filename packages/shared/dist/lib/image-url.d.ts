@@ -8,6 +8,8 @@ export declare function cdnUploadUrl(relativePath: string, cdnBase?: string): st
 /**
  * Rewrite legacy WordPress / CloudFront paths to a working URL.
  * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
+ *
+ * Admin uploads under `/products/` always stay on the CDN — they are not mirrored into Amplify public/uploads.
  */
 export declare function resolveProductImageUrl(url: string | undefined | null, cdnBase?: string): string;
 export declare function resolveProductImageUrls(urls: string[] | undefined | null, cdnBase?: string): string[];

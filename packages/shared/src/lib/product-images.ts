@@ -10,7 +10,15 @@ export function normalizeProductImageKey(url: string): string {
   }
 }
 
-/** Admin portal uploads are stored under S3/CloudFront `products/<uuid>.<ext>`. */
+/**
+ * Match key shared by CDN admin uploads and static-rewritten `/uploads/products/...` paths.
+ * `/uploads/products/x.jpg` and `https://cdn/products/x.jpg` → `/products/x.jpg`
+ */
+export function productImageMatchKey(url: string): string {
+  return normalizeProductImageKey(url).replace(/^\/uploads(\/products\/)/i, "$1");
+}
+
+/** Admin portal uploads are stored under S3/CloudFront `products/<slug>/<uuid>.<ext>`. */
 export function isAdminUploadedProductImage(url: string): boolean {
   return /\/products\//i.test(url);
 }

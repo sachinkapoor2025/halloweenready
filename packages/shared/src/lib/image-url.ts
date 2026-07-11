@@ -40,26 +40,59 @@ function imageDeliveryMode(): "static" | "cdn" {
   return mode === "cdn" ? "cdn" : "static";
 }
 
+/** Admin portal uploads are stored at S3/CloudFront `products/<slug>/<uuid>.ext`. */
+function isAdminProductsPath(pathname: string): boolean {
+  return /^\/?(?:uploads\/)?products\//i.test(pathname);
+}
+
 /**
  * Rewrite legacy WordPress / CloudFront paths to a working URL.
  * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
+ *
+ * Admin uploads under `/products/` always stay on the CDN — they are not mirrored into Amplify public/uploads.
  */
 export function resolveProductImageUrl(url: string | undefined | null, cdnBase?: string): string {
   if (!url) return "";
   const trimmed = decodeUrlEntities(url.trim());
   if (!trimmed) return "";
 
-  if (trimmed.startsWith("/uploads/")) return trimmed;
-
   const cdn = getProductCdnBase(cdnBase);
+
+  // Relative path already rewritten to Amplify static hosting
+  if (trimmed.startsWith("/uploads/")) {
+    // Mistakenly rewritten admin upload → restore CDN URL
+    if (isAdminProductsPath(trimmed)) {
+      return `${cdn}${trimmed.replace(/^\/uploads/, "")}`;
+    }
+    return trimmed;
+  }
+
   if (trimmed.startsWith(cdn)) {
-    const rel = trimmed.slice(cdn.length).replace(/^\/uploads\//, "");
+    const path = trimmed.slice(cdn.length);
+    // Keep live admin/S3 product uploads on CloudFront
+    if (isAdminProductsPath(path)) return trimmed;
+
+    const rel = path.replace(/^\/uploads\//, "");
     return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : trimmed;
+  }
+
+  // Absolute URL pointing at admin upload key on any host → canonicalize to CDN
+  try {
+    const parsed = new URL(trimmed);
+    if (isAdminProductsPath(parsed.pathname)) {
+      return `${cdn}${parsed.pathname}`;
+    }
+  } catch {
+    // relative / non-URL — fall through
   }
 
   const uploadsMatch = trimmed.match(/(?:cloudfront\.net\/uploads|wp-content\/uploads)\/(.+)$/i);
   if (uploadsMatch) {
     const rel = uploadsMatch[1];
+    // Nested admin keys should not go through static Amplify
+    if (isAdminProductsPath(`uploads/${rel}`) || /^products\//i.test(rel)) {
+      return `${cdn}/${rel.replace(/^uploads\//i, "")}`;
+    }
     return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : cdnUploadUrl(rel, cdn);
   }
 
