@@ -98,11 +98,12 @@ async function sendNewsletterEmails(input) {
             timeStyle: "short",
             timeZone: "America/New_York",
         })
-        : "4 hours";
+        : "1 hour";
+    const pct = coupon.discountPercent || shared_1.WELCOME_DISCOUNT_PERCENT;
     const adminText = [
-        "Source: Newsletter / 10% welcome offer",
+        "Source: Discount of the Day spin",
         `Email: ${input.email}`,
-        coupon.code ? `Coupon: ${coupon.code}` : null,
+        coupon.code ? `Coupon: ${coupon.code} (${pct}% off)` : null,
         coupon.expiresAt ? `Expires: ${coupon.expiresAt}` : null,
         input.page ? `Page: ${input.page}` : null,
         input.metadata ? `Details: ${JSON.stringify(input.metadata)}` : null,
@@ -111,26 +112,29 @@ async function sendNewsletterEmails(input) {
         .join("\n");
     const admin = await sendEmail({
         to: notifyAddress(),
-        subject: `[${SITE_NAME}] New newsletter signup — ${input.email}`,
+        subject: `[${SITE_NAME}] Discount of the Day — ${input.email} (${pct}% off)`,
         text: adminText,
         replyTo: input.email,
     });
     if (!admin.ok)
         return admin;
+    if (!coupon.code) {
+        return { ok: true };
+    }
     const customer = await sendEmail({
         to: input.email,
-        subject: `Your 10% off code — ${SITE_NAME}`,
-        text: `Thank you for joining HalloweenReady!
+        subject: `Your Discount of the Day: ${pct}% off — ${SITE_NAME}`,
+        text: `You spun the Discount of the Day wheel at HalloweenReady!
 
-Your exclusive welcome discount:
+Your spooky savings:
 
   Coupon code: ${coupon.code}
-  Discount: ${coupon.discountPercent}% off your first order
-  Valid until: ${expiryLabel} (4 hours from signup)
+  Discount: ${pct}% off
+  Valid until: ${expiryLabel} (1 hour from spin)
 
 Enter this code at checkout on https://www.halloweenready.com/checkout
 
-Shop premium Halloween costumes, decor, and candy with delivery to all 50 US states:
+One spin per email per day. Shop Halloween decorations, costumes, and party supplies:
 https://www.halloweenready.com/products
 
 Halloween 2026 is October 31 — order by October 25 for guaranteed delivery.
@@ -139,7 +143,7 @@ Halloween 2026 is October 31 — order by October 25 for guaranteed delivery.
 order@halloweenready.com`,
     });
     if (!customer.ok) {
-        console.error("Newsletter welcome email failed:", customer.error);
+        console.error("Discount of the Day email failed:", customer.error);
         return customer;
     }
     return { ok: true };

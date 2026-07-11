@@ -12,6 +12,7 @@ const db_1 = require("../lib/db");
 const response_1 = require("../lib/response");
 const auth_1 = require("../lib/auth");
 const images_1 = require("../lib/images");
+const customer_profile_1 = require("../lib/customer-profile");
 /** Stale carts auto-expire after this many days (TTL). */
 const CART_TTL_DAYS = 30;
 async function getCart(userKey) {
@@ -98,6 +99,14 @@ async function addToCart(event) {
         cart.items.push(item);
     }
     await saveCart(userKey, cart, (0, auth_1.getSessionId)(event));
+    const sessionId = (0, auth_1.getSessionId)(event);
+    if (sessionId && (parsed.data.name || parsed.data.email || parsed.data.phone)) {
+        await (0, customer_profile_1.upsertSessionProfile)(sessionId, {
+            name: parsed.data.name,
+            email: parsed.data.email,
+            phone: parsed.data.phone,
+        });
+    }
     return (0, response_1.ok)({ cart });
 }
 async function removeFromCart(event) {
