@@ -10,7 +10,7 @@ export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-primary text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-10 sm:py-12">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 text-sm">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 text-sm">
           {/* Brand + contact — full width on mobile, one column on desktop */}
           <div className="col-span-2 lg:col-span-1">
             <SiteLogoLink size="desktop" className="mb-5" />
@@ -106,20 +106,20 @@ export function Footer() {
               <li><Link href="/contact" className="hover:text-white hover:underline">Contact Us</Link></li>
             </ul>
           </div>
+        </div>
 
-          {/* Cities — full width on mobile (2-col city list), one col on desktop */}
-          <div className="col-span-2 lg:col-span-1 min-w-0">
-            <p className="font-semibold text-white mb-3 sm:mb-4">Deliver to</p>
-            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-x-6 gap-y-2 text-white/80">
-              {cityLinks.map((c) => (
-                <li key={c.slug}>
-                  <Link href={`/cities/${c.slug}`} className="hover:text-white hover:underline">
-                    {c.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* Deliver to — full width, 3-column city grid keeps footer compact */}
+        <div className="mt-8 pt-8 border-t border-white/15 text-sm">
+          <p className="font-semibold text-white mb-3 sm:mb-4">Deliver to</p>
+          <ul className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-4 gap-y-2 text-white/80">
+            {cityLinks.map((c) => (
+              <li key={c.slug}>
+                <Link href={`/cities/${c.slug}`} className="hover:text-white hover:underline">
+                  {c.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Payments row */}

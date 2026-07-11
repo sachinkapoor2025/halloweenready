@@ -62,7 +62,7 @@ Globals:
         RAZORPAY_KEY_ID: !Ref RazorpayKeyId
         RAZORPAY_KEY_SECRET: !Ref RazorpayKeySecret
         CLOUDFRONT_DOMAIN: !GetAtt CloudFrontDistribution.DomainName
-        SMTP_HOST: smtp.halloweenready.com
+        SMTP_HOST: mail.halloweenready.com
         SMTP_PORT: "465"
         SMTP_SECURE: "true"
         SMTP_USER: order@halloweenready.com
