@@ -5,9 +5,9 @@ export const site = {
   description:
     "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery across the USA. Premium-quality products for haunted houses, yard displays, and Halloween parties.",
   supportEmail: "support@halloweenready.com",
-  phone: "+1 6692603819",
+  phone: "+1 (669) 260-3819",
   whatsapp: "16692603819",
-  whatsappDisplay: "+1 6692603819",
+  whatsappDisplay: "+1 (669) 260-3819",
   logoSrc: "/logo.png",
   primaryColor: "#1a0a2e",
   navBlue: "#ff6b00",
