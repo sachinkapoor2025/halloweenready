@@ -199,7 +199,7 @@ export default function AdminProductsPage() {
     return null;
   };
 
-  const revalidateStorefrontProduct = async (slug: string) => {
+  const revalidateStorefrontProduct = async (slug: string, categorySlug?: string) => {
     if (!token) return;
     try {
       await fetch("/api/revalidate/product", {
@@ -208,7 +208,7 @@ export default function AdminProductsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, categorySlug }),
       });
     } catch {
       /* non-blocking */
@@ -263,7 +263,7 @@ export default function AdminProductsPage() {
       setMessage(
         `${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} uploaded for "${slug}". Visible on the website immediately after cache refresh.`
       );
-      await revalidateStorefrontProduct(slug);
+      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Upload failed");
@@ -281,7 +281,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ imageUrl }),
       });
       setMessage(`Image ${imageNumber} deleted from "${slug}".`);
-      await revalidateStorefrontProduct(slug);
+      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Image delete failed");

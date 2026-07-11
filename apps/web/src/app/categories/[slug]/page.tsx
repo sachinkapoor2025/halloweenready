@@ -15,6 +15,7 @@ import { getCategoryRichContent } from "@/lib/content/category-rich-content";
 import { seoLocations } from "@/lib/content/seo-data";
 import { getCatalogCategory, getCatalogProductsByCategory } from "@/lib/catalog-fallback";
 import { resolveImageUrl } from "@/lib/images";
+import { withListingImages } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
@@ -47,7 +48,7 @@ export function generateStaticParams() {
   return categoryOrder.map((slug) => ({ slug }));
 }
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -100,14 +101,14 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   try {
-    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, { revalidate: 3600 });
-    products = prodData.products;
+    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, { revalidate: 60 });
+    products = withListingImages(prodData.products);
   } catch {
     products = [];
   }
 
   if (products.length === 0) {
-    products = getCatalogProductsByCategory(slug);
+    products = withListingImages(getCatalogProductsByCategory(slug));
   }
 
   if (!category) {

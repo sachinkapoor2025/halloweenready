@@ -14,6 +14,7 @@ import {
   getCatalogProducts,
   getCatalogProductsByCategory,
 } from "@/lib/catalog-fallback";
+import { withListingImages } from "@/lib/product-loader";
 import { categorySlugVariants } from "@halloweenready/shared";
 
 export const dynamic = "force-dynamic";
@@ -104,6 +105,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
     }
   }
+  products = withListingImages(products);
 
   const h1 = search
     ? `Search: ${search}`

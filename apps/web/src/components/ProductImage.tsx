@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { PRODUCT_IMAGE_FALLBACK, resolveImageUrl } from "@/lib/images";
+import { resolveImageUrl } from "@/lib/images";
+import { isPlaceholderProductImage } from "@/lib/product-images";
 
 type ProductImageProps = {
   src: string | undefined | null;
@@ -9,25 +10,17 @@ type ProductImageProps = {
   className?: string;
 };
 
-/** Product thumbnail with fallback when CDN/static file is missing or a 1×1 placeholder. */
+/** Product thumbnail — never shows the pumpkin placeholder graphic. */
 export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
-  const [displaySrc, setDisplaySrc] = useState(() => resolveImageUrl(src) || PRODUCT_IMAGE_FALLBACK);
+  const initial = !isPlaceholderProductImage(src) ? resolveImageUrl(src) : "";
+  const [failed, setFailed] = useState(!initial);
 
-  const useFallback = useCallback(() => {
-    setDisplaySrc(PRODUCT_IMAGE_FALLBACK);
+  const handleLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth <= 8 && img.naturalHeight <= 8) setFailed(true);
   }, []);
 
-  const handleLoad = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      if (img.naturalWidth <= 8 && img.naturalHeight <= 8) {
-        useFallback();
-      }
-    },
-    [useFallback]
-  );
-
-  if (!src && displaySrc === PRODUCT_IMAGE_FALLBACK) {
+  if (failed || !initial) {
     return (
       <div className={`flex items-center justify-center bg-slate-50 text-slate-400 text-sm ${className}`}>
         No image
@@ -38,11 +31,11 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={displaySrc}
+      src={initial}
       alt={alt}
       className={className}
       onLoad={handleLoad}
-      onError={useFallback}
+      onError={() => setFailed(true)}
     />
   );
 }
