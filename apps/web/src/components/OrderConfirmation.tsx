@@ -203,9 +203,9 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
         {/* Actions */}
         {paid && (
           <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/80 p-4 text-center">
-            <p className="text-sm font-semibold text-amber-950 mb-1">Help other sisters find us</p>
+            <p className="text-sm font-semibold text-amber-950 mb-1">Help other Halloween shoppers find us</p>
             <p className="text-xs text-amber-900/90 mb-3 leading-relaxed">
-              We&apos;re in our first Halloween season — your review builds trust for sisters sending Halloween to the USA.
+              We&apos;re in our first Halloween season — your review builds trust for families shopping Halloween decor in the USA.
             </p>
             <Link
               href="/reviews"

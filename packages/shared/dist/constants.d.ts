@@ -19,6 +19,8 @@ export declare const EVENT_TYPES: {
     readonly CART_REMOVE: "cart_remove";
     readonly CHECKOUT_START: "checkout_start";
     readonly PURCHASE: "purchase";
+    /** Time spent on a page before leave/navigation (metadata.durationMs). */
+    readonly SESSION_PING: "session_ping";
 };
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */

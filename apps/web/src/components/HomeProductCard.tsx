@@ -8,7 +8,7 @@ import { WishlistButton } from "@/components/WishlistButton";
 import { FastSellingBadge } from "@/components/FastSellingBadge";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
-import { ProductImage } from "@/components/ProductImage";
+import { ProductImageRotator } from "@/components/ProductImageRotator";
 
 export function HomeProductCard({
   product,
@@ -22,7 +22,7 @@ export function HomeProductCard({
   const fastSelling = showFastSellingBadge || isFastSelling(product);
 
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow relative flex h-full flex-col">
+    <div className="card-spooky overflow-hidden relative flex h-full flex-col">
       {discount !== null && (
         <span className="absolute top-3 left-3 z-10 bg-nav text-white text-xs font-bold px-2 py-1 rounded">
           {discount}% OFF
@@ -36,10 +36,11 @@ export function HomeProductCard({
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
         <WishlistButton product={product} />
         <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
-          <ProductImage
-            src={product.images?.[0]}
+          <ProductImageRotator
+            images={product.images ?? []}
             alt={product.name}
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            staggerKey={product.slug}
+            className="absolute inset-0 h-full w-full"
           />
         </Link>
       </div>

@@ -5,7 +5,7 @@ import type { Product } from "@halloweenready/shared";
 import { WishlistButton } from "@/components/WishlistButton";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
-import { ProductImage } from "@/components/ProductImage";
+import { ProductImageRotator } from "@/components/ProductImageRotator";
 
 export function ProductCard({ product }: { product: Product }) {
   const { format } = useCurrency();
@@ -20,8 +20,13 @@ export function ProductCard({ product }: { product: Product }) {
       )}
       <div className="relative aspect-square bg-slate-50 flex items-center justify-center text-slate-400">
         <WishlistButton product={product} />
-        <Link href={`/products/${product.slug}`} className="block w-full h-full">
-          <ProductImage src={product.images?.[0]} alt={product.name} className="w-full h-full object-cover" />
+        <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
+          <ProductImageRotator
+            images={product.images ?? []}
+            alt={product.name}
+            staggerKey={product.slug}
+            className="absolute inset-0 h-full w-full"
+          />
         </Link>
       </div>
       <Link href={`/products/${product.slug}`} className="block p-4">

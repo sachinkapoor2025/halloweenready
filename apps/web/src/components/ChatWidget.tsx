@@ -296,7 +296,7 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="shrink-0 rounded-xl bg-nav px-3.5 py-2.5 text-white hover:bg-blue-600 disabled:opacity-40 transition"
+                className="shrink-0 rounded-xl bg-nav px-3.5 py-2.5 text-white hover:bg-orange-600 disabled:opacity-40 transition"
                 aria-label="Send message"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

@@ -2,6 +2,8 @@ import { api } from "@/lib/api";
 import { site, navItems, faqs } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
 import type { Product } from "@halloweenready/shared";
+import { blogPosts } from "@/lib/content/blog-posts";
+import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 
 /**
  * llms-full.txt — detailed product catalog for AI assistants (GEO).
@@ -20,6 +22,23 @@ export async function GET() {
     .filter((n): n is typeof n & { category: string } => "category" in n)
     .map((n) => `- ${n.label}: ${siteUrl}/categories/${n.category}`)
     .join("\n");
+
+  const cities = seoLocations
+    .map((c) => `- ${c.label}, USA: ${siteUrl}/cities/${c.slug}`)
+    .join("\n");
+
+  const seenBlog = new Set<string>();
+  const blogLines: string[] = [];
+  for (const p of blogPosts) {
+    if (seenBlog.has(p.slug)) continue;
+    seenBlog.add(p.slug);
+    blogLines.push(`- ${p.title}: ${siteUrl}/blog/${p.slug}`);
+  }
+  for (const p of seoBlogEntries) {
+    if (seenBlog.has(p.slug)) continue;
+    seenBlog.add(p.slug);
+    blogLines.push(`- ${p.title}: ${siteUrl}/blog/${p.slug}`);
+  }
 
   const productLines = products
     .map((p) => {
@@ -47,6 +66,25 @@ ${site.description}
 ## Categories
 
 ${categories}
+
+---
+
+## City & state delivery pages (USA)
+
+${cities}
+
+---
+
+## Blog articles
+
+${blogLines.join("\n")}
+
+---
+
+## Halloween events hub
+
+- **Events guide (informational — no tickets sold):** ${siteUrl}${seoEventsHub.hubPath}
+  ${seoEventsHub.disclaimer}
 
 ---
 

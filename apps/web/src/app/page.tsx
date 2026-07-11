@@ -56,7 +56,7 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="bg-white">
+    <div className="bg-white spooky-panel">
       <JsonLd data={[faqJsonLd(faqs), howToShopHalloweenJsonLd()]} />
       <BannerCarousel banners={homeBanners} />
       <TrustStrip />
@@ -65,7 +65,7 @@ export default async function HomePage() {
 
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl md:text-2xl font-bold text-primary">
+          <h2 className="halloween-heading text-xl md:text-2xl">
             Celebrate Halloween in Style 🎃👻
           </h2>
           <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
@@ -88,9 +88,9 @@ export default async function HomePage() {
 
       {productsByCategory.map((section) =>
         section.products.length > 0 ? (
-          <section key={section.slug} className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-100">
+          <section key={section.slug} className="max-w-7xl mx-auto px-4 py-8 section-spooky-divider">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl md:text-2xl font-bold text-primary capitalize">{section.name}</h2>
+              <h2 className="halloween-heading text-xl md:text-2xl capitalize">{section.name}</h2>
               <Link href={`/categories/${section.slug}`} className="text-nav font-semibold text-sm hover:underline">
                 View All →
               </Link>

@@ -58,6 +58,8 @@ exports.EVENT_TYPES = {
     CART_REMOVE: "cart_remove",
     CHECKOUT_START: "checkout_start",
     PURCHASE: "purchase",
+    /** Time spent on a page before leave/navigation (metadata.durationMs). */
+    SESSION_PING: "session_ping",
 };
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */
 exports.EVENT_TTL_DAYS = 90;

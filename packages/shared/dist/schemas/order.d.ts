@@ -11,24 +11,24 @@ export declare const shippingAddressSchema: z.ZodObject<{
     email: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
 }, {
     name: string;
+    email: string;
     line1: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
-    email: string;
-    line2?: string | undefined;
     phone?: string | undefined;
+    line2?: string | undefined;
 }>;
 export declare const checkoutSchema: z.ZodObject<{
     shippingAddress: z.ZodObject<{
@@ -43,43 +43,43 @@ export declare const checkoutSchema: z.ZodObject<{
         email: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     }, {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     }>;
     paymentMethod: z.ZodEnum<["stripe", "razorpay"]>;
     /** Customer-selected display/checkout currency (from currency switcher). */
     checkoutCurrency: z.ZodOptional<z.ZodEnum<["USD", "INR"]>>;
     /** Live USD→INR rate shown to the customer (optional; server validates). */
     usdInrRate: z.ZodOptional<z.ZodNumber>;
-    /** Welcome or promo coupon (e.g. RAKHI-ABC123). */
+    /** Welcome or promo coupon (e.g. BOO-ABC123). */
     couponCode: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     shippingAddress: {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     };
     paymentMethod: "stripe" | "razorpay";
     checkoutCurrency?: "USD" | "INR" | undefined;
@@ -88,14 +88,14 @@ export declare const checkoutSchema: z.ZodObject<{
 }, {
     shippingAddress: {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     };
     paymentMethod: "stripe" | "razorpay";
     checkoutCurrency?: "USD" | "INR" | undefined;
@@ -174,24 +174,24 @@ export declare const orderSchema: z.ZodObject<{
         email: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     }, {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     }>;
     paymentProvider: z.ZodOptional<z.ZodEnum<["stripe", "razorpay"]>>;
     paymentIntentId: z.ZodOptional<z.ZodString>;
@@ -219,14 +219,14 @@ export declare const orderSchema: z.ZodObject<{
     }[];
     shippingAddress: {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     };
     orderId: string;
     subtotal: number;
@@ -266,14 +266,14 @@ export declare const orderSchema: z.ZodObject<{
     }[];
     shippingAddress: {
         name: string;
+        email: string;
         line1: string;
         city: string;
         state: string;
         postalCode: string;
         country: string;
-        email: string;
-        line2?: string | undefined;
         phone?: string | undefined;
+        line2?: string | undefined;
     };
     orderId: string;
     subtotal: number;

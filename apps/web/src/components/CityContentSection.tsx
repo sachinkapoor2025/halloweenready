@@ -48,7 +48,8 @@ export function CityContentSection({ content }: Props) {
             </h3>
             <p className="mb-3">
               Halloween in {content.label} means costumes, yard displays, trick-or-treat prep, and parties.
-              {site.name} delivers everything you need — costumes, decor, candy, and party supplies — before October 31.
+              {site.name} delivers everything you need — costumes, decor, party supplies, and novelty items — before
+              October 31.
             </p>
           </section>
         </article>

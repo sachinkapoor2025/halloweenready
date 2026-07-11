@@ -55,6 +55,11 @@ export declare const configKeys: {
         sk: "META";
     };
 };
+/** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
+export declare const uploadRegistryKeys: {
+    pk: (storageKey: string) => string;
+    sk: () => "META";
+};
 export declare const couponKeys: {
     pk: (code: string) => string;
     sk: () => "META";

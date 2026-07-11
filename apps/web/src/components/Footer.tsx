@@ -110,7 +110,7 @@ export function Footer() {
           {/* Cities — full width on mobile (2-col city list), one col on desktop */}
           <div className="col-span-2 lg:col-span-1 min-w-0">
             <p className="font-semibold text-white mb-3 sm:mb-4">Deliver to</p>
-            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-x-4 gap-y-2 text-white/80">
+            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-x-6 gap-y-2 text-white/80">
               {cityLinks.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/cities/${c.slug}`} className="hover:text-white hover:underline">
@@ -137,7 +137,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-primary/95">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-white/50">
-          <p>© {new Date().getFullYear()} {site.name}.com. All rights reserved. Celebrating sibling love across every mile.</p>
+          <p>© {new Date().getFullYear()} {site.name}.com. All rights reserved. Haunt the season — ships to all 50 US states.</p>
           <p className="flex flex-wrap gap-x-3 gap-y-1">
             <Link href="/terms" className="hover:text-white underline underline-offset-2">
               Terms

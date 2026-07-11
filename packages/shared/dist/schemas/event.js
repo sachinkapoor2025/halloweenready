@@ -11,6 +11,7 @@ exports.eventTypeEnum = zod_1.z.enum([
     constants_1.EVENT_TYPES.CART_REMOVE,
     constants_1.EVENT_TYPES.CHECKOUT_START,
     constants_1.EVENT_TYPES.PURCHASE,
+    constants_1.EVENT_TYPES.SESSION_PING,
 ]);
 exports.trackEventSchema = zod_1.z.object({
     type: exports.eventTypeEnum,

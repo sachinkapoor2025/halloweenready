@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
-import { blogPosts, getBlogPost } from "@/lib/content/blog-posts";
+import { listAllBlogPosts, resolveBlogPost } from "@/lib/content/seo-blog";
 import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 interface Props {
@@ -12,24 +12,25 @@ interface Props {
 }
 
 export function generateStaticParams() {
-  return blogPosts.map((p) => ({ slug: p.slug }));
+  return listAllBlogPosts().map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPost(slug);
+  const post = resolveBlogPost(slug);
   if (!post) return { title: "Article" };
   return pageMetadata({
     title: post.title,
     description: post.description,
     path: `/blog/${slug}`,
     ogImage: post.image,
+    absoluteTitle: post.title.length > 55,
   });
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getBlogPost(slug);
+  const post = resolveBlogPost(slug);
   if (!post) notFound();
 
   const crumbs = [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useApiClient } from "@/lib/auth-context";
 import { downloadCsv, paginate, sortItems, type SortDir } from "@/lib/admin-utils";
 import { TableControls } from "@/components/admin/TableControls";
@@ -22,6 +23,7 @@ export default function AdminWelcomeLeadsPage() {
   const [rows, setRows] = useState<WelcomeCouponRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusTab, setStatusTab] = useState<"all" | "active" | "redeemed" | "expired">("all");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -43,20 +45,29 @@ export default function AdminWelcomeLeadsPage() {
       total: rows.length,
       active: rows.filter((r) => !r.usedAt && new Date(r.expiresAt).getTime() > Date.now()).length,
       used: rows.filter((r) => r.usedAt).length,
+      redemptionRate: rows.length > 0 ? rows.filter((r) => r.usedAt).length / rows.length : 0,
     }),
     [rows]
   );
 
+  const rowStatus = (r: WelcomeCouponRow): "active" | "redeemed" | "expired" => {
+    if (r.usedAt) return "redeemed";
+    if (new Date(r.expiresAt).getTime() < Date.now()) return "expired";
+    return "active";
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(
-      (r) =>
+    return rows.filter((r) => {
+      if (statusTab !== "all" && rowStatus(r) !== statusTab) return false;
+      if (!q) return true;
+      return (
         r.email.toLowerCase().includes(q) ||
         r.code.toLowerCase().includes(q) ||
         r.orderId?.toLowerCase().includes(q)
-    );
-  }, [rows, search]);
+      );
+    });
+  }, [rows, search, statusTab]);
 
   const sorted = useMemo(
     () => sortItems(filtered, (r) => r.createdAt, sortDir),
@@ -66,7 +77,7 @@ export default function AdminWelcomeLeadsPage() {
   const paged = paginate(sorted, page, pageSize);
 
   const exportCsv = () => {
-    downloadCsv("welcome-email-leads.csv", [
+    downloadCsv("halloween-discount-of-the-day-leads.csv", [
       ["Email", "Coupon", "Discount %", "Created", "Expires", "Status", "Order ID"],
       ...sorted.map((r) => [
         r.email,
@@ -81,7 +92,7 @@ export default function AdminWelcomeLeadsPage() {
   };
 
   const statusLabel = (r: WelcomeCouponRow) => {
-    if (r.usedAt) return { text: "Used", className: "text-slate-600" };
+    if (r.usedAt) return { text: "Redeemed", className: "text-slate-600" };
     if (new Date(r.expiresAt).getTime() < Date.now()) return { text: "Expired", className: "text-red-600" };
     return { text: "Active", className: "text-green-700" };
   };
@@ -90,9 +101,9 @@ export default function AdminWelcomeLeadsPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-primary">Welcome Email Leads</h1>
+          <h1 className="text-2xl font-bold text-primary">Discount of the Day</h1>
           <p className="text-sm text-slate-600 mt-1">
-            10% exit-intent signups with generated coupon codes (4-hour validity).
+            Halloween spin-the-wheel signups (5–20% off, 1-hour validity, one spin per email per day).
           </p>
         </div>
         <button
@@ -104,7 +115,7 @@ export default function AdminWelcomeLeadsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white border rounded-lg p-4">
           <p className="text-xs text-slate-500 uppercase">Total signups</p>
           <p className="text-2xl font-bold">{summary.total}</p>
@@ -117,6 +128,37 @@ export default function AdminWelcomeLeadsPage() {
           <p className="text-xs text-slate-500 uppercase">Redeemed</p>
           <p className="text-2xl font-bold">{summary.used}</p>
         </div>
+        <div className="bg-white border rounded-lg p-4">
+          <p className="text-xs text-slate-500 uppercase">Redemption rate</p>
+          <p className="text-2xl font-bold">{(summary.redemptionRate * 100).toFixed(1)}%</p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {(
+          [
+            { id: "all" as const, label: "All" },
+            { id: "active" as const, label: "Active" },
+            { id: "redeemed" as const, label: "Redeemed" },
+            { id: "expired" as const, label: "Expired" },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => {
+              setStatusTab(t.id);
+              setPage(1);
+            }}
+            className={`text-sm px-3 py-1.5 rounded-lg border ${
+              statusTab === t.id
+                ? "bg-nav text-white border-nav"
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3 items-center">
@@ -170,7 +212,7 @@ export default function AdminWelcomeLeadsPage() {
             ) : paged.items.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                  No welcome signups yet.
+                  No Discount of the Day signups yet.
                 </td>
               </tr>
             ) : (
@@ -178,12 +220,28 @@ export default function AdminWelcomeLeadsPage() {
                 const status = statusLabel(r);
                 return (
                   <tr key={`${r.code}-${r.createdAt}`} className="border-t border-slate-100">
-                    <td className="px-4 py-3">{r.email}</td>
+                    <td className="px-4 py-3">
+                      {r.email ? (
+                        <a href={`mailto:${r.email}`} className="text-nav hover:underline">
+                          {r.email}
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-mono font-semibold">{r.code}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{formatCouponExpiry(r.createdAt)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{formatCouponExpiry(r.expiresAt)}</td>
                     <td className={`px-4 py-3 font-medium ${status.className}`}>{status.text}</td>
-                    <td className="px-4 py-3 font-mono text-xs">{r.orderId?.slice(0, 8) ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-xs">
+                      {r.orderId ? (
+                        <Link href={`/admin/orders/${r.orderId}`} className="text-nav hover:underline">
+                          {r.orderId.slice(0, 8)}…
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                   </tr>
                 );
               })

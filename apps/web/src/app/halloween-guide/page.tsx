@@ -73,7 +73,7 @@ export default function HalloweenGuidePage() {
             <Link href="/products" className="btn-spooky">
               Shop All Halloween
             </Link>
-            <Link href="/categories/costumes" className="btn-outline-spooky bg-white/10 border-white text-white hover:bg-white hover:text-primary">
+            <Link href="/categories/costumesandaccessories" className="btn-outline-spooky bg-white/10 border-white text-white hover:bg-white hover:text-primary">
               Browse Costumes
             </Link>
           </div>
@@ -106,6 +106,21 @@ export default function HalloweenGuidePage() {
               <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <div className="p-6 md:p-8 rounded-2xl border border-nav/30 bg-primary/10 card-spooky">
+          <p className="text-sm uppercase tracking-widest text-nav mb-2">Featured</p>
+          <h2 className="text-2xl font-bold text-accent mb-3">Halloween Events Guide</h2>
+          <p className="text-slate-600 leading-relaxed mb-5">
+            Planning a haunt night, corn maze, pumpkin patch, theme-park Halloween event, or trunk-or-treat?
+            Our informational events hub covers how to choose attractions and what to pack — HalloweenReady
+            does not sell tickets.
+          </p>
+          <Link href="/halloween-guide/events" className="btn-spooky inline-block">
+            Explore events guide →
+          </Link>
         </div>
       </section>
 
