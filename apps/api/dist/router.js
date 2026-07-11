@@ -45,6 +45,7 @@ const events = __importStar(require("./handlers/events"));
 const analytics = __importStar(require("./handlers/analytics"));
 const salesReport = __importStar(require("./handlers/sales-report"));
 const adminCarts = __importStar(require("./handlers/admin-carts"));
+const adminCustomers = __importStar(require("./handlers/admin-customers"));
 const account = __importStar(require("./handlers/account"));
 const coupons = __importStar(require("./handlers/coupons"));
 const stripe_1 = require("./handlers/payments/stripe");
@@ -91,6 +92,8 @@ const routes = [
     { method: "GET", pattern: /^\/admin\/sessions$/, handler: analytics.listSessions },
     { method: "GET", pattern: /^\/admin\/sessions\/([^/]+)$/, handler: analytics.getSessionTimeline, params: ["sessionId"] },
     { method: "GET", pattern: /^\/admin\/carts\/abandoned$/, handler: adminCarts.getAbandonedCarts },
+    { method: "GET", pattern: /^\/admin\/customers\/([^/]+)$/, handler: adminCustomers.getCustomerProfile, params: ["email"] },
+    { method: "GET", pattern: /^\/admin\/search$/, handler: adminCustomers.adminSearch },
     { method: "POST", pattern: /^\/coupons\/validate$/, handler: coupons.validateCouponHandler },
     { method: "GET", pattern: /^\/admin\/welcome-coupons$/, handler: coupons.listWelcomeCoupons },
     { method: "POST", pattern: /^\/leads$/, handler: orders.captureLead },
@@ -100,6 +103,7 @@ const routes = [
     { method: "PUT", pattern: /^\/config\/payments$/, handler: config.updatePaymentConfig },
     { method: "POST", pattern: /^\/uploads\/presign$/, handler: uploads.getUploadUrl },
     { method: "POST", pattern: /^\/products\/([^/]+)\/images$/, handler: uploads.attachImageToProduct, params: ["slug"] },
+    { method: "DELETE", pattern: /^\/products\/([^/]+)\/images$/, handler: uploads.deleteImageFromProduct, params: ["slug"] },
     { method: "POST", pattern: /^\/webhooks\/stripe$/, handler: stripe_1.stripeWebhook },
     { method: "POST", pattern: /^\/webhooks\/razorpay$/, handler: razorpay_1.razorpayWebhook },
     { method: "POST", pattern: /^\/payments\/razorpay\/verify$/, handler: razorpay_1.verifyRazorpayPayment },

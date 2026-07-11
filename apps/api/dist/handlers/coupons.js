@@ -19,13 +19,34 @@ function generateCode() {
     let suffix = "";
     for (let i = 0; i < 6; i++)
         suffix += chars[bytes[i] % chars.length];
-    return `RAKHI-${suffix}`;
+    return `BOO-${suffix}`;
 }
 function welcomeExpiresAt(from = new Date()) {
     return new Date(from.getTime() + shared_1.WELCOME_COUPON_HOURS * 60 * 60 * 1000).toISOString();
 }
 function normalizeEmail(email) {
     return email.trim().toLowerCase();
+}
+async function getWelcomeEmailRecord(email) {
+    const existing = await db_1.docClient.send(new lib_dynamodb_1.GetCommand({
+        TableName: db_1.CONFIG_TABLE,
+        Key: { PK: shared_1.couponKeys.welcomeEmailPk(email), SK: shared_1.couponKeys.welcomeEmailSk() },
+    }));
+    return existing.Item;
+}
+async function getActiveWelcomeCouponForEmail(email, code = "") {
+    const activeCode = code || (await getWelcomeEmailRecord(email))?.code;
+    if (!activeCode)
+        return null;
+    const active = await validateCouponRecord(activeCode, email);
+    if (!active.valid)
+        return null;
+    return {
+        code: active.code,
+        expiresAt: active.expiresAt,
+        discountPercent: active.discountPercent,
+        reused: true,
+    };
 }
 async function validateCouponRecord(code, email) {
     const normalizedCode = code.trim().toUpperCase();
@@ -54,53 +75,101 @@ async function validateCouponRecord(code, email) {
         expiresAt: coupon.expiresAt,
     };
 }
+/**
+ * Discount of the Day — spin result.
+ * One coupon per email per calendar day (America/New_York); valid for WELCOME_COUPON_HOURS.
+ */
 async function issueWelcomeCoupon(input) {
     const email = normalizeEmail(input.email);
     const timestamp = (0, db_1.now)();
-    const expiresAt = welcomeExpiresAt();
-    const existing = await db_1.docClient.send(new lib_dynamodb_1.GetCommand({
-        TableName: db_1.CONFIG_TABLE,
-        Key: { PK: shared_1.couponKeys.welcomeEmailPk(email), SK: shared_1.couponKeys.welcomeEmailSk() },
-    }));
-    const activeCode = existing.Item?.code;
-    if (activeCode) {
-        const active = await validateCouponRecord(activeCode, email);
-        if (active.valid) {
-            return {
-                code: active.code,
-                expiresAt: active.expiresAt,
-                discountPercent: active.discountPercent,
-            };
+    const dayKey = (0, shared_1.dailyDealDayKey)();
+    const existing = await getWelcomeEmailRecord(email);
+    const existingCode = existing?.code;
+    const existingDayKey = existing?.dayKey;
+    if (existingDayKey === dayKey && existingCode) {
+        const active = await getActiveWelcomeCouponForEmail(email, existingCode);
+        if (active) {
+            return { ...active, alreadyClaimedToday: true };
         }
+        return {
+            code: existingCode,
+            expiresAt: existing?.expiresAt ?? timestamp,
+            discountPercent: Number(existing?.discountPercent ?? 0),
+            reused: true,
+            alreadyClaimedToday: true,
+        };
     }
+    const existingActive = await getActiveWelcomeCouponForEmail(email, existingCode);
+    if (existingActive) {
+        return { ...existingActive, alreadyClaimedToday: false };
+    }
+    const discountPercent = (0, shared_1.isValidDailyDealPercent)(input.discountPercent)
+        ? input.discountPercent
+        : (0, shared_1.pickDailyDealDiscount)();
+    const expiresAt = welcomeExpiresAt();
     const code = generateCode();
     const coupon = {
         PK: shared_1.couponKeys.pk(code),
         SK: shared_1.couponKeys.sk(),
         code,
         email,
-        discountPercent: shared_1.WELCOME_DISCOUNT_PERCENT,
+        discountPercent,
         expiresAt,
         createdAt: timestamp,
         sessionId: input.sessionId,
         source: "welcome",
+        dayKey,
     };
-    await db_1.docClient.send(new lib_dynamodb_1.PutCommand({
-        TableName: db_1.CONFIG_TABLE,
-        Item: coupon,
-    }));
-    await db_1.docClient.send(new lib_dynamodb_1.PutCommand({
-        TableName: db_1.CONFIG_TABLE,
-        Item: {
-            PK: shared_1.couponKeys.welcomeEmailPk(email),
-            SK: shared_1.couponKeys.welcomeEmailSk(),
-            code,
-            expiresAt,
-            createdAt: timestamp,
-            email,
-        },
-    }));
-    return { code, expiresAt, discountPercent: shared_1.WELCOME_DISCOUNT_PERCENT };
+    try {
+        await db_1.docClient.send(new lib_dynamodb_1.TransactWriteCommand({
+            TransactItems: [
+                {
+                    Put: {
+                        TableName: db_1.CONFIG_TABLE,
+                        Item: coupon,
+                        ConditionExpression: "attribute_not_exists(PK)",
+                    },
+                },
+                {
+                    Put: {
+                        TableName: db_1.CONFIG_TABLE,
+                        Item: {
+                            PK: shared_1.couponKeys.welcomeEmailPk(email),
+                            SK: shared_1.couponKeys.welcomeEmailSk(),
+                            code,
+                            expiresAt,
+                            createdAt: timestamp,
+                            email,
+                            dayKey,
+                            discountPercent,
+                        },
+                        ConditionExpression: "attribute_not_exists(PK) OR attribute_not_exists(dayKey) OR dayKey <> :today OR expiresAt < :now",
+                        ExpressionAttributeValues: {
+                            ":today": dayKey,
+                            ":now": timestamp,
+                        },
+                    },
+                },
+            ],
+        }));
+    }
+    catch {
+        const activeCoupon = await getActiveWelcomeCouponForEmail(email);
+        if (activeCoupon)
+            return { ...activeCoupon, alreadyClaimedToday: true };
+        const again = await getWelcomeEmailRecord(email);
+        if (again?.dayKey === dayKey && again.code) {
+            return {
+                code: again.code,
+                expiresAt: again.expiresAt ?? timestamp,
+                discountPercent: Number(again.discountPercent ?? 0),
+                reused: true,
+                alreadyClaimedToday: true,
+            };
+        }
+        throw new Error("Could not issue discount coupon");
+    }
+    return { code, expiresAt, discountPercent, reused: false, alreadyClaimedToday: false };
 }
 async function issueAbandonedCartCoupon(input) {
     const email = normalizeEmail(input.email);

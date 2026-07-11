@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeProductImageKey = normalizeProductImageKey;
+exports.productImageMatchKey = productImageMatchKey;
 exports.isAdminUploadedProductImage = isAdminUploadedProductImage;
 exports.mergeProductImages = mergeProductImages;
 /** Normalize image URLs for deduplication (path-only, case-insensitive). */
@@ -16,7 +17,14 @@ function normalizeProductImageKey(url) {
         return trimmed.toLowerCase();
     }
 }
-/** Admin portal uploads are stored under S3/CloudFront `products/<uuid>.<ext>`. */
+/**
+ * Match key shared by CDN admin uploads and static-rewritten `/uploads/products/...` paths.
+ * `/uploads/products/x.jpg` and `https://cdn/products/x.jpg` → `/products/x.jpg`
+ */
+function productImageMatchKey(url) {
+    return normalizeProductImageKey(url).replace(/^\/uploads(\/products\/)/i, "$1");
+}
+/** Admin portal uploads are stored under S3/CloudFront `products/<slug>/<uuid>.<ext>`. */
 function isAdminUploadedProductImage(url) {
     return /\/products\//i.test(url);
 }

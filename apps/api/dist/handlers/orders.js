@@ -58,6 +58,7 @@ const inventory_1 = require("../lib/inventory");
 const review_emails_1 = require("./review-emails");
 const abandoned_cart_emails_1 = require("./abandoned-cart-emails");
 const coupons_1 = require("./coupons");
+const customer_profile_1 = require("../lib/customer-profile");
 function buildOrderItem(order, userKey) {
     return {
         ...order,
@@ -77,12 +78,6 @@ function normalizeEmail(email) {
         return undefined;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : undefined;
 }
-function pickContactField(incoming, existing) {
-    const next = incoming?.trim();
-    if (next)
-        return next;
-    return existing;
-}
 async function captureLead(event) {
     if ((event.body?.length ?? 0) > 16 * 1024)
         return (0, response_1.badRequest)("Payload too large");
@@ -95,8 +90,15 @@ async function captureLead(event) {
     const email = normalizeEmail(parsed.data.email);
     let welcomeCoupon;
     let leadPayload = parsed.data;
-    if (parsed.data.source === "newsletter" && email) {
-        welcomeCoupon = await (0, coupons_1.issueWelcomeCoupon)({ email, sessionId });
+    if (parsed.data.source === "newsletter") {
+        if (!email)
+            return (0, response_1.badRequest)("Enter a valid email address to generate a coupon");
+        const requested = Number(parsed.data.metadata?.discountPercent);
+        welcomeCoupon = await (0, coupons_1.issueWelcomeCoupon)({
+            email,
+            sessionId,
+            discountPercent: Number.isFinite(requested) ? requested : undefined,
+        });
         leadPayload = {
             ...parsed.data,
             metadata: {
@@ -104,6 +106,8 @@ async function captureLead(event) {
                 couponCode: welcomeCoupon.code,
                 couponExpiresAt: welcomeCoupon.expiresAt,
                 discountPercent: String(welcomeCoupon.discountPercent),
+                alreadyClaimedToday: welcomeCoupon.alreadyClaimedToday ? "true" : "false",
+                offer: "discount_of_the_day",
             },
         };
     }
@@ -122,26 +126,11 @@ async function captureLead(event) {
             updatedAt: timestamp,
         },
     }));
-    const existing = await db_1.docClient.send(new lib_dynamodb_1.GetCommand({
-        TableName: db_1.CUSTOMERS_TABLE,
-        Key: { PK: shared_1.customerKeys.pk(sessionId), SK: shared_1.customerKeys.profileSk() },
-    }));
-    const prev = existing.Item ?? {};
-    // session identity rollup — merge so partial field updates don't wipe other fields
-    await db_1.docClient.send(new lib_dynamodb_1.PutCommand({
-        TableName: db_1.CUSTOMERS_TABLE,
-        Item: {
-            sessionId,
-            PK: shared_1.customerKeys.pk(sessionId),
-            SK: shared_1.customerKeys.profileSk(),
-            createdAt: prev.createdAt ?? timestamp,
-            lastSeenAt: timestamp,
-            updatedAt: timestamp,
-            name: pickContactField(leadPayload.name, prev.name),
-            email: email ?? prev.email,
-            phone: pickContactField(leadPayload.phone, prev.phone),
-        },
-    }));
+    await (0, customer_profile_1.upsertSessionProfile)(sessionId, {
+        name: leadPayload.name,
+        email: leadPayload.email,
+        phone: leadPayload.phone,
+    });
     const emailResult = await (0, email_1.notifyAdminLead)(leadPayload);
     const emailRequired = leadPayload.source === "contact" || leadPayload.source === "newsletter";
     if (emailRequired && emailResult.skipped) {
@@ -203,10 +192,18 @@ async function checkout(event) {
     const orderId = (0, uuid_1.v4)();
     const timestamp = (0, db_1.now)();
     const auth = (0, auth_1.getAuth)(event);
+    const sessionId = (0, auth_1.getSessionId)(event);
+    if (sessionId) {
+        await (0, customer_profile_1.upsertSessionProfile)(sessionId, {
+            name: parsed.data.shippingAddress.name,
+            email: parsed.data.shippingAddress.email,
+            phone: parsed.data.shippingAddress.phone,
+        });
+    }
     const order = {
         orderId,
         userId: auth?.userId,
-        sessionId: (0, auth_1.getSessionId)(event),
+        sessionId,
         items: orderItems,
         subtotal,
         discount,

@@ -1,5 +1,5 @@
 import type { Product } from "@halloweenready/shared";
-import { uploadsRelativePath } from "@halloweenready/shared";
+import { isAdminUploadedProductImage, uploadsRelativePath } from "@halloweenready/shared";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
 import {
@@ -39,6 +39,11 @@ function pickBestImages(
   const catalog = catalogImages ?? [];
   if (api.length === 0) return catalog;
   if (catalog.length === 0) return api;
+
+  // Live admin/S3 uploads must win over stale catalog JSON
+  if (api.some(isAdminUploadedProductImage)) {
+    return dedupeImageUrls([...api, ...catalog]);
+  }
 
   const apiMatches = countSlugMatchedImages(api, slug);
   const catalogMatches = countSlugMatchedImages(catalog, slug);
