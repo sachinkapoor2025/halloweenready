@@ -5,6 +5,7 @@
 export function isPlaceholderProductImage(url: string | undefined | null): boolean {
   if (!url?.trim()) return true;
   const u = url.trim().toLowerCase();
+  const file = u.split("/").pop() ?? u;
   return (
     u.includes("product-fallback") ||
     u.includes("_placeholder") ||
@@ -12,7 +13,9 @@ export function isPlaceholderProductImage(url: string | undefined | null): boole
     u.includes("/logo-options/") ||
     u.includes("logo-option-") ||
     u.includes("placeholder.jpg") ||
-    u.includes("placeholder.svg")
+    u.includes("placeholder.svg") ||
+    // Amazon-import stubs that sync:public-uploads replaced with the pumpkin JPEG
+    /^imgi_/i.test(file)
   );
 }
 

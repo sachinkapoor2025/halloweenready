@@ -23,10 +23,18 @@ export function ProductImageRotator({
   className?: string;
   staggerKey?: string;
 }) {
-  const resolved = useMemo(
-    () => filterDisplayableProductImages(images.map(resolveImageUrl)),
-    [images]
-  );
+  const resolved = useMemo(() => {
+    const cdn =
+      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_CDN_URL?.replace(/\/$/, "")) ||
+      "https://d2lfdzx32wxe94.cloudfront.net";
+    return filterDisplayableProductImages(
+      images.map((src) => {
+        const resolvedUrl = resolveImageUrl(src);
+        if (resolvedUrl.startsWith("/uploads/")) return `${cdn}${resolvedUrl}`;
+        return resolvedUrl;
+      })
+    );
+  }, [images]);
   const [broken, setBroken] = useState<Record<string, true>>({});
   const urls = useMemo(() => resolved.filter((src) => !broken[src]), [resolved, broken]);
   const [index, setIndex] = useState(0);

@@ -1,4 +1,5 @@
 import type { Product } from "@halloweenready/shared";
+import { getCdnUrl } from "./env";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
 import {
@@ -6,15 +7,29 @@ import {
   getCatalogProducts,
   getCatalogProductsByCategory,
 } from "./catalog-fallback";
-import { filterDisplayableProductImages } from "./product-images";
+import { filterDisplayableProductImages, isPlaceholderProductImage } from "./product-images";
+
+/**
+ * Always use absolute CloudFront URLs on storefront listings/PDP.
+ * Amplify `/uploads/...` often contains the pumpkin placeholder JPEG for missing files.
+ */
+function toListingImageUrl(url: string): string {
+  const cdn = getCdnUrl();
+  const resolved = resolveImageUrls([url])[0] || url.trim();
+  if (!resolved) return "";
+  if (resolved.startsWith("/uploads/")) return `${cdn}${resolved}`;
+  if (resolved.startsWith("uploads/")) return `${cdn}/${resolved}`;
+  if (isPlaceholderProductImage(resolved)) return "";
+  return resolved;
+}
 
 /** Map stored paths to working display URLs; drop pumpkin placeholders. */
 function withDisplayImages(product: Product): Product {
   const cleaned = filterDisplayableProductImages(product.images);
-  const resolved = resolveImageUrls(cleaned);
+  const resolved = cleaned.map(toListingImageUrl).filter(Boolean);
   return {
     ...product,
-    images: resolved.length > 0 ? resolved : [],
+    images: resolved,
   };
 }
 
@@ -35,7 +50,7 @@ export async function loadProduct(slug: string): Promise<Product | null> {
 export async function loadRelatedProducts(categorySlug: string, excludeSlug: string): Promise<Product[]> {
   try {
     const data = await api<{ products: Product[] }>(`/products?category=${categorySlug}`, {
-      revalidate: 60,
+      revalidate: false,
     });
     const related = data.products.filter((p) => p.slug !== excludeSlug).slice(0, 5);
     if (related.length > 0) return related.map(withDisplayImages);
