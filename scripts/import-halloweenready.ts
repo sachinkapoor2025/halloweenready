@@ -9,8 +9,18 @@
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { productKeys, categoryKeys, configKeys, defaultPaymentConfig, metaDescription, resolveProductImageUrls } from "@halloweenready/shared";
+import { DynamoDBDocumentClient, PutCommand, DeleteCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  productKeys,
+  categoryKeys,
+  configKeys,
+  defaultPaymentConfig,
+  metaDescription,
+  resolveProductImageUrls,
+  isAdminUploadedProductImage,
+  mergeProductImages,
+  DEFAULT_PRODUCT_CDN,
+} from "@halloweenready/shared";
 
 const CATALOG_PATH = join(process.cwd(), "scripts/data/halloweenready-catalog.json");
 /** Legacy WooCommerce — only used with --refresh when WordPress is still reachable. */
@@ -275,6 +285,15 @@ function getDocClient() {
   return DynamoDBDocumentClient.from(client);
 }
 
+function catalogImagesAsCdn(images: string[]): string[] {
+  // Always store absolute CDN URLs in DynamoDB (never Amplify-relative /uploads paths)
+  process.env.NEXT_PUBLIC_IMAGE_MODE = "cdn";
+  return resolveProductImageUrls(images, DEFAULT_PRODUCT_CDN).map((url) => {
+    if (url.startsWith("/uploads/")) return `${DEFAULT_PRODUCT_CDN}${url}`;
+    return url;
+  });
+}
+
 async function importToDb(catalog: { categories: CatalogCategory[]; products: CatalogProduct[] }) {
   const ENV = process.env.ENVIRONMENT ?? "dev";
   const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE ?? `halloweenready-products-${ENV}`;
@@ -299,17 +318,36 @@ async function importToDb(catalog: { categories: CatalogCategory[]; products: Ca
   }
 
   for (const p of catalog.products) {
+    const existing = await docClient.send(
+      new GetCommand({
+        TableName: PRODUCTS_TABLE,
+        Key: { PK: productKeys.pk(p.slug), SK: productKeys.sk() },
+      })
+    );
+    const existingImages = ((existing.Item?.images as string[]) ?? []).filter(Boolean);
+    const adminImages = existingImages.filter(isAdminUploadedProductImage);
+    const catalogImages = catalogImagesAsCdn(p.images ?? []);
+
+    // Never wipe admin portal uploads when re-seeding catalog
+    const images =
+      adminImages.length > 0
+        ? mergeProductImages(adminImages, catalogImages)
+        : catalogImages.length > 0
+          ? catalogImages
+          : existingImages;
+
     await docClient.send(
       new PutCommand({
         TableName: PRODUCTS_TABLE,
         Item: {
           ...p,
+          images,
           published: true,
           PK: productKeys.pk(p.slug),
           SK: productKeys.sk(),
           GSI1PK: productKeys.gsi1pk(p.categorySlug),
           GSI1SK: productKeys.gsi1sk(p.slug),
-          createdAt: timestamp,
+          createdAt: (existing.Item?.createdAt as string) ?? timestamp,
           updatedAt: timestamp,
         },
       })
@@ -355,11 +393,12 @@ function withCdnImages(catalog: {
   categories: CatalogCategory[];
   products: CatalogProduct[];
 }): { categories: CatalogCategory[]; products: CatalogProduct[] } {
+  process.env.NEXT_PUBLIC_IMAGE_MODE = "cdn";
   return {
     ...catalog,
     products: catalog.products.map((p) => ({
       ...p,
-      images: resolveProductImageUrls(p.images),
+      images: catalogImagesAsCdn(p.images),
     })),
   };
 }

@@ -8,6 +8,8 @@ import { DEFAULT_PRODUCT_INVENTORY, LOW_STOCK_THRESHOLD } from "@halloweenready/
 import { getUnitsSold, isFastSelling } from "@halloweenready/shared";
 import { formatMoney, paginate, downloadCsv } from "@/lib/admin-utils";
 import { TableControls } from "@/components/admin/TableControls";
+import { resolveImageUrl } from "@/lib/images";
+import { isPlaceholderProductImage } from "@/lib/product-images";
 
 export default function AdminProductsPage() {
   const apiClient = useApiClient();
