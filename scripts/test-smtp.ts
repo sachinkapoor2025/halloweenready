@@ -4,7 +4,7 @@
  */
 import nodemailer from "nodemailer";
 
-const host = process.env.SMTP_HOST ?? "smtp.halloweenready.com";
+const host = process.env.SMTP_HOST ?? "mail.halloweenready.com";
 const user = process.env.SMTP_USER ?? "order@halloweenready.com";
 const pass = process.env.SMTP_PASS;
 const notify = process.env.NOTIFY_EMAIL ?? user;
