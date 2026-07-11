@@ -110,7 +110,7 @@ export function Footer() {
           {/* Cities — full width on mobile (2-col city list), one col on desktop */}
           <div className="col-span-2 lg:col-span-1 min-w-0">
             <p className="font-semibold text-white mb-3 sm:mb-4">Deliver to</p>
-            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-x-4 gap-y-2 text-white/80">
+            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-x-6 gap-y-2 text-white/80">
               {cityLinks.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/cities/${c.slug}`} className="hover:text-white hover:underline">
