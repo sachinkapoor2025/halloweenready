@@ -60,11 +60,21 @@ jobs:
         run: npm run import:halloweenready
         env:
           ENVIRONMENT: prod
+          NEXT_PUBLIC_IMAGE_MODE: cdn
+
+      - name: Restore admin-uploaded images from S3
+        run: npm run restore:admin-images
+        env:
+          ENVIRONMENT: prod
+          UPLOAD_BUCKET: halloweenready-prod-uploadbucket-dyr0xdywradd
+          CLOUDFRONT_DOMAIN: d2lfdzx32wxe94.cloudfront.net
 
       - name: Rewrite product image URLs to CloudFront CDN
         run: npm run rewrite:product-images
         env:
           ENVIRONMENT: prod
+          NEXT_PUBLIC_IMAGE_MODE: cdn
+          CLOUDFRONT_DOMAIN: d2lfdzx32wxe94.cloudfront.net
 
   deploy-web:
     runs-on: ubuntu-latest

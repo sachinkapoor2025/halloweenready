@@ -13,13 +13,18 @@ export async function POST(req: NextRequest) {
   });
   if (!adminCheck.ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const body = (await req.json().catch(() => ({}))) as { slug?: string };
+  const body = (await req.json().catch(() => ({}))) as { slug?: string; categorySlug?: string };
   const slug = body.slug?.trim();
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
 
   revalidatePath(`/products/${slug}`);
   revalidatePath("/products");
   revalidatePath("/");
+  // Listing cards are ISR-cached per category — bust them too
+  revalidatePath("/categories", "layout");
+  if (body.categorySlug?.trim()) {
+    revalidatePath(`/categories/${body.categorySlug.trim()}`);
+  }
 
   return NextResponse.json({ revalidated: true, slug });
 }

@@ -8,6 +8,8 @@ import { DEFAULT_PRODUCT_INVENTORY, LOW_STOCK_THRESHOLD } from "@halloweenready/
 import { getUnitsSold, isFastSelling } from "@halloweenready/shared";
 import { formatMoney, paginate, downloadCsv } from "@/lib/admin-utils";
 import { TableControls } from "@/components/admin/TableControls";
+import { resolveImageUrl } from "@/lib/images";
+import { isPlaceholderProductImage } from "@/lib/product-images";
 
 export default function AdminProductsPage() {
   const apiClient = useApiClient();
@@ -199,7 +201,7 @@ export default function AdminProductsPage() {
     return null;
   };
 
-  const revalidateStorefrontProduct = async (slug: string) => {
+  const revalidateStorefrontProduct = async (slug: string, categorySlug?: string) => {
     if (!token) return;
     try {
       await fetch("/api/revalidate/product", {
@@ -208,7 +210,7 @@ export default function AdminProductsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, categorySlug }),
       });
     } catch {
       /* non-blocking */
@@ -263,7 +265,7 @@ export default function AdminProductsPage() {
       setMessage(
         `${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} uploaded for "${slug}". Visible on the website immediately after cache refresh.`
       );
-      await revalidateStorefrontProduct(slug);
+      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Upload failed");
@@ -281,7 +283,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ imageUrl }),
       });
       setMessage(`Image ${imageNumber} deleted from "${slug}".`);
-      await revalidateStorefrontProduct(slug);
+      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Image delete failed");
@@ -465,6 +467,9 @@ export default function AdminProductsPage() {
                             <div className="flex flex-wrap gap-2">
                               {p.images.map((imageUrl, index) => {
                                 const deleteKey = `${p.slug}:${imageUrl}`;
+                                const displayUrl = resolveImageUrl(imageUrl);
+                                const isPlaceholder =
+                                  isPlaceholderProductImage(imageUrl) || isPlaceholderProductImage(displayUrl);
                                 return (
                                   <div
                                     key={`${imageUrl}-${index}`}
@@ -472,11 +477,12 @@ export default function AdminProductsPage() {
                                   >
                                     <span className="mb-1 block text-[10px] font-semibold text-slate-500">
                                       Image {index + 1}
+                                      {isPlaceholder ? " (placeholder)" : ""}
                                     </span>
                                     <div className="h-12 w-full overflow-hidden rounded bg-white">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
-                                        src={imageUrl}
+                                        src={displayUrl}
                                         alt={`${p.name} image ${index + 1}`}
                                         className="h-full w-full object-cover"
                                       />

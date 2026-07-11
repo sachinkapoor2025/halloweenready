@@ -15,6 +15,7 @@
     "seed": "tsx scripts/seed.ts",
     "import:halloweenready": "tsx scripts/import-halloweenready.ts",
     "import:halloweenready:fetch": "tsx scripts/import-halloweenready.ts --fetch-only",
+    "restore:admin-images": "tsx scripts/restore-admin-product-images.ts",
     "seed:inventory": "tsx scripts/seed-inventory.ts",
     "fix:seo-descriptions": "tsx scripts/fix-seo-descriptions.ts",
     "generate:seo": "python3 scripts/generate-seo-from-keywords.py",

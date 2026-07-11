@@ -15,6 +15,7 @@ import { getCategoryRichContent } from "@/lib/content/category-rich-content";
 import { seoLocations } from "@/lib/content/seo-data";
 import { getCatalogCategory, getCatalogProductsByCategory } from "@/lib/catalog-fallback";
 import { resolveImageUrl } from "@/lib/images";
+import { withListingImages } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
@@ -22,6 +23,10 @@ import type { Product, Category } from "@halloweenready/shared";
 interface Props {
   params: Promise<{ slug: string }>;
 }
+
+/** Always fetch live product images — Amplify ISR was serving stale pumpkin placeholders. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /** Pick 2–3 varied city pages from seoLocations based on category slug hash. */
 function pickShipsToCities(categorySlug: string, count = 3) {
@@ -47,8 +52,6 @@ export function generateStaticParams() {
   return categoryOrder.map((slug) => ({ slug }));
 }
 
-export const revalidate = 3600;
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const seo = getCategoryPageSeo(slug);
@@ -66,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const fallback = getCatalogCategory(slug);
   try {
-    const data = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: 3600 });
+    const data = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: false });
     const c = data.category;
     return pageMetadata({
       title: `${c.name} — Halloween Decor & Supplies | USA Shipping`,
@@ -93,21 +96,23 @@ export default async function CategoryPage({ params }: Props) {
   let products: Product[] = [];
 
   try {
-    const catData = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: 3600 });
+    const catData = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: false });
     category = catData.category;
   } catch {
     category = getCatalogCategory(slug) ?? null;
   }
 
   try {
-    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, { revalidate: 3600 });
-    products = prodData.products;
+    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, {
+      revalidate: false,
+    });
+    products = withListingImages(prodData.products);
   } catch {
     products = [];
   }
 
   if (products.length === 0) {
-    products = getCatalogProductsByCategory(slug);
+    products = withListingImages(getCatalogProductsByCategory(slug));
   }
 
   if (!category) {

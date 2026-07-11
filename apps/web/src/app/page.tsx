@@ -11,6 +11,7 @@ import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
 import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
+import { withListingImages } from "@/lib/product-loader";
 import { categorySlugVariants } from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
@@ -42,7 +43,10 @@ export default async function HomePage() {
   const catalogProducts = getCatalogProducts();
   if (catalogProducts.length > 0) {
     const apiBySlug = new Map(products.map((p) => [p.slug, p]));
-    products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
+    // Prefer live API product data (including admin images); catalog only fills gaps
+    products = withListingImages(catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c));
+  } else {
+    products = withListingImages(products);
   }
 
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));

@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveImageUrl } from "@/lib/images";
+import { filterDisplayableProductImages } from "@/lib/product-images";
 
 const ROTATE_MS = 4000;
 
 /**
  * Auto-rotates through a product's gallery images on listing cards.
  * Pauses while hovered; only advances when the card is on-screen.
+ * Broken / placeholder images are skipped so the pumpkin fallback never appears.
  */
 export function ProductImageRotator({
   images,
@@ -21,11 +23,34 @@ export function ProductImageRotator({
   className?: string;
   staggerKey?: string;
 }) {
-  const urls = images.map(resolveImageUrl).filter(Boolean);
+  const resolved = useMemo(() => {
+    const cdn =
+      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_CDN_URL?.replace(/\/$/, "")) ||
+      "https://d2lfdzx32wxe94.cloudfront.net";
+    return filterDisplayableProductImages(
+      images.map((src) => {
+        const resolvedUrl = resolveImageUrl(src);
+        if (resolvedUrl.startsWith("/uploads/")) return `${cdn}${resolvedUrl}`;
+        return resolvedUrl;
+      })
+    );
+  }, [images]);
+  const [broken, setBroken] = useState<Record<string, true>>({});
+  const urls = useMemo(() => resolved.filter((src) => !broken[src]), [resolved, broken]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(true);
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setBroken({});
+    setIndex(0);
+  }, [images]);
+
+  useEffect(() => {
+    if (urls.length === 0) return;
+    if (index >= urls.length) setIndex(0);
+  }, [index, urls.length]);
 
   useEffect(() => {
     if (!root || typeof IntersectionObserver === "undefined") return;
@@ -58,6 +83,8 @@ export function ProductImageRotator({
     );
   }
 
+  const safeIndex = Math.min(index, urls.length - 1);
+
   return (
     <div
       ref={setRoot}
@@ -71,12 +98,13 @@ export function ProductImageRotator({
           key={`${src}-${i}`}
           src={src}
           alt={i === 0 ? alt : ""}
-          aria-hidden={i !== index}
+          aria-hidden={i !== safeIndex}
           className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ease-out ${
-            i === index ? "opacity-100" : "opacity-0"
+            i === safeIndex ? "opacity-100" : "opacity-0"
           }`}
           loading={i === 0 ? "eager" : "lazy"}
           decoding="async"
+          onError={() => setBroken((prev) => (prev[src] ? prev : { ...prev, [src]: true }))}
         />
       ))}
       {urls.length > 1 && (
@@ -85,7 +113,7 @@ export function ProductImageRotator({
             <span
               key={i}
               className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                i === index ? "bg-white" : "bg-white/50"
+                i === safeIndex ? "bg-white" : "bg-white/50"
               }`}
             />
           ))}
