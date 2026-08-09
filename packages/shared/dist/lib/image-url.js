@@ -2,11 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_PRODUCT_CDN = void 0;
 exports.getProductCdnBase = getProductCdnBase;
+exports.staticUploadUrl = staticUploadUrl;
 exports.cdnUploadUrl = cdnUploadUrl;
 exports.resolveProductImageUrl = resolveProductImageUrl;
 exports.resolveProductImageUrls = resolveProductImageUrls;
+exports.uploadsRelativePath = uploadsRelativePath;
+exports.isAmazonImportedFilename = isAmazonImportedFilename;
 /** CloudFront distribution for product/media images (from halloweenready-prod stack). */
 exports.DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
+function decodeUrlEntities(url) {
+    return url
+        .replace(/&#8211;/g, "–")
+        .replace(/&#8212;/g, "—")
+        .replace(/&amp;/g, "&");
+}
 function getProductCdnBase(cdnBase) {
     const fromArg = cdnBase?.trim();
     if (fromArg)
@@ -20,16 +29,21 @@ function getProductCdnBase(cdnBase) {
         return fromEnv.replace(/\/$/, "");
     return exports.DEFAULT_PRODUCT_CDN;
 }
+/** Static path served from apps/web/public/uploads (Amplify). */
+function staticUploadUrl(relativePath) {
+    const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
+    return `/uploads/${clean}`;
+}
 /** Build a CDN URL from a path under uploads/ (e.g. 2026/03/photo.jpg). */
 function cdnUploadUrl(relativePath, cdnBase) {
-    const clean = relativePath.replace(/^\/+/, "");
+    const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
     return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
 /** Rewrite legacy /wp-content/uploads media URLs to the CDN mirror. */
 function resolveProductImageUrl(url, cdnBase) {
     if (!url)
         return "";
-    const trimmed = url.trim();
+    const trimmed = decodeUrlEntities(url.trim());
     if (!trimmed)
         return "";
     const cdn = getProductCdnBase(cdnBase);
@@ -51,4 +65,13 @@ function resolveProductImageUrls(urls, cdnBase) {
     if (!urls?.length)
         return [];
     return urls.map((u) => resolveProductImageUrl(u, cdnBase)).filter(Boolean);
+}
+/** Extract path after uploads/ from any known product image URL. */
+function uploadsRelativePath(url) {
+    const m = decodeUrlEntities(url.trim()).match(/(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i);
+    return m ? m[1] : null;
+}
+/** WooCommerce Amazon-import filenames — copyrighted product photos; do not fetch or hotlink. */
+function isAmazonImportedFilename(filename) {
+    return /^imgi_/i.test(filename);
 }

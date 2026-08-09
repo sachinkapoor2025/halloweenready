@@ -1,6 +1,13 @@
 /** CloudFront distribution for product/media images (from halloweenready-prod stack). */
 export const DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
 
+function decodeUrlEntities(url: string): string {
+  return url
+    .replace(/&#8211;/g, "–")
+    .replace(/&#8212;/g, "—")
+    .replace(/&amp;/g, "&");
+}
+
 export function getProductCdnBase(cdnBase?: string): string {
   const fromArg = cdnBase?.trim();
   if (fromArg) return fromArg.replace(/\/$/, "");
@@ -16,16 +23,22 @@ export function getProductCdnBase(cdnBase?: string): string {
   return DEFAULT_PRODUCT_CDN;
 }
 
+/** Static path served from apps/web/public/uploads (Amplify). */
+export function staticUploadUrl(relativePath: string): string {
+  const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
+  return `/uploads/${clean}`;
+}
+
 /** Build a CDN URL from a path under uploads/ (e.g. 2026/03/photo.jpg). */
 export function cdnUploadUrl(relativePath: string, cdnBase?: string): string {
-  const clean = relativePath.replace(/^\/+/, "");
+  const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
   return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
 
 /** Rewrite legacy /wp-content/uploads media URLs to the CDN mirror. */
 export function resolveProductImageUrl(url: string | undefined | null, cdnBase?: string): string {
   if (!url) return "";
-  const trimmed = url.trim();
+  const trimmed = decodeUrlEntities(url.trim());
   if (!trimmed) return "";
 
   const cdn = getProductCdnBase(cdnBase);
@@ -51,4 +64,17 @@ export function resolveProductImageUrls(
 ): string[] {
   if (!urls?.length) return [];
   return urls.map((u) => resolveProductImageUrl(u, cdnBase)).filter(Boolean);
+}
+
+/** Extract path after uploads/ from any known product image URL. */
+export function uploadsRelativePath(url: string): string | null {
+  const m = decodeUrlEntities(url.trim()).match(
+    /(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i
+  );
+  return m ? m[1]! : null;
+}
+
+/** WooCommerce Amazon-import filenames — copyrighted product photos; do not fetch or hotlink. */
+export function isAmazonImportedFilename(filename: string): boolean {
+  return /^imgi_/i.test(filename);
 }
