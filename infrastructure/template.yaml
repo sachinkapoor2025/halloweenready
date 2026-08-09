@@ -82,11 +82,16 @@ Parameters:
     Default: "false"
     AllowedValues: ["true", "false"]
     Description: When true, stub Stripe/Razorpay/USPS/SMTP for k6 load tests (staging only)
+  EnableVendorApi:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Deploy Orange County vendor HTTP API (optional; leave false for HalloweenReady)
   OrangeCountyVendorApiKey:
     Type: String
     Default: ""
     NoEcho: true
-    Description: API key for Orange County vendor order feed (X-Vendor-Api-Key)
+    Description: API key for Orange County vendor order feed (X-Vendor-Api-Key); only used when EnableVendorApi=true
   WhatsAppToken:
     Type: String
     Default: ""
@@ -115,6 +120,9 @@ Parameters:
     Type: String
     Default: ""
     Description: e.g. whatsapp:+14155238886 (optional Twilio WhatsApp sender)
+
+Conditions:
+  VendorApiEnabled: !Equals [!Ref EnableVendorApi, "true"]
 
 Globals:
   Function:
@@ -693,7 +701,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
 
-  # Separate API Gateway + Lambda for Orange County vendor order feed only.
+  # Optional Orange County vendor order feed (EnableVendorApi=true). Off by default for HalloweenReady.
   # Storefront/admin traffic stays on HttpApi — vendors cannot reach those routes here.
   #
   # Retain policies: do NOT delete this API if the stack is updated/replaced or this
@@ -701,6 +709,7 @@ Resources:
   # Never rename the logical ID `VendorHttpApi` (that forces a new API id / URL).
   VendorHttpApi:
     Type: AWS::Serverless::HttpApi
+    Condition: VendorApiEnabled
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -713,6 +722,7 @@ Resources:
 
   VendorApiFunction:
     Type: AWS::Serverless::Function
+    Condition: VendorApiEnabled
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -904,6 +914,7 @@ Outputs:
     Description: HTTP API endpoint (storefront + admin — not for vendors)
     Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
   VendorApiUrl:
+    Condition: VendorApiEnabled
     Description: Orange County vendor order API only (X-Vendor-Api-Key)
     Value: !Sub https://${VendorHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
   ProductsTableName:
