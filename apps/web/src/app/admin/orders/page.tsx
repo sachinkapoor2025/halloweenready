@@ -1,13 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApiClient } from "@/lib/auth-context";
-import { ORDER_STATUS } from "@halloweenready/shared";
+import {
+  ORDER_STATUS,
+  orderHasVendor,
+  orderVendorKeys,
+  vendorDisplayLabel,
+  VENDOR_ORANGE_COUNTY,
+  VENDOR_HALLOWEENREADY,
+  ensureVendorFulfillments,
+  type VendorFulfillment,
+} from "@halloweenready/shared";
 import { statusLabel, badgeClass } from "@/lib/order-status";
 import {
   downloadCsv,
   formatMoney,
+  matchesOrderStatusTab,
+  matchesPaymentFilter,
   paginate,
   paymentStatusClass,
   paymentStatusLabel,
@@ -19,16 +31,66 @@ import { TableControls } from "@/components/admin/TableControls";
 
 interface Order {
   orderId: string;
+  /** Human-readable OC##### / US##### when assigned. */
+  orderNumber?: string;
   status: string;
   total: number;
   currency: string;
   createdAt: string;
   updatedAt: string;
   trackingNumber?: string;
+  carrier?: string;
   paymentProvider?: string;
   shippingAddress: { name: string; email: string; phone?: string };
   estimatedDeliveryAt?: string;
   deliveredAt?: string;
+  labelStatus?: "none" | "queued" | "purchased" | "failed";
+  shippingServiceName?: string;
+  /** Set at checkout when cart has vendor-sourced lines (e.g. orange-county). */
+  vendorSlugs?: string[];
+  vendorFulfillments?: VendorFulfillment[];
+  items?: { vendorSlug?: string; sku?: string; name?: string }[];
+}
+
+function vendorFilterLabel(slug: string): string {
+  return vendorDisplayLabel(slug);
+}
+
+function collectVendorSlugs(orders: Order[]): string[] {
+  const set = new Set<string>();
+  for (const o of orders) {
+    for (const s of orderVendorKeys(o)) set.add(s);
+  }
+  set.add(VENDOR_ORANGE_COUNTY);
+  set.add(VENDOR_HALLOWEENREADY);
+  return Array.from(set).sort((a, b) => a.localeCompare(b));
+}
+
+function VendorBadges({ order }: { order: Order }) {
+  const keys = orderVendorKeys(order);
+  return (
+    <div className="flex flex-col gap-1">
+      {keys.map((slug) => (
+        <span
+          key={slug}
+          className={
+            slug === VENDOR_ORANGE_COUNTY
+              ? "inline-flex w-fit items-center rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 text-[11px] font-semibold"
+              : "inline-flex w-fit items-center rounded-full bg-slate-100 text-slate-700 px-2 py-0.5 text-[11px] font-semibold"
+          }
+        >
+          {vendorDisplayLabel(slug)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function abbreviateServiceName(name?: string): string | null {
+  if (!name) return null;
+  const trimmed = name.replace(/^USPS\s+/i, "").trim();
+  if (trimmed.length <= 18) return trimmed;
+  return `${trimmed.slice(0, 16)}…`;
 }
 
 type SortKey = "date" | "amount" | "status" | "customer";
@@ -37,6 +99,7 @@ const STATUS_TABS: { id: string; label: string }[] = [
   { id: "all", label: "All" },
   { id: ORDER_STATUS.PENDING_PAYMENT, label: "Pending payment" },
   { id: ORDER_STATUS.PAID, label: "Paid" },
+  { id: ORDER_STATUS.ON_HOLD, label: "On hold" },
   { id: ORDER_STATUS.PROCESSING, label: "Processing" },
   { id: ORDER_STATUS.SHIPPED, label: "Shipped" },
   { id: ORDER_STATUS.DELIVERED, label: "Delivered" },
@@ -60,6 +123,7 @@ export default function AdminOrdersPage() {
   const [tab, setTab] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
+  const [vendorFilter, setVendorFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -71,12 +135,11 @@ export default function AdminOrdersPage() {
 
   const loadOrders = useCallback(() => {
     setLoading(true);
-    const qs = tab !== "all" ? `?status=${encodeURIComponent(tab)}` : "";
-    apiClient<{ orders: Order[] }>(`/admin/orders${qs}`)
+    apiClient<{ orders: Order[] }>("/admin/orders")
       .then((d) => setOrders(d.orders))
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [apiClient, tab]);
+  }, [apiClient]);
 
   useEffect(() => {
     loadOrders();
@@ -84,21 +147,17 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [tab, paymentFilter, paymentMethod, search, dateFrom, dateTo, sortKey, sortDir]);
+  }, [tab, paymentFilter, paymentMethod, vendorFilter, search, dateFrom, dateTo, sortKey, sortDir]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = orders.filter((o) => {
-      if (paymentFilter === "pending" && o.status !== ORDER_STATUS.PENDING_PAYMENT) return false;
-      if (paymentFilter === "paid" && o.status === ORDER_STATUS.PENDING_PAYMENT) return false;
-      if (
-        paymentFilter === "failed" &&
-        o.status !== ORDER_STATUS.CANCELLED &&
-        o.status !== ORDER_STATUS.PENDING_PAYMENT
-      )
-        return false;
-      if (paymentFilter === "refunded" && o.status !== ORDER_STATUS.REFUNDED) return false;
+      if (!matchesOrderStatusTab(o.status, tab)) return false;
+      if (!matchesPaymentFilter(o.status, paymentFilter)) return false;
       if (paymentMethod !== "all" && o.paymentProvider !== paymentMethod) return false;
+      if (vendorFilter !== "all" && !orderHasVendor(o, vendorFilter)) {
+        return false;
+      }
       if (dateFrom && o.createdAt.slice(0, 10) < dateFrom) return false;
       if (dateTo && o.createdAt.slice(0, 10) > dateTo) return false;
       if (!q) return true;
@@ -121,7 +180,9 @@ export default function AdminOrdersPage() {
 
     list = sortItems(list, sorter, sortDir);
     return list;
-  }, [orders, paymentFilter, paymentMethod, search, dateFrom, dateTo, sortKey, sortDir]);
+  }, [orders, tab, paymentFilter, paymentMethod, vendorFilter, search, dateFrom, dateTo, sortKey, sortDir]);
+
+  const vendorOptions = useMemo(() => collectVendorSlugs(orders), [orders]);
 
   const { items: pageItems, totalPages, total } = paginate(filtered, page, pageSize);
 
@@ -150,6 +211,7 @@ export default function AdminOrdersPage() {
         "Total",
         "Currency",
         "Tracking",
+        "Vendor",
         "Last Updated",
       ],
       ...filtered.map((o) => [
@@ -164,7 +226,17 @@ export default function AdminOrdersPage() {
         shippingStatusLabel(o.status),
         String(o.total),
         o.currency,
-        o.trackingNumber ?? "",
+        ensureVendorFulfillments(o)
+          .map((f) =>
+            f.trackingNumber
+              ? `${vendorDisplayLabel(f.vendorSlug)}:${f.trackingNumber}`
+              : ""
+          )
+          .filter(Boolean)
+          .join(" | ") ||
+          o.trackingNumber ||
+          "",
+        orderVendorKeys(o).join("+"),
         o.updatedAt,
       ]),
     ];
@@ -222,7 +294,10 @@ export default function AdminOrdersPage() {
           <button
             key={t.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => {
+              setTab(t.id);
+              setPaymentFilter("all");
+            }}
             className={`px-3 py-1.5 rounded-full text-sm border ${
               tab === t.id
                 ? "bg-nav text-white border-nav"
@@ -234,7 +309,7 @@ export default function AdminOrdersPage() {
         ))}
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
         <input
           type="search"
           placeholder="Search order ID, name, email, phone…"
@@ -261,6 +336,20 @@ export default function AdminOrdersPage() {
           <option value="all">All payment methods</option>
           <option value="stripe">Stripe</option>
           <option value="razorpay">Razorpay</option>
+        </select>
+        <select
+          value={vendorFilter}
+          onChange={(e) => setVendorFilter(e.target.value)}
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+          title="Filter by fulfillment vendor"
+        >
+          <option value="all">All vendors</option>
+          <option value="halloweenready">HalloweenReady</option>
+          {vendorOptions.map((slug) => (
+            <option key={slug} value={slug}>
+              {vendorFilterLabel(slug)}
+            </option>
+          ))}
         </select>
         <div className="flex gap-2">
           <input
@@ -296,13 +385,15 @@ export default function AdminOrdersPage() {
         onExport={exportOrders}
       >
         {selected.size > 0 && (
-          <button
-            type="button"
-            onClick={bulkExport}
-            className="text-sm bg-slate-800 text-white px-3 py-1.5 rounded-lg"
-          >
-            Export {selected.size} selected
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={bulkExport}
+              className="text-sm bg-slate-800 text-white px-3 py-1.5 rounded-lg"
+            >
+              Export {selected.size} selected
+            </button>
+          </>
         )}
       </TableControls>
 
@@ -331,6 +422,7 @@ export default function AdminOrdersPage() {
                   />
                 </th>
                 <th className="py-3 px-3">Order ID</th>
+                <th className="py-3 px-3">Vendor</th>
                 <th className="py-3 px-3">Date & time</th>
                 <th className="py-3 px-3">Customer</th>
                 <th className="py-3 px-3">Payment</th>
@@ -338,11 +430,23 @@ export default function AdminOrdersPage() {
                 <th className="py-3 px-3">Shipping</th>
                 <th className="py-3 px-3">Total</th>
                 <th className="py-3 px-3">Updated</th>
+                <th className="py-3 px-3">Age</th>
               </tr>
             </thead>
             <tbody>
-              {pageItems.map((o) => (
-                <tr key={o.orderId} className="border-t hover:bg-blue-50/40 align-top">
+              {pageItems.map((o) => {
+                const hoursSinceUpdate =
+                  (Date.now() - new Date(o.updatedAt || o.createdAt).getTime()) / (1000 * 60 * 60);
+                const isStale =
+                  hoursSinceUpdate >= 48 &&
+                  (o.status === ORDER_STATUS.PENDING_PAYMENT || o.status === ORDER_STATUS.PROCESSING);
+                return (
+                <tr
+                  key={o.orderId}
+                  className={`border-t hover:bg-blue-50/40 align-top ${
+                    isStale ? "bg-amber-50/80" : ""
+                  }`}
+                >
                   <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
@@ -354,7 +458,13 @@ export default function AdminOrdersPage() {
                     className="py-3 px-3 font-mono text-xs text-nav cursor-pointer"
                     onClick={() => router.push(`/admin/orders/${o.orderId}`)}
                   >
-                    {o.orderId.slice(0, 8)}…
+                    {o.orderNumber ?? `${o.orderId.slice(0, 8)}…`}
+                  </td>
+                  <td
+                    className="py-3 px-3 cursor-pointer"
+                    onClick={() => router.push(`/admin/orders/${o.orderId}`)}
+                  >
+                    <VendorBadges order={o} />
                   </td>
                   <td
                     className="py-3 px-3 text-slate-500 whitespace-nowrap cursor-pointer"
@@ -367,7 +477,19 @@ export default function AdminOrdersPage() {
                     onClick={() => router.push(`/admin/orders/${o.orderId}`)}
                   >
                     <div className="font-medium">{o.shippingAddress?.name ?? "—"}</div>
-                    <div className="text-xs text-slate-400">{o.shippingAddress?.email ?? ""}</div>
+                    <div className="text-xs text-slate-400">
+                      {o.shippingAddress?.email ? (
+                        <Link
+                          href={`/admin/customers/${encodeURIComponent(o.shippingAddress.email)}`}
+                          className="text-nav hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {o.shippingAddress.email}
+                        </Link>
+                      ) : (
+                        ""
+                      )}
+                    </div>
                     {o.shippingAddress?.phone && (
                       <div className="text-xs text-slate-400">{o.shippingAddress.phone}</div>
                     )}
@@ -389,11 +511,35 @@ export default function AdminOrdersPage() {
                   </td>
                   <td className="py-3 px-3 text-xs text-slate-600">
                     <div>{shippingStatusLabel(o.status)}</div>
-                    {o.trackingNumber && (
+                    {o.labelStatus === "failed" && (
+                      <span className="inline-block mt-1 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-800">
+                        Label failed
+                      </span>
+                    )}
+                    {abbreviateServiceName(o.shippingServiceName) && (
+                      <div className="text-slate-400 truncate max-w-[120px]" title={o.shippingServiceName}>
+                        {abbreviateServiceName(o.shippingServiceName)}
+                      </div>
+                    )}
+                    {ensureVendorFulfillments(o).some((f) => f.trackingNumber) ? (
+                      <div className="mt-1 space-y-0.5">
+                        {ensureVendorFulfillments(o)
+                          .filter((f) => f.trackingNumber)
+                          .map((f) => (
+                            <div
+                              key={f.vendorSlug}
+                              className="text-slate-400 truncate max-w-[140px]"
+                              title={`${vendorDisplayLabel(f.vendorSlug)}: ${f.trackingNumber}`}
+                            >
+                              {vendorDisplayLabel(f.vendorSlug).slice(0, 2)}: {f.trackingNumber}
+                            </div>
+                          ))}
+                      </div>
+                    ) : o.trackingNumber ? (
                       <div className="text-slate-400 truncate max-w-[100px]" title={o.trackingNumber}>
                         {o.trackingNumber}
                       </div>
-                    )}
+                    ) : null}
                   </td>
                   <td className="py-3 px-3 font-medium whitespace-nowrap">
                     {formatMoney(o.total, o.currency)}
@@ -401,8 +547,18 @@ export default function AdminOrdersPage() {
                   <td className="py-3 px-3 text-xs text-slate-400 whitespace-nowrap">
                     {new Date(o.updatedAt).toLocaleString()}
                   </td>
+                  <td className="py-3 px-3 text-xs whitespace-nowrap">
+                    {isStale ? (
+                      <span className="text-amber-700 font-medium" title="No update in 48+ hours">
+                        {Math.floor(hoursSinceUpdate / 24)}d stale
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">{Math.floor(hoursSinceUpdate / 24)}d</span>
+                    )}
+                  </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

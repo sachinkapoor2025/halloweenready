@@ -12,25 +12,52 @@ import {
   ORDER_STATUS_TRANSITIONS,
   convertCartItemsToCurrency,
   cartSubtotal,
+  couponEligibleSubtotal,
+  buildOrderShipments,
+  singleCheckoutShipment,
+  isValidScheduleDeliveryDate,
+  preferredDeliveryDateToIso,
+  buildInitialVendorFulfillments,
+  ensureVendorFulfillments,
+  upsertVendorFulfillment,
+  primaryTrackingFromFulfillments,
+  allVendorsHaveTracking,
+  anyVendorHasTracking,
+  isMultiVendorOrder,
   type Order,
   type OrderStatusHistoryEntry,
+  type CartItem,
+  type VendorFulfillment,
 } from "@halloweenready/shared";
 import { resolveCheckoutUsdInrRate } from "../lib/exchange-rate";
 import { docClient, ORDERS_TABLE, CUSTOMERS_TABLE, now } from "../lib/db";
 import { ok, created, badRequest, unauthorized, forbidden, notFound } from "../lib/response";
 import { getAuth, getSessionId, getUserOrSessionKey, requireAdmin } from "../lib/auth";
 import { getCartHandler, clearCartForUser } from "./cart";
-import { notifyAdminLead, notifyAdminOrderPaid, notifyAdminOrderPlaced } from "../lib/email";
+import {
+  notifyAdminLead,
+  notifyAdminOrderPaid,
+  notifyAdminOrderPlaced,
+  notifyAdminOrderPaymentFailed,
+  notifyCustomerOrderStatusChange,
+} from "../lib/email";
 import { decrementInventoryForOrder, validateOrderInventory } from "../lib/inventory";
 import { applyDeliveryReviewSchedule } from "./review-emails";
 import { markCartConverted } from "./abandoned-cart-emails";
+import { upsertSessionProfile } from "../lib/customer-profile";
+import {
+  allocateOrderNumberForCart,
+  putOrderNumberPointer,
+  resolveOrderByIdOrNumber,
+} from "../lib/order-numbers";
 import {
   applyPercentDiscount,
   issueWelcomeCoupon,
   markCouponUsed,
   validateCouponRecord,
 } from "./coupons";
-import { upsertSessionProfile } from "../lib/customer-profile";
+import { resolveShippingForCheckout, purchaseLabelForOrder } from "../lib/shipping/checkout-shipping";
+import { loadShippingSettings } from "../lib/shipping";
 
 type StoredOrder = Order & {
   PK: string;
@@ -84,13 +111,19 @@ export async function captureLead(event: APIGatewayProxyEventV2) {
     | undefined;
   let leadPayload = parsed.data;
   if (parsed.data.source === "newsletter") {
-    if (!email) return badRequest("Enter a valid email address to generate a coupon");
+    const phone = parsed.data.phone?.trim();
+    if (!phone) return badRequest("Enter a valid mobile number to spin");
     const requested = Number(parsed.data.metadata?.discountPercent);
-    welcomeCoupon = await issueWelcomeCoupon({
-      email,
-      sessionId,
-      discountPercent: Number.isFinite(requested) ? requested : undefined,
-    });
+    try {
+      welcomeCoupon = await issueWelcomeCoupon({
+        phone,
+        email,
+        sessionId,
+        discountPercent: Number.isFinite(requested) ? requested : undefined,
+      });
+    } catch (err) {
+      return badRequest(err instanceof Error ? err.message : "Could not issue discount coupon");
+    }
     leadPayload = {
       ...parsed.data,
       metadata: {
@@ -129,7 +162,11 @@ export async function captureLead(event: APIGatewayProxyEventV2) {
   });
 
   const emailResult = await notifyAdminLead(leadPayload);
-  const emailRequired = leadPayload.source === "contact" || leadPayload.source === "newsletter";
+  // Newsletter spins are phone-first — only require SMTP when an email was provided.
+  const emailRequired =
+    leadPayload.source === "contact" ||
+    leadPayload.source === "review" ||
+    (leadPayload.source === "newsletter" && Boolean(email));
 
   if (emailRequired && emailResult.skipped) {
     console.error("Email skipped — SMTP not configured:", leadPayload.source);
@@ -176,31 +213,92 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     return badRequest("Stripe checkout requires USD. Switch currency to USD or pay with Razorpay.");
   }
 
-  const orderItems =
+  const usdInrRate = await resolveCheckoutUsdInrRate(parsed.data.usdInrRate);
+  const orderItems: CartItem[] =
     checkoutCurrency !== cartCurrency
-      ? convertCartItemsToCurrency(
-          cart.items,
-          checkoutCurrency,
-          await resolveCheckoutUsdInrRate(parsed.data.usdInrRate)
-        )
-      : cart.items;
+      ? convertCartItemsToCurrency(cart.items, checkoutCurrency, usdInrRate)
+      : (cart.items as CartItem[]);
 
   const stockError = await validateOrderInventory(orderItems);
   if (stockError) return badRequest(stockError);
 
   const subtotal = cartSubtotal(orderItems);
-  const shipping = 0;
+  const checkoutShipments =
+    parsed.data.shipments?.length
+      ? parsed.data.shipments
+      : [singleCheckoutShipment(parsed.data.shippingAddress, orderItems)];
+
+  const shippingSettings = await loadShippingSettings();
+  const primaryDestination = checkoutShipments[0].shippingAddress;
+  const primaryLines = checkoutShipments[0].items;
+  const cartBySlug = new Map<string, CartItem>(
+    orderItems.map((i) => [i.productSlug, i])
+  );
+  const primarySubtotal = primaryLines.reduce((sum, line) => {
+    const item = cartBySlug.get(line.productSlug);
+    return sum + (item ? item.price * line.quantity : 0);
+  }, 0);
+
+  /** Rate-shop primary package for label metadata; customer charge uses per-shipment threshold. */
+  const shippingResult = await resolveShippingForCheckout({
+    destination: {
+      line1: primaryDestination.line1,
+      line2: primaryDestination.line2,
+      city: primaryDestination.city,
+      state: primaryDestination.state,
+      postalCode: primaryDestination.postalCode,
+      country: primaryDestination.country,
+    },
+    cartItems: primaryLines.map((i) => ({
+      productSlug: i.productSlug,
+      quantity: i.quantity,
+    })),
+    subtotal: primarySubtotal,
+    currency: checkoutCurrency as "USD" | "INR",
+    usdInrRate,
+    shippingServiceCode: parsed.data.shippingServiceCode,
+    shippingRateId: parsed.data.shippingRateId,
+    settings: shippingSettings,
+  });
+
+  if (shippingResult.warning) {
+    console.warn("Checkout shipping rate lookup:", shippingResult.warning);
+  }
+
+  const built = buildOrderShipments({
+    cartItems: orderItems,
+    checkoutShipments,
+    currency: checkoutCurrency as "USD" | "INR",
+    usdInrRate,
+    ...(shippingSettings.customerShippingMode === "pass_through"
+      ? { passThroughShipping: shippingResult.customerShippingCharge }
+      : {}),
+  });
+  if ("error" in built) return badRequest(built.error);
+
+  const shipping = built.shippingTotal;
+  const orderShipments = built.shipments;
   const tax = 0;
 
   let discount = 0;
   let couponCode: string | undefined;
   const checkoutEmail = normalizeEmail(parsed.data.shippingAddress.email);
+  const checkoutPhone = parsed.data.shippingAddress.phone?.trim();
 
   if (parsed.data.couponCode?.trim()) {
-    if (!checkoutEmail) return badRequest("Email is required to apply a coupon");
-    const coupon = await validateCouponRecord(parsed.data.couponCode, checkoutEmail);
+    if (!checkoutEmail && !checkoutPhone) {
+      return badRequest("Phone or email is required to apply a coupon");
+    }
+    const eligibleSubtotal = couponEligibleSubtotal(orderItems as CartItem[]);
+    if (eligibleSubtotal <= 0) {
+      return badRequest("Coupons cannot be applied to flash sale items");
+    }
+    const coupon = await validateCouponRecord(parsed.data.couponCode, {
+      email: checkoutEmail,
+      phone: checkoutPhone,
+    });
     if (!coupon.valid) return badRequest(coupon.error ?? "Invalid coupon code");
-    discount = applyPercentDiscount(subtotal, coupon.discountPercent!);
+    discount = applyPercentDiscount(eligibleSubtotal, coupon.discountPercent!);
     couponCode = coupon.code;
   }
 
@@ -220,8 +318,34 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     });
   }
 
+  const vendorSlugs = [
+    ...new Set(
+      (orderItems as CartItem[])
+        .map((i) => i.vendorSlug)
+        .filter((v): v is string => Boolean(v))
+    ),
+  ];
+  const vendorFulfillments = buildInitialVendorFulfillments(orderItems as CartItem[]);
+
+  const orderNumber = await allocateOrderNumberForCart(orderItems as CartItem[], vendorSlugs);
+
+  const preferredDeliveryDate = parsed.data.preferredDeliveryDate?.trim();
+  if (preferredDeliveryDate && !isValidScheduleDeliveryDate(preferredDeliveryDate)) {
+    return badRequest("Scheduled delivery must be today through 28 August 2026");
+  }
+
+  const attribution = parsed.data.attribution
+    ? {
+        ...parsed.data.attribution,
+        version: 1 as const,
+        sessionId: parsed.data.attribution.sessionId || sessionId || undefined,
+        visitorId: parsed.data.attribution.visitorId || sessionId || undefined,
+      }
+    : undefined;
+
   const order: Order = {
     orderId,
+    orderNumber,
     userId: auth?.userId,
     sessionId,
     items: orderItems,
@@ -232,9 +356,27 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     tax,
     total,
     currency,
+    ...(vendorSlugs.length ? { vendorSlugs } : {}),
+    vendorFulfillments,
     status: ORDER_STATUS.PENDING_PAYMENT,
     statusHistory: [{ status: ORDER_STATUS.PENDING_PAYMENT, at: timestamp }],
-    shippingAddress: parsed.data.shippingAddress,
+    shippingAddress: orderShipments[0]?.shippingAddress ?? parsed.data.shippingAddress,
+    shipments: orderShipments,
+    ...(preferredDeliveryDate
+      ? { estimatedDeliveryAt: preferredDeliveryDateToIso(preferredDeliveryDate) }
+      : {}),
+    ...(shippingResult.selected && {
+      shippingServiceCode: shippingResult.selected.mailClass,
+      shippingServiceName: shippingResult.selected.serviceName,
+      shippingRateId: shippingResult.selected.rateId,
+      estimatedLabelCost: shippingResult.estimatedLabelCost,
+    }),
+    ...(shippingResult.labelStatus && { labelStatus: shippingResult.labelStatus }),
+    ...(shippingResult.warning &&
+      !shippingResult.selected && {
+        labelStatus: "queued" as const,
+      }),
+    ...(attribution ? { attribution } : {}),
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -247,7 +389,8 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     order.paymentProvider = "stripe";
     order.paymentIntentId = payment.paymentIntentId;
     await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: buildOrderItem(order, userKey) }));
-    await clearCartForUser(userKey);
+    await putOrderNumberPointer(orderNumber, orderId);
+    // Keep cart until payment succeeds so cancel/retry still has items.
     const emailResult = await notifyAdminOrderPlaced(order);
     if (!emailResult.ok) console.error("Order placed email failed:", emailResult.error);
     return created({ order, clientSecret: payment.clientSecret });
@@ -257,10 +400,16 @@ export async function checkout(event: APIGatewayProxyEventV2) {
   order.paymentProvider = "razorpay";
   order.razorpayOrderId = payment.razorpayOrderId;
   await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: buildOrderItem(order, userKey) }));
-  await clearCartForUser(userKey);
+  await putOrderNumberPointer(orderNumber, orderId);
+  // Keep cart until payment succeeds so cancel/retry still has items.
   const emailResult = await notifyAdminOrderPlaced(order);
   if (!emailResult.ok) console.error("Order placed email failed:", emailResult.error);
-  return created({ order, razorpayOrderId: payment.razorpayOrderId, razorpayKeyId: payment.keyId });
+  return created({
+    order,
+    razorpayOrderId: payment.razorpayOrderId,
+    razorpayKeyId: payment.keyId,
+    ...(payment.qrImageUrl ? { razorpayQrImageUrl: payment.qrImageUrl } : {}),
+  });
 }
 
 export async function listOrders(event: APIGatewayProxyEventV2) {
@@ -312,13 +461,7 @@ export async function listAdminOrders(event: APIGatewayProxyEventV2) {
 }
 
 async function fetchOrder(orderId: string): Promise<StoredOrder | undefined> {
-  const result = await docClient.send(
-    new GetCommand({
-      TableName: ORDERS_TABLE,
-      Key: { PK: orderKeys.pk(orderId), SK: orderKeys.sk() },
-    })
-  );
-  return result.Item as StoredOrder | undefined;
+  return resolveOrderByIdOrNumber(orderId) as Promise<StoredOrder | undefined>;
 }
 
 export async function getOrder(event: APIGatewayProxyEventV2) {
@@ -373,12 +516,84 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
   }
 
   const timestamp = now();
+
+  let vendorFulfillments: VendorFulfillment[] = ensureVendorFulfillments(order);
+  if (parsed.data.vendorFulfillments?.length) {
+    for (const row of parsed.data.vendorFulfillments) {
+      vendorFulfillments = upsertVendorFulfillment(vendorFulfillments, {
+        vendorSlug: row.vendorSlug,
+        trackingNumber: row.trackingNumber,
+        carrier: row.carrier,
+        status: row.status,
+        updatedAt: timestamp,
+      });
+    }
+  } else if (parsed.data.trackingNumber !== undefined || parsed.data.carrier !== undefined) {
+    // Legacy single tracking field → apply to sole vendor (or HalloweenReady when mixed if no OC patch).
+    const target =
+      vendorFulfillments.length === 1
+        ? vendorFulfillments[0]!.vendorSlug
+        : vendorFulfillments.find((f) => f.vendorSlug !== "orange-county")?.vendorSlug ??
+          vendorFulfillments[0]!.vendorSlug;
+    vendorFulfillments = upsertVendorFulfillment(vendorFulfillments, {
+      vendorSlug: target,
+      trackingNumber: parsed.data.trackingNumber,
+      carrier: parsed.data.carrier,
+      updatedAt: timestamp,
+    });
+  }
+
+  const primary = primaryTrackingFromFulfillments(vendorFulfillments);
+
+  // Mixed carts: do not mark whole order shipped until every vendor has an AWB,
+  // unless admin explicitly chose shipped (still allowed for override).
+  let resolvedStatus = nextStatus;
+  if (
+    parsed.data.status === ORDER_STATUS.SHIPPED &&
+    isMultiVendorOrder(order) &&
+    !allVendorsHaveTracking(vendorFulfillments)
+  ) {
+    return badRequest(
+      "This order has multiple vendors. Add tracking for Orange County and HalloweenReady before marking Shipped, or save each vendor tracking first."
+    );
+  }
+  if (
+    !parsed.data.status &&
+    isMultiVendorOrder(order) &&
+    allVendorsHaveTracking(vendorFulfillments) &&
+    order.status !== ORDER_STATUS.SHIPPED &&
+    order.status !== ORDER_STATUS.DELIVERED &&
+    order.status !== ORDER_STATUS.COMPLETE
+  ) {
+    const allowed = ORDER_STATUS_TRANSITIONS[order.status] ?? [];
+    if (allowed.includes(ORDER_STATUS.SHIPPED)) {
+      resolvedStatus = ORDER_STATUS.SHIPPED;
+    } else if (allowed.includes(ORDER_STATUS.PROCESSING) && anyVendorHasTracking(vendorFulfillments)) {
+      resolvedStatus = ORDER_STATUS.PROCESSING;
+    }
+  } else if (
+    !parsed.data.status &&
+    isMultiVendorOrder(order) &&
+    anyVendorHasTracking(vendorFulfillments) &&
+    !allVendorsHaveTracking(vendorFulfillments) &&
+    (order.status === ORDER_STATUS.PAID || order.status === ORDER_STATUS.ACCEPTED)
+  ) {
+    const allowed = ORDER_STATUS_TRANSITIONS[order.status] ?? [];
+    if (allowed.includes(ORDER_STATUS.PROCESSING)) {
+      resolvedStatus = ORDER_STATUS.PROCESSING;
+    }
+  }
+
   const historyEntry: OrderStatusHistoryEntry | null =
-    parsed.data.status && parsed.data.status !== order.status
+    resolvedStatus !== order.status
       ? {
-          status: parsed.data.status,
+          status: resolvedStatus,
           at: timestamp,
-          ...(parsed.data.note ? { note: parsed.data.note } : {}),
+          ...(parsed.data.note
+            ? { note: parsed.data.note }
+            : resolvedStatus === ORDER_STATUS.SHIPPED && isMultiVendorOrder(order)
+              ? { note: "All vendors shipped — order marked shipped" }
+              : {}),
         }
       : parsed.data.note
         ? { status: order.status, at: timestamp, note: parsed.data.note }
@@ -386,26 +601,66 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
 
   const updated: StoredOrder = {
     ...order,
-    status: nextStatus,
+    status: resolvedStatus,
     statusHistory: historyEntry
       ? [...(order.statusHistory ?? []), historyEntry]
       : order.statusHistory,
-    ...(parsed.data.trackingNumber !== undefined && { trackingNumber: parsed.data.trackingNumber }),
-    ...(parsed.data.carrier !== undefined && { carrier: parsed.data.carrier }),
+    vendorFulfillments,
+    ...(primary.trackingNumber ? { trackingNumber: primary.trackingNumber } : {}),
+    ...(primary.carrier ? { carrier: primary.carrier } : {}),
     ...(parsed.data.adminNotes !== undefined && { adminNotes: parsed.data.adminNotes }),
     ...(parsed.data.estimatedDeliveryAt !== undefined && {
       estimatedDeliveryAt: parsed.data.estimatedDeliveryAt,
     }),
-    ...applyDeliveryReviewSchedule(order, nextStatus, timestamp),
+    ...(parsed.data.shippingServiceCode !== undefined && {
+      shippingServiceCode: parsed.data.shippingServiceCode,
+    }),
+    ...(parsed.data.shippingServiceName !== undefined && {
+      shippingServiceName: parsed.data.shippingServiceName,
+    }),
+    ...(parsed.data.shippingRateId !== undefined && {
+      shippingRateId: parsed.data.shippingRateId,
+    }),
+    ...(parsed.data.estimatedLabelCost !== undefined && {
+      estimatedLabelCost: parsed.data.estimatedLabelCost,
+    }),
+    ...(parsed.data.labelStatus !== undefined && { labelStatus: parsed.data.labelStatus }),
+    ...(parsed.data.labelError !== undefined && { labelError: parsed.data.labelError }),
+    ...applyDeliveryReviewSchedule(order, resolvedStatus, timestamp),
     updatedAt: timestamp,
-    ...(parsed.data.status &&
-      parsed.data.status !== order.status && {
-        GSI3PK: orderKeys.gsi3pk(nextStatus),
-        GSI3SK: orderKeys.gsi3sk(order.createdAt),
-      }),
+    ...(resolvedStatus !== order.status && {
+      GSI3PK: orderKeys.gsi3pk(resolvedStatus),
+      GSI3SK: orderKeys.gsi3sk(order.createdAt),
+    }),
   };
 
   await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: updated }));
+
+  const statusChanged = resolvedStatus !== order.status;
+
+  if (
+    order.status === ORDER_STATUS.PENDING_PAYMENT &&
+    resolvedStatus === ORDER_STATUS.CANCELLED
+  ) {
+    const emailResult = await notifyAdminOrderPaymentFailed(updated);
+    if (!emailResult.ok) console.error("Order payment failed email failed:", emailResult.error);
+  }
+
+  // Notify customer + order@halloweenready on every status step (accepted → … → complete, cancelled/refunded).
+  // Skip pending_payment → cancelled: shopper never paid; admin alert above is enough.
+  if (
+    statusChanged &&
+    !(
+      order.status === ORDER_STATUS.PENDING_PAYMENT &&
+      resolvedStatus === ORDER_STATUS.CANCELLED
+    )
+  ) {
+    const statusEmailResult = await notifyCustomerOrderStatusChange(updated);
+    if (!statusEmailResult.ok && !statusEmailResult.skipped) {
+      console.error("Order status email failed:", statusEmailResult.error);
+    }
+  }
+
   return ok({ order: updated });
 }
 
@@ -418,6 +673,14 @@ export async function markOrderPaid(
   const order = await fetchOrder(orderId);
   if (!order) return;
   if (order.status === ORDER_STATUS.PAID) return;
+  // Only promote unpaid checkouts — avoid clobbering fulfilled orders via late webhooks.
+  if (order.status !== ORDER_STATUS.PENDING_PAYMENT) {
+    console.warn("markOrderPaid skipped — order not pending_payment", {
+      orderId,
+      status: order.status,
+    });
+    return;
+  }
 
   const timestamp = now();
   const updated: StoredOrder = {
@@ -436,9 +699,92 @@ export async function markOrderPaid(
     await markCouponUsed(order.couponCode, order.orderId);
   }
   await markCartConverted(order.sessionId, order.orderId);
+  // Clear cart only after successful payment (not when opening Razorpay/Stripe).
+  const cartOwner = order.userId || order.sessionId;
+  if (cartOwner) {
+    try {
+      await clearCartForUser(cartOwner);
+    } catch (err) {
+      console.error("clearCart after pay failed:", orderId, err);
+    }
+  }
   await decrementInventoryForOrder(updated);
+
+  const settings = await loadShippingSettings();
+  if (
+    settings.autoPurchaseOnPayment &&
+    updated.shippingServiceCode &&
+    updated.labelStatus !== "purchased"
+  ) {
+    try {
+      const label = await purchaseLabelForOrder({
+        orderId: updated.orderId,
+        shippingAddress: updated.shippingAddress,
+        items: updated.items,
+        shippingRateId: updated.shippingRateId,
+        shippingServiceCode: updated.shippingServiceCode,
+      });
+      const labeled: StoredOrder = {
+        ...updated,
+        trackingNumber: label.trackingNumber,
+        carrier: "USPS",
+        labelPdfUrl: label.labelPdfUrl,
+        labelCost: label.labelCost,
+        labelStatus: "purchased",
+        shippingServiceName: label.shippingServiceName ?? updated.shippingServiceName,
+        updatedAt: now(),
+      };
+      await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: labeled }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Auto label purchase failed";
+      console.error("Auto label purchase failed:", orderId, message);
+      const failed: StoredOrder = {
+        ...updated,
+        labelStatus: "failed",
+        labelError: message,
+        updatedAt: now(),
+      };
+      await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: failed }));
+    }
+  }
+
   const emailResult = await notifyAdminOrderPaid(updated);
   if (!emailResult.ok) console.error("Order paid email failed:", emailResult.error);
+
+  const { markReminderEmailConverted } = await import("./reminder-emails");
+  await markReminderEmailConverted(updated.shippingAddress?.email);
+}
+
+/** Mark checkout cancelled after failed or abandoned payment. */
+export async function markOrderPaymentFailed(
+  orderId: string | undefined,
+  note?: string
+): Promise<void> {
+  if (!orderId) return;
+  const order = await fetchOrder(orderId);
+  if (!order) return;
+  if (order.status !== ORDER_STATUS.PENDING_PAYMENT) return;
+
+  const timestamp = now();
+  const updated: StoredOrder = {
+    ...order,
+    status: ORDER_STATUS.CANCELLED,
+    statusHistory: [
+      ...(order.statusHistory ?? []),
+      {
+        status: ORDER_STATUS.CANCELLED,
+        at: timestamp,
+        note: note ?? "Payment failed or cancelled",
+      },
+    ],
+    updatedAt: timestamp,
+    GSI3PK: orderKeys.gsi3pk(ORDER_STATUS.CANCELLED),
+    GSI3SK: orderKeys.gsi3sk(order.createdAt),
+  };
+
+  await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: updated }));
+  const emailResult = await notifyAdminOrderPaymentFailed(updated);
+  if (!emailResult.ok) console.error("Order payment failed email failed:", emailResult.error);
 }
 
 /** Lookup an order by id (used by Razorpay verify for ownership/amount checks). */
@@ -503,6 +849,7 @@ export async function retryOrderPayment(event: APIGatewayProxyEventV2) {
     order: updated,
     razorpayOrderId: payment.razorpayOrderId,
     razorpayKeyId: payment.keyId,
+    ...(payment.qrImageUrl ? { razorpayQrImageUrl: payment.qrImageUrl } : {}),
   });
 }
 

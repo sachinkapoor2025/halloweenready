@@ -6,7 +6,14 @@ import { site, whatsappChatUrl } from "@/lib/site";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { TrustBadges } from "@/components/TrustBadges";
 import { resolveImageUrl } from "@/lib/images";
-import type { Order } from "@halloweenready/shared";
+import { carrierTrackingUrl } from "@/lib/tracking-url";
+import {
+  formatOrderStatusLabel,
+  isOrderAwaitingPayment,
+  orderConfirmationHeadline,
+  orderConfirmationSubcopy,
+  type Order,
+} from "@halloweenready/shared";
 
 function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
@@ -42,12 +49,18 @@ function TruckIcon() {
 
 type OrderConfirmationProps = {
   order: Order;
+  /** True when payment is settled (paid / shipped / delivered / …), not only status === "paid". */
   paid: boolean;
 };
 
 export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
   const addr = order.shippingAddress;
   const shortOrderId = order.orderId.slice(0, 8).toUpperCase();
+  const awaitingPayment = isOrderAwaitingPayment(order.status) && !paid;
+  const statusLabel = formatOrderStatusLabel(order.status);
+  const trackingUrl = order.trackingNumber
+    ? carrierTrackingUrl(order.trackingNumber, order.carrier)
+    : "";
 
   return (
     <div className="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white">
@@ -55,7 +68,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
       <div className="bg-primary text-white">
         <div className="max-w-2xl mx-auto px-4 pt-8 pb-20 text-center">
           <div className="flex justify-center mb-6">
-            <SiteLogoLink priority />
+            <SiteLogoLink className="brightness-0 invert" priority />
           </div>
 
           <div
@@ -67,12 +80,10 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-            {paid ? "Thank you — your order is confirmed!" : "Awaiting payment"}
+            {orderConfirmationHeadline(awaitingPayment ? "pending_payment" : order.status)}
           </h1>
           <p className="text-white/85 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-            {paid
-              ? "Your Halloween gift is on its way. We've sent a confirmation email and our team will dispatch your order soon."
-              : "Complete payment to confirm your order and start USA delivery."}
+            {orderConfirmationSubcopy(awaitingPayment ? "pending_payment" : order.status)}
           </p>
 
           {paid && (
@@ -97,7 +108,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
                 paid ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
               }`}
             >
-              {paid ? "Paid" : order.status.replace(/_/g, " ")}
+              {statusLabel}
             </span>
           </div>
 
@@ -121,9 +132,23 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-900 line-clamp-2">{item.name}</p>
                   <p className="text-sm text-slate-500 mt-0.5">Qty: {item.quantity}</p>
+                  {item.addons?.length ? (
+                    <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
+                      {item.addons.map((a) => (
+                        <li key={a.id}>
+                          + {a.quantity > 1 ? `${a.quantity}× ` : ""}
+                          {a.name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
                 <p className="font-semibold text-slate-900 shrink-0">
-                  {formatMoney(item.price * item.quantity, item.currency)}
+                  {formatMoney(
+                    (item.price + (item.addons?.reduce((s, a) => s + a.price * a.quantity, 0) ?? 0)) *
+                      item.quantity,
+                    item.currency
+                  )}
                 </p>
               </li>
             ))}
@@ -139,36 +164,99 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
             )}
             <div className="flex justify-between text-slate-600">
               <span>Shipping</span>
-              <span className="font-semibold text-accent">FREE</span>
+              <span className={order.shipping > 0 ? "font-medium text-slate-900" : "font-semibold text-accent"}>
+                {order.shipping > 0 ? formatMoney(order.shipping, order.currency) : "FREE"}
+              </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-slate-100 text-base">
-              <span className="font-bold text-slate-900">Total paid</span>
+              <span className="font-bold text-slate-900">{paid ? "Total paid" : "Order total"}</span>
               <span className="font-bold text-nav text-lg">{formatMoney(order.total, order.currency)}</span>
             </div>
-            {order.paymentProvider && (
+            {order.paymentProvider && paid && (
               <p className="text-xs text-slate-400 pt-1 capitalize">
                 Paid via {order.paymentProvider === "stripe" ? "Stripe (USD)" : "Razorpay (INR)"}
               </p>
             )}
           </div>
 
-          {/* Shipping address */}
-          {addr && (
-            <div className="border-t border-slate-100 px-5 sm:px-6 py-4 bg-slate-50/50">
-              <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
-                Delivering to
-              </p>
-              <p className="font-semibold text-slate-900">{addr.name}</p>
-              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                {addr.line1}
-                {addr.line2 ? `, ${addr.line2}` : ""}
-                <br />
-                {addr.city}, {addr.state} {addr.postalCode}
-                <br />
-                {addr.country}
-              </p>
-              {addr.email && <p className="text-sm text-slate-500 mt-2">{addr.email}</p>}
+          {/* Shipment tracking — shown whenever admin saved a tracking number */}
+          {order.trackingNumber && (
+            <div className="border-t border-slate-100 px-5 sm:px-6 py-5 bg-emerald-50/60">
+              <div className="flex gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+                  <TruckIcon />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs uppercase tracking-wider text-emerald-800 font-semibold mb-1">
+                    Shipment tracking
+                  </p>
+                  {order.carrier && (
+                    <p className="text-sm text-slate-700 mb-1">
+                      Carrier: <span className="font-semibold">{order.carrier}</span>
+                    </p>
+                  )}
+                  <p className="text-sm text-slate-700">
+                    Tracking number:{" "}
+                    <span className="font-mono font-semibold break-all">{order.trackingNumber}</span>
+                  </p>
+                  {trackingUrl && (
+                    <a
+                      href={trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex mt-3 text-sm font-bold text-nav hover:underline"
+                    >
+                      Track shipment →
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Shipping address(es) */}
+          {order.shipments && order.shipments.length > 1 ? (
+            <div className="border-t border-slate-100 px-5 sm:px-6 py-4 bg-slate-50/50 space-y-4">
+              <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                Delivering to {order.shipments.length} addresses
+              </p>
+              {order.shipments.map((shipment, idx) => {
+                const a = shipment.shippingAddress;
+                return (
+                  <div key={shipment.shipmentId} className="text-sm">
+                    <p className="text-xs font-semibold text-slate-500 mb-1">
+                      Delivery {idx + 1} ·{" "}
+                      {shipment.items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
+                    </p>
+                    <p className="font-semibold text-slate-900">{a.name}</p>
+                    <p className="text-slate-600 mt-1 leading-relaxed">
+                      {a.line1}
+                      {a.line2 ? `, ${a.line2}` : ""}
+                      <br />
+                      {a.city}, {a.state} {a.postalCode}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            addr && (
+              <div className="border-t border-slate-100 px-5 sm:px-6 py-4 bg-slate-50/50">
+                <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
+                  Delivering to
+                </p>
+                <p className="font-semibold text-slate-900">{addr.name}</p>
+                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                  {addr.line1}
+                  {addr.line2 ? `, ${addr.line2}` : ""}
+                  <br />
+                  {addr.city}, {addr.state} {addr.postalCode}
+                  <br />
+                  {addr.country}
+                </p>
+                {addr.email && <p className="text-sm text-slate-500 mt-2">{addr.email}</p>}
+              </div>
+            )
           )}
         </div>
 
@@ -203,9 +291,9 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
         {/* Actions */}
         {paid && (
           <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/80 p-4 text-center">
-            <p className="text-sm font-semibold text-amber-950 mb-1">Help other Halloween shoppers find us</p>
+            <p className="text-sm font-semibold text-amber-950 mb-1">Help other sisters find us</p>
             <p className="text-xs text-amber-900/90 mb-3 leading-relaxed">
-              We&apos;re in our first Halloween season — your review builds trust for families shopping Halloween decor in the USA.
+              Your review helps other shoppers choose HalloweenReady with confidence for Halloween delivery across the USA.
             </p>
             <Link
               href="/reviews"
@@ -217,13 +305,23 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
         )}
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-          {!paid && (
+          {awaitingPayment && (
             <Link
               href={`/checkout?orderId=${order.orderId}`}
               className="inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold text-sm px-8 py-3.5 hover:bg-amber-700 transition shadow-md"
             >
               Retry payment
             </Link>
+          )}
+          {trackingUrl && (
+            <a
+              href={trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-lg bg-nav text-white font-bold text-sm px-8 py-3.5 hover:bg-nav/90 transition shadow-md"
+            >
+              Track shipment
+            </a>
           )}
           <Link
             href="/products"

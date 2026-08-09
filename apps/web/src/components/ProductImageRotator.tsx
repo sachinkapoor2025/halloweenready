@@ -2,14 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { resolveImageUrl } from "@/lib/images";
-import { filterDisplayableProductImages } from "@/lib/product-images";
+import {
+  selectDisplayableProductImages,
+  type SizedProductImage,
+} from "@halloweenready/shared";
 
 const ROTATE_MS = 4000;
 
 /**
  * Auto-rotates through a product's gallery images on listing cards.
  * Pauses while hovered; only advances when the card is on-screen.
- * Broken / placeholder images are skipped so the pumpkin fallback never appears.
+ * Skips tiny vendor thumbnails (e.g. 100×100) once real dimensions are known.
  */
 export function ProductImageRotator({
   images,
@@ -17,40 +20,58 @@ export function ProductImageRotator({
   className = "",
   /** Stable seed so neighboring cards don't all flip at the same time. */
   staggerKey = "",
+  /** First image eager only for above-the-fold cards; listing grids should stay lazy. */
+  priority = false,
 }: {
   images: string[];
   alt: string;
   className?: string;
   staggerKey?: string;
+  priority?: boolean;
 }) {
-  const resolved = useMemo(() => {
-    const cdn =
-      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_CDN_URL?.replace(/\/$/, "")) ||
-      "https://d2lfdzx32wxe94.cloudfront.net";
-    return filterDisplayableProductImages(
-      images.map((src) => {
-        const resolvedUrl = resolveImageUrl(src);
-        if (resolvedUrl.startsWith("/uploads/")) return `${cdn}${resolvedUrl}`;
-        return resolvedUrl;
-      })
-    );
-  }, [images]);
-  const [broken, setBroken] = useState<Record<string, true>>({});
-  const urls = useMemo(() => resolved.filter((src) => !broken[src]), [resolved, broken]);
+  const resolved = useMemo(
+    () => [...new Set(images.map(resolveImageUrl).filter(Boolean))],
+    [images]
+  );
+  const [urls, setUrls] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(true);
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setBroken({});
+    setUrls([]);
     setIndex(0);
-  }, [images]);
+    if (resolved.length === 0) return;
 
-  useEffect(() => {
-    if (urls.length === 0) return;
-    if (index >= urls.length) setIndex(0);
-  }, [index, urls.length]);
+    let cancelled = false;
+    const measured: SizedProductImage[] = [];
+    let remaining = resolved.length;
+
+    const finish = () => {
+      if (cancelled) return;
+      const picked = selectDisplayableProductImages(measured);
+      setUrls(picked.length > 0 ? picked : resolved.slice(0, 1));
+    };
+
+    resolved.forEach((url) => {
+      const img = new Image();
+      img.onload = () => {
+        measured.push({ url, width: img.naturalWidth, height: img.naturalHeight });
+        remaining -= 1;
+        if (remaining === 0) finish();
+      };
+      img.onerror = () => {
+        remaining -= 1;
+        if (remaining === 0) finish();
+      };
+      img.src = url;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolved]);
 
   useEffect(() => {
     if (!root || typeof IntersectionObserver === "undefined") return;
@@ -63,6 +84,10 @@ export function ProductImageRotator({
   }, [root]);
 
   useEffect(() => {
+    setIndex(0);
+  }, [urls]);
+
+  useEffect(() => {
     if (urls.length <= 1 || paused || !visible) return;
 
     let hash = 0;
@@ -73,17 +98,15 @@ export function ProductImageRotator({
       setIndex((i) => (i + 1) % urls.length);
     }, delay);
     return () => window.clearInterval(id);
-  }, [urls.length, paused, visible, staggerKey]);
+  }, [urls, paused, visible, staggerKey]);
 
-  if (urls.length === 0) {
+  if (resolved.length === 0) {
     return (
       <div className={`flex items-center justify-center bg-slate-50 text-slate-400 text-sm ${className}`}>
         No image
       </div>
     );
   }
-
-  const safeIndex = Math.min(index, urls.length - 1);
 
   return (
     <div
@@ -98,13 +121,14 @@ export function ProductImageRotator({
           key={`${src}-${i}`}
           src={src}
           alt={i === 0 ? alt : ""}
-          aria-hidden={i !== safeIndex}
-          className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ease-out ${
-            i === safeIndex ? "opacity-100" : "opacity-0"
+          aria-hidden={i !== index}
+          className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ease-out ${
+            i === index ? "opacity-100" : "opacity-0"
           }`}
-          loading={i === 0 ? "eager" : "lazy"}
+          loading={priority && i === 0 ? "eager" : "lazy"}
           decoding="async"
-          onError={() => setBroken((prev) => (prev[src] ? prev : { ...prev, [src]: true }))}
+          width={1200}
+          height={1200}
         />
       ))}
       {urls.length > 1 && (
@@ -113,7 +137,7 @@ export function ProductImageRotator({
             <span
               key={i}
               className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                i === safeIndex ? "bg-white" : "bg-white/50"
+                i === index ? "bg-white" : "bg-white/50"
               }`}
             />
           ))}

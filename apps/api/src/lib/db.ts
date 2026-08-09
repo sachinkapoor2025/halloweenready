@@ -35,6 +35,12 @@ export const CARTS_TABLE = process.env.CARTS_TABLE ?? `halloweenready-carts-${EN
 export const CUSTOMERS_TABLE = process.env.CUSTOMERS_TABLE ?? `halloweenready-customers-${ENV}`;
 export const EVENTS_TABLE = process.env.EVENTS_TABLE ?? `halloweenready-events-${ENV}`;
 export const CONFIG_TABLE = process.env.CONFIG_TABLE ?? `halloweenready-config-${ENV}`;
+export const EMAIL_CAMPAIGNS_TABLE =
+  process.env.EMAIL_CAMPAIGNS_TABLE ?? `halloweenready-email-campaigns-${ENV}`;
+export const REMINDER_EMAILS_TABLE =
+  process.env.REMINDER_EMAILS_TABLE ?? `halloweenready-reminder-emails-${ENV}`;
+export const PENDING_PAYMENT_UNSUB_TABLE =
+  process.env.PENDING_PAYMENT_UNSUB_TABLE ?? `halloweenready-pending-payment-unsub-${ENV}`;
 
 /** All table names, useful for setup/migration scripts. */
 export const ALL_TABLES = {
@@ -44,6 +50,9 @@ export const ALL_TABLES = {
   customers: CUSTOMERS_TABLE,
   events: EVENTS_TABLE,
   config: CONFIG_TABLE,
+  emailCampaigns: EMAIL_CAMPAIGNS_TABLE,
+  reminderEmails: REMINDER_EMAILS_TABLE,
+  pendingPaymentUnsub: PENDING_PAYMENT_UNSUB_TABLE,
 };
 
 export function now(): string {

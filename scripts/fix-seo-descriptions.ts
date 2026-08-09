@@ -13,7 +13,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { metaDescription, productKeys } from "@halloweenready/shared";
 
-const CATALOG_PATH = join(process.cwd(), "scripts/data/usarakhi-catalog.json");
+const CATALOG_PATH = join(process.cwd(), "scripts/data/halloweenready-catalog.json");
 
 interface CatalogProduct {
   slug: string;

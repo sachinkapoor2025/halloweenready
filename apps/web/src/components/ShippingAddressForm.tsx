@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import type { ShippingAddress } from "@halloweenready/shared";
 import { LeadCaptureInput } from "@/components/LeadCaptureInput";
+import { PhoneInput, buildPhoneValue } from "@/components/PhoneInput";
+import {
+  DEFAULT_COUNTRY_ISO,
+  orderedCountryDialCodes,
+} from "@/lib/country-codes";
 import {
   US_STATES,
   emptyShippingAddress,
@@ -12,6 +17,23 @@ import {
   formatAddressLine,
   type SavedShippingAddress,
 } from "@/lib/shipping-address";
+
+function splitPhone(phone: string): { iso: string; local: string } {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return { iso: DEFAULT_COUNTRY_ISO, local: "" };
+
+  const countries = orderedCountryDialCodes();
+  const byDialLen = [...countries].sort(
+    (a, b) => b.dial.replace(/\D/g, "").length - a.dial.replace(/\D/g, "").length
+  );
+  for (const c of byDialLen) {
+    const code = c.dial.replace(/\D/g, "");
+    if (code && digits.startsWith(code) && digits.length > code.length) {
+      return { iso: c.iso, local: digits.slice(code.length) };
+    }
+  }
+  return { iso: DEFAULT_COUNTRY_ISO, local: digits };
+}
 
 interface Props {
   value: ShippingAddress;
@@ -30,11 +52,28 @@ export function ShippingAddressForm({
 }: Props) {
   const [saved, setSaved] = useState<SavedShippingAddress[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY_ISO);
+  const [phoneLocal, setPhoneLocal] = useState("");
 
   useEffect(() => {
     const addresses = loadSavedAddresses();
     setSaved(addresses);
   }, []);
+
+  // Resync country/local boxes when phone is set from a saved address / prefills.
+  useEffect(() => {
+    const incoming = value.phone ?? "";
+    const current = buildPhoneValue(phoneCountry, phoneLocal);
+    if (!incoming && !phoneLocal) {
+      if (phoneCountry !== DEFAULT_COUNTRY_ISO) setPhoneCountry(DEFAULT_COUNTRY_ISO);
+      return;
+    }
+    if (incoming === current) return;
+    const parts = splitPhone(incoming);
+    setPhoneCountry(parts.iso);
+    setPhoneLocal(parts.local);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to external phone changes
+  }, [value.phone]);
 
   useEffect(() => {
     if (!saved.length || !value.line1) return;
@@ -64,15 +103,24 @@ export function ShippingAddressForm({
       city: address.city,
       state: address.state,
       postalCode: address.postalCode,
-      country: address.country,
+      country: "US",
       phone: address.phone,
       email: address.email,
+      // Keep sister/sender details across address picks
+      senderName: value.senderName || address.senderName,
+      senderMessage: value.senderMessage || address.senderMessage,
     });
   };
 
   const startNewAddress = () => {
     setSelectedId(null);
-    onChange({ ...emptyShippingAddress(), email: value.email, phone: value.phone });
+    onChange({
+      ...emptyShippingAddress(),
+      email: value.email,
+      phone: value.phone,
+      senderName: value.senderName,
+      senderMessage: value.senderMessage,
+    });
   };
 
   const handleDeleteSaved = (id: string) => {
@@ -168,6 +216,31 @@ export function ShippingAddressForm({
         )}
 
         <LeadCaptureInput
+            label="Sender name (your name)"
+            value={value.senderName ?? ""}
+            onChange={(e) => update("senderName", e.target.value)}
+            placeholder="So the recipient knows who sent this order"
+            required
+            autoComplete="nickname"
+          />
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Message for your brother
+            </label>
+            <textarea
+              value={value.senderMessage ?? ""}
+              onChange={(e) => update("senderMessage", e.target.value)}
+              required
+              rows={4}
+              maxLength={500}
+              placeholder="Write a Halloween note — it will appear on the shipping label"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent text-sm leading-relaxed"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Printed on the shipping label · {(value.senderMessage ?? "").length}/500
+            </p>
+          </div>
+          <LeadCaptureInput
             label="Recipient name"
             value={value.name}
             onChange={(e) => update("name", e.target.value)}
@@ -183,14 +256,31 @@ export function ShippingAddressForm({
             required
             autoComplete="email"
           />
-          <LeadCaptureInput
-            label="Phone (optional)"
-            type="tel"
-            value={value.phone ?? ""}
-            onChange={(e) => update("phone", e.target.value)}
-            placeholder="For delivery updates"
-            autoComplete="tel"
-          />
+          <div>
+            <PhoneInput
+              label="Phone"
+              countryIso={phoneCountry}
+              localNumber={phoneLocal}
+              onCountryChange={(iso) => {
+                setPhoneCountry(iso);
+                update("phone", buildPhoneValue(iso, phoneLocal));
+              }}
+              onLocalNumberChange={(local) => {
+                setPhoneLocal(local);
+                update("phone", buildPhoneValue(phoneCountry, local));
+              }}
+              required
+              compact
+              placeholder="Mobile number"
+              className="text-sm"
+              selectClassName="border-slate-300 focus:outline-none focus:ring-2 focus:ring-accent"
+              inputClassName="border-slate-300 focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              India (+91) is selected by default. Country code is for contact; coupons match the
+              mobile number.
+            </p>
+          </div>
           <LeadCaptureInput
             label="Street address"
             value={value.line1}
@@ -242,12 +332,14 @@ export function ShippingAddressForm({
             />
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
-              <input
-                type="text"
-                value="United States"
-                readOnly
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-600"
-              />
+              <select
+                value="US"
+                disabled
+                aria-label="Country"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-600 cursor-not-allowed"
+              >
+                <option value="US">United States</option>
+              </select>
             </div>
           </div>
 

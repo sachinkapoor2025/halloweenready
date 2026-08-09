@@ -10,6 +10,7 @@ const constants_1 = require("../constants");
 exports.REVENUE_ORDER_STATUSES = [
     constants_1.ORDER_STATUS.PAID,
     constants_1.ORDER_STATUS.ACCEPTED,
+    constants_1.ORDER_STATUS.ON_HOLD,
     constants_1.ORDER_STATUS.PROCESSING,
     constants_1.ORDER_STATUS.SHIPPED,
     constants_1.ORDER_STATUS.DELIVERED,

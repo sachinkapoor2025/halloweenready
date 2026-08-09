@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApiClient, useAuth } from "@/lib/auth-context";
 import type { Product } from "@halloweenready/shared";
-import { DEFAULT_PRODUCT_INVENTORY, LOW_STOCK_THRESHOLD } from "@halloweenready/shared";
-import { getUnitsSold, isFastSelling } from "@halloweenready/shared";
+import {
+  DEFAULT_PRODUCT_INVENTORY,
+  LOW_STOCK_THRESHOLD,
+  getUnitsSold,
+  isFastSelling,
+  productHasShippingDims,
+} from "@halloweenready/shared";
 import { formatMoney, paginate, downloadCsv } from "@/lib/admin-utils";
 import { TableControls } from "@/components/admin/TableControls";
-import { resolveImageUrl } from "@/lib/images";
-import { isPlaceholderProductImage } from "@/lib/product-images";
 
 export default function AdminProductsPage() {
   const apiClient = useApiClient();
@@ -32,6 +35,10 @@ export default function AdminProductsPage() {
     compareAtPrice: "",
     tags: "",
     published: true,
+    weightOz: "",
+    lengthIn: "",
+    widthIn: "",
+    heightIn: "",
   });
   const [csv, setCsv] = useState("");
   const [message, setMessage] = useState("");
@@ -39,6 +46,7 @@ export default function AdminProductsPage() {
   const [uploadingSlug, setUploadingSlug] = useState<string | null>(null);
   const [deletingImage, setDeletingImage] = useState<string | null>(null);
   const [tab, setTab] = useState<"list" | "create">("list");
+  const [missingDimsCount, setMissingDimsCount] = useState(0);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -57,6 +65,12 @@ export default function AdminProductsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    apiClient<{ count: number }>("/admin/shipping/products-missing-dims")
+      .then((d) => setMissingDimsCount(d.count))
+      .catch(() => setMissingDimsCount(0));
+  }, [apiClient, products]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -83,12 +97,39 @@ export default function AdminProductsPage() {
       compareAtPrice: "",
       tags: "",
       published: true,
+      weightOz: "",
+      lengthIn: "",
+      widthIn: "",
+      heightIn: "",
     });
     setEditing(null);
   };
 
+  const parseDim = (value: string, label: string): number | null => {
+    const n = parseFloat(value);
+    if (!Number.isFinite(n) || n <= 0) {
+      setMessage(`${label} is required and must be greater than 0.`);
+      return null;
+    }
+    return n;
+  };
+
+  const shippingDimsPayload = () => {
+    const weightOz = parseDim(form.weightOz, "Weight (oz)");
+    if (weightOz == null) return null;
+    const lengthIn = parseDim(form.lengthIn, "Length (in)");
+    if (lengthIn == null) return null;
+    const widthIn = parseDim(form.widthIn, "Width (in)");
+    if (widthIn == null) return null;
+    const heightIn = parseDim(form.heightIn, "Height (in)");
+    if (heightIn == null) return null;
+    return { weightOz, lengthIn, widthIn, heightIn };
+  };
+
   const createProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    const dims = shippingDimsPayload();
+    if (!dims) return;
     try {
       const result = await apiClient<{ product: { slug: string } }>("/products", {
         method: "POST",
@@ -103,6 +144,7 @@ export default function AdminProductsPage() {
           sku: form.sku || undefined,
           tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
           published: form.published,
+          ...dims,
         }),
       });
       setLastSlug(result.product.slug);
@@ -118,6 +160,8 @@ export default function AdminProductsPage() {
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
+    const dims = shippingDimsPayload();
+    if (!dims) return;
     try {
       await apiClient(`/products/${editing.slug}`, {
         method: "PUT",
@@ -132,6 +176,7 @@ export default function AdminProductsPage() {
           sku: form.sku || undefined,
           tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
           published: form.published,
+          ...dims,
         }),
       });
       setMessage(`Product "${form.name}" updated.`);
@@ -156,6 +201,10 @@ export default function AdminProductsPage() {
       compareAtPrice: p.compareAtPrice ? String(p.compareAtPrice) : "",
       tags: p.tags?.join(", ") ?? "",
       published: p.published !== false,
+      weightOz: p.weightOz != null ? String(p.weightOz) : "",
+      lengthIn: p.lengthIn != null ? String(p.lengthIn) : "",
+      widthIn: p.widthIn != null ? String(p.widthIn) : "",
+      heightIn: p.heightIn != null ? String(p.heightIn) : "",
     });
     setTab("create");
   };
@@ -201,7 +250,7 @@ export default function AdminProductsPage() {
     return null;
   };
 
-  const revalidateStorefrontProduct = async (slug: string, categorySlug?: string) => {
+  const revalidateStorefrontProduct = async (slug: string) => {
     if (!token) return;
     try {
       await fetch("/api/revalidate/product", {
@@ -210,7 +259,7 @@ export default function AdminProductsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ slug, categorySlug }),
+        body: JSON.stringify({ slug }),
       });
     } catch {
       /* non-blocking */
@@ -265,7 +314,7 @@ export default function AdminProductsPage() {
       setMessage(
         `${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} uploaded for "${slug}". Visible on the website immediately after cache refresh.`
       );
-      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
+      await revalidateStorefrontProduct(slug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Upload failed");
@@ -283,7 +332,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ imageUrl }),
       });
       setMessage(`Image ${imageNumber} deleted from "${slug}".`);
-      await revalidateStorefrontProduct(slug, products.find((p) => p.slug === slug)?.categorySlug);
+      await revalidateStorefrontProduct(slug);
       load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Image delete failed");
@@ -309,57 +358,136 @@ export default function AdminProductsPage() {
         rows={3}
       />
       <div className="grid sm:grid-cols-2 gap-3">
-        <input
-          placeholder="Regular price *"
-          type="number"
-          step="0.01"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-          required
-        />
-        <input
-          placeholder="Sale price (compare at)"
-          type="number"
-          step="0.01"
-          value={form.compareAtPrice}
-          onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-        />
-        <input
-          placeholder="SKU"
-          value={form.sku}
-          onChange={(e) => setForm({ ...form, sku: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-        />
-        <input
-          placeholder="Inventory"
-          type="number"
-          value={form.inventory}
-          onChange={(e) => setForm({ ...form, inventory: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-        />
-        <select
-          value={form.categorySlug}
-          onChange={(e) => setForm({ ...form, categorySlug: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-          required
-        >
-          <option value="">Select category</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={form.currency}
-          onChange={(e) => setForm({ ...form, currency: e.target.value as "USD" | "INR" })}
-          className="border rounded-lg px-3 py-2"
-        >
-          <option value="USD">USD</option>
-          <option value="INR">INR</option>
-        </select>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">
+            Price <span className="text-red-600">*</span>
+          </span>
+          <input
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="e.g. 9.99"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, "") })}
+            className="w-full border rounded-lg px-3 py-2"
+            required
+          />
+          <span className="mt-1 block text-xs text-slate-500">Selling price customers pay</span>
+        </label>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">Compare-at price</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="e.g. 10.99 (optional)"
+            value={form.compareAtPrice}
+            onChange={(e) =>
+              setForm({ ...form, compareAtPrice: e.target.value.replace(/[^0-9.]/g, "") })
+            }
+            className="w-full border rounded-lg px-3 py-2"
+          />
+          <span className="mt-1 block text-xs text-slate-500">
+            List / MRP shown with strikethrough when higher than price
+          </span>
+        </label>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">SKU</span>
+          <input
+            type="text"
+            placeholder="Optional"
+            value={form.sku}
+            onChange={(e) => setForm({ ...form, sku: e.target.value })}
+            className="w-full border rounded-lg px-3 py-2"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">Inventory</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="e.g. 200"
+            value={form.inventory}
+            onChange={(e) => setForm({ ...form, inventory: e.target.value.replace(/[^0-9]/g, "") })}
+            className="w-full border rounded-lg px-3 py-2"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">
+            Category <span className="text-red-600">*</span>
+          </span>
+          <select
+            value={form.categorySlug}
+            onChange={(e) => setForm({ ...form, categorySlug: e.target.value })}
+            className="w-full border rounded-lg px-3 py-2"
+            required
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="block text-sm font-medium text-slate-700 mb-1">Currency</span>
+          <select
+            value={form.currency}
+            onChange={(e) => setForm({ ...form, currency: e.target.value as "USD" | "INR" })}
+            className="w-full border rounded-lg px-3 py-2"
+          >
+            <option value="USD">USD</option>
+            <option value="INR">INR</option>
+          </select>
+        </label>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-slate-700 mb-2">Shipping dimensions (required)</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <input
+            placeholder="Weight (oz) *"
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={form.weightOz}
+            onChange={(e) => setForm({ ...form, weightOz: e.target.value })}
+            className="border rounded-lg px-3 py-2"
+            required
+          />
+          <input
+            placeholder="Length (in) *"
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={form.lengthIn}
+            onChange={(e) => setForm({ ...form, lengthIn: e.target.value })}
+            className="border rounded-lg px-3 py-2"
+            required
+          />
+          <input
+            placeholder="Width (in) *"
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={form.widthIn}
+            onChange={(e) => setForm({ ...form, widthIn: e.target.value })}
+            className="border rounded-lg px-3 py-2"
+            required
+          />
+          <input
+            placeholder="Height (in) *"
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={form.heightIn}
+            onChange={(e) => setForm({ ...form, heightIn: e.target.value })}
+            className="border rounded-lg px-3 py-2"
+            required
+          />
+        </div>
+        <p className="text-xs text-slate-500 mt-1">Used for USPS rate quotes and label purchase.</p>
       </div>
       <input
         placeholder="Tags (comma-separated)"
@@ -416,6 +544,17 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {missingDimsCount > 0 && (
+        <div className="text-sm bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-lg flex flex-wrap items-center gap-2">
+          <span>
+            {missingDimsCount} product{missingDimsCount === 1 ? "" : "s"} missing shipping dimensions
+          </span>
+          <Link href="/admin/shipping" className="text-nav font-medium hover:underline">
+            Review in Shipping settings →
+          </Link>
+        </div>
+      )}
+
       {message && <p className="text-sm bg-slate-50 border p-3 rounded-lg">{message}</p>}
 
       {tab === "list" && (
@@ -456,7 +595,17 @@ export default function AdminProductsPage() {
                   {pageItems.map((p) => (
                     <tr key={p.slug} className="border-t align-top">
                       <td className="py-3 px-4">
-                        <div className="font-medium">{p.name}</div>
+                        <div className="font-medium flex items-center gap-1.5 flex-wrap">
+                          {p.name}
+                          {!productHasShippingDims(p) && (
+                            <span
+                              className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-900"
+                              title="Missing shipping dimensions"
+                            >
+                              No dims
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-slate-400">{p.slug}</div>
                         <div className="mt-3 space-y-2">
                           <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -467,9 +616,6 @@ export default function AdminProductsPage() {
                             <div className="flex flex-wrap gap-2">
                               {p.images.map((imageUrl, index) => {
                                 const deleteKey = `${p.slug}:${imageUrl}`;
-                                const displayUrl = resolveImageUrl(imageUrl);
-                                const isPlaceholder =
-                                  isPlaceholderProductImage(imageUrl) || isPlaceholderProductImage(displayUrl);
                                 return (
                                   <div
                                     key={`${imageUrl}-${index}`}
@@ -477,12 +623,11 @@ export default function AdminProductsPage() {
                                   >
                                     <span className="mb-1 block text-[10px] font-semibold text-slate-500">
                                       Image {index + 1}
-                                      {isPlaceholder ? " (placeholder)" : ""}
                                     </span>
                                     <div className="h-12 w-full overflow-hidden rounded bg-white">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
-                                        src={displayUrl}
+                                        src={imageUrl}
                                         alt={`${p.name} image ${index + 1}`}
                                         className="h-full w-full object-cover"
                                       />
@@ -654,17 +799,17 @@ export default function AdminProductsPage() {
                     "published",
                   ],
                   [
-                    "Premium Witch Costume",
-                    "Classic witch costume with hat and cape",
-                    "49.99",
-                    "64.99",
+                    "Premium Halloween Decoration",
+                    "Halloween decoration as pictured",
+                    "12.99",
+                    "15.99",
                     "USD",
-                    "costumes",
-                    "HW-COS-001",
+                    "halloween-decoration",
+                    "RAK-001",
                     "50",
-                    "halloween,costume",
-                    "Premium Witch Costume | HalloweenReady",
-                    "Shop premium witch Halloween costume with USA delivery",
+                    "halloween,decoration",
+                    "Premium Halloween Decoration | HalloweenReady",
+                    "Shop premium Halloween decorations with USA delivery",
                     "true",
                   ],
                 ])

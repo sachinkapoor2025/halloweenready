@@ -1,6 +1,6 @@
 import type { Order } from "../schemas/order";
 /** Order statuses that count as received payment (excludes pending, cancelled, refunded). */
-export declare const REVENUE_ORDER_STATUSES: readonly ["paid", "accepted", "processing", "shipped", "delivered", "complete"];
+export declare const REVENUE_ORDER_STATUSES: readonly ["paid", "accepted", "on_hold", "processing", "shipped", "delivered", "complete"];
 export type RevenueOrderStatus = (typeof REVENUE_ORDER_STATUSES)[number];
 export declare function isRevenueOrder(status: string): boolean;
 /** When payment was received — paid status history entry or createdAt fallback. */

@@ -19,7 +19,7 @@
  *   npm run import:backup-images -- --match-only
  *
  *   # Full import (catalog JSON + public/uploads; DynamoDB if table exists)
- *   SOURCE_BUCKET=usarakhi-backup \
+ *   SOURCE_BUCKET=halloweenready-backup \
  *   UPLOAD_BUCKET=halloweenready-upload-prod-xxxxx \
  *   CLOUDFRONT_DOMAIN=d2lfdzx32wxe94.cloudfront.net \
  *   npm run import:backup-images
@@ -37,7 +37,7 @@
  *   LOCAL_BACKUP_DIR=/path/to/backup npm run import:backup-images
  *
  * Env vars:
- *   SOURCE_BUCKET       default: usarakhi-backup
+ *   SOURCE_BUCKET       default: halloweenready-backup
  *   SOURCE_PREFIX       default: halloweenready.com (product folders under this prefix in backup bucket)
  *   UPLOAD_BUCKET       required for upload (from SAM UploadBucket output)
  *   CLOUDFRONT_DOMAIN   default: d2lfdzx32wxe94.cloudfront.net
@@ -76,10 +76,10 @@ import sharp from "sharp";
 // ---- config ----
 
 const ENV = process.env.ENVIRONMENT ?? "prod";
-const SOURCE_BUCKET = process.env.SOURCE_BUCKET ?? "usarakhi-backup";
+const SOURCE_BUCKET = process.env.SOURCE_BUCKET ?? "halloweenready-backup";
 const SOURCE_PREFIX = (
   process.env.SOURCE_PREFIX ??
-  (process.env.SOURCE_BUCKET === undefined || process.env.SOURCE_BUCKET === "usarakhi-backup"
+  (process.env.SOURCE_BUCKET === undefined || process.env.SOURCE_BUCKET === "halloweenready-backup"
     ? "halloweenready.com"
     : "")
 ).replace(/^\/+|\/+$/g, "");

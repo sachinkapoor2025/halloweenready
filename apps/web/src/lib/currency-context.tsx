@@ -24,7 +24,7 @@ const STORAGE_KEY = "hr_ecom_currency";
 const MANUAL_KEY = "hr_ecom_currency_manual";
 const RATE_CACHE_KEY = "hr_ecom_usd_inr_rate";
 const RATE_CACHE_AT_KEY = "hr_ecom_usd_inr_rate_at";
-const RATE_CACHE_TTL_MS = 30 * 60 * 1000;
+const RATE_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour — match API FX cache
 const ENV_FALLBACK = Number(process.env.NEXT_PUBLIC_USD_INR_RATE) || DEFAULT_USD_INR_RATE;
 
 interface CurrencyContextValue {
@@ -55,13 +55,18 @@ function storeCachedRate(rate: number) {
 }
 
 async function fetchUsdInrRate(): Promise<{ rate: number; source: string }> {
+  const sessionCached = readCachedRate();
+  if (sessionCached) return { rate: sessionCached, source: "session-cache" };
+
   try {
-    const res = await fetch(`${getApiUrl()}/config/usd-inr-rate`, { cache: "no-store" });
+    // Prefer HTTP cache; API also caches the quote for ≥1 hour server-side.
+    const res = await fetch(`${getApiUrl()}/config/usd-inr-rate`, { cache: "force-cache" });
     if (!res.ok) throw new Error("api rate failed");
     const data = (await res.json()) as { rate?: number; source?: string };
     if (!data.rate || data.rate <= 0) throw new Error("invalid api rate");
-    storeCachedRate(data.rate);
-    return { rate: data.rate, source: data.source ?? "api" };
+    const rate = Math.round(data.rate * 10_000) / 10_000;
+    storeCachedRate(rate);
+    return { rate, source: data.source ?? "api" };
   } catch {
     /* fall through */
   }
@@ -69,21 +74,24 @@ async function fetchUsdInrRate(): Promise<{ rate: number; source: string }> {
   try {
     const live = await fetchLiveUsdInrRate();
     if (live) {
-      storeCachedRate(live.rate);
-      return { rate: live.rate, source: live.source };
+      const rate = Math.round(live.rate * 10_000) / 10_000;
+      storeCachedRate(rate);
+      return { rate, source: live.source };
     }
   } catch {
     /* fall through */
   }
 
-  const cached = readCachedRate();
-  if (cached) return { rate: cached, source: "session-cache" };
-
   return { rate: ENV_FALLBACK, source: "fallback" };
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [displayCurrency, setDisplayCurrencyState] = useState<DisplayCurrency>("USD");
+  const [displayCurrency, setDisplayCurrencyState] = useState<DisplayCurrency>(() => {
+    if (typeof window === "undefined") return "USD";
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "USD" || saved === "INR") return saved;
+    return "USD";
+  });
   const [usdInrRate, setUsdInrRate] = useState(ENV_FALLBACK);
   const [rateSource, setRateSource] = useState("loading");
   const [rateLoading, setRateLoading] = useState(true);
@@ -101,18 +109,20 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       if (manual) {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved === "USD" || saved === "INR") setDisplayCurrencyState(saved);
-      } else {
-        try {
-          const res = await fetch("/api/geo", { cache: "no-store" });
-          if (res.ok) {
-            const data = (await res.json()) as { currency?: string };
-            if (data.currency === "INR" || data.currency === "USD") {
-              setDisplayCurrencyState(data.currency);
-            }
+        return;
+      }
+      try {
+        const res = await fetch("/api/geo", { cache: "no-store" });
+        if (res.ok) {
+          const data = (await res.json()) as { currency?: string };
+          if (data.currency === "INR" || data.currency === "USD") {
+            setDisplayCurrencyState(data.currency);
+            // Persist geo default so next visit starts in INR for India visitors (no USD flash).
+            localStorage.setItem(STORAGE_KEY, data.currency);
           }
-        } catch {
-          setDisplayCurrencyState("USD");
         }
+      } catch {
+        /* keep prior / USD */
       }
     };
 

@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveImageUrls } from "@/lib/images";
-import { filterDisplayableProductImages } from "@/lib/product-images";
+import {
+  selectDisplayableProductImages,
+  type SizedProductImage,
+} from "@halloweenready/shared";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -62,42 +65,51 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [lens, setLens] = useState<LensState | null>(null);
   const [imageBounds, setImageBounds] = useState<ImageBounds | null>(null);
+  const [displayImgs, setDisplayImgs] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const isDesktop = useDesktopHoverZoom();
 
-  const imgs = useMemo(
-    () => filterDisplayableProductImages(resolveImageUrls(images)),
-    [images]
-  );
-  const [broken, setBroken] = useState<Record<string, true>>({});
+  const resolved = useMemo(() => resolveImageUrls(images), [images]);
+  // Show the full list immediately so multi-image PDPs never look like a single photo
+  // while size filtering runs (or if remote probes fail).
+  const imgs = displayImgs.length > 0 ? displayImgs : resolved;
+  const current = imgs[selected] ?? "";
 
   useEffect(() => {
-    setBroken({});
+    setDisplayImgs([]);
     setSelected(0);
-  }, [images]);
+    if (resolved.length === 0) return;
 
-  const visibleImgs = useMemo(() => imgs.filter((src) => !broken[src]), [imgs, broken]);
+    let cancelled = false;
+    const measured: SizedProductImage[] = [];
+    let remaining = resolved.length;
 
-  const markBroken = useCallback((src: string) => {
-    setBroken((prev) => (prev[src] ? prev : { ...prev, [src]: true }));
-  }, []);
+    const finish = () => {
+      if (cancelled) return;
+      const picked = selectDisplayableProductImages(measured);
+      setDisplayImgs(picked.length > 0 ? picked : resolved.slice(0, 1));
+    };
 
-  const handleImageLoad = useCallback(
-    (src: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      if (img.naturalWidth <= 8 && img.naturalHeight <= 8) markBroken(src);
-    },
-    [markBroken]
-  );
+    resolved.forEach((url) => {
+      const img = new Image();
+      img.onload = () => {
+        measured.push({ url, width: img.naturalWidth, height: img.naturalHeight });
+        remaining -= 1;
+        if (remaining === 0) finish();
+      };
+      img.onerror = () => {
+        remaining -= 1;
+        if (remaining === 0) finish();
+      };
+      img.src = url;
+    });
 
-  const safeSelected = visibleImgs.length === 0 ? 0 : Math.min(selected, visibleImgs.length - 1);
-  const current = visibleImgs[safeSelected] ?? "";
-
-  useEffect(() => {
-    if (selected !== safeSelected) setSelected(safeSelected);
-  }, [selected, safeSelected]);
+    return () => {
+      cancelled = true;
+    };
+  }, [resolved]);
 
   const updateBounds = useCallback(() => {
     const container = containerRef.current;
@@ -161,17 +173,17 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const goPrev = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
-      setSelected((i) => (i <= 0 ? visibleImgs.length - 1 : i - 1));
+      setSelected((i) => (i <= 0 ? imgs.length - 1 : i - 1));
     },
-    [visibleImgs.length]
+    [imgs.length]
   );
 
   const goNext = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
-      setSelected((i) => (i >= visibleImgs.length - 1 ? 0 : i + 1));
+      setSelected((i) => (i >= imgs.length - 1 ? 0 : i + 1));
     },
-    [visibleImgs.length]
+    [imgs.length]
   );
 
   useEffect(() => {
@@ -227,12 +239,8 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
           <img
             ref={imgRef}
             src={current}
-            alt={`${alt} — image ${safeSelected + 1} of ${visibleImgs.length}`}
-            onLoad={(e) => {
-              handleImageLoad(visibleImgs[safeSelected] ?? "")(e);
-              setImageBounds(updateBounds());
-            }}
-            onError={() => markBroken(visibleImgs[safeSelected] ?? "")}
+            alt={`${alt} — image ${selected + 1} of ${imgs.length}`}
+            onLoad={() => setImageBounds(updateBounds())}
             className="w-full h-full object-contain p-2 transition-transform duration-200 group-hover:scale-[1.02] md:group-hover:scale-100 select-none"
             draggable={false}
           />
@@ -264,13 +272,13 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             </>
           )}
 
-          {visibleImgs.length > 1 && (
+          {imgs.length > 1 && (
             <>
               <button
                 type="button"
                 aria-label="Previous image"
                 onClick={goPrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-[4]"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[4]"
               >
                 ‹
               </button>
@@ -278,12 +286,12 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                 type="button"
                 aria-label="Next image"
                 onClick={goNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-[4]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[4]"
               >
                 ›
               </button>
               <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs bg-black/55 text-white px-2.5 py-1 rounded-full z-[4]">
-                {safeSelected + 1} / {visibleImgs.length}
+                {selected + 1} / {imgs.length}
               </span>
             </>
           )}
@@ -293,27 +301,21 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
           </span>
         </div>
 
-        {visibleImgs.length > 1 && (
+        {imgs.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-            {visibleImgs.map((src, i) => (
+            {imgs.map((src, i) => (
               <button
                 key={`${src}-${i}`}
                 type="button"
                 aria-label={`View image ${i + 1}`}
-                aria-current={i === safeSelected ? "true" : undefined}
+                aria-current={i === selected ? "true" : undefined}
                 onClick={() => setSelected(i)}
                 className={`shrink-0 w-[4.5rem] h-[4.5rem] rounded-lg overflow-hidden border-2 transition ${
-                  i === safeSelected ? "border-nav ring-2 ring-nav/20" : "border-slate-200 hover:border-slate-300"
+                  i === selected ? "border-nav ring-2 ring-nav/20" : "border-slate-200 hover:border-slate-300"
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={src}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  onLoad={handleImageLoad(src)}
-                  onError={() => markBroken(src)}
-                />
+                <img src={src} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -337,7 +339,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             ×
           </button>
 
-          {visibleImgs.length > 1 && (
+          {imgs.length > 1 && (
             <>
               <button
                 type="button"
@@ -364,13 +366,11 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             alt={alt}
             className="max-w-full max-h-[85vh] object-contain"
             onClick={(e) => e.stopPropagation()}
-            onLoad={handleImageLoad(visibleImgs[safeSelected] ?? "")}
-            onError={() => markBroken(visibleImgs[safeSelected] ?? "")}
           />
 
-          {visibleImgs.length > 1 && (
+          {imgs.length > 1 && (
             <div className="mt-4 flex gap-2 overflow-x-auto max-w-full px-2">
-              {visibleImgs.map((src, i) => (
+              {imgs.map((src, i) => (
                 <button
                   key={`lb-${src}-${i}`}
                   type="button"
@@ -379,17 +379,11 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                     setSelected(i);
                   }}
                   className={`shrink-0 w-14 h-14 rounded overflow-hidden border-2 ${
-                    i === safeSelected ? "border-white" : "border-white/30 opacity-70"
+                    i === selected ? "border-white" : "border-white/30 opacity-70"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    onLoad={handleImageLoad(src)}
-                    onError={() => markBroken(src)}
-                  />
+                  <img src={src} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

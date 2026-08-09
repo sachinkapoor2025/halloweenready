@@ -2,6 +2,7 @@
 
 import { getApiUrl } from "./env";
 import { getOrCreateSessionId } from "./session";
+import { attributionEventMetadata } from "./attribution-store";
 import { EVENT_TYPES, type EventType, parseClientDevice } from "@halloweenready/shared";
 
 interface TrackPayload {
@@ -129,7 +130,11 @@ export function track(payload: TrackPayload): void {
     path: payload.path ?? window.location.pathname + window.location.search,
     referrer: document.referrer || undefined,
     at: new Date().toISOString(),
-    metadata: { ...getClientMetadata(), ...payload.metadata },
+    metadata: {
+      ...getClientMetadata(),
+      ...attributionEventMetadata(),
+      ...payload.metadata,
+    },
   });
 
   scheduleFlush(payload.immediate);
@@ -171,6 +176,29 @@ export function trackSessionHeartbeat(
       reason,
       // Floor mode: admin duration should be at least this, not summed on top of leave pings
       durationMode: reason === "daily_deal_shown" ? "floor" : "add",
+    },
+    immediate: true,
+  });
+}
+
+/**
+ * Lightweight presence ping while the storefront tab is visible.
+ * Powers admin live-visitors map (server upserts PRESENCE#LIVE with short TTL).
+ */
+export function trackLivePresence(): void {
+  if (typeof window === "undefined") return;
+  if (document.visibilityState === "hidden") return;
+  const path = window.location.pathname + window.location.search;
+  if (path.startsWith("/admin") || path.startsWith("/ses-email")) return;
+
+  const elapsed = pageEnteredAt ? Date.now() - pageEnteredAt : 0;
+  track({
+    type: EVENT_TYPES.SESSION_PING,
+    path,
+    metadata: {
+      durationMs: String(Math.max(elapsed, 1000)),
+      reason: "live_presence",
+      durationMode: "floor",
     },
     immediate: true,
   });

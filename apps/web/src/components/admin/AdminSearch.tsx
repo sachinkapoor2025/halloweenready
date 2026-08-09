@@ -63,7 +63,7 @@ export function AdminSearch() {
         onChange={(e) => setQ(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder="Search name, email, phone…"
-        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-nav focus:outline-none focus:ring-2 focus:ring-nav/20"
+        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
         aria-label="Admin search"
       />
       {open && (loading || results.length > 0 || q.trim().length >= 2) && (
@@ -77,10 +77,10 @@ export function AdminSearch() {
               key={`${r.type}-${r.id}`}
               type="button"
               onClick={() => go(r)}
-              className="flex w-full flex-col items-start gap-0.5 border-t border-slate-100 px-3 py-2 text-left hover:bg-orange-50 first:border-t-0"
+              className="flex w-full flex-col items-start gap-0.5 border-t border-slate-100 px-3 py-2 text-left hover:bg-slate-50 first:border-t-0"
             >
               <span className="text-sm font-medium text-slate-800">{r.label}</span>
-              <span className="text-[11px] uppercase tracking-wide text-nav/70">
+              <span className="text-[11px] uppercase tracking-wide text-slate-400">
                 {r.type}
                 {r.email ? ` · ${r.email}` : ""}
               </span>

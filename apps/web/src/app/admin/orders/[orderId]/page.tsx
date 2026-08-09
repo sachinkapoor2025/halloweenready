@@ -4,8 +4,18 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApiClient } from "@/lib/auth-context";
-import type { Order } from "@halloweenready/shared";
-import { ORDER_STATUS } from "@halloweenready/shared";
+import type { Order, RateQuote } from "@halloweenready/shared";
+import {
+  ORDER_STATUS,
+  VENDOR_ORANGE_COUNTY,
+  VENDOR_HALLOWEENREADY,
+  ensureVendorFulfillments,
+  isMultiVendorOrder,
+  lineVendorKey,
+  orderHasOrangeCounty,
+  orderHasUsarakhi,
+  vendorDisplayLabel,
+} from "@halloweenready/shared";
 import {
   statusLabel,
   badgeClass,
@@ -18,6 +28,7 @@ import {
   paymentStatusLabel,
   shippingStatusLabel,
 } from "@/lib/admin-utils";
+import { canDownloadShippingLabel, printShippingLabel } from "@/lib/shipping-label";
 
 type AdminOrder = Order & {
   adminNotes?: string;
@@ -37,21 +48,47 @@ export default function AdminOrderDetailPage() {
   const [newStatus, setNewStatus] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [carrier, setCarrier] = useState("");
+  const [vendorTracking, setVendorTracking] = useState<
+    Record<string, { trackingNumber: string; carrier: string }>
+  >({});
   const [note, setNote] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [estimatedDeliveryAt, setEstimatedDeliveryAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [buyingLabel, setBuyingLabel] = useState(false);
+  const [syncingPayment, setSyncingPayment] = useState(false);
+  const [ratesWarning, setRatesWarning] = useState("");
+  const [loadingRates, setLoadingRates] = useState(false);
+  const [savingService, setSavingService] = useState(false);
+  const [rateOptions, setRateOptions] = useState<RateQuote[]>([]);
+  const [selectedRateId, setSelectedRateId] = useState("");
+
+  const syncVendorTrackingState = (o: AdminOrder) => {
+    const rows = ensureVendorFulfillments(o);
+    const map: Record<string, { trackingNumber: string; carrier: string }> = {};
+    for (const f of rows) {
+      map[f.vendorSlug] = {
+        trackingNumber: f.trackingNumber ?? "",
+        carrier: f.carrier ?? "",
+      };
+    }
+    setVendorTracking(map);
+    // Keep legacy single fields in sync with HalloweenReady lane (or sole vendor).
+    const us = rows.find((r) => r.vendorSlug === VENDOR_HALLOWEENREADY) ?? rows[0];
+    setTrackingNumber(us?.trackingNumber ?? o.trackingNumber ?? "");
+    setCarrier(us?.carrier ?? o.carrier ?? "");
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await apiClient<{ order: AdminOrder }>(`/admin/orders/${orderId}`);
       setOrder(data.order);
-      setTrackingNumber(data.order.trackingNumber ?? "");
-      setCarrier(data.order.carrier ?? "");
+      syncVendorTrackingState(data.order);
       setAdminNotes(data.order.adminNotes ?? "");
       setEstimatedDeliveryAt(data.order.estimatedDeliveryAt?.slice(0, 10) ?? "");
+      setSelectedRateId(data.order.shippingRateId ?? "");
       const next = nextStatuses(data.order.status);
       setNewStatus(next[0] ?? data.order.status);
     } catch {
@@ -71,15 +108,35 @@ export default function AdminOrderDetailPage() {
     setMessage("");
     setError("");
     try {
-      const payload: Record<string, string | undefined> = {
-        trackingNumber: trackingNumber || undefined,
-        carrier: carrier || undefined,
+      const shippingFieldsRelevant =
+        newStatus === ORDER_STATUS.PROCESSING ||
+        newStatus === ORDER_STATUS.SHIPPED ||
+        order?.status === ORDER_STATUS.PROCESSING ||
+        order?.status === ORDER_STATUS.SHIPPED;
+
+      const multi = order ? isMultiVendorOrder(order) : false;
+      const payload: Record<string, unknown> = {
         note: note || undefined,
         adminNotes,
-        estimatedDeliveryAt: estimatedDeliveryAt
-          ? new Date(estimatedDeliveryAt).toISOString()
-          : undefined,
       };
+
+      if (shippingFieldsRelevant) {
+        payload.estimatedDeliveryAt = estimatedDeliveryAt
+          ? new Date(estimatedDeliveryAt).toISOString()
+          : undefined;
+        if (multi) {
+          const lanes = ensureVendorFulfillments(order!);
+          payload.vendorFulfillments = lanes.map((f) => ({
+            vendorSlug: f.vendorSlug,
+            trackingNumber: vendorTracking[f.vendorSlug]?.trackingNumber?.trim() || undefined,
+            carrier: vendorTracking[f.vendorSlug]?.carrier?.trim() || undefined,
+          }));
+        } else {
+          payload.trackingNumber = trackingNumber || undefined;
+          payload.carrier = carrier || undefined;
+        }
+      }
+
       const allowed = order ? nextStatuses(order.status) : [];
       if (allowed.length > 0 && newStatus) {
         payload.status = newStatus;
@@ -89,6 +146,7 @@ export default function AdminOrderDetailPage() {
         body: JSON.stringify(payload),
       });
       setOrder(data.order);
+      syncVendorTrackingState(data.order);
       setNote("");
       setMessage("Order updated.");
       const next = nextStatuses(data.order.status);
@@ -121,12 +179,153 @@ export default function AdminOrderDetailPage() {
 
   const printInvoice = () => window.print();
 
+  const loadRates = async () => {
+    setLoadingRates(true);
+    setError("");
+    setRatesWarning("");
+    setMessage("");
+    try {
+      const data = await apiClient<{ rates: RateQuote[]; warning?: string }>(
+        `/admin/orders/${orderId}/rates`,
+        { method: "POST" }
+      );
+      setRateOptions(data.rates ?? []);
+      if (data.warning) {
+        setRatesWarning(data.warning);
+        setError(data.warning);
+      }
+      if (data.rates?.length) {
+        const current = order?.shippingRateId;
+        const match = current ? data.rates.find((r) => r.rateId === current) : undefined;
+        setSelectedRateId(match?.rateId ?? data.rates[0].rateId);
+        setMessage(`Loaded ${data.rates.length} USPS rate${data.rates.length === 1 ? "" : "s"}.`);
+      } else if (!data.warning) {
+        const msg =
+          "No USPS rates returned. Set Admin → Shipping origin address, then try Load rates again.";
+        setRatesWarning(msg);
+        setError(msg);
+      }
+    } catch (err) {
+      setRateOptions([]);
+      const msg = err instanceof Error ? err.message : "Could not load rates.";
+      setRatesWarning(msg);
+      setError(msg);
+    } finally {
+      setLoadingRates(false);
+    }
+  };
+
+  const saveShippingService = async () => {
+    const rate = rateOptions.find((r) => r.rateId === selectedRateId);
+    if (!rate) {
+      setError("Select a shipping service.");
+      return;
+    }
+    setSavingService(true);
+    setError("");
+    try {
+      const data = await apiClient<{ order: AdminOrder }>(`/admin/orders/${orderId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          shippingServiceCode: rate.mailClass,
+          shippingServiceName: rate.serviceName,
+          shippingRateId: rate.rateId,
+          estimatedLabelCost: rate.price,
+        }),
+      });
+      setOrder(data.order);
+      setMessage("Shipping service updated.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save shipping service.");
+    } finally {
+      setSavingService(false);
+    }
+  };
+
+  const buyUspsLabel = async () => {
+    setBuyingLabel(true);
+    setError("");
+    setMessage("");
+    try {
+      const data = await apiClient<{ order: AdminOrder }>(`/admin/orders/${orderId}/buy-label`, {
+        method: "POST",
+      });
+      setOrder(data.order);
+      syncVendorTrackingState(data.order);
+      setMessage("USPS label purchased.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Label purchase failed.");
+      await load();
+    } finally {
+      setBuyingLabel(false);
+    }
+  };
+
+  /** Pull capture status from Razorpay when browser verify/webhook was missed. */
+  const syncRazorpayPayment = async () => {
+    setSyncingPayment(true);
+    setError("");
+    setMessage("");
+    try {
+      const data = await apiClient<{ order: AdminOrder; synced?: boolean; alreadyPaid?: boolean }>(
+        `/admin/orders/${orderId}/sync-payment`,
+        { method: "POST" }
+      );
+      setOrder(data.order);
+      setMessage(
+        data.alreadyPaid
+          ? "Order was already paid."
+          : data.synced
+            ? "Payment synced from Razorpay — order marked paid."
+            : "Sync completed."
+      );
+      const next = nextStatuses(data.order.status);
+      setNewStatus(next[0] ?? data.order.status);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not sync payment from Razorpay.");
+    } finally {
+      setSyncingPayment(false);
+    }
+  };
+
+  const labelStatusLabel = (status?: string) => {
+    switch (status) {
+      case "purchased":
+        return "Purchased";
+      case "failed":
+        return "Failed";
+      case "queued":
+        return "Queued";
+      default:
+        return "None";
+    }
+  };
+
   if (loading) return <div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading…</div>;
   if (!order) return <div className="max-w-4xl mx-auto px-4 py-10 text-red-600">{error || "Order not found."}</div>;
 
   const currentStepIndex = FULFILLMENT_STEPS.indexOf(order.status as (typeof FULFILLMENT_STEPS)[number]);
   const transitions = nextStatuses(order.status);
   const addr = order.shippingAddress;
+  const showShippingFields =
+    newStatus === ORDER_STATUS.PROCESSING ||
+    newStatus === ORDER_STATUS.SHIPPED ||
+    (transitions.length === 0 &&
+      (order.status === ORDER_STATUS.PROCESSING || order.status === ORDER_STATUS.SHIPPED));
+  const isAcceptOnly = newStatus === ORDER_STATUS.ACCEPTED;
+  const isOnHoldOnly = newStatus === ORDER_STATUS.ON_HOLD;
+  const isReviveFromCancelled = order.status === ORDER_STATUS.CANCELLED;
+  const canBuyLabel =
+    (order.status === ORDER_STATUS.PAID ||
+      order.status === ORDER_STATUS.ACCEPTED ||
+      order.status === ORDER_STATUS.PROCESSING) &&
+    order.labelStatus !== "purchased";
+  const labelMargin =
+    order.labelCost != null ? order.shipping - order.labelCost : null;
+  const hasOc = orderHasOrangeCounty(order);
+  const hasUs = orderHasUsarakhi(order);
+  const multiVendor = isMultiVendorOrder(order);
+  const fulfillments = ensureVendorFulfillments(order);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -136,13 +335,28 @@ export default function AdminOrderDetailPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 mt-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Order {order.orderId}</h1>
+          <h1 className="text-2xl font-bold">
+            Order {order.orderNumber ?? order.orderId}
+          </h1>
+          {order.orderNumber ? (
+            <p className="text-xs text-slate-400 font-mono mt-0.5">ID {order.orderId}</p>
+          ) : null}
           <p className="text-sm text-slate-500">
             Placed {new Date(order.createdAt).toLocaleString()} · Updated{" "}
             {new Date(order.updatedAt).toLocaleString()}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {hasOc && (
+            <span className="px-3 py-1 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">
+              Orange County
+            </span>
+          )}
+          {hasUs && (
+            <span className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-100 text-slate-700">
+              HalloweenReady
+            </span>
+          )}
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${badgeClass(order.status)}`}>
             {statusLabel(order.status)}
           </span>
@@ -158,6 +372,15 @@ export default function AdminOrderDetailPage() {
           >
             Download invoice
           </button>
+          {canDownloadShippingLabel(order.status) && (
+            <button
+              type="button"
+              onClick={() => printShippingLabel(order)}
+              className="text-sm border border-nav text-nav rounded-lg px-3 py-1.5 hover:bg-blue-50 print:hidden font-medium"
+            >
+              Download shipping label
+            </button>
+          )}
           {order.status === ORDER_STATUS.PENDING_PAYMENT && (
             <Link
               href={`/checkout?orderId=${order.orderId}`}
@@ -170,7 +393,7 @@ export default function AdminOrderDetailPage() {
       </div>
 
       <div id="invoice-print" className="hidden print:block mb-8">
-        <h2 className="text-xl font-bold">Invoice — {order.orderId}</h2>
+        <h2 className="text-xl font-bold">Invoice — {order.orderNumber ?? order.orderId}</h2>
         <p className="text-sm">{addr.name} · {addr.email}</p>
         <p className="text-sm mt-4 font-bold">Total: {formatMoney(order.total, order.currency)}</p>
       </div>
@@ -211,15 +434,74 @@ export default function AdminOrderDetailPage() {
             <ul className="divide-y">
               {order.items.map((item) => (
                 <li key={item.productSlug} className="flex items-center gap-3 py-3">
-                  {item.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.image} alt={item.name} className="w-12 h-12 rounded object-cover" />
+                  {item.image ? (
+                    <Link
+                      href={`/products/${item.productSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-0 hover:z-30 shrink-0 group"
+                      title={`View ${item.name} on storefront`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 rounded object-cover border border-slate-200 bg-slate-50 transition-transform duration-200 ease-out group-hover:scale-[3.2] group-hover:shadow-xl group-hover:border-nav origin-left"
+                      />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/products/${item.productSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 rounded border border-dashed border-slate-200 bg-slate-50 shrink-0 flex items-center justify-center text-[10px] text-slate-400"
+                      title={`View ${item.name} on storefront`}
+                    >
+                      View
+                    </Link>
                   )}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-slate-500">Qty {item.quantity}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/products/${item.productSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-nav hover:underline"
+                      >
+                        {item.name}
+                      </Link>
+                      {lineVendorKey(item) === VENDOR_ORANGE_COUNTY ? (
+                        <span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 text-[10px] font-semibold">
+                          Orange County
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 text-slate-700 px-2 py-0.5 text-[10px] font-semibold">
+                          HalloweenReady
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Qty {item.quantity}
+                      {item.sku ? ` · SKU ${item.sku}` : ""}
+                    </p>
+                    {item.addons?.length ? (
+                      <ul className="mt-1 space-y-0.5 text-xs text-slate-600">
+                        {item.addons.map((a) => (
+                          <li key={a.id}>
+                            + {a.quantity > 1 ? `${a.quantity}× ` : ""}
+                            {a.name} ({formatMoney(a.price * a.quantity * item.quantity, order.currency)})
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
-                  <span className="text-sm">{formatMoney(item.price * item.quantity, order.currency)}</span>
+                  <span className="text-sm shrink-0">
+                    {formatMoney(
+                      (item.price + (item.addons?.reduce((s, a) => s + a.price * a.quantity, 0) ?? 0)) *
+                        item.quantity,
+                      order.currency
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -263,29 +545,193 @@ export default function AdminOrderDetailPage() {
         <div className="space-y-6">
           <section className="bg-white border rounded-xl p-5 text-sm">
             <h2 className="font-semibold mb-3">Customer</h2>
-            <p className="font-medium">{addr.name}</p>
-            <p className="text-slate-500">{addr.email}</p>
-            {addr.phone && <p className="text-slate-500">{addr.phone}</p>}
-            <div className="mt-3 text-slate-600">
-              <p>{addr.line1}</p>
-              {addr.line2 && <p>{addr.line2}</p>}
-              <p>
-                {addr.city}, {addr.state} {addr.postalCode}
+            {addr.senderName && (
+              <p className="text-xs text-slate-500 mb-1">
+                Gift from: <span className="font-semibold text-slate-800">{addr.senderName}</span>
               </p>
-              <p>{addr.country}</p>
-            </div>
+            )}
+            {addr.senderMessage && (
+              <p className="text-xs text-slate-600 italic mb-2 border-l-2 border-amber-300 pl-2 leading-relaxed">
+                “{addr.senderMessage}”
+              </p>
+            )}
+            {order.shipments && order.shipments.length > 1 ? (
+              <div className="space-y-4">
+                <p className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
+                  Multi-address order · {order.shipments.length} deliveries · shipping{" "}
+                  {formatMoney(order.shipping, order.currency)} total
+                </p>
+                {order.shipments.map((shipment, idx) => (
+                  <div
+                    key={shipment.shipmentId}
+                    className="border-t border-slate-100 pt-3 first:border-0 first:pt-0"
+                  >
+                    <p className="text-xs font-semibold text-slate-500 mb-1">
+                      Delivery {idx + 1} ·{" "}
+                      {shipment.items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
+                    </p>
+                    <p className="text-xs text-slate-500 mb-1">
+                      Subtotal {formatMoney(shipment.subtotal, order.currency)}
+                      {" · "}
+                      Shipping{" "}
+                      {shipment.shipping > 0
+                        ? formatMoney(shipment.shipping, order.currency)
+                        : "FREE"}
+                    </p>
+                    <p className="font-medium">{shipment.shippingAddress.name}</p>
+                    <p className="text-slate-500">{shipment.shippingAddress.email}</p>
+                    {shipment.shippingAddress.phone && (
+                      <p className="text-slate-500">{shipment.shippingAddress.phone}</p>
+                    )}
+                    <div className="mt-2 text-slate-600">
+                      <p>{shipment.shippingAddress.line1}</p>
+                      {shipment.shippingAddress.line2 && <p>{shipment.shippingAddress.line2}</p>}
+                      <p>
+                        {shipment.shippingAddress.city}, {shipment.shippingAddress.state}{" "}
+                        {shipment.shippingAddress.postalCode}
+                      </p>
+                      <p>{shipment.shippingAddress.country}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <p className="font-medium">{addr.name}</p>
+                <p className="text-slate-500">{addr.email}</p>
+                {addr.phone && <p className="text-slate-500">{addr.phone}</p>}
+                <div className="mt-3 text-slate-600">
+                  <p>{addr.line1}</p>
+                  {addr.line2 && <p>{addr.line2}</p>}
+                  <p>
+                    {addr.city}, {addr.state} {addr.postalCode}
+                  </p>
+                  <p>{addr.country}</p>
+                </div>
+              </>
+            )}
           </section>
 
           <section className="bg-white border rounded-xl p-5 text-sm">
             <h2 className="font-semibold mb-3">Payment & shipping</h2>
             <p className="text-slate-600 capitalize">Method: {order.paymentProvider ?? "—"}</p>
+            {order.status === ORDER_STATUS.PENDING_PAYMENT &&
+              (order.paymentProvider === "razorpay" || order.razorpayOrderId) && (
+                <button
+                  type="button"
+                  disabled={syncingPayment}
+                  onClick={() => void syncRazorpayPayment()}
+                  className="mt-2 text-sm rounded-lg border border-nav text-nav px-3 py-1.5 hover:bg-blue-50 disabled:opacity-50"
+                >
+                  {syncingPayment ? "Checking Razorpay…" : "Sync payment from Razorpay"}
+                </button>
+              )}
             <p className="text-slate-600 mt-1">Shipping: {shippingStatusLabel(order.status)}</p>
-            {order.trackingNumber && (
+            {(order.shippingServiceName || order.shippingServiceCode) && (
               <p className="text-slate-600 mt-1">
-                Tracking: {order.trackingNumber}
-                {order.carrier ? ` (${order.carrier})` : ""}
+                USPS service: {order.shippingServiceName ?? order.shippingServiceCode}
+                {order.shippingServiceCode && order.shippingServiceName ? (
+                  <span className="text-slate-400"> ({order.shippingServiceCode})</span>
+                ) : null}
               </p>
             )}
+            {order.estimatedLabelCost != null && (
+              <p className="text-slate-600 mt-1">
+                Est. label cost: {formatMoney(order.estimatedLabelCost, order.currency)}
+              </p>
+            )}
+            {order.labelCost != null && (
+              <p className="text-slate-600 mt-1">
+                Label cost: {formatMoney(order.labelCost, order.currency)}
+              </p>
+            )}
+            {order.labelStatus && (
+              <p className="text-slate-600 mt-1">
+                Label status:{" "}
+                <span
+                  className={
+                    order.labelStatus === "failed"
+                      ? "text-red-700 font-medium"
+                      : order.labelStatus === "purchased"
+                        ? "text-green-700 font-medium"
+                        : ""
+                  }
+                >
+                  {labelStatusLabel(order.labelStatus)}
+                </span>
+              </p>
+            )}
+            {order.labelError && (
+              <p className="text-red-600 text-xs mt-1">Label error: {order.labelError}</p>
+            )}
+            {error && !ratesWarning && (
+              <p className="text-red-600 text-xs mt-1 whitespace-pre-wrap">{error}</p>
+            )}
+            {message && (
+              <p className="text-green-600 text-xs mt-1">{message}</p>
+            )}
+            {labelMargin != null && (
+              <p className="text-xs text-slate-500 mt-2 border-t pt-2">
+                Customer shipping charged {formatMoney(order.shipping, order.currency)} vs label{" "}
+                {formatMoney(order.labelCost!, order.currency)}
+                {labelMargin >= 0 ? (
+                  <span className="text-green-700"> · margin {formatMoney(labelMargin, order.currency)}</span>
+                ) : (
+                  <span className="text-red-700">
+                    {" "}
+                    · loss {formatMoney(Math.abs(labelMargin), order.currency)}
+                  </span>
+                )}
+              </p>
+            )}
+            {order.labelPdfUrl && (
+              <a
+                href={order.labelPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-nav hover:underline text-sm font-medium"
+              >
+                View USPS label PDF
+              </a>
+            )}
+            {canBuyLabel && (
+              <button
+                type="button"
+                disabled={buyingLabel}
+                onClick={() => void buyUspsLabel()}
+                className="mt-3 w-full bg-nav text-white py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                {buyingLabel ? "Purchasing label…" : "Buy USPS label"}
+              </button>
+            )}
+            <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Vendor shipping
+              </p>
+              {fulfillments.map((f) => (
+                <div key={f.vendorSlug} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                  <p className="text-xs font-semibold text-slate-700">
+                    {vendorDisplayLabel(f.vendorSlug)}
+                    {f.status ? (
+                      <span className="ml-2 font-normal text-slate-500 capitalize">
+                        · {f.status}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-slate-600 mt-0.5 text-sm">
+                    {f.trackingNumber
+                      ? `${f.trackingNumber}${f.carrier ? ` (${f.carrier})` : ""}`
+                      : "No tracking yet"}
+                  </p>
+                </div>
+              ))}
+              {multiVendor && (
+                <p className="text-[11px] text-slate-500">
+                  Mixed cart: Orange County and HalloweenReady each get their own AWB. Order becomes Shipped
+                  when both are filled.
+                </p>
+              )}
+            </div>
             {order.estimatedDeliveryAt && (
               <p className="text-slate-600 mt-1">
                 Est. delivery: {new Date(order.estimatedDeliveryAt).toLocaleDateString()}
@@ -305,6 +751,57 @@ export default function AdminOrderDetailPage() {
             {order.paymentIntentId && (
               <p className="text-xs text-slate-400 break-all mt-1">PI: {order.paymentIntentId}</p>
             )}
+
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-xs font-medium text-slate-500 mb-2">USPS service override</p>
+              <p className="text-[11px] text-slate-400 mb-2">
+                If Buy USPS label fails, load rates here, pick a service, save, then buy again.
+                Origin address must be set under{" "}
+                <Link href="/admin/shipping" className="text-nav underline">
+                  Admin → Shipping
+                </Link>
+                .
+              </p>
+              <div className="flex flex-wrap gap-2 mb-2">
+                <button
+                  type="button"
+                  disabled={loadingRates}
+                  onClick={() => void loadRates()}
+                  className="text-xs border border-slate-200 rounded-lg px-2 py-1 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {loadingRates ? "Loading rates…" : "Load rates"}
+                </button>
+              </div>
+              {ratesWarning && (
+                <p className="text-red-600 text-xs mb-2 whitespace-pre-wrap">{ratesWarning}</p>
+              )}
+              {rateOptions.length > 0 && (
+                <>
+                  <select
+                    value={selectedRateId}
+                    onChange={(e) => setSelectedRateId(e.target.value)}
+                    className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm mb-2"
+                  >
+                    {rateOptions.map((r) => (
+                      <option key={r.rateId} value={r.rateId}>
+                        {r.serviceName} — {formatMoney(r.price, order.currency)}
+                        {r.estimatedDeliveryDate
+                          ? ` · by ${new Date(r.estimatedDeliveryDate).toLocaleDateString()}`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={savingService || !selectedRateId}
+                    onClick={() => void saveShippingService()}
+                    className="w-full border border-nav text-nav py-1.5 rounded-lg text-xs font-medium hover:bg-blue-50 disabled:opacity-50"
+                  >
+                    {savingService ? "Saving…" : "Save shipping service"}
+                  </button>
+                </>
+              )}
+            </div>
           </section>
 
           <section className="bg-white border rounded-xl p-5">
@@ -346,7 +843,12 @@ export default function AdminOrderDetailPage() {
               </div>
             )}
             {transitions.length === 0 ? (
-              <p className="text-sm text-slate-500">This order is in a final state. You can still update tracking and notes.</p>
+              <p className="text-sm text-slate-500">
+                This order is in a final state.
+                {showShippingFields
+                  ? " You can still update tracking and notes."
+                  : " You can still update notes."}
+              </p>
             ) : null}
             <form onSubmit={handleUpdate} className="space-y-3">
               {transitions.length > 0 && (
@@ -366,35 +868,107 @@ export default function AdminOrderDetailPage() {
                 </label>
               )}
 
-              <label className="block text-xs font-medium text-slate-500">
-                Expected delivery date
-                <input
-                  type="date"
-                  value={estimatedDeliveryAt}
-                  onChange={(e) => setEstimatedDeliveryAt(e.target.value)}
-                  className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
-                />
-              </label>
+              {isReviveFromCancelled && transitions.length > 0 && (
+                <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
+                  This order was cancelled. Moving it to On hold, Accepted, or Processing revives it for
+                  fulfillment.
+                </p>
+              )}
 
-              <label className="block text-xs font-medium text-slate-500">
-                Tracking number
-                <input
-                  value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
-                  placeholder="e.g. 1Z999…"
-                />
-              </label>
+              {isAcceptOnly && !isReviveFromCancelled && (
+                <p className="text-xs text-slate-500">
+                  Accept confirms the order for fulfillment. Add tracking when you move it to Processing or Shipped.
+                </p>
+              )}
 
-              <label className="block text-xs font-medium text-slate-500">
-                Carrier
-                <input
-                  value={carrier}
-                  onChange={(e) => setCarrier(e.target.value)}
-                  className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
-                  placeholder="e.g. FedEx, DHL"
-                />
-              </label>
+              {showShippingFields && (
+                <>
+                  <label className="block text-xs font-medium text-slate-500">
+                    Expected delivery date
+                    <input
+                      type="date"
+                      value={estimatedDeliveryAt}
+                      onChange={(e) => setEstimatedDeliveryAt(e.target.value)}
+                      className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
+                    />
+                  </label>
+
+                  {multiVendor ? (
+                    <div className="space-y-3">
+                      {fulfillments.map((f) => (
+                        <div
+                          key={f.vendorSlug}
+                          className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2"
+                        >
+                          <p className="text-xs font-semibold text-slate-700">
+                            {vendorDisplayLabel(f.vendorSlug)} tracking
+                          </p>
+                          <label className="block text-xs font-medium text-slate-500">
+                            Tracking number
+                            <input
+                              value={vendorTracking[f.vendorSlug]?.trackingNumber ?? ""}
+                              onChange={(e) =>
+                                setVendorTracking((prev) => ({
+                                  ...prev,
+                                  [f.vendorSlug]: {
+                                    trackingNumber: e.target.value,
+                                    carrier: prev[f.vendorSlug]?.carrier ?? "",
+                                  },
+                                }))
+                              }
+                              className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white"
+                              placeholder={
+                                f.vendorSlug === VENDOR_ORANGE_COUNTY
+                                  ? "OC / vendor AWB"
+                                  : "e.g. USPS / FedEx"
+                              }
+                            />
+                          </label>
+                          <label className="block text-xs font-medium text-slate-500">
+                            Carrier
+                            <input
+                              value={vendorTracking[f.vendorSlug]?.carrier ?? ""}
+                              onChange={(e) =>
+                                setVendorTracking((prev) => ({
+                                  ...prev,
+                                  [f.vendorSlug]: {
+                                    trackingNumber: prev[f.vendorSlug]?.trackingNumber ?? "",
+                                    carrier: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white"
+                              placeholder="e.g. FedEx, DHL, USPS"
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <label className="block text-xs font-medium text-slate-500">
+                        Tracking number
+                        <input
+                          value={trackingNumber}
+                          onChange={(e) => setTrackingNumber(e.target.value)}
+                          className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
+                          placeholder="e.g. 1Z999…"
+                        />
+                      </label>
+
+                      <label className="block text-xs font-medium text-slate-500">
+                        Carrier
+                        <input
+                          value={carrier}
+                          onChange={(e) => setCarrier(e.target.value)}
+                          className="mt-1 w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
+                          placeholder="e.g. FedEx, DHL"
+                        />
+                      </label>
+                    </>
+                  )}
+                </>
+              )}
 
               <label className="block text-xs font-medium text-slate-500">
                 Status note (optional)
@@ -411,7 +985,19 @@ export default function AdminOrderDetailPage() {
                 disabled={saving}
                 className="w-full bg-nav text-white py-2 rounded-lg text-sm font-medium disabled:opacity-50"
               >
-                {saving ? "Saving…" : "Save update"}
+                {saving
+                  ? "Saving…"
+                  : isReviveFromCancelled
+                    ? isOnHoldOnly
+                      ? "Revive → on hold"
+                      : isAcceptOnly
+                        ? "Revive → accepted"
+                        : "Revive order"
+                    : isAcceptOnly
+                      ? "Accept order"
+                      : isOnHoldOnly
+                        ? "Put on hold"
+                        : "Save update"}
               </button>
             </form>
             {message && <p className="text-green-600 text-xs mt-2">{message}</p>}

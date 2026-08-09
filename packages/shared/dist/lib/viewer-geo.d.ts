@@ -13,4 +13,12 @@ export declare function formatViewerLocation(geo: ViewerGeo, hints?: {
     timezone?: string;
     locale?: string;
 }): string;
+/**
+ * Best-effort ISO country for analytics pies.
+ * Prefer CDN/geo country; otherwise infer from timezone/locale (same cues as Location column).
+ */
+export declare function inferViewerCountryCode(geo: ViewerGeo, hints?: {
+    timezone?: string;
+    locale?: string;
+}): string | undefined;
 export declare function viewerGeoFromMetadata(metadata?: Record<string, string>): ViewerGeo;

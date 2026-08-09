@@ -1,12 +1,17 @@
 name: Deploy
 
+# Trigger: push to main/dev/feature/* or manual workflow_dispatch.
 on:
   push:
     branches:
       - main
-      - feature/*
       - dev
+      - "feature/**"
   workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   AWS_REGION: us-east-1
@@ -49,32 +54,64 @@ jobs:
         env:
           RAZORPAY_KEY_ID: ${{ secrets.RAZOR_KEY_ID }}
           RAZORPAY_KEY_SECRET: ${{ secrets.RAZOR_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          USPS_CLIENT_ID: ${{ secrets.USPS_CLIENT_ID }}
+          USPS_CLIENT_SECRET: ${{ secrets.USPS_CLIENT_SECRET }}
+          USPS_SECRET_ARN: ${{ secrets.USPS_SECRET_ARN }}
+          USPS_BASE_URL: ${{ secrets.USPS_BASE_URL }}
+          USPS_CRID: ${{ secrets.USPS_CRID }}
+          USPS_MID: ${{ secrets.USPS_MID }}
+          USPS_EPS_ACCOUNT_NUMBER: ${{ secrets.USPS_EPS_ACCOUNT_NUMBER }}
+          USPS_PAYMENT_AUTHORIZATION_TOKEN: ${{ secrets.USPS_PAYMENT_AUTHORIZATION_TOKEN }}
+          ORANGE_COUNTY_VENDOR_API_KEY: ${{ secrets.ORANGE_COUNTY_VENDOR_API_KEY }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+          WHATSAPP_TEMPLATE_NAME: ${{ secrets.WHATSAPP_TEMPLATE_NAME }}
+          WHATSAPP_TEMPLATE_LANG: ${{ secrets.WHATSAPP_TEMPLATE_LANG }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          MARKETING_SMTP_PASS: ${{ secrets.MARKETING_SMTP_PASS }}
         run: |
+          # Omit empty WhatsApp/Twilio/marketing overrides so a prior SAM deploy's values are not wiped.
+          BASE_URL="${USPS_BASE_URL:-https://apis.usps.com}"
+          EXTRA=""
+          [ -n "${WHATSAPP_TOKEN:-}" ] && EXTRA="$EXTRA WhatsAppToken=${WHATSAPP_TOKEN}"
+          [ -n "${WHATSAPP_PHONE_NUMBER_ID:-}" ] && EXTRA="$EXTRA WhatsAppPhoneNumberId=${WHATSAPP_PHONE_NUMBER_ID}"
+          [ -n "${WHATSAPP_TEMPLATE_NAME:-}" ] && EXTRA="$EXTRA WhatsAppTemplateName=${WHATSAPP_TEMPLATE_NAME}"
+          [ -n "${WHATSAPP_TEMPLATE_LANG:-}" ] && EXTRA="$EXTRA WhatsAppTemplateLang=${WHATSAPP_TEMPLATE_LANG}"
+          [ -n "${TWILIO_ACCOUNT_SID:-}" ] && EXTRA="$EXTRA TwilioAccountSid=${TWILIO_ACCOUNT_SID}"
+          [ -n "${TWILIO_AUTH_TOKEN:-}" ] && EXTRA="$EXTRA TwilioAuthToken=${TWILIO_AUTH_TOKEN}"
+          [ -n "${TWILIO_WHATSAPP_FROM:-}" ] && EXTRA="$EXTRA TwilioWhatsAppFrom=${TWILIO_WHATSAPP_FROM}"
+          if [ -n "${MARKETING_SMTP_PASS:-}" ]; then
+            EXTRA="$EXTRA MarketingSmtpPassword=${MARKETING_SMTP_PASS}"
+          else
+            echo "::warning::MARKETING_SMTP_PASS secret is empty — marketing campaigns need Mailercloud credentials in Admin → Email → Settings (or set the GitHub secret)."
+          fi
+          [ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ] && EXTRA="$EXTRA RazorpayWebhookSecret=${RAZORPAY_WEBHOOK_SECRET}"
           sam build && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
-            --parameter-overrides "Environment=prod RazorpayKeyId=${RAZORPAY_KEY_ID} RazorpayKeySecret=${RAZORPAY_KEY_SECRET} SmtpPassword=${SMTP_PASSWORD} StripeSecretKey=${STRIPE_SECRET_KEY} StripeWebhookSecret=${STRIPE_WEBHOOK_SECRET}"
+            --parameter-overrides "\
+          Environment=prod \
+          RazorpayKeyId=${RAZORPAY_KEY_ID} \
+          RazorpayKeySecret=${RAZORPAY_KEY_SECRET} \
+          SmtpPassword=${SMTP_PASSWORD} \
+          StripeSecretKey=${STRIPE_SECRET_KEY} \
+          StripeWebhookSecret=${STRIPE_WEBHOOK_SECRET} \
+          UspsClientId=${USPS_CLIENT_ID} \
+          UspsClientSecret=${USPS_CLIENT_SECRET} \
+          UspsSecretArn=${USPS_SECRET_ARN} \
+          UspsBaseUrl=${BASE_URL} \
+          UspsCrid=${USPS_CRID} \
+          UspsMid=${USPS_MID} \
+          UspsEpsAccountNumber=${USPS_EPS_ACCOUNT_NUMBER} \
+          UspsPaymentAuthorizationToken=${USPS_PAYMENT_AUTHORIZATION_TOKEN} \
+          OrangeCountyVendorApiKey=${ORANGE_COUNTY_VENDOR_API_KEY}${EXTRA}"
 
-      - name: Seed HalloweenReady catalog
-        run: npm run import:halloweenready
-        env:
-          ENVIRONMENT: prod
-          NEXT_PUBLIC_IMAGE_MODE: cdn
-
-      - name: Restore admin-uploaded images from S3
-        run: npm run restore:admin-images
-        env:
-          ENVIRONMENT: prod
-          UPLOAD_BUCKET: halloweenready-prod-uploadbucket-dyr0xdywradd
-          CLOUDFRONT_DOMAIN: d2lfdzx32wxe94.cloudfront.net
-
-      - name: Rewrite product image URLs to CloudFront CDN
-        run: npm run rewrite:product-images
-        env:
-          ENVIRONMENT: prod
-          NEXT_PUBLIC_IMAGE_MODE: cdn
-          CLOUDFRONT_DOMAIN: d2lfdzx32wxe94.cloudfront.net
+      # Catalog import OVERWRITES product records and has wiped admin-uploaded images.
+      # Run manually only: Actions → Import HalloweenReady Catalog (workflow_dispatch).
 
   deploy-web:
     runs-on: ubuntu-latest
@@ -86,16 +123,31 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Export SAM outputs for web build
+        run: |
+          output() {
+            aws cloudformation describe-stacks \
+              --stack-name halloweenready-prod \
+              --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue | [0]" \
+              --output text
+          }
+
+          echo "NEXT_PUBLIC_API_URL=$(output ApiUrl)" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$(output UserPoolId)" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$(output UserPoolClientId)" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_CDN_URL=https://$(output CloudFrontDomain)" >> "$GITHUB_ENV"
       - run: npm run build -w @halloweenready/shared
       - run: npm run build -w @halloweenready/web
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.RAZOR_KEY_ID }}
-          NEXT_PUBLIC_COGNITO_USER_POOL_ID: ${{ secrets.NEXT_PUBLIC_COGNITO_USER_POOL_ID }}
-          NEXT_PUBLIC_COGNITO_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_COGNITO_CLIENT_ID }}
           NEXT_PUBLIC_COGNITO_REGION: ${{ env.AWS_REGION }}
           NEXT_PUBLIC_USD_INR_RATE: ${{ secrets.NEXT_PUBLIC_USD_INR_RATE }}
           NEXT_PUBLIC_META_PIXEL_ID: ${{ secrets.NEXT_PUBLIC_META_PIXEL_ID }}

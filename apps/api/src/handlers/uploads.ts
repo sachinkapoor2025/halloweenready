@@ -26,31 +26,16 @@ function publicUrl(key: string): string {
 }
 
 function keyFromPublicUrl(imageUrl: string): string | null {
-  const trimmed = imageUrl.trim();
-  // Relative paths from static rewrite or raw product keys
-  if (trimmed.startsWith("/uploads/products/")) {
-    return decodeURIComponent(trimmed.replace(/^\/uploads\//, ""));
-  }
-  if (trimmed.startsWith("/products/")) {
-    return decodeURIComponent(trimmed.replace(/^\//, ""));
-  }
-  if (/^products\//i.test(trimmed)) {
-    return decodeURIComponent(trimmed);
-  }
-
   try {
-    const parsed = new URL(trimmed);
+    const parsed = new URL(imageUrl);
     const hostname = parsed.hostname.toLowerCase();
     const cdnHost = CDN_DOMAIN?.replace(/^https?:\/\//, "").replace(/\/$/, "").toLowerCase();
     const s3Host = BUCKET ? `${BUCKET}.s3.amazonaws.com`.toLowerCase() : "";
     const localApi = process.env.LOCAL_API_URL ?? "http://localhost:3001";
     const localHost = new URL(localApi).host.toLowerCase();
-    const pathname = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
 
-    if (cdnHost && hostname === cdnHost) return pathname;
-    if (s3Host && hostname === s3Host) return pathname;
-    // Any https host with /products/... (admin upload) — use path as S3 key
-    if (/^products\//i.test(pathname)) return pathname;
+    if (cdnHost && hostname === cdnHost) return decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+    if (s3Host && hostname === s3Host) return decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
     if (process.env.USE_LOCAL_UPLOADS === "true" && parsed.host.toLowerCase() === localHost) {
       const match = parsed.pathname.match(/^\/uploads\/(.+)$/);
       return match ? decodeURIComponent(match[1]) : null;
@@ -85,11 +70,19 @@ export async function getUploadUrl(event: APIGatewayProxyEventV2) {
   const filename = body.filename as string;
   const contentType = (body.contentType as string) ?? "image/jpeg";
   const productSlug = (body.productSlug as string | undefined)?.trim();
+  const folder = (body.folder as string | undefined)?.trim();
 
   if (!filename) return badRequest("filename required");
 
   const ext = path.extname(filename) || ".jpg";
-  const prefix = productSlug ? `products/${productSlug}` : "products";
+  const prefix =
+    folder === "blog"
+      ? "blog"
+      : folder === "expenses"
+        ? "expenses"
+        : productSlug
+          ? `products/${productSlug}`
+          : "products";
   const key = `${prefix}/${uuidv4()}${ext}`;
 
   const s3 = getS3();
@@ -179,7 +172,7 @@ export async function deleteImageFromProduct(event: APIGatewayProxyEventV2) {
 
   const { GetCommand, PutCommand } = await import("@aws-sdk/lib-dynamodb");
   const { docClient, PRODUCTS_TABLE, now } = await import("../lib/db");
-  const { productKeys, productImageMatchKey } = await import("@halloweenready/shared");
+  const { productKeys } = await import("@halloweenready/shared");
 
   const existing = await docClient.send(
     new GetCommand({
@@ -190,25 +183,20 @@ export async function deleteImageFromProduct(event: APIGatewayProxyEventV2) {
   if (!existing.Item) return badRequest("Product not found");
 
   const currentImages = (existing.Item.images as string[]) ?? [];
-  const targetKey = productImageMatchKey(imageUrl);
-  const matchIndex = currentImages.findIndex((image) => productImageMatchKey(image) === targetKey);
-  if (matchIndex < 0) return badRequest("Image not found on product");
+  if (!currentImages.includes(imageUrl)) return badRequest("Image not found on product");
 
-  const storedUrl = currentImages[matchIndex];
-  const images = currentImages.filter((_, index) => index !== matchIndex);
+  const images = currentImages.filter((image) => image !== imageUrl);
   const updated = { ...existing.Item, images, updatedAt: now() };
   await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: updated }));
 
   let storageDeleted = false;
   try {
-    // Prefer the DB-stored CDN URL so S3 key parsing succeeds
-    storageDeleted = await deleteStoredImage(storedUrl);
+    storageDeleted = await deleteStoredImage(imageUrl);
   } catch {
     storageDeleted = false;
   }
 
-  const { withResolvedProductImages } = await import("../lib/images");
-  return ok({ product: withResolvedProductImages(updated), deleted: true, storageDeleted });
+  return ok({ product: updated, deleted: true, storageDeleted });
 }
 
 /** Local dev: save uploaded file to disk */

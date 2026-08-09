@@ -58,6 +58,35 @@ export function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
 }
 
+export type PaymentFilterCategory = "pending" | "paid" | "failed" | "refunded";
+
+/** Maps order status to the payment filter dropdown category. */
+export function paymentFilterCategory(status: string): PaymentFilterCategory {
+  if (status === ORDER_STATUS.PENDING_PAYMENT) return "pending";
+  if (status === ORDER_STATUS.REFUNDED) return "refunded";
+  if (status === ORDER_STATUS.CANCELLED) return "failed";
+  return "paid";
+}
+
+export function matchesPaymentFilter(status: string, filter: string): boolean {
+  if (filter === "all") return true;
+  return paymentFilterCategory(status) === filter;
+}
+
+/** Status tab filter — "Paid" means payment received (any post-payment status). */
+export function matchesOrderStatusTab(status: string, tab: string): boolean {
+  if (tab === "all") return true;
+  if (tab === ORDER_STATUS.PAID) return matchesPaymentFilter(status, "paid");
+  // Processing tab = orders awaiting payment / still being processed for payment
+  if (tab === ORDER_STATUS.PROCESSING) {
+    return status === ORDER_STATUS.PENDING_PAYMENT;
+  }
+  if (tab === ORDER_STATUS.DELIVERED) {
+    return status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.COMPLETE;
+  }
+  return status === tab;
+}
+
 export function paymentStatusLabel(status: string): string {
   if (status === ORDER_STATUS.PENDING_PAYMENT) return "Pending";
   if (status === ORDER_STATUS.REFUNDED) return "Refunded";
@@ -75,6 +104,7 @@ export function paymentStatusClass(status: string): string {
 export function shippingStatusLabel(status: string): string {
   if (status === ORDER_STATUS.SHIPPED) return "Shipped";
   if (status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.COMPLETE) return "Delivered";
+  if (status === ORDER_STATUS.ON_HOLD) return "On hold";
   if (status === ORDER_STATUS.CANCELLED || status === ORDER_STATUS.REFUNDED) return "—";
   if (status === ORDER_STATUS.PENDING_PAYMENT) return "—";
   return "Pending";

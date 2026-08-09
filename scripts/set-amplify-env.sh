@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Set Amplify environment variables for halloweenready.com (Next.js on Amplify — WordPress retired).
+# Set Amplify environment variables (sample placeholders — replace values in Amplify Console later).
 # Requires: aws CLI, active AWS credentials with Amplify access.
 #
 # Usage:
@@ -10,18 +10,19 @@
 #
 # Or update one branch only:
 #   ./scripts/set-amplify-env.sh main
+#   ./scripts/set-amplify-env.sh dev
 
 set -euo pipefail
 
-APP_ID="${AMPLIFY_APP_ID:-d1jpjybwyr2l8t}"
-BRANCH="${1:-main}"
+APP_ID="${AMPLIFY_APP_ID:-d1vlvm5li37k6g}"
+BRANCH="${1:-all}"
 
-# Production values — halloweenready.com is the Next.js storefront (not WordPress).
+# Sample placeholders — replace in Amplify Console when you have real IDs
 SAMPLE_ENV=$(cat <<'EOF'
 {
-  "NEXT_PUBLIC_SITE_URL": "https://halloweenready.com",
-  "NEXT_PUBLIC_API_URL": "https://c70qsnpe4g.execute-api.us-east-1.amazonaws.com/prod",
-  "NEXT_PUBLIC_CDN_URL": "https://d2lfdzx32wxe94.cloudfront.net",
+  "NEXT_PUBLIC_SITE_URL": "https://www.usarakhi.com",
+  "NEXT_PUBLIC_API_URL": "https://foqu2ap4qi.execute-api.us-east-1.amazonaws.com/prod",
+  "NEXT_PUBLIC_CDN_URL": "https://d301af4ndyn9qx.cloudfront.net",
   "NEXT_PUBLIC_GTM_ID": "GTM-XXXXXXX",
   "NEXT_PUBLIC_GA4_ID": "G-XXXXXXXXXX",
   "NEXT_PUBLIC_META_PIXEL_ID": "1459099935879507",
@@ -37,6 +38,7 @@ update_branch() {
   local branch="$1"
   echo "Updating Amplify branch: $branch"
 
+  # Merge with existing vars so we don't wipe Razorpay/Cognito keys already set
   EXISTING=$(aws amplify get-branch --app-id "$APP_ID" --branch-name "$branch" \
     --query 'branch.environmentVariables' --output json 2>/dev/null || echo '{}')
 
@@ -44,10 +46,11 @@ update_branch() {
 import json, os
 existing = json.loads(os.environ.get('EXISTING') or '{}')
 samples = json.loads(os.environ.get('SAMPLE_ENV') or '{}')
-merged = {**existing, **samples}
+merged = {**existing, **samples}  # samples override when script is re-run with new IDs
 print(json.dumps(merged))
 " EXISTING="$EXISTING" SAMPLE_ENV="$SAMPLE_ENV")
 
+  # Amplify CLI expects KEY=VALUE,KEY=VALUE format for --environment-variables
   ENV_STRING=$(python3 -c "
 import json, sys
 d = json.loads(sys.stdin.read())
@@ -61,12 +64,18 @@ print(','.join(f'{k}={v}' for k, v in d.items()))
     --output json \
     --query 'branch.branchName'
 
-  echo "  ✓ $branch updated. Redeploy from Amplify Console or push a commit."
+  echo "  ✓ $branch updated. Trigger redeploy from Amplify Console or push a commit."
 }
 
-update_branch "$BRANCH"
+if [[ "$BRANCH" == "all" ]]; then
+  update_branch main
+  update_branch dev
+else
+  update_branch "$BRANCH"
+fi
 
 echo ""
-echo "Required for product images (WordPress media is retired):"
-echo "  NEXT_PUBLIC_CDN_URL=https://d2lfdzx32wxe94.cloudfront.net"
-echo "  Upload wp-content/uploads to S3, then run: npm run migrate:images"
+echo "Analytics IDs applied (Meta Pixel, Clarity). Set GTM/GA4/Bing in Amplify Console if needed:"
+echo "  NEXT_PUBLIC_GTM_ID, NEXT_PUBLIC_GA4_ID, NEXT_PUBLIC_META_PIXEL_ID,"
+echo "  NEXT_PUBLIC_CLARITY_ID, NEXT_PUBLIC_BING_SITE_VERIFICATION, NEXT_PUBLIC_BING_UET_ID,"
+echo "  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION"

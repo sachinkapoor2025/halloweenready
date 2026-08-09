@@ -3,36 +3,36 @@ export declare const chatMessageSchema: z.ZodObject<{
     role: z.ZodEnum<["user", "assistant"]>;
     content: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    role: "user" | "assistant";
     content: string;
+    role: "user" | "assistant";
 }, {
-    role: "user" | "assistant";
     content: string;
+    role: "user" | "assistant";
 }>;
 export declare const chatRequestSchema: z.ZodObject<{
     messages: z.ZodArray<z.ZodObject<{
         role: z.ZodEnum<["user", "assistant"]>;
         content: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        role: "user" | "assistant";
         content: string;
+        role: "user" | "assistant";
     }, {
-        role: "user" | "assistant";
         content: string;
+        role: "user" | "assistant";
     }>, "many">;
     page: z.ZodOptional<z.ZodString>;
     sessionId: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     messages: {
-        role: "user" | "assistant";
         content: string;
+        role: "user" | "assistant";
     }[];
     sessionId?: string | undefined;
     page?: string | undefined;
 }, {
     messages: {
-        role: "user" | "assistant";
         content: string;
+        role: "user" | "assistant";
     }[];
     sessionId?: string | undefined;
     page?: string | undefined;

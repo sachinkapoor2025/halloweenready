@@ -7,20 +7,26 @@ import { formatCouponExpiry } from "@/lib/welcome-coupon";
 
 type Props = {
   email: string;
+  phone?: string;
+  /** Subtotal coupons may discount (excludes flash-sale / couponExcluded lines). */
   subtotal: number;
   currency: "USD" | "INR";
   formatMoney: (amount: number, currency: "USD" | "INR") => string;
   initialCode?: string;
+  /** When true, flash-sale lines are in the cart — coupons skip those lines. */
+  hasCouponExcludedItems?: boolean;
   onApplied: (discount: number, code: string) => void;
   onCleared: () => void;
 };
 
 export function CouponInput({
   email,
+  phone = "",
   subtotal,
   currency,
   formatMoney,
   initialCode = "",
+  hasCouponExcludedItems = false,
   onApplied,
   onCleared,
 }: Props) {
@@ -38,8 +44,14 @@ export function CouponInput({
   const apply = async () => {
     const trimmed = code.trim().toUpperCase();
     if (!trimmed) return;
-    if (!email.trim() || !email.includes("@")) {
-      setError("Enter your email in the shipping form first");
+    if (subtotal <= 0) {
+      setError("Coupons cannot be applied to flash sale items");
+      return;
+    }
+    const hasEmail = Boolean(email.trim() && email.includes("@"));
+    const hasPhone = phone.replace(/\D/g, "").length >= 7;
+    if (!hasEmail && !hasPhone) {
+      setError("Enter your mobile number or email in the shipping form first");
       return;
     }
     setLoading(true);
@@ -54,7 +66,11 @@ export function CouponInput({
       }>("/coupons/validate", {
         method: "POST",
         sessionId: sessionId ?? undefined,
-        body: JSON.stringify({ code: trimmed, email: email.trim() }),
+        body: JSON.stringify({
+          code: trimmed,
+          ...(hasEmail ? { email: email.trim() } : {}),
+          ...(hasPhone ? { phone: phone.trim() } : {}),
+        }),
       });
 
       if (!result.valid || !result.discountPercent || !result.code) {
@@ -87,6 +103,12 @@ export function CouponInput({
   return (
     <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3">
       <p className="text-sm font-semibold text-slate-900">Coupon code</p>
+      <p className="text-xs text-slate-500">
+        One coupon can be applied per order.
+        {hasCouponExcludedItems
+          ? " Flash sale items are excluded from coupon discounts."
+          : ""}
+      </p>
       {applied ? (
         <div className="text-sm space-y-1">
           <p className="text-green-700 font-medium">
@@ -106,7 +128,7 @@ export function CouponInput({
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="BOO-XXXXXX"
+              placeholder="HALLOWEEN-XXXXXX"
               className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase"
             />
             <button

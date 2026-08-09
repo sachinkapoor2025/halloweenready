@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useApiClient } from "@/lib/auth-context";
 import { HorizontalBarChart, AreaChart, ChartLegend } from "@/components/admin/Charts";
 import { SalesReportPanel } from "@/components/admin/SalesReportPanel";
+import { VisitorAnalyticsPanel } from "@/components/admin/VisitorAnalyticsPanel";
+import { LiveVisitorsPanel } from "@/components/admin/LiveVisitorsPanel";
+import { VisitorsPanel } from "@/components/admin/VisitorsPanel";
+import { OrderRoutesPanel } from "@/components/admin/OrderRoutesPanel";
 import { downloadCsv, downloadPdfReport, formatMoney } from "@/lib/admin-utils";
 
 interface ProductStat {
@@ -50,18 +55,48 @@ interface Insights {
   ordersByDay: { day: string; orders: number; pageViews: number }[];
 }
 
-export default function AdminAnalyticsPage() {
+type AnalyticsTab = "overview" | "order-routes" | "visitor-analytics" | "live" | "sessions";
+
+function parseAnalyticsTab(raw: string | null): AnalyticsTab {
+  if (
+    raw === "live" ||
+    raw === "sessions" ||
+    raw === "overview" ||
+    raw === "visitor-analytics" ||
+    raw === "order-routes"
+  ) {
+    return raw;
+  }
+  // Back-compat: old ?tab=visitors meant visitor analytics
+  if (raw === "visitors") return "visitor-analytics";
+  return "overview";
+}
+
+function AdminAnalyticsPageInner() {
   const apiClient = useApiClient();
+  const searchParams = useSearchParams();
+  const initialTab = useMemo(
+    () => parseAnalyticsTab(searchParams.get("tab")),
+    [searchParams]
+  );
+  const [tab, setTab] = useState<AnalyticsTab>(initialTab);
   const [days, setDays] = useState(7);
+
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
   const [products, setProducts] = useState<ProductStat[]>([]);
   const [searches, setSearches] = useState<SearchStat[]>([]);
   const [zeroResult, setZeroResult] = useState<SearchStat[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Rollup-backed KPIs first — do not block Overview on heavy session rebuilds.
   useEffect(() => {
+    if (tab !== "overview") return;
     setLoading(true);
     setError("");
     Promise.all([
@@ -70,25 +105,43 @@ export default function AdminAnalyticsPage() {
         `/admin/analytics/searches?days=${days}`
       ),
       apiClient<Overview>(`/admin/analytics/overview?days=${days}`),
-      apiClient<Insights>(`/admin/analytics/insights?days=${days}`),
     ])
-      .then(([p, s, o, i]) => {
+      .then(([p, s, o]) => {
         setProducts(p.products);
         setSearches(s.searches);
         setZeroResult(s.zeroResult);
         setOverview(o);
-        setInsights(i);
       })
       .catch((err) => {
         setProducts([]);
         setSearches([]);
         setZeroResult([]);
         setOverview(null);
-        setInsights(null);
         setError(err instanceof Error ? err.message : "Could not load analytics");
       })
       .finally(() => setLoading(false));
-  }, [apiClient, days]);
+  }, [apiClient, days, tab]);
+
+  // Insights rebuild sessions from raw events — load after KPIs so Overview stays snappy.
+  useEffect(() => {
+    if (tab !== "overview") return;
+    let cancelled = false;
+    setInsightsLoading(true);
+    setInsights(null);
+    apiClient<Insights>(`/admin/analytics/insights?days=${days}`)
+      .then((i) => {
+        if (!cancelled) setInsights(i);
+      })
+      .catch(() => {
+        if (!cancelled) setInsights(null);
+      })
+      .finally(() => {
+        if (!cancelled) setInsightsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient, days, tab]);
 
   const productChart = products.slice(0, 8).map((p) => ({
     label: p.slug.replace(/-/g, " "),
@@ -181,40 +234,74 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Analytics</h1>
-        <div className="flex items-center gap-2">
-          <select
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
-            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm"
-          >
-            <option value={7}>Last 7 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={90}>Last 90 days</option>
-          </select>
-          {overview && (
+        <div className="flex flex-wrap items-center gap-2">
+          {(
+            [
+              { id: "overview" as const, label: "Overview" },
+              { id: "order-routes" as const, label: "Order routes" },
+              { id: "visitor-analytics" as const, label: "Visitor analytics" },
+              { id: "live" as const, label: "Live visitor" },
+              { id: "sessions" as const, label: "Visitors" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                tab === t.id
+                  ? "bg-nav text-white border-nav"
+                  : "border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+          {tab === "overview" && (
             <>
-              <button
-                type="button"
-                onClick={exportAnalytics}
-                className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50"
+              <select
+                value={days}
+                onChange={(e) => setDays(Number(e.target.value))}
+                className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm"
               >
-                Export CSV
-              </button>
-              <button
-                type="button"
-                onClick={exportPdf}
-                className="text-sm bg-nav text-white px-3 py-1.5 rounded-lg"
-              >
-                Export PDF
-              </button>
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
+              {overview && (
+                <>
+                  <button
+                    type="button"
+                    onClick={exportAnalytics}
+                    className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50"
+                  >
+                    Export CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={exportPdf}
+                    className="text-sm bg-nav text-white px-3 py-1.5 rounded-lg"
+                  >
+                    Export PDF
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {loading ? (
+      {tab === "live" ? (
+        <LiveVisitorsPanel />
+      ) : tab === "visitor-analytics" ? (
+        <VisitorAnalyticsPanel />
+      ) : tab === "sessions" ? (
+        <VisitorsPanel />
+      ) : tab === "order-routes" ? (
+        <OrderRoutesPanel />
+      ) : loading ? (
         <p className="text-slate-500">Loading…</p>
       ) : error ? (
         <p className="text-red-600 text-sm">{error}</p>
@@ -265,6 +352,10 @@ export default function AdminAnalyticsPage() {
                 ]}
               />
             </section>
+          )}
+
+          {insightsLoading && !insights && (
+            <p className="text-sm text-slate-500 mb-6">Loading location &amp; traffic insights…</p>
           )}
 
           {insights && (
@@ -436,5 +527,13 @@ export default function AdminAnalyticsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function AdminAnalyticsPage() {
+  return (
+    <Suspense fallback={<p className="text-slate-500 p-6">Loading…</p>}>
+      <AdminAnalyticsPageInner />
+    </Suspense>
   );
 }
