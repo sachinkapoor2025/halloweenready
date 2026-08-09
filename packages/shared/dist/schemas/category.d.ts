@@ -11,9 +11,9 @@ export declare const categorySchema: z.ZodObject<{
     published: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     name: string;
+    published: boolean;
     slug: string;
     description: string;
-    published: boolean;
     sortOrder: number;
     image?: string | undefined;
     seoTitle?: string | undefined;
@@ -23,10 +23,10 @@ export declare const categorySchema: z.ZodObject<{
     name: string;
     slug: string;
     image?: string | undefined;
+    published?: boolean | undefined;
     description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
-    published?: boolean | undefined;
     parentSlug?: string | undefined;
     sortOrder?: number | undefined;
 }>;
@@ -42,8 +42,8 @@ export declare const createCategorySchema: z.ZodObject<Omit<{
     published: z.ZodDefault<z.ZodBoolean>;
 }, "slug">, "strip", z.ZodTypeAny, {
     name: string;
-    description: string;
     published: boolean;
+    description: string;
     sortOrder: number;
     image?: string | undefined;
     seoTitle?: string | undefined;
@@ -52,10 +52,10 @@ export declare const createCategorySchema: z.ZodObject<Omit<{
 }, {
     name: string;
     image?: string | undefined;
+    published?: boolean | undefined;
     description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
-    published?: boolean | undefined;
     parentSlug?: string | undefined;
     sortOrder?: number | undefined;
 }>;
@@ -72,19 +72,19 @@ export declare const updateCategorySchema: z.ZodObject<Omit<{
 }, "slug">, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     image?: string | undefined;
+    published?: boolean | undefined;
     description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
-    published?: boolean | undefined;
     parentSlug?: string | undefined;
     sortOrder?: number | undefined;
 }, {
     name?: string | undefined;
     image?: string | undefined;
+    published?: boolean | undefined;
     description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
-    published?: boolean | undefined;
     parentSlug?: string | undefined;
     sortOrder?: number | undefined;
 }>;

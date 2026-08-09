@@ -3,9 +3,9 @@
 import Link from "next/link";
 import type { Product } from "@halloweenready/shared";
 import { WishlistButton } from "@/components/WishlistButton";
+import { ProductImageRotator } from "@/components/ProductImageRotator";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
-import { ProductImageRotator } from "@/components/ProductImageRotator";
 
 export function ProductCard({ product }: { product: Product }) {
   const { format } = useCurrency();

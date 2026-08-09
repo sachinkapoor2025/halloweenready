@@ -11,15 +11,15 @@ import { api } from "@/lib/api";
 const STORAGE_KEY = "halloweenready_chat_messages";
 
 const QUICK_PROMPTS = [
-  "What Halloween costumes do you sell?",
+  "What Halloween categories do you sell?",
   "How long is USA delivery?",
   "When is Halloween 2026?",
-  "Can I order from outside the USA?",
+  "Can I order from India?",
 ] as const;
 
 const WELCOME: ChatMessage = {
   role: "assistant",
-  content: `Hi! I'm the HalloweenReady Assistant. I can help you choose costumes, decor, candy, explain USA delivery, shipping times, and payment options.\n\nWhat would you like to know?`,
+  content: `Hi! I'm the HalloweenReady Assistant. I can help you choose Halloween decorations and costumes, explain USA delivery, shipping times, and payment options.\n\nWhat would you like to know?`,
 };
 
 function loadStoredMessages(): ChatMessage[] {
@@ -175,7 +175,7 @@ export function ChatWidget() {
     sessionStorage.removeItem(STORAGE_KEY);
   };
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/ses-email")) return null;
 
   return (
     <>
@@ -190,7 +190,7 @@ export function ChatWidget() {
           <div className="flex items-center justify-between gap-2 bg-primary px-4 py-3 border-b border-white/10">
             <div className="min-w-0">
               <p className="font-semibold text-white text-sm">HalloweenReady Assistant</p>
-              <p className="text-xs text-white/60 truncate">Halloween shopping help · USA shipping</p>
+              <p className="text-xs text-white/60 truncate">Halloween help · USA shipping</p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
@@ -287,7 +287,7 @@ export function ChatWidget() {
                     void sendMessage(input);
                   }
                 }}
-                placeholder="Ask about costumes, shipping, payment…"
+                placeholder="Ask about Halloween, shipping, payment…"
                 rows={1}
                 maxLength={500}
                 disabled={loading}
@@ -296,7 +296,7 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="shrink-0 rounded-xl bg-nav px-3.5 py-2.5 text-white hover:bg-orange-600 disabled:opacity-40 transition"
+                className="shrink-0 rounded-xl bg-nav px-3.5 py-2.5 text-white hover:bg-blue-600 disabled:opacity-40 transition"
                 aria-label="Send message"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

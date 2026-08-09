@@ -4,6 +4,9 @@ export interface AuthContext {
   userId: string;
   email: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  /** Cognito `email` group — SES bulk campaign module access. */
+  isEmailMarketer: boolean;
 }
 
 const DEV_AUTH_ENABLED =
@@ -19,20 +22,29 @@ export function getAuth(event: APIGatewayProxyEventV2): AuthContext | null {
   if (token.startsWith("dev:") && DEV_AUTH_ENABLED) {
     const [, email, role] = token.split(":");
     if (!email) return null;
+    const isSuperAdmin = role === "super-admin";
+    const isEmailMarketer =
+      role === "email" || isSuperAdmin || email.toLowerCase().includes("email");
     return {
       userId: `dev-${email}`,
       email,
-      isAdmin: role === "admin",
+      isSuperAdmin,
+      isAdmin: role === "admin" || isSuperAdmin,
+      isEmailMarketer,
     };
   }
 
   try {
     const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString());
     const groups: string[] = payload["cognito:groups"] ?? [];
+    const isSuperAdmin = groups.includes("super-admin");
+    const isEmailMarketer = groups.includes("email") || isSuperAdmin;
     return {
       userId: payload.sub as string,
       email: (payload.email as string) ?? "",
-      isAdmin: groups.includes("admin"),
+      isSuperAdmin,
+      isAdmin: groups.includes("admin") || isSuperAdmin,
+      isEmailMarketer,
     };
   } catch {
     return null;
@@ -53,5 +65,18 @@ export function getUserOrSessionKey(event: APIGatewayProxyEventV2): string | nul
 export function requireAdmin(event: APIGatewayProxyEventV2): AuthContext | null {
   const auth = getAuth(event);
   if (!auth?.isAdmin) return null;
+  return auth;
+}
+
+export function requireSuperAdmin(event: APIGatewayProxyEventV2): AuthContext | null {
+  const auth = getAuth(event);
+  if (!auth?.isSuperAdmin) return null;
+  return auth;
+}
+
+/** Cognito `email` group (or super-admin) for /ses-email module. */
+export function requireEmailAccess(event: APIGatewayProxyEventV2): AuthContext | null {
+  const auth = getAuth(event);
+  if (!auth?.isEmailMarketer) return null;
   return auth;
 }

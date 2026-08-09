@@ -5,6 +5,7 @@ export type StoredWelcomeCoupon = {
   expiresAt: string;
   discountPercent: number;
   email?: string;
+  phone?: string;
 };
 
 export function saveWelcomeCoupon(coupon: StoredWelcomeCoupon): void {

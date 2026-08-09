@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Halloween Blog — Guides, Tips & Halloween USA",
   description:
-    "Halloween guides: shop Halloween to USA from India, best Halloween combos, Bhaiya Bhabhi sets, and 2026 festival tips from HalloweenReady.",
+    "Halloween guides: decorations, costumes, party supplies, and 2026 planning tips from HalloweenReady.",
   path: "/blog",
 });
 

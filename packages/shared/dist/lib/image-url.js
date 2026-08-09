@@ -8,8 +8,8 @@ exports.resolveProductImageUrl = resolveProductImageUrl;
 exports.resolveProductImageUrls = resolveProductImageUrls;
 exports.uploadsRelativePath = uploadsRelativePath;
 exports.isAmazonImportedFilename = isAmazonImportedFilename;
-/** CloudFront distribution for product/media images (halloweenready-prod stack). */
-exports.DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
+/** CloudFront distribution for product/media images (from halloweenready-prod stack). */
+exports.DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
 function decodeUrlEntities(url) {
     return url
         .replace(/&#8211;/g, "–")
@@ -34,25 +34,12 @@ function staticUploadUrl(relativePath) {
     const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
     return `/uploads/${clean}`;
 }
-/** Build a CDN URL from a path under wp-content/uploads (e.g. 2026/03/photo.jpg). */
+/** Build a CDN URL from a path under uploads/ (e.g. 2026/03/photo.jpg). */
 function cdnUploadUrl(relativePath, cdnBase) {
     const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
     return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
-function imageDeliveryMode() {
-    const mode = (process.env.NEXT_PUBLIC_IMAGE_MODE ?? "static").trim().toLowerCase();
-    return mode === "cdn" ? "cdn" : "static";
-}
-/** Admin portal uploads are stored at S3/CloudFront `products/<slug>/<uuid>.ext`. */
-function isAdminProductsPath(pathname) {
-    return /^\/?(?:uploads\/)?products\//i.test(pathname);
-}
-/**
- * Rewrite legacy WordPress / CloudFront paths to a working URL.
- * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
- *
- * Admin uploads under `/products/` always stay on the CDN — they are not mirrored into Amplify public/uploads.
- */
+/** Rewrite legacy /wp-content/uploads media URLs to the CDN mirror. */
 function resolveProductImageUrl(url, cdnBase) {
     if (!url)
         return "";
@@ -60,42 +47,19 @@ function resolveProductImageUrl(url, cdnBase) {
     if (!trimmed)
         return "";
     const cdn = getProductCdnBase(cdnBase);
-    // Relative path already rewritten to Amplify static hosting
-    if (trimmed.startsWith("/uploads/")) {
-        // Mistakenly rewritten admin upload → restore CDN URL
-        if (isAdminProductsPath(trimmed)) {
-            return `${cdn}${trimmed.replace(/^\/uploads/, "")}`;
-        }
+    if (trimmed.startsWith(cdn))
         return trimmed;
+    const uploadsMatch = trimmed.match(/\/wp-content\/uploads\/(.+)$/i);
+    if (uploadsMatch)
+        return cdnUploadUrl(uploadsMatch[1], cdn);
+    // Relative storefront uploads (e.g. Orange County hampers under /uploads/orange-county/…).
+    if (trimmed.startsWith("/uploads/")) {
+        return `${cdn}${trimmed}`;
     }
-    if (trimmed.startsWith(cdn)) {
-        const path = trimmed.slice(cdn.length);
-        // Keep live admin/S3 product uploads on CloudFront
-        if (isAdminProductsPath(path))
-            return trimmed;
-        const rel = path.replace(/^\/uploads\//, "");
-        return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : trimmed;
+    if (/^uploads\//i.test(trimmed)) {
+        return cdnUploadUrl(trimmed.replace(/^uploads\//i, ""), cdn);
     }
-    // Absolute URL pointing at admin upload key on any host → canonicalize to CDN
-    try {
-        const parsed = new URL(trimmed);
-        if (isAdminProductsPath(parsed.pathname)) {
-            return `${cdn}${parsed.pathname}`;
-        }
-    }
-    catch {
-        // relative / non-URL — fall through
-    }
-    const uploadsMatch = trimmed.match(/(?:cloudfront\.net\/uploads|wp-content\/uploads)\/(.+)$/i);
-    if (uploadsMatch) {
-        const rel = uploadsMatch[1];
-        // Nested admin keys should not go through static Amplify
-        if (isAdminProductsPath(`uploads/${rel}`) || /^products\//i.test(rel)) {
-            return `${cdn}/${rel.replace(/^uploads\//i, "")}`;
-        }
-        return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : cdnUploadUrl(rel, cdn);
-    }
-    return trimmed.replace(/^http:\/\//i, "https://");
+    return trimmed;
 }
 function resolveProductImageUrls(urls, cdnBase) {
     if (!urls?.length)

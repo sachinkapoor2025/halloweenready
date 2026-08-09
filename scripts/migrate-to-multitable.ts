@@ -2,7 +2,7 @@
  * One-time migration: copy ORDERS and LEADS/SESSIONS from the legacy single
  * table (halloweenready-<env>) into the new per-domain tables.
  *
- * Products/categories are re-seeded via `npm run import:usarakhi`, and carts are
+ * Products/categories are re-seeded via `npm run import:halloweenready`, and carts are
  * ephemeral, so they are intentionally NOT migrated here.
  *
  * Usage (against AWS):
@@ -131,7 +131,7 @@ async function main() {
 
   console.log(`Migrated → orders: ${orders}, leads: ${leads}, sessions: ${sessions}`);
   console.log(`Targets: orders=${ORDERS_TABLE}, customers=${CUSTOMERS_TABLE}`);
-  console.log("Legacy table left intact. Products/categories: run `npm run import:usarakhi`.");
+  console.log("Legacy table left intact. Products/categories: run `npm run import:halloweenready`.");
 }
 
 main().catch((err) => {

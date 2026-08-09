@@ -1,12 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_USD_INR_RATE = void 0;
+exports.sumAddonPrices = exports.cartLineUnitTotal = exports.DEFAULT_USD_INR_RATE = void 0;
 exports.roundForCurrency = roundForCurrency;
 exports.convertCurrencyAmount = convertCurrencyAmount;
 exports.convertCartItemsToCurrency = convertCartItemsToCurrency;
 exports.cartSubtotal = cartSubtotal;
 exports.resolveUsdInrRate = resolveUsdInrRate;
 exports.fetchLiveUsdInrRate = fetchLiveUsdInrRate;
+const product_addons_1 = require("./lib/product-addons");
+Object.defineProperty(exports, "cartLineUnitTotal", { enumerable: true, get: function () { return product_addons_1.cartLineUnitTotal; } });
+Object.defineProperty(exports, "sumAddonPrices", { enumerable: true, get: function () { return product_addons_1.sumAddonPrices; } });
 /** Last-resort fallback when live providers are unavailable (~Jun 2026). */
 exports.DEFAULT_USD_INR_RATE = 96;
 function roundForCurrency(amount, currency) {
@@ -30,10 +33,18 @@ function convertCartItemsToCurrency(items, to, rate) {
         ...item,
         price: roundForCurrency(convertCurrencyAmount(item.price, from, to, rate), to),
         currency: to,
+        ...(item.addons?.length
+            ? {
+                addons: item.addons.map((a) => ({
+                    ...a,
+                    price: roundForCurrency(convertCurrencyAmount(a.price, from, to, rate), to),
+                })),
+            }
+            : {}),
     }));
 }
 function cartSubtotal(items) {
-    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return items.reduce((sum, item) => sum + (0, product_addons_1.cartLineUnitTotal)(item) * item.quantity, 0);
 }
 function resolveUsdInrRate(envRate) {
     const parsed = Number(envRate);

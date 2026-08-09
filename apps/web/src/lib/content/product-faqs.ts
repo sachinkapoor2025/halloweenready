@@ -9,8 +9,8 @@ export const productPageFaqs = [
     a: "Yes. Enter your brother's US delivery address at checkout. We fulfill domestically inside America — no customs hassle for your brother.",
   },
   {
-    q: "Is roli and chawal included?",
-    a: "Most single Halloween items include complimentary roli (kumkum) and chawal (rice) for the traditional Halloween tilak ceremony.",
+    q: "What comes with my Halloween order?",
+    a: "Each product page lists what is included. Most items ship as pictured with USA domestic delivery.",
   },
   {
     q: "What payment methods do you accept?",

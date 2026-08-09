@@ -14,6 +14,20 @@ export const productKeys = {
 export const categoryKeys = {
   pk: (slug: string) => `CATEGORY#${slug}`,
   sk: () => "META" as const,
+  /** GSI1: list all categories without table Scan */
+  gsi1pk: () => "ENTITY#CATEGORY" as const,
+  gsi1sk: (sortOrder: number, slug: string) =>
+    `${String(Math.max(0, sortOrder || 0)).padStart(6, "0")}#${slug}`,
+};
+
+/** Product reviews live in the products table under PRODUCT#slug / REVIEW#id. */
+export const reviewKeys = {
+  pk: (productSlug: string) => `PRODUCT#${productSlug}`,
+  sk: (reviewId: string) => `REVIEW#${reviewId}`,
+  skPrefix: () => "REVIEW#" as const,
+  /** GSI1: global published review feed by date */
+  gsi1pk: () => "ENTITY#REVIEW" as const,
+  gsi1sk: (createdAt: string, reviewId: string) => `${createdAt}#${reviewId}`,
 };
 
 // ---- orders table ----
@@ -29,6 +43,12 @@ export const orderKeys = {
   // GSI3: filter by status, sorted by date
   gsi3pk: (status: string) => `STATUS#${status}`,
   gsi3sk: (createdAt: string) => createdAt,
+  /** Atomic counters for human order numbers (OC / US). */
+  counterPk: (prefix: "OC" | "US") => `COUNTER#ORDER#${prefix}`,
+  counterSk: () => "META" as const,
+  /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
+  numberPk: (orderNumber: string) => `ORDERNUM#${orderNumber.trim().toUpperCase()}`,
+  numberSk: () => "META" as const,
 };
 
 // ---- carts table ----
@@ -69,11 +89,19 @@ export const eventKeys = {
   // daily rollup counters (kept long-term)
   rollupPk: (day: string) => `ROLLUP#${day}`,
   rollupSk: (metric: string) => metric,
+  /**
+   * Live presence partition — Query PK=PRESENCE#LIVE for active visitors.
+   * Items carry DynamoDB TTL (`expiresAt`) so idle sessions drop off automatically.
+   */
+  presencePk: () => "PRESENCE#LIVE" as const,
+  presenceSk: (sessionId: string) => `SESSION#${sessionId}`,
 };
 
 // ---- config table ----
 export const configKeys = {
   payments: { pk: "CONFIG#PAYMENTS", sk: "META" as const },
+  blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" as const },
+  shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
 };
 
 /** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
@@ -87,8 +115,89 @@ export const couponKeys = {
   sk: () => "META" as const,
   welcomeEmailPk: (email: string) => `WELCOME#${email.trim().toLowerCase()}`,
   welcomeEmailSk: () => "ACTIVE" as const,
+  /** One-spin-per-day index keyed by normalized phone digits. */
+  welcomePhonePk: (phoneDigits: string) => `WELCOMEPHONE#${phoneDigits}`,
+  welcomePhoneSk: () => "ACTIVE" as const,
   abandonedEmailPk: (email: string) => `ABANDONED#${email.trim().toLowerCase()}`,
   abandonedEmailSk: () => "ACTIVE" as const,
+};
+
+/** Business expenses (config table). */
+export const expenseKeys = {
+  pk: (expenseId: string) => `EXPENSE#${expenseId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "EXPENSE#" as const,
+};
+
+/** Manual payment-gateway ledger entries (config table). */
+export const paymentLedgerKeys = {
+  pk: (paymentId: string) => `PAYLEDGER#${paymentId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "PAYLEDGER#" as const,
+};
+
+/** Vendor payout ledger entries (config table) — amounts paid to fulfill vendors. */
+export const vendorPayoutKeys = {
+  pk: (payoutId: string) => `VENDORPAY#${payoutId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "VENDORPAY#" as const,
+};
+
+// ---- email campaigns table (SES bulk marketing) ----
+export const sesEmailKeys = {
+  campaignPk: (campaignId: string) => `CAMPAIGN#${campaignId}`,
+  campaignSk: () => "META" as const,
+  recipientSk: (email: string) => `RECIPIENT#${email.trim().toLowerCase()}`,
+  queueSk: (email: string) => `QUEUE#${email.trim().toLowerCase()}`,
+  /** GSI1: list campaigns by createdAt */
+  entityCampaignPk: () => "ENTITY#CAMPAIGN" as const,
+  entityCampaignSk: (createdAt: string) => createdAt,
+  /** GSI2: find due/scheduled campaigns */
+  statusPk: (status: string) => `STATUS#${status}`,
+  statusSk: (at: string) => at,
+  /** Pending queue scan for worker */
+  pendingQueuePk: () => "QUEUE#PENDING" as const,
+  pendingQueueSk: (campaignId: string, email: string) => `${campaignId}#${email.trim().toLowerCase()}`,
+  templatePk: (templateId: string) => `TEMPLATE#${templateId}`,
+  templateSk: () => "META" as const,
+  entityTemplatePk: () => "ENTITY#TEMPLATE" as const,
+  entityTemplateSk: (createdAt: string) => createdAt,
+  suppressPk: (email: string) => `SUPPRESS#${email.trim().toLowerCase()}`,
+  suppressSk: () => "META" as const,
+  entitySuppressPk: () => "ENTITY#SUPPRESS" as const,
+  entitySuppressSk: (createdAt: string) => createdAt,
+  /** Pending bounce events from Mailercloud webhook (processed by bounce-sync Lambda). */
+  bounceEventPk: (id: string) => `BOUNCEEVT#${id}`,
+  bounceEventSk: () => "META" as const,
+  pendingBouncePk: () => "BOUNCE#PENDING" as const,
+  pendingBounceSk: (createdAt: string, email: string) =>
+    `${createdAt}#${email.trim().toLowerCase()}`,
+  settingsPk: () => "SETTINGS#SES" as const,
+  settingsSk: () => "META" as const,
+  trackOpenPk: (token: string) => `TRACKOPEN#${token}`,
+  trackClickPk: (token: string) => `TRACKCLICK#${token}`,
+  trackSk: () => "META" as const,
+  notifyPk: (id: string) => `NOTIFY#${id}`,
+  notifySk: () => "META" as const,
+  entityNotifyPk: () => "ENTITY#NOTIFY" as const,
+  entityNotifySk: (createdAt: string) => createdAt,
+  dailyCounterPk: (day: string) => `DAILY#${day}`,
+  dailyCounterSk: () => "META" as const,
+};
+
+// ---- reminder emails table (checkout nudges for non-buyers) ----
+export const reminderEmailKeys = {
+  pk: (email: string) => `EMAIL#${email.trim().toLowerCase()}`,
+  sk: () => "META" as const,
+  /** GSI1: list by status (show | deleted) */
+  statusPk: (status: "show" | "deleted") => `STATUS#${status}`,
+  statusSk: (createdAt: string, email: string) => `${createdAt}#${email.trim().toLowerCase()}`,
+};
+
+/** Pending-payment reminder unsubscribe list (dedicated table). */
+export const pendingPaymentUnsubKeys = {
+  pk: (email: string) => `EMAIL#${email.trim().toLowerCase()}`,
+  sk: () => "META" as const,
 };
 
 /**

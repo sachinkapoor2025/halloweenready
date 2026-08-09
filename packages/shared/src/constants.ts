@@ -2,6 +2,8 @@ export const ORDER_STATUS = {
   PENDING_PAYMENT: "pending_payment",
   PAID: "paid",
   ACCEPTED: "accepted",
+  /** Paid order paused for review (fraud, underpricing, stock, etc.). */
+  ON_HOLD: "on_hold",
   PROCESSING: "processing",
   SHIPPED: "shipped",
   DELIVERED: "delivered",
@@ -15,6 +17,7 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
   [ORDER_STATUS.PENDING_PAYMENT]: [ORDER_STATUS.PAID, ORDER_STATUS.CANCELLED],
   [ORDER_STATUS.PAID]: [
     ORDER_STATUS.ACCEPTED,
+    ORDER_STATUS.ON_HOLD,
     ORDER_STATUS.PROCESSING,
     ORDER_STATUS.SHIPPED,
     ORDER_STATUS.DELIVERED,
@@ -23,6 +26,7 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
     ORDER_STATUS.REFUNDED,
   ],
   [ORDER_STATUS.ACCEPTED]: [
+    ORDER_STATUS.ON_HOLD,
     ORDER_STATUS.PROCESSING,
     ORDER_STATUS.SHIPPED,
     ORDER_STATUS.DELIVERED,
@@ -30,7 +34,15 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
     ORDER_STATUS.CANCELLED,
     ORDER_STATUS.REFUNDED,
   ],
+  [ORDER_STATUS.ON_HOLD]: [
+    ORDER_STATUS.ACCEPTED,
+    ORDER_STATUS.PROCESSING,
+    ORDER_STATUS.SHIPPED,
+    ORDER_STATUS.CANCELLED,
+    ORDER_STATUS.REFUNDED,
+  ],
   [ORDER_STATUS.PROCESSING]: [
+    ORDER_STATUS.ON_HOLD,
     ORDER_STATUS.SHIPPED,
     ORDER_STATUS.DELIVERED,
     ORDER_STATUS.COMPLETE,
@@ -44,7 +56,12 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
   ],
   [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.COMPLETE, ORDER_STATUS.REFUNDED],
   [ORDER_STATUS.COMPLETE]: [ORDER_STATUS.REFUNDED],
-  [ORDER_STATUS.CANCELLED]: [],
+  /** Admin can revive a cancelled (non-refunded) order for fulfillment. */
+  [ORDER_STATUS.CANCELLED]: [
+    ORDER_STATUS.ON_HOLD,
+    ORDER_STATUS.ACCEPTED,
+    ORDER_STATUS.PROCESSING,
+  ],
   [ORDER_STATUS.REFUNDED]: [],
 };
 
@@ -83,6 +100,32 @@ export const PAYMENT_PROVIDERS = {
 /** Default stock when creating products or seeding catalog. */
 export const DEFAULT_PRODUCT_INVENTORY = 200;
 
+/** Stock for Orange County hamper imports (keep cart-ready). */
+export const ORANGE_COUNTY_PRODUCT_INVENTORY = 500;
+
+/**
+ * Backend-only vendor key for hamper fulfillment API / order tagging.
+ * Internal vendor stub — not shown on the HalloweenReady storefront.
+ */
+export const VENDOR_ORANGE_COUNTY = "orange-county" as const;
+
+/** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
+export const VENDOR_HALLOWEENREADY = "halloweenready" as const;
+
+/** Internal OC category slug stub (not used on HalloweenReady storefront). */
+export const ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers" as const;
+
+/**
+ * Hamper pricing from vendor cost (Excel). Uses retail margin on selling price:
+ *   sale price = cost × 2.0  → 50% margin before coupons  ((P−C)/P)
+ *   list/compare-at = cost × 2.5 → sale badge (~20% off list)
+ *
+ * After spin-the-wheel 6–10% off sale price, net margin stays ~44–47%
+ * (≈40–44%+ band at the higher discount end).
+ */
+export const ORANGE_COUNTY_LIST_MARKUP = 2.5;
+export const ORANGE_COUNTY_SALE_MARKUP = 2.0;
+
 /** Email restock alert when inventory drops to this level or below. */
 export const LOW_STOCK_THRESHOLD = 10;
 
@@ -91,7 +134,11 @@ export const LOW_STOCK_ALERT_EMAIL = "dgv@mydgv.com";
 /** Minimum units sold to show in "Fast Selling" section and badge. */
 export const FAST_SELLING_THRESHOLD = 10;
 
-/** WooCommerce slugs on halloweenready.com plus legacy app slugs. */
+export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+export type PaymentRegion = (typeof PAYMENT_REGIONS)[keyof typeof PAYMENT_REGIONS];
+export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[keyof typeof PAYMENT_PROVIDERS];
+
 export const CATEGORY_SLUG_ALIASES: Record<string, string[]> = {
   "home-decoration": ["home-decoration", "decorations"],
   costumesandaccessories: ["costumesandaccessories", "costumes", "accessories"],
@@ -112,8 +159,3 @@ export function categorySlugVariants(slug: string): string[] {
   const variants = CATEGORY_SLUG_ALIASES[slug];
   return variants ? [...new Set([slug, ...variants])] : [slug];
 }
-
-export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
-export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
-export type PaymentRegion = (typeof PAYMENT_REGIONS)[keyof typeof PAYMENT_REGIONS];
-export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[keyof typeof PAYMENT_PROVIDERS];

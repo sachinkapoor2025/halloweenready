@@ -10,24 +10,32 @@ import {
 } from "react";
 import {
   type AuthUser,
+  type RegisterResult,
+  type ForgotPasswordDelivery,
   loadStoredAuth,
   login as cognitoLogin,
   logout as cognitoLogout,
   register as cognitoRegister,
   confirmSignUp as cognitoConfirmSignUp,
   resendConfirmationCode as cognitoResendCode,
+  forgotPassword as cognitoForgotPassword,
+  confirmForgotPassword as cognitoConfirmForgotPassword,
 } from "./cognito";
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
-  register: (email: string, password: string, name?: string) => Promise<{ userConfirmed: boolean }>;
+  register: (email: string, password: string, name?: string) => Promise<RegisterResult>;
   confirmSignUp: (email: string, code: string) => Promise<void>;
   resendConfirmationCode: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<ForgotPasswordDelivery>;
+  confirmForgotPassword: (email: string, code: string, newPassword: string) => Promise<void>;
   logout: () => void;
   token: string | undefined;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isEmailMarketer: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -59,6 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await cognitoResendCode(email);
   }, []);
 
+  const forgotPassword = useCallback(async (email: string) => {
+    return cognitoForgotPassword(email);
+  }, []);
+
+  const confirmForgotPassword = useCallback(
+    async (email: string, code: string, newPassword: string) => {
+      await cognitoConfirmForgotPassword(email, code, newPassword);
+    },
+    []
+  );
+
   const logout = useCallback(() => {
     cognitoLogout();
     setUser(null);
@@ -73,9 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         confirmSignUp,
         resendConfirmationCode,
+        forgotPassword,
+        confirmForgotPassword,
         logout,
         token: user?.token,
         isAdmin: user?.isAdmin ?? false,
+        isSuperAdmin: user?.isSuperAdmin ?? false,
+        isEmailMarketer: user?.isEmailMarketer ?? false,
       }}
     >
       {children}

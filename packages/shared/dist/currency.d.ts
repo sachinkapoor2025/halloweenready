@@ -1,4 +1,5 @@
 import type { CartItem } from "./schemas/cart";
+import { cartLineUnitTotal, sumAddonPrices } from "./lib/product-addons";
 export type ShopCurrency = "USD" | "INR";
 /** Last-resort fallback when live providers are unavailable (~Jun 2026). */
 export declare const DEFAULT_USD_INR_RATE = 96;
@@ -12,6 +13,7 @@ export declare function convertCurrencyAmount(amount: number, from: ShopCurrency
 /** Convert cart line items to the checkout currency (e.g. USD catalog → INR Razorpay). */
 export declare function convertCartItemsToCurrency(items: CartItem[], to: ShopCurrency, rate: number): CartItem[];
 export declare function cartSubtotal(items: CartItem[]): number;
+export { cartLineUnitTotal, sumAddonPrices };
 export declare function resolveUsdInrRate(envRate?: string | number): number;
 /** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
 export declare function fetchLiveUsdInrRate(): Promise<ExchangeRateQuote | null>;

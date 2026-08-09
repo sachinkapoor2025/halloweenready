@@ -1,4 +1,5 @@
 import type { ShippingAddress } from "@halloweenready/shared";
+import { DEFAULT_SENDER_MESSAGE } from "@halloweenready/shared";
 
 const STORAGE_KEY = "hr_ecom_saved_addresses";
 
@@ -73,6 +74,8 @@ export function emptyShippingAddress(): ShippingAddress {
     country: "US",
     phone: "",
     email: "",
+    senderName: "",
+    senderMessage: DEFAULT_SENDER_MESSAGE,
   };
 }
 

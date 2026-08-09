@@ -56,7 +56,7 @@ export function PaymentMethodPicker({
             onClick={() => onChange(option.id)}
             className={`flex items-center gap-3 rounded-xl border-2 px-4 py-4 text-left transition-all ${
               selected
-                ? "border-nav bg-orange-50 shadow-sm ring-1 ring-nav/20"
+                ? "border-nav bg-blue-50 shadow-sm ring-1 ring-nav/20"
                 : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
             }`}
             aria-pressed={selected}

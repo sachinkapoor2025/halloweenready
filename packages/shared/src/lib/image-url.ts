@@ -1,5 +1,5 @@
-/** CloudFront distribution for product/media images (halloweenready-prod stack). */
-export const DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
+/** CloudFront distribution for product/media images (from halloweenready-prod stack). */
+export const DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
 
 function decodeUrlEntities(url: string): string {
   return url
@@ -29,74 +29,33 @@ export function staticUploadUrl(relativePath: string): string {
   return `/uploads/${clean}`;
 }
 
-/** Build a CDN URL from a path under wp-content/uploads (e.g. 2026/03/photo.jpg). */
+/** Build a CDN URL from a path under uploads/ (e.g. 2026/03/photo.jpg). */
 export function cdnUploadUrl(relativePath: string, cdnBase?: string): string {
   const clean = decodeUrlEntities(relativePath).replace(/^\/+/, "");
   return `${getProductCdnBase(cdnBase)}/uploads/${clean}`;
 }
 
-function imageDeliveryMode(): "static" | "cdn" {
-  const mode = (process.env.NEXT_PUBLIC_IMAGE_MODE ?? "static").trim().toLowerCase();
-  return mode === "cdn" ? "cdn" : "static";
-}
-
-/** Admin portal uploads are stored at S3/CloudFront `products/<slug>/<uuid>.ext`. */
-function isAdminProductsPath(pathname: string): boolean {
-  return /^\/?(?:uploads\/)?products\//i.test(pathname);
-}
-
-/**
- * Rewrite legacy WordPress / CloudFront paths to a working URL.
- * Default `static` → /uploads/... on Amplify (public/uploads). Use IMAGE_MODE=cdn after S3 is populated.
- *
- * Admin uploads under `/products/` always stay on the CDN — they are not mirrored into Amplify public/uploads.
- */
+/** Rewrite legacy /wp-content/uploads media URLs to the CDN mirror. */
 export function resolveProductImageUrl(url: string | undefined | null, cdnBase?: string): string {
   if (!url) return "";
   const trimmed = decodeUrlEntities(url.trim());
   if (!trimmed) return "";
 
   const cdn = getProductCdnBase(cdnBase);
+  if (trimmed.startsWith(cdn)) return trimmed;
 
-  // Relative path already rewritten to Amplify static hosting
+  const uploadsMatch = trimmed.match(/\/wp-content\/uploads\/(.+)$/i);
+  if (uploadsMatch) return cdnUploadUrl(uploadsMatch[1], cdn);
+
+  // Relative storefront uploads (e.g. Orange County hampers under /uploads/orange-county/…).
   if (trimmed.startsWith("/uploads/")) {
-    // Mistakenly rewritten admin upload → restore CDN URL
-    if (isAdminProductsPath(trimmed)) {
-      return `${cdn}${trimmed.replace(/^\/uploads/, "")}`;
-    }
-    return trimmed;
+    return `${cdn}${trimmed}`;
+  }
+  if (/^uploads\//i.test(trimmed)) {
+    return cdnUploadUrl(trimmed.replace(/^uploads\//i, ""), cdn);
   }
 
-  if (trimmed.startsWith(cdn)) {
-    const path = trimmed.slice(cdn.length);
-    // Keep live admin/S3 product uploads on CloudFront
-    if (isAdminProductsPath(path)) return trimmed;
-
-    const rel = path.replace(/^\/uploads\//, "");
-    return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : trimmed;
-  }
-
-  // Absolute URL pointing at admin upload key on any host → canonicalize to CDN
-  try {
-    const parsed = new URL(trimmed);
-    if (isAdminProductsPath(parsed.pathname)) {
-      return `${cdn}${parsed.pathname}`;
-    }
-  } catch {
-    // relative / non-URL — fall through
-  }
-
-  const uploadsMatch = trimmed.match(/(?:cloudfront\.net\/uploads|wp-content\/uploads)\/(.+)$/i);
-  if (uploadsMatch) {
-    const rel = uploadsMatch[1];
-    // Nested admin keys should not go through static Amplify
-    if (isAdminProductsPath(`uploads/${rel}`) || /^products\//i.test(rel)) {
-      return `${cdn}/${rel.replace(/^uploads\//i, "")}`;
-    }
-    return imageDeliveryMode() === "static" ? staticUploadUrl(rel) : cdnUploadUrl(rel, cdn);
-  }
-
-  return trimmed.replace(/^http:\/\//i, "https://");
+  return trimmed;
 }
 
 export function resolveProductImageUrls(
@@ -109,8 +68,10 @@ export function resolveProductImageUrls(
 
 /** Extract path after uploads/ from any known product image URL. */
 export function uploadsRelativePath(url: string): string | null {
-  const m = decodeUrlEntities(url.trim()).match(/(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i);
-  return m ? m[1] : null;
+  const m = decodeUrlEntities(url.trim()).match(
+    /(?:cloudfront\.net\/uploads|wp-content\/uploads|\/uploads)\/(.+)$/i
+  );
+  return m ? m[1]! : null;
 }
 
 /** WooCommerce Amazon-import filenames — copyrighted product photos; do not fetch or hotlink. */

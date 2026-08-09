@@ -62,7 +62,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return pageMetadata({
     title: "Shop Halloween — Shop Halloween to USA Online",
     description:
-      "Browse 126+ Halloween products — single, combo, kids, Bhaiya Bhabhi & Lumba. Shop Halloween to all 50 US states. Order from India worldwide.",
+      "Browse Halloween decorations, costumes, party supplies, and seasonal accessories. Fast delivery to all 50 US states.",
     path: "/products",
   });
 }

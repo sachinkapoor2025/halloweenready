@@ -8,12 +8,22 @@ import {
   EVENT_TYPES,
   ORDER_STATUS,
   viewerGeoFromMetadata,
+  inferViewerCountryCode,
   isRevenueOrder,
   getOrderPaidAt,
   applyContactFields,
   backfillContactsByIdentity,
   isKnownContact,
+  ADMIN_ANALYTICS_TIMEZONE,
+  rangeBusinessDays,
+  businessDaysBetween,
+  utcDayBucketsForBusinessDays,
+  instantToBusinessDay,
+  LIVE_VISITOR_TTL_SECONDS,
+  approxGeoCoords,
   type Order,
+  type LiveVisitor,
+  type LiveVisitorsResponse,
 } from "@halloweenready/shared";
 import { docClient, EVENTS_TABLE, CUSTOMERS_TABLE, CARTS_TABLE, ORDERS_TABLE, dayBucket, now } from "../lib/db";
 import { ok, forbidden, badRequest } from "../lib/response";
@@ -38,6 +48,71 @@ function parseDays(event: APIGatewayProxyEventV2, fallback = 30, max = 90): numb
   return Math.min(Math.floor(raw), max);
 }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+type DayListRange = {
+  /** UTC GSI day keys to query events (may be longer than businessDays). */
+  days: string[];
+  /** Calendar days in Asia/Kolkata for charts / from-to display (chronological). */
+  businessDays: string[];
+  from: string;
+  to: string;
+  windowDays: number;
+  timeZone: string;
+};
+
+/**
+ * Inclusive day list for admin visitors/analytics.
+ * Presets and from/to are interpreted in Asia/Kolkata (IST); event storage stays UTC.
+ */
+function parseDayList(
+  event: APIGatewayProxyEventV2,
+  fallbackDays = 7,
+  max = 90
+): DayListRange | { error: string } {
+  const fromRaw = event.queryStringParameters?.from?.trim();
+  const toRaw = event.queryStringParameters?.to?.trim();
+
+  if (fromRaw || toRaw) {
+    if (!fromRaw || !toRaw || !ISO_DAY.test(fromRaw) || !ISO_DAY.test(toRaw)) {
+      return { error: "from and to must be YYYY-MM-DD" };
+    }
+    if (fromRaw > toRaw) return { error: "from must be on or before to" };
+
+    const businessDays = businessDaysBetween(fromRaw, toRaw);
+    if (!businessDays.length) return { error: "Invalid from/to date" };
+    if (businessDays.length > max) {
+      return { error: `Date range cannot exceed ${max} days` };
+    }
+    const days = utcDayBucketsForBusinessDays(businessDays);
+    return {
+      days,
+      businessDays,
+      from: fromRaw,
+      to: toRaw,
+      windowDays: businessDays.length,
+      timeZone: ADMIN_ANALYTICS_TIMEZONE,
+    };
+  }
+
+  const windowDays = parseDays(event, fallbackDays, max);
+  const businessNewestFirst = rangeBusinessDays(windowDays);
+  const businessDays = [...businessNewestFirst].reverse();
+  const days = utcDayBucketsForBusinessDays(businessDays);
+  return {
+    days,
+    businessDays,
+    from: businessDays[0] ?? businessDayFallback(),
+    to: businessDays[businessDays.length - 1] ?? businessDayFallback(),
+    windowDays,
+    timeZone: ADMIN_ANALYTICS_TIMEZONE,
+  };
+}
+
+function businessDayFallback(): string {
+  return rangeBusinessDays(1)[0] ?? dayBucket();
+}
+
 async function getRollup(day: string): Promise<RollupItem[]> {
   const res = await docClient.send(
     new QueryCommand({
@@ -48,6 +123,15 @@ async function getRollup(day: string): Promise<RollupItem[]> {
   );
   return (res.Items ?? []) as RollupItem[];
 }
+
+/** Fields needed to rebuild SessionSummary — avoid pulling full event payloads. */
+const SESSION_EVENT_PROJECTION =
+  "sessionId, #type, createdAt, #at, #path, productSlug, referrer, metadata";
+const SESSION_EVENT_ATTR_NAMES = {
+  "#type": "type",
+  "#at": "at",
+  "#path": "path",
+};
 
 /** Paginate GSI1 so we collect every event for a type/day (not just the first page). */
 async function querySessionEventsForDay(
@@ -63,6 +147,8 @@ async function querySessionEventsForDay(
         IndexName: "GSI1",
         KeyConditionExpression: "GSI1PK = :pk",
         ExpressionAttributeValues: { ":pk": eventKeys.gsi1pk(type, day) },
+        ProjectionExpression: SESSION_EVENT_PROJECTION,
+        ExpressionAttributeNames: SESSION_EVENT_ATTR_NAMES,
         ScanIndexForward: false,
         ExclusiveStartKey: lastKey,
       })
@@ -84,6 +170,28 @@ async function mapInBatches<T>(
     await Promise.all(items.slice(i, i + batchSize).map(fn));
   }
 }
+
+/** Run async work over items with a concurrency cap (cuts wall-clock vs serial awaits). */
+async function mapPool<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  if (!items.length) return [];
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (true) {
+      const idx = next++;
+      if (idx >= items.length) return;
+      results[idx] = await fn(items[idx]!);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+const EVENT_QUERY_CONCURRENCY = 12;
 
 const FUNNEL_TYPES = [
   EVENT_TYPES.PAGE_VIEW,
@@ -208,6 +316,19 @@ interface SessionSummary {
   products: string[];
 }
 
+type SessionCollectCacheEntry = { at: number; list: SessionSummary[] };
+/** Warm-Lambda cache: identical day windows reuse rebuilt sessions for ~60s. */
+const SESSION_COLLECT_CACHE = new Map<string, SessionCollectCacheEntry>();
+const SESSION_COLLECT_TTL_MS = 60_000;
+
+function trimSessionForList(s: SessionSummary): SessionSummary {
+  return {
+    ...s,
+    pages: s.pages.slice(0, 12),
+    products: s.products.slice(0, 12),
+  };
+}
+
 const SESSION_EVENT_TYPES = [
   EVENT_TYPES.PAGE_VIEW,
   EVENT_TYPES.PRODUCT_VIEW,
@@ -283,38 +404,36 @@ async function enrichSessionIdentity(s: SessionSummary): Promise<void> {
   }
 }
 
-/** Leads keyed by session so we can join identity across silos. */
-async function loadIdentityIndex(): Promise<Map<string, { name?: string; email?: string; phone?: string }>> {
-  const bySession = new Map<string, { name?: string; email?: string; phone?: string }>();
+/**
+ * Attach lead contact for sessions that still lack identity.
+ * Bounded parallel queries — avoids scanning the entire lead GSI as it grows.
+ */
+async function attachLeadContacts(list: SessionSummary[], maxLookups = 600): Promise<void> {
+  const missing = list.filter((s) => !isKnownContact(s)).slice(0, maxLookups);
+  if (!missing.length) return;
 
-  let lastKey: Record<string, unknown> | undefined;
-  do {
+  await mapInBatches(missing, 40, async (s) => {
+    const pk = customerKeys.pk(s.sessionId);
     const leadsRes = await docClient.send(
       new QueryCommand({
         TableName: CUSTOMERS_TABLE,
-        IndexName: "GSI1",
-        KeyConditionExpression: "GSI1PK = :pk",
-        ExpressionAttributeValues: { ":pk": customerKeys.gsi1pk() },
+        KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+        ExpressionAttributeValues: { ":pk": pk, ":sk": "LEAD#" },
+        ProjectionExpression: "#n, email, phone",
+        ExpressionAttributeNames: { "#n": "name" },
         ScanIndexForward: false,
-        ExclusiveStartKey: lastKey,
+        Limit: 8,
       })
     );
     for (const lead of leadsRes.Items ?? []) {
-      const sessionId =
-        (lead.sessionId as string | undefined) ?? String(lead.PK ?? "").replace(/^SESSION#/, "");
-      if (!sessionId) continue;
-      const prev = bySession.get(sessionId) ?? {};
-      applyContactFields(prev, {
+      mergeContactFields(s, {
         name: lead.name as string | undefined,
         email: lead.email as string | undefined,
         phone: lead.phone as string | undefined,
       });
-      bySession.set(sessionId, prev);
+      if (s.name && s.email && s.phone) break;
     }
-    lastKey = leadsRes.LastEvaluatedKey as Record<string, unknown> | undefined;
-  } while (lastKey);
-
-  return bySession;
+  });
 }
 
 function mergeSessionEvent(
@@ -430,35 +549,33 @@ function mergeSessionEvent(
   if (!existing.os && metadata.os) existing.os = metadata.os;
 }
 
-export async function listSessions(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
-  const days = parseDays(event, 7, 90);
-  const identityFilter = (event.queryStringParameters?.identity ?? "all").toLowerCase();
+async function collectSessionsForDayList(dayList: string[]): Promise<SessionSummary[]> {
+  const cacheKey = dayList.join(",");
+  const cached = SESSION_COLLECT_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.at < SESSION_COLLECT_TTL_MS) {
+    return cached.list.map((s) => ({ ...s, pages: [...s.pages], products: [...s.products] }));
+  }
 
   const sessions = new Map<string, SessionSummary>();
+  const jobs = dayList.flatMap((day) =>
+    SESSION_EVENT_TYPES.map((type) => ({ day, type: type as string }))
+  );
 
-  for (const day of rangeDays(days)) {
-    for (const type of SESSION_EVENT_TYPES) {
-      const items = await querySessionEventsForDay(type, day);
-      for (const raw of items) {
-        const sessionId = raw.sessionId as string;
-        if (!sessionId) continue;
-        mergeSessionEvent(sessions, raw, sessionId);
-      }
+  // Parallel GSI queries (bounded) — biggest wall-clock win vs nested serial awaits.
+  const batches = await mapPool(jobs, EVENT_QUERY_CONCURRENCY, async ({ day, type }) =>
+    querySessionEventsForDay(type, day)
+  );
+  for (const items of batches) {
+    for (const raw of items) {
+      const sessionId = raw.sessionId as string;
+      if (!sessionId) continue;
+      mergeSessionEvent(sessions, raw, sessionId);
     }
   }
 
   let list = [...sessions.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
 
-  const identityIndex = await loadIdentityIndex();
-  for (const s of list) {
-    const fromLeads = identityIndex.get(s.sessionId);
-    if (fromLeads) mergeContactFields(s, fromLeads);
-  }
-
-  // Full profile/cart lookup for identified or commerce-active sessions only.
-  // Anonymous browsers already have list fields from events — skipping them keeps
-  // large date ranges under the API Gateway Lambda timeout.
+  // Full profile/cart/lead lookup for commerce-active or already-identified sessions.
   const needsEnrich = list.filter(
     (s) =>
       isKnownContact(s) ||
@@ -468,7 +585,26 @@ export async function listSessions(event: APIGatewayProxyEventV2) {
   );
   await mapInBatches(needsEnrich, 25, (s) => enrichSessionIdentity(s));
 
+  // Light lead join for remaining anonymous (capped) — no full lead-index scan.
+  await attachLeadContacts(list);
+
   list = backfillContactsByIdentity(list);
+  SESSION_COLLECT_CACHE.set(cacheKey, { at: Date.now(), list });
+  // Bound cache size (warm Lambda reuse)
+  if (SESSION_COLLECT_CACHE.size > 24) {
+    const oldest = [...SESSION_COLLECT_CACHE.entries()].sort((a, b) => a[1].at - b[1].at)[0];
+    if (oldest) SESSION_COLLECT_CACHE.delete(oldest[0]);
+  }
+  return list;
+}
+
+export async function listSessions(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+  const range = parseDayList(event, 7, 90);
+  if ("error" in range) return badRequest(range.error);
+  const identityFilter = (event.queryStringParameters?.identity ?? "all").toLowerCase();
+
+  let list = await collectSessionsForDayList(range.days);
 
   const knownCount = list.filter((s) => isKnownContact(s)).length;
   const anonymousCount = list.length - knownCount;
@@ -480,10 +616,230 @@ export async function listSessions(event: APIGatewayProxyEventV2) {
   }
 
   return ok({
-    days,
-    sessions: list,
+    days: range.windowDays,
+    from: range.from,
+    to: range.to,
+    timeZone: range.timeZone,
+    sessions: list.map(trimSessionForList),
     identity: { known: knownCount, anonymous: anonymousCount },
     total: list.length,
+  });
+}
+
+/** Active storefront visitors (presence TTL rows on the events table). */
+export async function listLiveVisitors(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+
+  const items: Record<string, unknown>[] = [];
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const res = await docClient.send(
+      new QueryCommand({
+        TableName: EVENTS_TABLE,
+        KeyConditionExpression: "PK = :pk",
+        ExpressionAttributeValues: { ":pk": eventKeys.presencePk() },
+        ExclusiveStartKey,
+        Limit: 200,
+      })
+    );
+    items.push(...((res.Items ?? []) as Record<string, unknown>[]));
+    ExclusiveStartKey = res.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+
+  const cutoffMs = Date.now() - LIVE_VISITOR_TTL_SECONDS * 1000;
+  const nowIso = now();
+  const visitors: LiveVisitor[] = [];
+
+  for (const item of items) {
+    const lastSeen = typeof item.lastSeen === "string" ? item.lastSeen : "";
+    if (!lastSeen) continue;
+    const lastMs = Date.parse(lastSeen);
+    if (!Number.isFinite(lastMs) || lastMs < cutoffMs) continue;
+    const path = typeof item.path === "string" ? item.path : "/";
+    if (path.startsWith("/admin") || path.startsWith("/ses-email")) continue;
+
+    const country = typeof item.country === "string" ? item.country : undefined;
+    const city = typeof item.city === "string" ? item.city : undefined;
+    const region = typeof item.region === "string" ? item.region : undefined;
+    const { lat, lng } = approxGeoCoords({ country, city, region });
+
+    visitors.push({
+      sessionId: String(item.sessionId ?? ""),
+      lastSeen,
+      firstSeen: typeof item.firstSeen === "string" ? item.firstSeen : undefined,
+      path,
+      country,
+      city,
+      region,
+      regionName: typeof item.regionName === "string" ? item.regionName : undefined,
+      timezone: typeof item.timezone === "string" ? item.timezone : undefined,
+      locale: typeof item.locale === "string" ? item.locale : undefined,
+      deviceType: typeof item.deviceType === "string" ? item.deviceType : undefined,
+      browser: typeof item.browser === "string" ? item.browser : undefined,
+      os: typeof item.os === "string" ? item.os : undefined,
+      referrer: typeof item.referrer === "string" ? item.referrer : undefined,
+      name: typeof item.name === "string" ? item.name : undefined,
+      email: typeof item.email === "string" ? item.email : undefined,
+      phone: typeof item.phone === "string" ? item.phone : undefined,
+      lat,
+      lng,
+      secondsAgo: Math.max(0, Math.round((Date.now() - lastMs) / 1000)),
+    });
+  }
+
+  visitors.sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
+
+  const countryCounts = new Map<string, number>();
+  for (const v of visitors) {
+    const key = (v.country || "??").toUpperCase();
+    countryCounts.set(key, (countryCounts.get(key) ?? 0) + 1);
+  }
+  const byCountry = [...countryCounts.entries()]
+    .map(([country, count]) => ({ country, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const payload: LiveVisitorsResponse = {
+    generatedAt: nowIso,
+    activeWithinSeconds: LIVE_VISITOR_TTL_SECONDS,
+    activeCount: visitors.length,
+    visitors,
+    byCountry,
+  };
+  return ok(payload);
+}
+
+export async function getVisitorAnalytics(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+  const range = parseDayList(event, 7, 90);
+  if ("error" in range) return badRequest(range.error);
+
+  const list = await collectSessionsForDayList(range.days);
+  const knownCount = list.filter((s) => isKnownContact(s)).length;
+  const anonymousCount = list.length - knownCount;
+  const purchased = list.filter((s) => s.purchased).length;
+  const checkoutStarted = list.filter((s) => s.checkoutStarted).length;
+  const withCart = list.filter((s) => s.hasCart || (s.cartAdds ?? 0) > 0).length;
+
+  type CountryAgg = {
+    country: string;
+    visitors: number;
+    purchased: number;
+    checkoutStarted: number;
+    withCart: number;
+    identified: number;
+    events: number;
+    devices: Record<string, number>;
+    inferred?: boolean;
+  };
+
+  const byCountryMap = new Map<string, CountryAgg>();
+  for (const s of list) {
+    const inferred = inferViewerCountryCode(
+      {
+        country: s.country,
+        city: s.city,
+        region: s.region,
+        regionName: s.regionName,
+      },
+      { timezone: s.timezone, locale: s.locale }
+    );
+    const country = (inferred || "Unknown").toUpperCase();
+    const row =
+      byCountryMap.get(country) ??
+      ({
+        country,
+        visitors: 0,
+        purchased: 0,
+        checkoutStarted: 0,
+        withCart: 0,
+        identified: 0,
+        events: 0,
+        devices: {},
+        inferred: !s.country && Boolean(inferred),
+      } satisfies CountryAgg);
+    row.visitors += 1;
+    row.events += s.eventCount;
+    if (s.purchased) row.purchased += 1;
+    if (s.checkoutStarted) row.checkoutStarted += 1;
+    if (s.hasCart || (s.cartAdds ?? 0) > 0) row.withCart += 1;
+    if (isKnownContact(s)) row.identified += 1;
+    if (!s.country && inferred) row.inferred = true;
+    const device = s.deviceType || "unknown";
+    row.devices[device] = (row.devices[device] ?? 0) + 1;
+    byCountryMap.set(country, row);
+  }
+
+  const byCountry = [...byCountryMap.values()]
+    .map((row) => ({
+      ...row,
+      share: list.length ? row.visitors / list.length : 0,
+    }))
+    .sort((a, b) => b.visitors - a.visitors);
+
+  /**
+   * Unique sessions per IST calendar day (last activity in range).
+   * Matches totalVisitors: every session in `list` is counted exactly once.
+   */
+  type DayAgg = {
+    day: string;
+    visitors: number;
+    known: number;
+    anonymous: number;
+    purchased: number;
+    checkoutStarted: number;
+    withCart: number;
+    events: number;
+  };
+  const byDayMap = new Map<string, DayAgg>();
+  for (const day of range.businessDays) {
+    byDayMap.set(day, {
+      day,
+      visitors: 0,
+      known: 0,
+      anonymous: 0,
+      purchased: 0,
+      checkoutStarted: 0,
+      withCart: 0,
+      events: 0,
+    });
+  }
+  const fallbackDay = range.businessDays[range.businessDays.length - 1];
+  for (const s of list) {
+    const lastDay = instantToBusinessDay(s.lastSeen);
+    const firstDay = instantToBusinessDay(s.firstSeen);
+    const day =
+      (lastDay && byDayMap.has(lastDay) ? lastDay : undefined) ||
+      (firstDay && byDayMap.has(firstDay) ? firstDay : undefined) ||
+      fallbackDay;
+    if (!day || !byDayMap.has(day)) continue;
+    const row = byDayMap.get(day)!;
+    row.visitors += 1;
+    row.events += s.eventCount ?? 0;
+    if (isKnownContact(s)) row.known += 1;
+    else row.anonymous += 1;
+    if (s.purchased) row.purchased += 1;
+    if (s.checkoutStarted) row.checkoutStarted += 1;
+    if (s.hasCart || (s.cartAdds ?? 0) > 0) row.withCart += 1;
+  }
+  const byDay = range.businessDays.map((day) => byDayMap.get(day)!);
+
+  return ok({
+    days: range.windowDays,
+    from: range.from,
+    to: range.to,
+    timeZone: range.timeZone,
+    stats: {
+      totalVisitors: list.length,
+      known: knownCount,
+      anonymous: anonymousCount,
+      purchased,
+      checkoutStarted,
+      withCart,
+      countries: byCountry.length,
+    },
+    byDay,
+    byCountry,
+    sessions: list.map(trimSessionForList),
   });
 }
 
@@ -537,15 +893,19 @@ function trafficSourceLabel(referrer?: string): string {
 }
 
 async function collectSessions(days: number): Promise<Map<string, SessionSummary>> {
+  const dayList = rangeDays(days);
+  // Insights only needs funnel-ish fields — skip high-volume session_ping partition.
+  const types = SESSION_EVENT_TYPES.filter((t) => t !== EVENT_TYPES.SESSION_PING);
   const sessions = new Map<string, SessionSummary>();
-  for (const day of rangeDays(days)) {
-    for (const type of SESSION_EVENT_TYPES) {
-      const items = await querySessionEventsForDay(type, day);
-      for (const raw of items) {
-        const sessionId = raw.sessionId as string;
-        if (!sessionId) continue;
-        mergeSessionEvent(sessions, raw, sessionId);
-      }
+  const jobs = dayList.flatMap((day) => types.map((type) => ({ day, type: type as string })));
+  const batches = await mapPool(jobs, EVENT_QUERY_CONCURRENCY, async ({ day, type }) =>
+    querySessionEventsForDay(type, day)
+  );
+  for (const items of batches) {
+    for (const raw of items) {
+      const sessionId = raw.sessionId as string;
+      if (!sessionId) continue;
+      mergeSessionEvent(sessions, raw, sessionId);
     }
   }
   return sessions;

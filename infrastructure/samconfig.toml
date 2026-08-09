@@ -1,7 +1,7 @@
 version = 0.1
 
 [default.deploy.parameters]
-stack_name = "halloweenready"
+stack_name = "halloweenready-dev"
 resolve_s3 = true
 s3_prefix = "halloweenready"
 region = "us-east-1"
@@ -15,7 +15,7 @@ resolve_s3 = true
 s3_prefix = "halloweenready"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=staging"
+parameter_overrides = "Environment=staging LoadTestMode=true"
 
 [prod.deploy.parameters]
 stack_name = "halloweenready-prod"

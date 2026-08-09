@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { Order } from "@halloweenready/shared";
+import { carrierTrackingUrl } from "@/lib/tracking-url";
 
 const STATUS_COLORS: Record<string, string> = {
   pending_payment: "bg-amber-100 text-amber-800",
@@ -49,7 +50,7 @@ export function AccountOrdersPanel({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-slate-900">
-                  Order #{order.orderId.slice(0, 8).toUpperCase()}
+                  Order #{order.orderNumber ?? order.orderId.slice(0, 8).toUpperCase()}
                 </p>
                 <p className="text-sm text-slate-500 mt-0.5">
                   {new Date(order.createdAt).toLocaleDateString(undefined, {
@@ -79,6 +80,15 @@ export function AccountOrdersPanel({
               <p className="text-sm text-slate-600 mt-3">
                 Tracking: <span className="font-mono">{order.trackingNumber}</span>
                 {order.carrier ? ` · ${order.carrier}` : ""}
+                {" · "}
+                <a
+                  href={carrierTrackingUrl(order.trackingNumber, order.carrier)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-nav hover:underline"
+                >
+                  Track package
+                </a>
               </p>
             )}
 

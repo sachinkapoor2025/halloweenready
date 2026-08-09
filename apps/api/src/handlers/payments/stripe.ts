@@ -2,7 +2,8 @@ import Stripe from "stripe";
 import type { Order } from "@halloweenready/shared";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { ok, badRequest, serverError } from "../../lib/response";
-import { markOrderPaid } from "../orders";
+import { markOrderPaid, markOrderPaymentFailed } from "../orders";
+import { isLoadTestMode } from "../../lib/load-test";
 
 function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
@@ -23,6 +24,13 @@ function getHeader(event: APIGatewayProxyEventV2, name: string): string | undefi
 }
 
 export async function createStripePaymentIntent(order: Order) {
+  if (isLoadTestMode()) {
+    return {
+      paymentIntentId: `pi_loadtest_${order.orderId}`,
+      clientSecret: `pi_loadtest_${order.orderId}_secret`,
+    };
+  }
+
   const stripe = getStripe();
   if (!stripe) {
     return {
@@ -67,6 +75,22 @@ export async function stripeWebhook(event: APIGatewayProxyEventV2) {
       const orderId = intent.metadata?.orderId;
       if (orderId) {
         await markOrderPaid(orderId, { paymentIntentId: intent.id });
+      }
+    }
+
+    if (stripeEvent.type === "payment_intent.payment_failed") {
+      const intent = stripeEvent.data.object as Stripe.PaymentIntent;
+      const orderId = intent.metadata?.orderId;
+      if (orderId) {
+        await markOrderPaymentFailed(orderId, "Stripe payment failed");
+      }
+    }
+
+    if (stripeEvent.type === "payment_intent.canceled") {
+      const intent = stripeEvent.data.object as Stripe.PaymentIntent;
+      const orderId = intent.metadata?.orderId;
+      if (orderId) {
+        await markOrderPaymentFailed(orderId, "Stripe payment cancelled");
       }
     }
 

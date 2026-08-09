@@ -60,8 +60,8 @@ export function ReviewForm() {
       <div className="border border-green-200 bg-green-50 rounded-xl p-6 text-green-900">
         <p className="font-bold text-lg mb-2">Thank you for sharing!</p>
         <p className="text-sm leading-relaxed">
-          Your review was received. Our team may publish it on the website after verification. Sisters like you help
-          others discover reliable USA Halloween delivery.
+          Your review was sent to the HalloweenReady owner for approval. We will contact you for permission before displaying
+          it on the website.
         </p>
         <Link href="/products" className="inline-block mt-4 text-sm font-semibold text-nav hover:underline">
           Continue shopping →
@@ -137,7 +137,7 @@ export function ReviewForm() {
           value={review}
           onChange={(e) => setReview(e.target.value)}
           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-          placeholder="How was delivery? Did the decorations look great? Would you recommend HalloweenReady?"
+          placeholder="How was delivery? Did you love your Halloween order? Would you recommend HalloweenReady?"
           required
         />
       </div>
@@ -150,7 +150,7 @@ export function ReviewForm() {
         <a href={whatsappChatUrl("Hi HalloweenReady, I'd like to share a review of my order.")} className="text-nav hover:underline">
           Message us with a photo
         </a>
-        . By submitting you agree we may display your first name and review on {site.domain}.
+        . We will review your submission first and ask for your permission before publishing it on {site.domain}.
       </p>
     </form>
   );

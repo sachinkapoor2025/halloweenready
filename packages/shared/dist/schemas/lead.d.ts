@@ -13,23 +13,23 @@ export declare const leadCaptureSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     source: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review";
     sessionId: string;
-    productSlug?: string | undefined;
     name?: string | undefined;
+    productSlug?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
+    metadata?: Record<string, string> | undefined;
     userId?: string | undefined;
     page?: string | undefined;
-    metadata?: Record<string, string> | undefined;
 }, {
     sessionId: string;
-    productSlug?: string | undefined;
     name?: string | undefined;
+    productSlug?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
     source?: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review" | undefined;
+    metadata?: Record<string, string> | undefined;
     userId?: string | undefined;
     page?: string | undefined;
-    metadata?: Record<string, string> | undefined;
 }>;
 export declare const LEAD_STATUS: {
     readonly NEW: "new";

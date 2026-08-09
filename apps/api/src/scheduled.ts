@@ -1,9 +1,36 @@
-import type { ScheduledEvent, Context } from "aws-lambda";
+import type { Context } from "aws-lambda";
 import { processDueReviewEmails } from "./handlers/review-emails";
 import { processAbandonedCartEmails } from "./handlers/abandoned-cart-emails";
+import { processPendingPaymentReminders } from "./handlers/pending-payment-reminders";
+import { reconcilePendingRazorpayPayments } from "./handlers/payments/razorpay";
+import { runPaymentReconciliationJob } from "./handlers/payment-reconciliation";
 
-/** EventBridge Schedule — review emails (hourly check) + abandoned cart recovery (every 15 min). */
-export async function handler(_event: ScheduledEvent, _context: Context) {
+type CronEvent = {
+  task?: string;
+};
+
+/** EventBridge schedules → review/abandoned/pending (15m) or Razorpay reconcile (1h). */
+export async function handler(event: CronEvent, _context: Context) {
+  if (event?.task === "razorpayReconcile") {
+    try {
+      const razorpayReconcile = await reconcilePendingRazorpayPayments();
+      return { razorpayReconcile };
+    } catch (err) {
+      console.error("Razorpay reconcile cron failed:", err);
+      throw err;
+    }
+  }
+
+  if (event?.task === "paymentReconciliation") {
+    try {
+      const paymentReconciliation = await runPaymentReconciliationJob();
+      return { paymentReconciliation };
+    } catch (err) {
+      console.error("Payment reconciliation cron failed:", err);
+      throw err;
+    }
+  }
+
   const results: Record<string, unknown> = {};
 
   try {
@@ -20,7 +47,26 @@ export async function handler(_event: ScheduledEvent, _context: Context) {
     results.abandonedCartEmailsError = err instanceof Error ? err.message : String(err);
   }
 
-  if (results.reviewEmailsError || results.abandonedCartEmailsError) {
+  try {
+    results.pendingPaymentReminders = await processPendingPaymentReminders();
+  } catch (err) {
+    console.error("Pending payment reminders cron failed:", err);
+    results.pendingPaymentRemindersError = err instanceof Error ? err.message : String(err);
+  }
+
+  // Best-effort reconciliation snapshot log (does not fail the email cron).
+  try {
+    results.paymentReconciliation = await runPaymentReconciliationJob();
+  } catch (err) {
+    console.error("Payment reconciliation (inline) failed:", err);
+    results.paymentReconciliationError = err instanceof Error ? err.message : String(err);
+  }
+
+  if (
+    results.reviewEmailsError ||
+    results.abandonedCartEmailsError ||
+    results.pendingPaymentRemindersError
+  ) {
     throw new Error(JSON.stringify(results));
   }
 

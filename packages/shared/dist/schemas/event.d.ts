@@ -14,25 +14,25 @@ export declare const trackEventSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
     sessionId: string;
-    productSlug?: string | undefined;
     value?: number | undefined;
-    at?: string | undefined;
     path?: string | undefined;
+    at?: string | undefined;
+    productSlug?: string | undefined;
+    referrer?: string | undefined;
     metadata?: Record<string, string> | undefined;
     query?: string | undefined;
     resultCount?: number | undefined;
-    referrer?: string | undefined;
 }, {
     type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
     sessionId: string;
-    productSlug?: string | undefined;
     value?: number | undefined;
-    at?: string | undefined;
     path?: string | undefined;
+    at?: string | undefined;
+    productSlug?: string | undefined;
+    referrer?: string | undefined;
     metadata?: Record<string, string> | undefined;
     query?: string | undefined;
     resultCount?: number | undefined;
-    referrer?: string | undefined;
 }>;
 /** Events are sent in batches to reduce request volume. */
 export declare const trackEventBatchSchema: z.ZodObject<{
@@ -50,51 +50,51 @@ export declare const trackEventBatchSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
         sessionId: string;
-        productSlug?: string | undefined;
         value?: number | undefined;
-        at?: string | undefined;
         path?: string | undefined;
+        at?: string | undefined;
+        productSlug?: string | undefined;
+        referrer?: string | undefined;
         metadata?: Record<string, string> | undefined;
         query?: string | undefined;
         resultCount?: number | undefined;
-        referrer?: string | undefined;
     }, {
         type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
         sessionId: string;
-        productSlug?: string | undefined;
         value?: number | undefined;
-        at?: string | undefined;
         path?: string | undefined;
+        at?: string | undefined;
+        productSlug?: string | undefined;
+        referrer?: string | undefined;
         metadata?: Record<string, string> | undefined;
         query?: string | undefined;
         resultCount?: number | undefined;
-        referrer?: string | undefined;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
     events: {
         type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
         sessionId: string;
-        productSlug?: string | undefined;
         value?: number | undefined;
-        at?: string | undefined;
         path?: string | undefined;
+        at?: string | undefined;
+        productSlug?: string | undefined;
+        referrer?: string | undefined;
         metadata?: Record<string, string> | undefined;
         query?: string | undefined;
         resultCount?: number | undefined;
-        referrer?: string | undefined;
     }[];
 }, {
     events: {
         type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping";
         sessionId: string;
-        productSlug?: string | undefined;
         value?: number | undefined;
-        at?: string | undefined;
         path?: string | undefined;
+        at?: string | undefined;
+        productSlug?: string | undefined;
+        referrer?: string | undefined;
         metadata?: Record<string, string> | undefined;
         query?: string | undefined;
         resultCount?: number | undefined;
-        referrer?: string | undefined;
     }[];
 }>;
 export type TrackEventInput = z.infer<typeof trackEventSchema>;
