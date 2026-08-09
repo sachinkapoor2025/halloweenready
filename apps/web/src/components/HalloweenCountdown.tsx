@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const HALLOWEEN_DATE = new Date("2026-10-31T00:00:00");
 /** Order-by date for guaranteed pre-Halloween delivery */
@@ -16,6 +17,7 @@ function daysUntil(target: Date): number {
 type Variant = "banner" | "inline";
 
 export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }) {
+  const pathname = usePathname();
   const [daysToHalloween, setDaysToHalloween] = useState<number | null>(null);
   const [daysToOrder, setDaysToOrder] = useState<number | null>(null);
 
@@ -24,6 +26,12 @@ export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }
     setDaysToOrder(daysUntil(ORDER_DEADLINE));
   }, []);
 
+  if (
+    variant === "banner" &&
+    (pathname.startsWith("/admin") || pathname.startsWith("/ses-email"))
+  ) {
+    return null;
+  }
   if (daysToHalloween === null) return null;
   if (daysToHalloween === 0 && daysToOrder === 0) return null;
 
