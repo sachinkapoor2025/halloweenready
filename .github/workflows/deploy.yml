@@ -95,6 +95,7 @@ jobs:
           sam build && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
             --parameter-overrides "\
           Environment=prod \
+          EnableVendorApi=false \
           RazorpayKeyId=${RAZORPAY_KEY_ID} \
           RazorpayKeySecret=${RAZORPAY_KEY_SECRET} \
           SmtpPassword=${SMTP_PASSWORD} \
