@@ -8,8 +8,8 @@ import { getAnalyticsIds } from "@/lib/analytics-config";
  */
 export function GoogleAnalytics() {
   const { ga4Id, googleAdsId } = getAnalyticsIds();
-  // Prefer Ads ID for the script URL when present (matches Google Ads install snippet).
-  const loaderId = googleAdsId || ga4Id;
+  // Prefer GA4 ID for the script URL (matches the Google Analytics install snippet).
+  const loaderId = ga4Id || googleAdsId;
   if (!loaderId) return null;
 
   const configLines = [
