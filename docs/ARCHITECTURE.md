@@ -18,7 +18,7 @@
 | API | API Gateway + Lambda | $0 | Pay per request |
 | Database | DynamoDB on-demand | ~$0 | No provisioned capacity; no RDS always-on cost |
 | Auth | Cognito User Pool | Free tier | Login/logout, JWT, admin roles |
-| Files | S3 + CloudFront | Pennies | Product images, bulk CSV uploads |
+| Files | S3 + CloudFront | Pennies | Sized WebP variants; originals never served on listing pages |
 | Payments | Stripe + Razorpay | $0 until transaction | Config-driven per region |
 | IaC | AWS SAM | $0 | Simpler than raw CloudFormation for serverless |
 | CI/CD | GitHub Actions | Free tier | Push → deploy infra + app |
@@ -42,6 +42,20 @@ halloweenready/
 ├── .github/workflows/        # deploy.yml
 └── docs/
 ```
+
+**Files:** S3 + CloudFront (product images). Upload-time Lambda writes WebP variants (`thumb` 320 / `card` 640 / `gallery` 1200 / `zoom` 1600). Listing pages must use `card`/`thumb`, never the original. Do not use Lambda@Edge for resize — that bills on every cache miss during peak traffic.
+
+## Product image standard
+
+| Role | Max edge | Format | Typical size | Where used |
+|------|----------|--------|--------------|------------|
+| `thumb` | 320px | WebP q70 | ~15–40KB | Cart, admin lists, PDP filmstrip |
+| `card` | 640px | WebP q72 | ~30–80KB | Category / home cards |
+| `gallery` | 1200px | WebP q78 | ~60–150KB | Product page main image |
+| `zoom` | 1600px | WebP q80 | ~80–200KB | Lightbox |
+| original | 2000px | JPEG/WebP | ≤350KB target, 8MB hard cap | Fallback only |
+
+Lambda: `halloweenready-image-optimize-{env}` on S3 Object Created (EventBridge). Backfill: `npm run backfill:image-variants`.
 
 ## DynamoDB Multi-Table Design
 

@@ -1,26 +1,33 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { type ImageVariantName } from "@halloweenready/shared";
 import { resolveImageUrl } from "@/lib/images";
 import { isPlaceholderProductImage } from "@/lib/product-images";
+import { VariantImg } from "@/components/VariantImg";
 
 type ProductImageProps = {
   src: string | undefined | null;
   alt: string;
   className?: string;
+  variant?: ImageVariantName;
+  width?: number;
+  height?: number;
+  loading?: "lazy" | "eager";
 };
 
 /** Product thumbnail — never shows the pumpkin placeholder graphic. */
-export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
+export function ProductImage({
+  src,
+  alt,
+  className = "",
+  variant = "thumb",
+  width,
+  height,
+  loading = "lazy",
+}: ProductImageProps) {
   const initial = !isPlaceholderProductImage(src) ? resolveImageUrl(src) : "";
-  const [failed, setFailed] = useState(!initial);
 
-  const handleLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img.naturalWidth <= 8 && img.naturalHeight <= 8) setFailed(true);
-  }, []);
-
-  if (failed || !initial) {
+  if (!initial) {
     return (
       <div className={`flex items-center justify-center bg-slate-50 text-slate-400 text-sm ${className}`}>
         No image
@@ -29,13 +36,14 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <VariantImg
       src={initial}
+      variant={variant}
       alt={alt}
       className={className}
-      onLoad={handleLoad}
-      onError={() => setFailed(true)}
+      width={width}
+      height={height}
+      loading={loading}
     />
   );
 }

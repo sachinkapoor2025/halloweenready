@@ -51,6 +51,7 @@ __exportStar(require("./lib/currency-display"), exports);
 __exportStar(require("./lib/competitive-pricing"), exports);
 __exportStar(require("./lib/vendor-pricing"), exports);
 __exportStar(require("./lib/image-url"), exports);
+__exportStar(require("./lib/image-variants"), exports);
 __exportStar(require("./lib/product-images"), exports);
 __exportStar(require("./lib/product-sales"), exports);
 __exportStar(require("./lib/sales-report"), exports);

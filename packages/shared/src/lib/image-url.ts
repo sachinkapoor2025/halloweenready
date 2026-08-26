@@ -1,5 +1,5 @@
-/** CloudFront distribution for product/media images (from halloweenready-prod stack). */
-export const DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
+/** CloudFront distribution for product/media images (halloweenready-prod, not hr-ecom/usarakhi). */
+export const DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
 
 function decodeUrlEntities(url: string): string {
   return url

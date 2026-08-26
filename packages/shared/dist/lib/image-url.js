@@ -8,8 +8,8 @@ exports.resolveProductImageUrl = resolveProductImageUrl;
 exports.resolveProductImageUrls = resolveProductImageUrls;
 exports.uploadsRelativePath = uploadsRelativePath;
 exports.isAmazonImportedFilename = isAmazonImportedFilename;
-/** CloudFront distribution for product/media images (from halloweenready-prod stack). */
-exports.DEFAULT_PRODUCT_CDN = "https://d301af4ndyn9qx.cloudfront.net";
+/** CloudFront distribution for product/media images (halloweenready-prod, not hr-ecom/usarakhi). */
+exports.DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
 function decodeUrlEntities(url) {
     return url
         .replace(/&#8211;/g, "–")

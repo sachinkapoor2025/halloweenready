@@ -78,14 +78,14 @@ describe("resolveProductImageUrl", () => {
   it("rewrites relative /uploads paths to the product CDN", () => {
     assert.equal(
       resolveProductImageUrl("/uploads/orange-county/TFUSA007/TFUSA007.jpg"),
-      "https://d301af4ndyn9qx.cloudfront.net/uploads/orange-county/TFUSA007/TFUSA007.jpg"
+      "https://d2lfdzx32wxe94.cloudfront.net/uploads/orange-county/TFUSA007/TFUSA007.jpg"
     );
   });
 
   it("rewrites legacy WordPress upload URLs to the CDN", () => {
     assert.equal(
       resolveProductImageUrl("https://halloweenready.com/wp-content/uploads/2026/03/photo.jpg"),
-      "https://d301af4ndyn9qx.cloudfront.net/uploads/2026/03/photo.jpg"
+      "https://d2lfdzx32wxe94.cloudfront.net/uploads/2026/03/photo.jpg"
     );
   });
 });
