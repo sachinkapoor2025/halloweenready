@@ -84,4 +84,11 @@ export const extendedKeywords = [
   "halloween 2026 order deadline",
   "order halloween by october 25",
   "express halloween delivery USA",
+  "Halloween costumes UK",
+  "Halloween costumes online UK",
+  "Halloween costumes Canada",
+  "Halloween costumes Australia",
+  "Halloween costumes India",
+  "Halloween costumes UAE",
+  "Halloween costumes Dubai",
 ].join(", ");

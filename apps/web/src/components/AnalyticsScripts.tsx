@@ -8,8 +8,8 @@ import { getAnalyticsIds } from "@/lib/analytics-config";
  */
 export function GoogleAnalytics() {
   const { ga4Id, googleAdsId } = getAnalyticsIds();
-  // Prefer Ads ID for the script URL when present (matches Google Ads install snippet).
-  const loaderId = googleAdsId || ga4Id;
+  // Prefer GA4 ID for the script URL (matches the Google Analytics install snippet).
+  const loaderId = ga4Id || googleAdsId;
   if (!loaderId) return null;
 
   const configLines = [
@@ -36,12 +36,12 @@ export function GoogleAnalytics() {
   );
 }
 
-/** GTM, Meta Pixel, Microsoft Clarity, Bing UET. */
+/** GTM, Microsoft Clarity, Bing UET. Meta Pixel is hardcoded once in the root layout. */
 export function AnalyticsScripts() {
-  const { gtmId, metaPixelId, clarityId, bingUetId } = getAnalyticsIds();
+  const { gtmId, clarityId, bingUetId } = getAnalyticsIds();
   const bingUetReady = bingUetId && !bingUetId.includes("SAMPLE") && !bingUetId.includes("XXXX");
 
-  if (!gtmId && !metaPixelId && !clarityId && !bingUetReady) return null;
+  if (!gtmId && !clarityId && !bingUetReady) return null;
 
   return (
     <>
@@ -53,32 +53,6 @@ export function AnalyticsScripts() {
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','${gtmId}');
         `}</Script>
-      )}
-      {metaPixelId && (
-        <>
-          <Script id="meta-pixel" strategy="lazyOnload">{`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${metaPixelId}');
-            fbq('track', 'PageView');
-          `}</Script>
-          <noscript>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              height="1"
-              width="1"
-              style={{ display: "none" }}
-              src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
-              alt=""
-            />
-          </noscript>
-        </>
       )}
       {bingUetReady && (
         <Script id="bing-uet" strategy="lazyOnload">{`

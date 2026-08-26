@@ -23,6 +23,8 @@ export declare const EVENT_TYPES: {
     readonly PURCHASE: "purchase";
     /** Time spent on a page before leave/navigation (metadata.durationMs). */
     readonly SESSION_PING: "session_ping";
+    readonly COUNTRY_CHANGED: "country_changed";
+    readonly POSTAL_CODE_ENTERED: "postal_code_entered";
 };
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */
@@ -30,6 +32,8 @@ export declare const EVENT_TTL_DAYS = 90;
 export declare const USER_ROLES: {
     readonly CUSTOMER: "customer";
     readonly ADMIN: "admin";
+    readonly SUPER_ADMIN: "super-admin";
+    readonly VENDOR: "vendor";
 };
 export declare const PAYMENT_REGIONS: {
     readonly US: "US";

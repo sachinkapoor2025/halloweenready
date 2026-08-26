@@ -36,6 +36,9 @@ interface AuthContextValue {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isEmailMarketer: boolean;
+  isVendor: boolean;
+  vendorSlug?: string;
+  canAccessAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,6 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: user?.isAdmin ?? false,
         isSuperAdmin: user?.isSuperAdmin ?? false,
         isEmailMarketer: user?.isEmailMarketer ?? false,
+        isVendor: user?.isVendor ?? false,
+        vendorSlug: user?.vendorSlug,
+        canAccessAdmin: Boolean(user?.isAdmin || user?.isVendor),
       }}
     >
       {children}

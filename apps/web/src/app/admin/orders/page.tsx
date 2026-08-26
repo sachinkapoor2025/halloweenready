@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useApiClient } from "@/lib/auth-context";
 import {
   ORDER_STATUS,
@@ -41,7 +41,9 @@ interface Order {
   trackingNumber?: string;
   carrier?: string;
   paymentProvider?: string;
-  shippingAddress: { name: string; email: string; phone?: string };
+  shippingAddress: { name: string; email: string; phone?: string; country?: string };
+  assignedWarehouseId?: string;
+  fulfillmentCountry?: string;
   estimatedDeliveryAt?: string;
   deliveredAt?: string;
   labelStatus?: "none" | "queued" | "purchased" | "failed";
@@ -115,15 +117,17 @@ const PAYMENT_FILTERS = [
   { id: "refunded", label: "Refunded" },
 ];
 
-export default function AdminOrdersPage() {
+function AdminOrdersPageInner() {
   const apiClient = useApiClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
   const [vendorFilter, setVendorFilter] = useState("all");
+  const [countryFilter, setCountryFilter] = useState(searchParams.get("country")?.toUpperCase() || "all");
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -147,7 +151,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [tab, paymentFilter, paymentMethod, vendorFilter, search, dateFrom, dateTo, sortKey, sortDir]);
+  }, [tab, paymentFilter, paymentMethod, vendorFilter, countryFilter, search, dateFrom, dateTo, sortKey, sortDir]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -157,6 +161,10 @@ export default function AdminOrdersPage() {
       if (paymentMethod !== "all" && o.paymentProvider !== paymentMethod) return false;
       if (vendorFilter !== "all" && !orderHasVendor(o, vendorFilter)) {
         return false;
+      }
+      if (countryFilter !== "all") {
+        const c = (o.fulfillmentCountry ?? o.shippingAddress?.country ?? "").toUpperCase();
+        if (c !== countryFilter) return false;
       }
       if (dateFrom && o.createdAt.slice(0, 10) < dateFrom) return false;
       if (dateTo && o.createdAt.slice(0, 10) > dateTo) return false;
@@ -180,7 +188,7 @@ export default function AdminOrdersPage() {
 
     list = sortItems(list, sorter, sortDir);
     return list;
-  }, [orders, tab, paymentFilter, paymentMethod, vendorFilter, search, dateFrom, dateTo, sortKey, sortDir]);
+  }, [orders, tab, paymentFilter, paymentMethod, vendorFilter, countryFilter, search, dateFrom, dateTo, sortKey, sortDir]);
 
   const vendorOptions = useMemo(() => collectVendorSlugs(orders), [orders]);
 
@@ -336,6 +344,20 @@ export default function AdminOrdersPage() {
           <option value="all">All payment methods</option>
           <option value="stripe">Stripe</option>
           <option value="razorpay">Razorpay</option>
+        </select>
+        <select
+          value={countryFilter}
+          onChange={(e) => setCountryFilter(e.target.value)}
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+          title="Filter by fulfillment country"
+        >
+          <option value="all">All countries</option>
+          <option value="US">United States</option>
+          <option value="GB">United Kingdom</option>
+          <option value="IN">India</option>
+          <option value="CA">Canada</option>
+          <option value="AU">Australia</option>
+          <option value="AE">UAE</option>
         </select>
         <select
           value={vendorFilter}
@@ -564,5 +586,13 @@ export default function AdminOrdersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<p className="text-slate-500 p-6">Loading orders…</p>}>
+      <AdminOrdersPageInner />
+    </Suspense>
   );
 }

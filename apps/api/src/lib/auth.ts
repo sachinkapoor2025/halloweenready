@@ -1,4 +1,6 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import type { StaffActor } from "@halloweenready/shared";
+import { findVendorByEmail } from "./markets-store";
 
 export interface AuthContext {
   userId: string;
@@ -7,6 +9,8 @@ export interface AuthContext {
   isSuperAdmin: boolean;
   /** Cognito `email` group — SES bulk campaign module access. */
   isEmailMarketer: boolean;
+  /** Cognito `vendor` group — vendor portal (data still scoped by email mapping). */
+  isVendor: boolean;
 }
 
 const DEV_AUTH_ENABLED =
@@ -23,6 +27,7 @@ export function getAuth(event: APIGatewayProxyEventV2): AuthContext | null {
     const [, email, role] = token.split(":");
     if (!email) return null;
     const isSuperAdmin = role === "super-admin";
+    const isVendor = role === "vendor";
     const isEmailMarketer =
       role === "email" || isSuperAdmin || email.toLowerCase().includes("email");
     return {
@@ -31,6 +36,7 @@ export function getAuth(event: APIGatewayProxyEventV2): AuthContext | null {
       isSuperAdmin,
       isAdmin: role === "admin" || isSuperAdmin,
       isEmailMarketer,
+      isVendor,
     };
   }
 
@@ -45,6 +51,7 @@ export function getAuth(event: APIGatewayProxyEventV2): AuthContext | null {
       isSuperAdmin,
       isAdmin: groups.includes("admin") || isSuperAdmin,
       isEmailMarketer,
+      isVendor: groups.includes("vendor"),
     };
   } catch {
     return null;
@@ -79,4 +86,38 @@ export function requireEmailAccess(event: APIGatewayProxyEventV2): AuthContext |
   const auth = getAuth(event);
   if (!auth?.isEmailMarketer) return null;
   return auth;
+}
+
+export function requireAdminOrVendor(event: APIGatewayProxyEventV2): AuthContext | null {
+  const auth = getAuth(event);
+  if (!auth) return null;
+  if (auth.isAdmin || auth.isVendor) return auth;
+  return null;
+}
+
+/**
+ * Resolve staff actor with server-side vendor slug.
+ * Vendor identity comes from the vendor record email map — never from request params.
+ */
+export async function resolveStaffActor(event: APIGatewayProxyEventV2): Promise<StaffActor | null> {
+  const auth = getAuth(event);
+  if (!auth) return null;
+  if (auth.isAdmin) {
+    return {
+      email: auth.email,
+      isAdmin: true,
+      isSuperAdmin: auth.isSuperAdmin,
+      isVendor: false,
+    };
+  }
+  if (!auth.isVendor) return null;
+  const vendor = await findVendorByEmail(auth.email);
+  if (!vendor?.slug) return null;
+  return {
+    email: auth.email,
+    isAdmin: false,
+    isSuperAdmin: false,
+    isVendor: true,
+    vendorSlug: vendor.slug,
+  };
 }

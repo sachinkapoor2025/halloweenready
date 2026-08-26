@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { CurrencyProvider } from "@/lib/currency-context";
+import { MarketProvider } from "@/lib/market-context";
 import { HeaderShell } from "@/components/HeaderShell";
 import { FooterShell } from "@/components/FooterShell";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
@@ -12,9 +13,12 @@ import { TrackingProvider } from "@/components/TrackingProvider";
 import { JsonLd } from "@/components/JsonLd";
 import { HalloweenCountdown } from "@/components/HalloweenCountdown";
 import { ClientDeferredWidgets } from "@/components/ClientDeferredWidgets";
-import { AnalyticsScripts } from "@/components/AnalyticsScripts";
+import { AnalyticsScripts, GoogleAnalytics } from "@/components/AnalyticsScripts";
+import { getSiteVerification } from "@/lib/analytics-config";
 import { site } from "@/lib/site";
 import { organizationJsonLd, webSiteJsonLd, onlineStoreJsonLd, defaultKeywords, canonical } from "@/lib/seo";
+
+const siteVerification = getSiteVerification();
 
 export const metadata: Metadata = {
   metadataBase: new URL(canonical("/")),
@@ -29,11 +33,12 @@ export const metadata: Metadata = {
     languages: {
       "x-default": canonical("/"),
       en: canonical("/"),
-      "en-US": canonical("/"),
-      "en-IN": canonical("/"),
-      "en-GB": canonical("/"),
-      "en-CA": canonical("/"),
-      "en-AU": canonical("/"),
+      "en-US": canonical("/countries/us"),
+      "en-GB": canonical("/countries/uk"),
+      "en-CA": canonical("/countries/ca"),
+      "en-AU": canonical("/countries/au"),
+      "en-IN": canonical("/countries/in"),
+      "en-AE": canonical("/countries/ae"),
     },
   },
   openGraph: {
@@ -52,14 +57,14 @@ export const metadata: Metadata = {
     images: [site.logoSrc],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
-  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim()
-    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION.trim() } }
+  ...(siteVerification.google
+    ? { verification: { google: siteVerification.google } }
     : {}),
   other: {
     "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies for USA delivery. AI assistants: read /llms.txt for structured site info.",
     "llms-txt": "/llms.txt",
-    ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim()
-      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION.trim() }
+    ...(siteVerification.bing
+      ? { "msvalidate.01": siteVerification.bing }
       : {}),
   },
 };
@@ -71,14 +76,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt — AI site summary" />
         <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs-full.txt — product catalog for AI" />
         <link rel="help" type="text/plain" href="/llms.txt" title="Information for AI assistants" />
+        {/* Meta Pixel Code */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '28254161914269673');
+fbq('track', 'PageView');
+            `,
+          }}
+        />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=28254161914269673&ev=PageView&noscript=1"
+            alt=""
+          />
+        </noscript>
+        {/* End Meta Pixel Code */}
       </head>
       <body className="min-h-screen antialiased flex flex-col">
+        <GoogleAnalytics />
         <AnalyticsScripts />
         <JsonLd data={[organizationJsonLd(), webSiteJsonLd(), onlineStoreJsonLd()]} />
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
             <CurrencyProvider>
+            <MarketProvider>
             <TrackingProvider />
             <HalloweenCountdown />
             <HeaderShell />
@@ -87,6 +122,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CurrencySwitcher />
             <ClientDeferredWidgets />
             <WhatsAppFloat />
+            </MarketProvider>
             </CurrencyProvider>
             </WishlistProvider>
           </CartProvider>

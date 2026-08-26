@@ -10,11 +10,13 @@ import {
   stripVendorPrivateFields,
   productAllowsAddons,
   resolveProductImagesForUpsert,
+  productVisibleToActor,
+  defaultVendorSlugForNewProduct,
   type Product,
 } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
 import { ok, okCached, created, badRequest, notFound, forbidden } from "../lib/response";
-import { getAuth } from "../lib/auth";
+import { getAuth, resolveStaffActor } from "../lib/auth";
 import { withResolvedProductImages, resolveProductImageUrl } from "../lib/images";
 import { syncInventoryAlertState } from "../lib/inventory";
 import { ensureProductInDb } from "../lib/ensure-product";
@@ -202,8 +204,8 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
 }
 
 export async function createProduct(event: APIGatewayProxyEventV2) {
-  const auth = getAuth(event);
-  if (!auth?.isAdmin) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const body = JSON.parse(event.body ?? "{}");
   const parsed = createProductSchema.safeParse(body);
@@ -214,6 +216,7 @@ export async function createProduct(event: APIGatewayProxyEventV2) {
   const inventory = parsed.data.inventory ?? DEFAULT_PRODUCT_INVENTORY;
   const item: Product & { PK: string; SK: string; GSI1PK: string; GSI1SK: string } = {
     ...parsed.data,
+    vendorSlug: actor.vendorSlug ?? parsed.data.vendorSlug ?? defaultVendorSlugForNewProduct(actor),
     inventory,
     slug,
     PK: productKeys.pk(slug),
@@ -230,8 +233,8 @@ export async function createProduct(event: APIGatewayProxyEventV2) {
 }
 
 export async function updateProduct(event: APIGatewayProxyEventV2) {
-  const auth = getAuth(event);
-  if (!auth?.isAdmin) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const slug = event.pathParameters?.slug;
   if (!slug) return badRequest("Slug required");
@@ -245,6 +248,7 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
   if (!existing.Item) return notFound("Product not found");
 
   const previous = existing.Item as Product;
+  if (!productVisibleToActor(previous, actor)) return forbidden();
   const body = JSON.parse(event.body ?? "{}");
   const parsed = updateProductSchema.safeParse(body);
   if (!parsed.success) return badRequest(parsed.error.message);
@@ -260,6 +264,7 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
   const updated = {
     ...previous,
     ...parsed.data,
+    ...(actor.vendorSlug ? { vendorSlug: actor.vendorSlug } : {}),
     ...(imageUpdate ? { images: imageUpdate.images } : {}),
     updatedAt: now(),
   } as Product & { PK: string; SK: string; GSI1PK: string; GSI1SK: string };
@@ -281,8 +286,8 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
 
 /** Admin: list all products including unpublished. */
 export async function listAdminProducts(event: APIGatewayProxyEventV2) {
-  const auth = getAuth(event);
-  if (!auth?.isAdmin) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const result = await docClient.send(
     new ScanCommand({
@@ -292,18 +297,29 @@ export async function listAdminProducts(event: APIGatewayProxyEventV2) {
     })
   );
 
-  const items = ((result.Items ?? []) as Product[]).sort(
+  const items = ((result.Items ?? []) as Product[])
+    .filter((p) => productVisibleToActor(p, actor))
+    .sort(
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
   return ok({ products: items.map(withResolvedProductImages) });
 }
 
 export async function deleteProduct(event: APIGatewayProxyEventV2) {
-  const auth = getAuth(event);
-  if (!auth?.isAdmin) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const slug = event.pathParameters?.slug;
   if (!slug) return badRequest("Slug required");
+
+  const existing = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  if (!existing.Item) return notFound("Product not found");
+  if (!productVisibleToActor(existing.Item as Product, actor)) return forbidden();
 
   await docClient.send(
     new DeleteCommand({
@@ -316,8 +332,8 @@ export async function deleteProduct(event: APIGatewayProxyEventV2) {
 }
 
 export async function bulkUploadProducts(event: APIGatewayProxyEventV2) {
-  const auth = getAuth(event);
-  if (!auth?.isAdmin) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor?.isAdmin) return forbidden();
 
   const body = JSON.parse(event.body ?? "{}");
   const rows: unknown[] = body.rows ?? body;

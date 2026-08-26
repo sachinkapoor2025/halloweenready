@@ -23,6 +23,13 @@ exports.productSchema = zod_1.z.object({
     tags: zod_1.z.array(zod_1.z.string()).default([]),
     /** Supplier / marketplace vendor key (e.g. orange-county). */
     vendorSlug: zod_1.z.string().min(1).max(80).optional(),
+    /** Prefer this warehouse when present; fulfillment engine may still re-route. */
+    warehouseId: zod_1.z.string().min(1).max(80).optional(),
+    /**
+     * When set, product is only offered in these ISO country codes.
+     * Omitted = available in every active market (existing catalog stays global).
+     */
+    availableCountryCodes: zod_1.z.array(zod_1.z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
     /** Wholesale cost from vendor — never expose on public storefront APIs. */
     vendorCost: zod_1.z.number().positive().optional(),
     /**

@@ -159,10 +159,25 @@ exports.orderSchema = zod_1.z.object({
     vendorFulfillments: zod_1.z
         .array(zod_1.z.object({
         vendorSlug: zod_1.z.string().min(1).max(80),
+        warehouseId: zod_1.z.string().min(1).max(80).optional(),
         trackingNumber: zod_1.z.string().optional(),
         carrier: zod_1.z.string().optional(),
         status: zod_1.z.enum(["pending", "processing", "shipped", "delivered"]).optional(),
         updatedAt: zod_1.z.string().optional(),
+    }))
+        .optional(),
+    assignedVendorId: zod_1.z.string().min(1).max(80).optional(),
+    assignedWarehouseId: zod_1.z.string().min(1).max(80).optional(),
+    fulfillmentCountry: zod_1.z.string().length(2).optional(),
+    routingReason: zod_1.z.string().max(200).optional(),
+    fulfillmentSplits: zod_1.z
+        .array(zod_1.z.object({
+        vendorId: zod_1.z.string().min(1),
+        warehouseId: zod_1.z.string().min(1),
+        productSlugs: zod_1.z.array(zod_1.z.string().min(1)),
+        fulfillmentCountry: zod_1.z.string().length(2),
+        routingReason: zod_1.z.string().max(200),
+        estimatedDeliveryDays: zod_1.z.number().int().optional(),
     }))
         .optional(),
     /** Last shipment status string received from vendor tracking API (e.g. in_transit). */
@@ -205,6 +220,7 @@ exports.orderStatusUpdateSchema = zod_1.z.object({
     vendorFulfillments: zod_1.z
         .array(zod_1.z.object({
         vendorSlug: zod_1.z.string().min(1).max(80),
+        warehouseId: zod_1.z.string().min(1).max(80).optional(),
         trackingNumber: zod_1.z.string().optional(),
         carrier: zod_1.z.string().optional(),
         status: zod_1.z.enum(["pending", "processing", "shipped", "delivered"]).optional(),

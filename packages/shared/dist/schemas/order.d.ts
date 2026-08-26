@@ -1526,6 +1526,7 @@ export declare const orderSchema: z.ZodObject<{
      */
     vendorFulfillments: z.ZodOptional<z.ZodArray<z.ZodObject<{
         vendorSlug: z.ZodString;
+        warehouseId: z.ZodOptional<z.ZodString>;
         trackingNumber: z.ZodOptional<z.ZodString>;
         carrier: z.ZodOptional<z.ZodString>;
         status: z.ZodOptional<z.ZodEnum<["pending", "processing", "shipped", "delivered"]>>;
@@ -1534,14 +1535,42 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
         updatedAt?: string | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
     }, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
         updatedAt?: string | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+    }>, "many">>;
+    assignedVendorId: z.ZodOptional<z.ZodString>;
+    assignedWarehouseId: z.ZodOptional<z.ZodString>;
+    fulfillmentCountry: z.ZodOptional<z.ZodString>;
+    routingReason: z.ZodOptional<z.ZodString>;
+    fulfillmentSplits: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        vendorId: z.ZodString;
+        warehouseId: z.ZodString;
+        productSlugs: z.ZodArray<z.ZodString, "many">;
+        fulfillmentCountry: z.ZodString;
+        routingReason: z.ZodString;
+        estimatedDeliveryDays: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        warehouseId: string;
+        fulfillmentCountry: string;
+        routingReason: string;
+        vendorId: string;
+        productSlugs: string[];
+        estimatedDeliveryDays?: number | undefined;
+    }, {
+        warehouseId: string;
+        fulfillmentCountry: string;
+        routingReason: string;
+        vendorId: string;
+        productSlugs: string[];
+        estimatedDeliveryDays?: number | undefined;
     }>, "many">>;
     /** Last shipment status string received from vendor tracking API (e.g. in_transit). */
     vendorShipmentStatus: z.ZodOptional<z.ZodString>;
@@ -2142,8 +2171,21 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
         updatedAt?: string | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+    }[] | undefined;
+    assignedVendorId?: string | undefined;
+    assignedWarehouseId?: string | undefined;
+    fulfillmentCountry?: string | undefined;
+    routingReason?: string | undefined;
+    fulfillmentSplits?: {
+        warehouseId: string;
+        fulfillmentCountry: string;
+        routingReason: string;
+        vendorId: string;
+        productSlugs: string[];
+        estimatedDeliveryDays?: number | undefined;
     }[] | undefined;
     vendorShipmentStatus?: string | undefined;
     adminNotes?: string | undefined;
@@ -2355,8 +2397,21 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
         updatedAt?: string | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+    }[] | undefined;
+    assignedVendorId?: string | undefined;
+    assignedWarehouseId?: string | undefined;
+    fulfillmentCountry?: string | undefined;
+    routingReason?: string | undefined;
+    fulfillmentSplits?: {
+        warehouseId: string;
+        fulfillmentCountry: string;
+        routingReason: string;
+        vendorId: string;
+        productSlugs: string[];
+        estimatedDeliveryDays?: number | undefined;
     }[] | undefined;
     vendorShipmentStatus?: string | undefined;
     adminNotes?: string | undefined;
@@ -2377,17 +2432,20 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     /** Upsert per-vendor tracking (mixed OC + HalloweenReady orders). */
     vendorFulfillments: z.ZodOptional<z.ZodArray<z.ZodObject<{
         vendorSlug: z.ZodString;
+        warehouseId: z.ZodOptional<z.ZodString>;
         trackingNumber: z.ZodOptional<z.ZodString>;
         carrier: z.ZodOptional<z.ZodString>;
         status: z.ZodOptional<z.ZodEnum<["pending", "processing", "shipped", "delivered"]>>;
     }, "strip", z.ZodTypeAny, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
     }, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
     }>, "many">>;
@@ -2414,6 +2472,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     vendorFulfillments?: {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
     }[] | undefined;
@@ -2433,6 +2492,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     vendorFulfillments?: {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
+        warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
     }[] | undefined;

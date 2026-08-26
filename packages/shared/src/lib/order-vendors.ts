@@ -6,6 +6,7 @@ export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOW
 
 export type VendorFulfillment = {
   vendorSlug: string;
+  warehouseId?: string;
   trackingNumber?: string;
   carrier?: string;
   /** pending until AWB recorded; shipped once tracking is set. */
@@ -136,6 +137,7 @@ export function upsertVendorFulfillment(
   fulfillments: VendorFulfillment[],
   patch: {
     vendorSlug: string;
+    warehouseId?: string;
     trackingNumber?: string;
     carrier?: string;
     status?: VendorFulfillment["status"];
@@ -150,11 +152,13 @@ export function upsertVendorFulfillment(
   const trackingNumber =
     patch.trackingNumber !== undefined ? patch.trackingNumber.trim() : base.trackingNumber;
   const carrier = patch.carrier !== undefined ? patch.carrier.trim() : base.carrier;
+  const warehouseId = patch.warehouseId !== undefined ? patch.warehouseId.trim() : base.warehouseId;
   const status =
     patch.status ??
     (trackingNumber ? ("shipped" as const) : base.status ?? ("pending" as const));
   const row: VendorFulfillment = {
     vendorSlug: slug,
+    ...(warehouseId ? { warehouseId } : {}),
     ...(trackingNumber ? { trackingNumber } : {}),
     ...(carrier ? { carrier } : {}),
     status,

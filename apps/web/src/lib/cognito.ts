@@ -24,6 +24,9 @@ export interface AuthUser {
   isSuperAdmin: boolean;
   /** Cognito `email` group — /ses-email module */
   isEmailMarketer: boolean;
+  /** Cognito `vendor` group — vendor portal with server-side isolation */
+  isVendor: boolean;
+  vendorSlug?: string;
 }
 
 export interface RegisterResult {
@@ -43,6 +46,7 @@ export function loadStoredAuth(): AuthUser | null {
     return {
       ...parsed,
       isEmailMarketer: Boolean(parsed.isEmailMarketer ?? parsed.isSuperAdmin),
+      isVendor: Boolean(parsed.isVendor),
     };
   } catch {
     return null;
@@ -57,22 +61,26 @@ export function storeAuth(user: AuthUser | null) {
 export function login(email: string, password: string): Promise<AuthUser> {
   if (!userPool && devAuth) {
     const isSuperAdmin = email.toLowerCase().includes("superadmin");
-    const isAdmin = isSuperAdmin || email.toLowerCase().includes("admin");
+    const isVendor = !isSuperAdmin && email.toLowerCase().includes("vendor");
+    const isAdmin = isSuperAdmin || (!isVendor && email.toLowerCase().includes("admin"));
     const isEmailMarketer =
       isSuperAdmin || email.toLowerCase().includes("email") || email.toLowerCase().includes("ses");
     const role = isSuperAdmin
       ? "super-admin"
-      : isEmailMarketer && !isAdmin
-        ? "email"
-        : isAdmin
-          ? "admin"
-          : "customer";
+      : isVendor
+        ? "vendor"
+        : isEmailMarketer && !isAdmin
+          ? "email"
+          : isAdmin
+            ? "admin"
+            : "customer";
     const user: AuthUser = {
       email,
       token: `dev:${email}:${role}`,
       isAdmin,
       isSuperAdmin,
       isEmailMarketer,
+      isVendor,
     };
     storeAuth(user);
     return Promise.resolve(user);
@@ -99,6 +107,7 @@ export function login(email: string, password: string): Promise<AuthUser> {
           isSuperAdmin,
           isAdmin: groups.includes("admin") || isSuperAdmin,
           isEmailMarketer: groups.includes("email") || isSuperAdmin,
+          isVendor: groups.includes("vendor"),
         };
         storeAuth(authUser);
         resolve(authUser);

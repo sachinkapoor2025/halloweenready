@@ -30,6 +30,7 @@
     "typecheck": "npm run typecheck -w @halloweenready/shared && npm run typecheck -w @halloweenready/api && npm run typecheck -w @halloweenready/web",
     "restore:product-images": "tsx scripts/restore-product-images-from-pitr.ts",
     "reconcile:s3-images": "tsx scripts/reconcile-s3-product-images.ts",
+    "backfill:image-variants": "tsx scripts/backfill-image-variants.ts",
     "load:warmup": "k6 run scripts/load/warmup.js",
     "load:browse": "k6 run scripts/load/browse.js",
     "load:mixed": "k6 run scripts/load/mixed.js",

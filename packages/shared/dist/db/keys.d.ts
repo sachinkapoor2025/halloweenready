@@ -87,6 +87,32 @@ export declare const configKeys: {
         sk: "META";
     };
 };
+/** Multi-warehouse / multi-vendor registry (config table). */
+export declare const warehouseKeys: {
+    pk: (warehouseId: string) => string;
+    sk: () => "META";
+    pkPrefix: () => "WAREHOUSE#";
+};
+export declare const vendorRecordKeys: {
+    pk: (vendorId: string) => string;
+    sk: () => "META";
+    pkPrefix: () => "VENDOR#";
+};
+export declare const marketKeys: {
+    pk: (countryCode: string) => string;
+    sk: () => "META";
+    pkPrefix: () => "MARKET#";
+};
+export declare const inventoryListingKeys: {
+    pk: (listingId: string) => string;
+    sk: () => "META";
+    pkPrefix: () => "INVLIST#";
+};
+export declare const auditLogKeys: {
+    pk: (auditId: string) => string;
+    sk: () => "META";
+    pkPrefix: () => "AUDIT#";
+};
 /** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
 export declare const uploadRegistryKeys: {
     pk: (storageKey: string) => string;

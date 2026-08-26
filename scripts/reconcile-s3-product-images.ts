@@ -4,7 +4,7 @@
  * not already linked to a product if it matches a registry entry.
  *
  * Usage:
- *   ENVIRONMENT=prod UPLOAD_BUCKET=halloweenready-prod-uploadbucket-eezx4b95gawn CLOUDFRONT_DOMAIN=d301af4ndyn9qx.cloudfront.net npx tsx scripts/reconcile-s3-product-images.ts
+ *   ENVIRONMENT=prod UPLOAD_BUCKET=halloweenready-prod-uploadbucket-dyr0xdywradd CLOUDFRONT_DOMAIN=d2lfdzx32wxe94.cloudfront.net npx tsx scripts/reconcile-s3-product-images.ts
  */
 import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -15,7 +15,7 @@ const ENV = process.env.ENVIRONMENT ?? "prod";
 const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE ?? `halloweenready-products-${ENV}`;
 const CONFIG_TABLE = process.env.CONFIG_TABLE ?? `halloweenready-config-${ENV}`;
 const BUCKET = process.env.UPLOAD_BUCKET;
-const CDN_DOMAIN = process.env.CLOUDFRONT_DOMAIN ?? "d301af4ndyn9qx.cloudfront.net";
+const CDN_DOMAIN = process.env.CLOUDFRONT_DOMAIN ?? "d2lfdzx32wxe94.cloudfront.net";
 
 function getDocClient() {
   return DynamoDBDocumentClient.from(

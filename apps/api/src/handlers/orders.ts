@@ -24,6 +24,10 @@ import {
   allVendorsHaveTracking,
   anyVendorHasTracking,
   isMultiVendorOrder,
+  assignFulfillment,
+  orderVisibleToActor,
+  redactOrderForVendor,
+  productAvailableInCountry,
   type Order,
   type OrderStatusHistoryEntry,
   type CartItem,
@@ -32,7 +36,8 @@ import {
 import { resolveCheckoutUsdInrRate } from "../lib/exchange-rate";
 import { docClient, ORDERS_TABLE, CUSTOMERS_TABLE, now } from "../lib/db";
 import { ok, created, badRequest, unauthorized, forbidden, notFound } from "../lib/response";
-import { getAuth, getSessionId, getUserOrSessionKey, requireAdmin } from "../lib/auth";
+import { getAuth, getSessionId, getUserOrSessionKey, requireAdmin, resolveStaffActor } from "../lib/auth";
+import { getNetworkSnapshot } from "../lib/markets-store";
 import { getCartHandler, clearCartForUser } from "./cart";
 import {
   notifyAdminLead,
@@ -325,7 +330,33 @@ export async function checkout(event: APIGatewayProxyEventV2) {
         .filter((v): v is string => Boolean(v))
     ),
   ];
-  const vendorFulfillments = buildInitialVendorFulfillments(orderItems as CartItem[]);
+  const network = await getNetworkSnapshot();
+  const destCountry = (primaryDestination.country || "US").toUpperCase();
+  for (const item of orderItems as CartItem[]) {
+    const available = productAvailableInCountry({
+      productSlug: item.productSlug,
+      countryCode: destCountry,
+      listings: network.listings,
+    });
+    if (!available) {
+      return badRequest(`${item.name} is not available for delivery to your selected location.`);
+    }
+  }
+  const fulfillment = assignFulfillment({
+    items: orderItems as CartItem[],
+    destinationCountry: destCountry,
+    postalCode: primaryDestination.postalCode,
+    warehouses: network.warehouses,
+    vendors: network.vendors,
+    listings: network.listings,
+  });
+  if (!fulfillment.assignedWarehouseId) {
+    return badRequest("We cannot fulfill this order to the selected country yet.");
+  }
+  const vendorFulfillments = buildInitialVendorFulfillments(orderItems as CartItem[]).map((row) => {
+    const split = fulfillment.splits?.find((s) => s.vendorId === row.vendorSlug);
+    return split?.warehouseId ? { ...row, warehouseId: split.warehouseId } : row;
+  });
 
   const orderNumber = await allocateOrderNumberForCart(orderItems as CartItem[], vendorSlugs);
 
@@ -358,6 +389,11 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     currency,
     ...(vendorSlugs.length ? { vendorSlugs } : {}),
     vendorFulfillments,
+    assignedVendorId: fulfillment.assignedVendorId,
+    assignedWarehouseId: fulfillment.assignedWarehouseId,
+    fulfillmentCountry: destCountry,
+    routingReason: fulfillment.routingReason,
+    ...(fulfillment.splits?.length ? { fulfillmentSplits: fulfillment.splits } : {}),
     status: ORDER_STATUS.PENDING_PAYMENT,
     statusHistory: [{ status: ORDER_STATUS.PENDING_PAYMENT, at: timestamp }],
     shippingAddress: orderShipments[0]?.shippingAddress ?? parsed.data.shippingAddress,
@@ -430,10 +466,15 @@ export async function listOrders(event: APIGatewayProxyEventV2) {
 }
 
 export async function listAdminOrders(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const status = event.queryStringParameters?.status;
+  const country = event.queryStringParameters?.country?.trim().toUpperCase();
+  const vendor = event.queryStringParameters?.vendor?.trim();
+  const warehouse = event.queryStringParameters?.warehouse?.trim();
 
+  let items: Order[];
   if (status) {
     const result = await docClient.send(
       new QueryCommand({
@@ -444,20 +485,50 @@ export async function listAdminOrders(event: APIGatewayProxyEventV2) {
         ScanIndexForward: false,
       })
     );
-    return ok({ orders: result.Items ?? [] });
+    items = (result.Items ?? []) as Order[];
+  } else {
+    const result = await docClient.send(
+      new QueryCommand({
+        TableName: ORDERS_TABLE,
+        IndexName: "GSI2",
+        KeyConditionExpression: "GSI2PK = :pk",
+        ExpressionAttributeValues: { ":pk": orderKeys.gsi2pk() },
+        ScanIndexForward: false,
+      })
+    );
+    items = (result.Items ?? []) as Order[];
   }
 
-  const result = await docClient.send(
-    new QueryCommand({
-      TableName: ORDERS_TABLE,
-      IndexName: "GSI2",
-      KeyConditionExpression: "GSI2PK = :pk",
-      ExpressionAttributeValues: { ":pk": orderKeys.gsi2pk() },
-      ScanIndexForward: false,
-    })
-  );
+  if (actor.vendorSlug) {
+    items = items
+      .filter((o) => orderVisibleToActor(o, actor))
+      .map((o) => redactOrderForVendor(o, actor.vendorSlug!));
+  }
+  if (country) {
+    items = items.filter(
+      (o) => (o.fulfillmentCountry ?? o.shippingAddress?.country ?? "").toUpperCase() === country
+    );
+  }
+  if (vendor) {
+    items = items.filter((o) =>
+      orderVisibleToActor(o, {
+        ...actor,
+        isAdmin: false,
+        isVendor: true,
+        vendorSlug: vendor,
+      })
+    );
+  }
+  if (warehouse) {
+    items = items.filter(
+      (o) =>
+        o.assignedWarehouseId === warehouse ||
+        o.fulfillmentSplits?.some((s) => s.warehouseId === warehouse) ||
+        o.vendorFulfillments?.some((f) => f.warehouseId === warehouse)
+    );
+  }
 
-  return ok({ orders: result.Items ?? [] });
+  return ok({ orders: items });
 }
 
 async function fetchOrder(orderId: string): Promise<StoredOrder | undefined> {
@@ -484,18 +555,22 @@ export async function getOrder(event: APIGatewayProxyEventV2) {
 }
 
 export async function getAdminOrder(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const orderId = event.pathParameters?.orderId;
   if (!orderId) return badRequest("Order ID required");
 
   const order = await fetchOrder(orderId);
   if (!order) return notFound("Order not found");
-  return ok({ order });
+  if (!orderVisibleToActor(order, actor)) return forbidden();
+  const payload = actor.vendorSlug ? redactOrderForVendor(order, actor.vendorSlug) : order;
+  return ok({ order: payload });
 }
 
 export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
 
   const orderId = event.pathParameters?.orderId;
   if (!orderId) return badRequest("Order ID required");
@@ -506,6 +581,24 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
 
   const order = await fetchOrder(orderId);
   if (!order) return notFound("Order not found");
+  if (!orderVisibleToActor(order, actor)) return forbidden();
+
+  if (actor.vendorSlug) {
+    if (parsed.data.status && parsed.data.status !== order.status) {
+      return forbidden("Vendors cannot change the parent order status.");
+    }
+    if (parsed.data.adminNotes !== undefined) {
+      return forbidden("Vendors cannot edit global admin notes.");
+    }
+    if (parsed.data.vendorFulfillments?.length) {
+      parsed.data = {
+        ...parsed.data,
+        vendorFulfillments: parsed.data.vendorFulfillments.filter(
+          (row) => row.vendorSlug === actor.vendorSlug
+        ),
+      };
+    }
+  }
 
   const nextStatus = parsed.data.status ?? order.status;
   if (parsed.data.status && parsed.data.status !== order.status) {
@@ -522,6 +615,7 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
     for (const row of parsed.data.vendorFulfillments) {
       vendorFulfillments = upsertVendorFulfillment(vendorFulfillments, {
         vendorSlug: row.vendorSlug,
+        warehouseId: row.warehouseId,
         trackingNumber: row.trackingNumber,
         carrier: row.carrier,
         status: row.status,
@@ -529,12 +623,12 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
       });
     }
   } else if (parsed.data.trackingNumber !== undefined || parsed.data.carrier !== undefined) {
-    // Legacy single tracking field → apply to sole vendor (or HalloweenReady when mixed if no OC patch).
     const target =
-      vendorFulfillments.length === 1
+      actor.vendorSlug ??
+      (vendorFulfillments.length === 1
         ? vendorFulfillments[0]!.vendorSlug
         : vendorFulfillments.find((f) => f.vendorSlug !== "orange-county")?.vendorSlug ??
-          vendorFulfillments[0]!.vendorSlug;
+          vendorFulfillments[0]!.vendorSlug);
     vendorFulfillments = upsertVendorFulfillment(vendorFulfillments, {
       vendorSlug: target,
       trackingNumber: parsed.data.trackingNumber,

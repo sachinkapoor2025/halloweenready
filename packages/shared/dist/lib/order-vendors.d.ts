@@ -3,6 +3,7 @@ export { VENDOR_HALLOWEENREADY };
 export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | string;
 export type VendorFulfillment = {
     vendorSlug: string;
+    warehouseId?: string;
     trackingNumber?: string;
     carrier?: string;
     /** pending until AWB recorded; shipped once tracking is set. */
@@ -56,6 +57,7 @@ export declare function ensureVendorFulfillments(order: {
 }): VendorFulfillment[];
 export declare function upsertVendorFulfillment(fulfillments: VendorFulfillment[], patch: {
     vendorSlug: string;
+    warehouseId?: string;
     trackingNumber?: string;
     carrier?: string;
     status?: VendorFulfillment["status"];

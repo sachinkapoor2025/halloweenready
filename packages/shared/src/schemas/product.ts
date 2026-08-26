@@ -21,6 +21,13 @@ export const productSchema = z.object({
   tags: z.array(z.string()).default([]),
   /** Supplier / marketplace vendor key (e.g. orange-county). */
   vendorSlug: z.string().min(1).max(80).optional(),
+  /** Prefer this warehouse when present; fulfillment engine may still re-route. */
+  warehouseId: z.string().min(1).max(80).optional(),
+  /**
+   * When set, product is only offered in these ISO country codes.
+   * Omitted = available in every active market (existing catalog stays global).
+   */
+  availableCountryCodes: z.array(z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
   /** Wholesale cost from vendor — never expose on public storefront APIs. */
   vendorCost: z.number().positive().optional(),
   /**

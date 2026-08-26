@@ -167,10 +167,27 @@ export const orderSchema = z.object({
     .array(
       z.object({
         vendorSlug: z.string().min(1).max(80),
+        warehouseId: z.string().min(1).max(80).optional(),
         trackingNumber: z.string().optional(),
         carrier: z.string().optional(),
         status: z.enum(["pending", "processing", "shipped", "delivered"]).optional(),
         updatedAt: z.string().optional(),
+      })
+    )
+    .optional(),
+  assignedVendorId: z.string().min(1).max(80).optional(),
+  assignedWarehouseId: z.string().min(1).max(80).optional(),
+  fulfillmentCountry: z.string().length(2).optional(),
+  routingReason: z.string().max(200).optional(),
+  fulfillmentSplits: z
+    .array(
+      z.object({
+        vendorId: z.string().min(1),
+        warehouseId: z.string().min(1),
+        productSlugs: z.array(z.string().min(1)),
+        fulfillmentCountry: z.string().length(2),
+        routingReason: z.string().max(200),
+        estimatedDeliveryDays: z.number().int().optional(),
       })
     )
     .optional(),
@@ -216,6 +233,7 @@ export const orderStatusUpdateSchema = z.object({
     .array(
       z.object({
         vendorSlug: z.string().min(1).max(80),
+        warehouseId: z.string().min(1).max(80).optional(),
         trackingNumber: z.string().optional(),
         carrier: z.string().optional(),
         status: z.enum(["pending", "processing", "shipped", "delivered"]).optional(),

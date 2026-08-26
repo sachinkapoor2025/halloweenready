@@ -18,6 +18,13 @@ export declare const productSchema: z.ZodObject<{
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     /** Supplier / marketplace vendor key (e.g. orange-county). */
     vendorSlug: z.ZodOptional<z.ZodString>;
+    /** Prefer this warehouse when present; fulfillment engine may still re-route. */
+    warehouseId: z.ZodOptional<z.ZodString>;
+    /**
+     * When set, product is only offered in these ISO country codes.
+     * Omitted = available in every active market (existing catalog stays global).
+     */
+    availableCountryCodes: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>;
     /** Wholesale cost from vendor — never expose on public storefront APIs. */
     vendorCost: z.ZodOptional<z.ZodNumber>;
     /**
@@ -80,6 +87,8 @@ export declare const productSchema: z.ZodObject<{
     couponExcluded?: boolean | undefined;
     compareAtPrice?: number | undefined;
     additionalCategorySlugs?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -112,6 +121,8 @@ export declare const productSchema: z.ZodObject<{
     images?: string[] | undefined;
     inventory?: number | undefined;
     tags?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -143,6 +154,8 @@ export declare const createProductSchema: z.ZodObject<{
     images: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     inventory: z.ZodDefault<z.ZodNumber>;
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+    warehouseId: z.ZodOptional<z.ZodString>;
+    availableCountryCodes: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>;
     allowsAddons: z.ZodOptional<z.ZodBoolean>;
     seoTitle: z.ZodOptional<z.ZodString>;
     seoDescription: z.ZodOptional<z.ZodString>;
@@ -186,6 +199,8 @@ export declare const createProductSchema: z.ZodObject<{
     couponExcluded?: boolean | undefined;
     compareAtPrice?: number | undefined;
     additionalCategorySlugs?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -217,6 +232,8 @@ export declare const createProductSchema: z.ZodObject<{
     images?: string[] | undefined;
     inventory?: number | undefined;
     tags?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -247,6 +264,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     inventory: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     tags: z.ZodOptional<z.ZodDefault<z.ZodArray<z.ZodString, "many">>>;
     vendorSlug: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    warehouseId: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    availableCountryCodes: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>>;
     vendorCost: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     allowsAddons: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
     couponExcluded: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
@@ -291,6 +310,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     images?: string[] | undefined;
     inventory?: number | undefined;
     tags?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -322,6 +343,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     images?: string[] | undefined;
     inventory?: number | undefined;
     tags?: string[] | undefined;
+    warehouseId?: string | undefined;
+    availableCountryCodes?: string[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;

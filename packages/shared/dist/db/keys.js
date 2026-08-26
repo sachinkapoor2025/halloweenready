@@ -4,7 +4,7 @@
  * Each domain has its own table; builders below are grouped per table.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
+exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.auditLogKeys = exports.inventoryListingKeys = exports.marketKeys = exports.vendorRecordKeys = exports.warehouseKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
 // ---- products table (products + categories) ----
 exports.productKeys = {
     pk: (slug) => `PRODUCT#${slug}`,
@@ -95,6 +95,32 @@ exports.configKeys = {
     payments: { pk: "CONFIG#PAYMENTS", sk: "META" },
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
+};
+/** Multi-warehouse / multi-vendor registry (config table). */
+exports.warehouseKeys = {
+    pk: (warehouseId) => `WAREHOUSE#${warehouseId}`,
+    sk: () => "META",
+    pkPrefix: () => "WAREHOUSE#",
+};
+exports.vendorRecordKeys = {
+    pk: (vendorId) => `VENDOR#${vendorId}`,
+    sk: () => "META",
+    pkPrefix: () => "VENDOR#",
+};
+exports.marketKeys = {
+    pk: (countryCode) => `MARKET#${countryCode.trim().toUpperCase()}`,
+    sk: () => "META",
+    pkPrefix: () => "MARKET#",
+};
+exports.inventoryListingKeys = {
+    pk: (listingId) => `INVLIST#${listingId}`,
+    sk: () => "META",
+    pkPrefix: () => "INVLIST#",
+};
+exports.auditLogKeys = {
+    pk: (auditId) => `AUDIT#${auditId}`,
+    sk: () => "META",
+    pkPrefix: () => "AUDIT#",
 };
 /** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
 exports.uploadRegistryKeys = {

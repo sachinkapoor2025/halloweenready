@@ -10,6 +10,8 @@ export const eventTypeEnum = z.enum([
   EVENT_TYPES.CHECKOUT_START,
   EVENT_TYPES.PURCHASE,
   EVENT_TYPES.SESSION_PING,
+  EVENT_TYPES.COUNTRY_CHANGED,
+  EVENT_TYPES.POSTAL_CODE_ENTERED,
 ]);
 
 export const trackEventSchema = z.object({

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useWishlist } from "@/lib/wishlist-context";
 import { AddToCartControl } from "@/components/AddToCartControl";
+import { ProductImage } from "@/components/ProductImage";
 import { useCurrency, type DisplayCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
 
@@ -48,8 +49,7 @@ export function WishlistPageClient() {
                 </button>
                 <Link href={`/products/${item.slug}`} className="block w-full h-full">
                   {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <ProductImage src={item.image} alt={item.name} variant="card" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">No image</div>
                   )}

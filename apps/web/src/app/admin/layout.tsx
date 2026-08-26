@@ -7,14 +7,14 @@ import { AdminGuard } from "@/components/AdminGuard";
 import { AdminSearch } from "@/components/admin/AdminSearch";
 import { useAuth } from "@/lib/auth-context";
 
-type NavChild = { href: string; label: string };
+type NavChild = { href: string; label: string; vendorAllowed?: boolean };
 type NavItem =
-  | { type: "link"; href: string; label: string; exact?: boolean }
-  | { type: "group"; id: string; label: string; href: string; children: NavChild[]; superOnly?: boolean };
+  | { type: "link"; href: string; label: string; exact?: boolean; vendorAllowed?: boolean; adminOnly?: boolean }
+  | { type: "group"; id: string; label: string; href: string; children: NavChild[]; superOnly?: boolean; vendorAllowed?: boolean; adminOnly?: boolean };
 
 const navItems: NavItem[] = [
-  { type: "link", href: "/admin", label: "Dashboard", exact: true },
-  { type: "link", href: "/admin/orders", label: "Orders" },
+  { type: "link", href: "/admin", label: "Dashboard", exact: true, vendorAllowed: true },
+  { type: "link", href: "/admin/orders", label: "Orders", vendorAllowed: true },
   {
     type: "group",
     id: "analytics",
@@ -40,15 +40,20 @@ const navItems: NavItem[] = [
       { href: "/admin/boost-sales?tab=leads", label: "Leads" },
     ],
   },
-  { type: "link", href: "/admin/products", label: "Products" },
+  { type: "link", href: "/admin/products", label: "Products", vendorAllowed: true },
   { type: "link", href: "/admin/categories", label: "Categories" },
   { type: "link", href: "/admin/shipping", label: "Shipping" },
   {
     type: "group",
     id: "vendor",
     label: "Vendor Management",
-    href: "/admin/vendor-management",
+    href: "/admin/network",
+    vendorAllowed: true,
     children: [
+      { href: "/admin/network?tab=vendors", label: "Vendors", vendorAllowed: true },
+      { href: "/admin/network?tab=warehouses", label: "Warehouses", vendorAllowed: true },
+      { href: "/admin/network?tab=markets", label: "Markets" },
+      { href: "/admin/network?tab=inventory", label: "Inventory", vendorAllowed: true },
       { href: "/admin/vendor-management?tab=expense", label: "Vendor expense" },
       { href: "/admin/vendor-management?tab=api", label: "Vendor API" },
     ],
@@ -116,6 +121,7 @@ function NavButtons({
   search,
   onNavigate,
   isSuperAdmin,
+  isVendor,
   authLoading,
   collapsed,
   variant = "desktop",
@@ -124,6 +130,7 @@ function NavButtons({
   search: string;
   onNavigate?: () => void;
   isSuperAdmin: boolean;
+  isVendor: boolean;
   authLoading?: boolean;
   collapsed?: boolean;
   /** Mobile drawer expands groups by default and uses tap (no hover). */
@@ -134,12 +141,18 @@ function NavButtons({
 
   const visible = useMemo(
     () =>
-      navItems.filter((item) => {
-        if (item.type === "link" && item.href === "/admin/load-test") return showSuper;
-        if (item.type === "group" && item.superOnly) return showSuper;
-        return true;
-      }),
-    [showSuper]
+      navItems
+        .filter((item) => {
+          if (isVendor) return Boolean(item.vendorAllowed);
+          if (item.type === "link" && item.href === "/admin/load-test") return showSuper;
+          if (item.type === "group" && item.superOnly) return showSuper;
+          return true;
+        })
+        .map((item) => {
+          if (item.type !== "group" || !isVendor) return item;
+          return { ...item, children: item.children.filter((c) => c.vendorAllowed) };
+        }),
+    [showSuper, isVendor]
   );
 
   const initiallyOpen = useMemo(() => {
@@ -311,7 +324,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams?.toString() ? `?${searchParams.toString()}` : "";
-  const { isSuperAdmin, loading: authLoading } = useAuth();
+  const { isSuperAdmin, isVendor, loading: authLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -410,6 +423,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                 pathname={pathname}
                 search={search}
                 isSuperAdmin={isSuperAdmin}
+                isVendor={isVendor}
                 authLoading={authLoading}
                 collapsed={sidebarCollapsed}
                 variant="desktop"
@@ -498,6 +512,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                   search={search}
                   onNavigate={() => setMenuOpen(false)}
                   isSuperAdmin={isSuperAdmin}
+                  isVendor={isVendor}
                   authLoading={authLoading}
                   variant="mobile"
                 />
