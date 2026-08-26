@@ -119,10 +119,12 @@ function upsertVendorFulfillment(fulfillments, patch) {
     const base = idx >= 0 ? next[idx] : { vendorSlug: slug, status: "pending" };
     const trackingNumber = patch.trackingNumber !== undefined ? patch.trackingNumber.trim() : base.trackingNumber;
     const carrier = patch.carrier !== undefined ? patch.carrier.trim() : base.carrier;
+    const warehouseId = patch.warehouseId !== undefined ? patch.warehouseId.trim() : base.warehouseId;
     const status = patch.status ??
         (trackingNumber ? "shipped" : base.status ?? "pending");
     const row = {
         vendorSlug: slug,
+        ...(warehouseId ? { warehouseId } : {}),
         ...(trackingNumber ? { trackingNumber } : {}),
         ...(carrier ? { carrier } : {}),
         status,

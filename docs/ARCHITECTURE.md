@@ -170,6 +170,6 @@ See `apps/web/.env.example` and `infrastructure/template.yaml` Parameters sectio
 
 - Wishlist, reviews, coupons, inventory alerts
 - Email (SES), SMS (SNS)
-- Multi-currency, multi-language
+- **Multi-warehouse + multi-vendor**: warehouses, vendors, and country markets live in the config table (`WAREHOUSE#`, `VENDOR#`, `MARKET#`). Admin portal: `/admin/network`. Public country selector uses `GET /markets`. Existing product URLs and USD/INR checkout are unchanged.
 - Analytics (Plausible / GA4)
 - Abandoned cart emails

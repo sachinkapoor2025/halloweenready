@@ -24,6 +24,7 @@ import * as expenses from "./handlers/expenses";
 import * as paymentLedger from "./handlers/payment-ledger";
 import * as paymentReconciliation from "./handlers/payment-reconciliation";
 import * as vendorManagement from "./handlers/vendor-management";
+import * as markets from "./handlers/markets";
 import * as reviews from "./handlers/reviews";
 import { stripeWebhook } from "./handlers/payments/stripe";
 import {
@@ -168,6 +169,54 @@ const routes: Route[] = [
   { method: "POST", pattern: /^\/account\/addresses$/, handler: account.createAccountAddress },
   { method: "PUT", pattern: /^\/account\/addresses\/([^/]+)$/, handler: account.updateAccountAddress, params: ["addressId"] },
   { method: "DELETE", pattern: /^\/account\/addresses\/([^/]+)$/, handler: account.deleteAccountAddress, params: ["addressId"] },
+  { method: "GET", pattern: /^\/markets$/, handler: markets.getPublicMarkets },
+  { method: "GET", pattern: /^\/markets\/serviceability$/, handler: markets.checkServiceability },
+  { method: "GET", pattern: /^\/admin\/session$/, handler: markets.getAdminSession },
+  { method: "GET", pattern: /^\/admin\/network$/, handler: markets.getAdminNetworkOverview },
+  { method: "GET", pattern: /^\/admin\/warehouses$/, handler: markets.listAdminWarehouses },
+  { method: "POST", pattern: /^\/admin\/warehouses$/, handler: markets.createAdminWarehouse },
+  {
+    method: "PUT",
+    pattern: /^\/admin\/warehouses\/([^/]+)$/,
+    handler: markets.updateAdminWarehouse,
+    params: ["warehouseId"],
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/admin\/warehouses\/([^/]+)$/,
+    handler: markets.deleteAdminWarehouse,
+    params: ["warehouseId"],
+  },
+  { method: "GET", pattern: /^\/admin\/vendors$/, handler: markets.listAdminVendors },
+  { method: "POST", pattern: /^\/admin\/vendors$/, handler: markets.createAdminVendor },
+  {
+    method: "PUT",
+    pattern: /^\/admin\/vendors\/([^/]+)$/,
+    handler: markets.updateAdminVendor,
+    params: ["vendorId"],
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/admin\/vendors\/([^/]+)$/,
+    handler: markets.deleteAdminVendor,
+    params: ["vendorId"],
+  },
+  { method: "GET", pattern: /^\/admin\/markets$/, handler: markets.listAdminMarkets },
+  {
+    method: "PUT",
+    pattern: /^\/admin\/markets\/([^/]+)$/,
+    handler: markets.upsertAdminMarket,
+    params: ["countryCode"],
+  },
+  { method: "POST", pattern: /^\/admin\/markets$/, handler: markets.upsertAdminMarket },
+  { method: "GET", pattern: /^\/admin\/inventory-listings$/, handler: markets.listAdminInventory },
+  { method: "PUT", pattern: /^\/admin\/inventory-listings$/, handler: markets.upsertAdminInventory },
+  {
+    method: "DELETE",
+    pattern: /^\/admin\/inventory-listings\/([^/]+)$/,
+    handler: markets.deleteAdminInventory,
+    params: ["listingId"],
+  },
   { method: "GET", pattern: /^\/admin\/orders$/, handler: orders.listAdminOrders },
   {
     method: "GET",

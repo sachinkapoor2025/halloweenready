@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { site, navItems, cityLinks, whatsappChatUrl } from "@/lib/site";
+import { site, navItems, cityLinks } from "@/lib/site";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { SiteLogoLink } from "@/components/SiteLogo";
+import { MarketContactBlock } from "@/components/MarketContactBlock";
 
 const FACEBOOK_URL = "https://www.facebook.com/halloweenreadyofficial/";
 const INSTAGRAM_URL = "https://www.instagram.com/halloweenreadyofficial/";
@@ -20,23 +21,7 @@ export function Footer() {
               Halloween costumes, decor, candy &amp; party supplies with fast delivery across all 50 US states.
             </p>
             <div className="space-y-2 text-white/90">
-              <p>
-                <span className="text-white/60 text-xs uppercase tracking-wide block mb-0.5">Email</span>
-                <a href={`mailto:${site.supportEmail}`} className="font-medium hover:text-white hover:underline">
-                  {site.supportEmail}
-                </a>
-              </p>
-              <p>
-                <span className="text-white/60 text-xs uppercase tracking-wide block mb-0.5">WhatsApp</span>
-                <a
-                  href={whatsappChatUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:underline"
-                >
-                  {site.whatsappDisplay}
-                </a>
-              </p>
+              <MarketContactBlock />
             </div>
             <div className="mt-5">
               <p className="text-xs uppercase tracking-wide text-white/60 mb-2">Follow us</p>
@@ -134,6 +119,25 @@ export function Footer() {
 
         {/* Deliver to — full width, 3-column city grid keeps footer compact */}
         <div className="mt-8 pt-8 border-t border-white/15 text-sm">
+          <p className="font-semibold text-white mb-3 sm:mb-4">Shop by country</p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-white/80 mb-6">
+            {[
+              ["us", "United States"],
+              ["uk", "United Kingdom"],
+              ["ca", "Canada"],
+              ["au", "Australia"],
+              ["in", "India"],
+              ["ae", "United Arab Emirates"],
+              ["de", "Germany"],
+              ["fr", "France"],
+            ].map(([slug, label]) => (
+              <li key={slug}>
+                <Link href={`/countries/${slug}`} className="hover:text-white hover:underline">
+                  Halloween costumes {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <p className="font-semibold text-white mb-3 sm:mb-4">Deliver to</p>
           <ul className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-4 gap-y-2 text-white/80">
             {cityLinks.map((c) => (

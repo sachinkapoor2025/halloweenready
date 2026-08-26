@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { whatsappChatUrl } from "@/lib/site";
+import { whatsappChatUrl, site } from "@/lib/site";
+import { useMarket } from "@/lib/market-context";
 
 function WhatsAppIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
@@ -13,12 +14,16 @@ function WhatsAppIcon({ className = "w-6 h-6" }: { className?: string }) {
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
+  const { market } = useMarket();
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/ses-email")) return null;
 
+  const digits = market?.contact.whatsapp || site.whatsapp;
+  const href = digits === site.whatsapp ? whatsappChatUrl() : `https://wa.me/${digits}`;
+
   return (
     <a
-      href={whatsappChatUrl()}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with HalloweenReady on WhatsApp"

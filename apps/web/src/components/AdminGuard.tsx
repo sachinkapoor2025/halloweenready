@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, canAccessAdmin } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && (!user || !canAccessAdmin)) {
       router.replace("/account?redirect=/admin");
     }
-  }, [user, loading, isAdmin, router]);
+  }, [user, loading, canAccessAdmin, router]);
 
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || !canAccessAdmin) return null;
 
   return <>{children}</>;
 }

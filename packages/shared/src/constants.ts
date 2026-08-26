@@ -75,6 +75,8 @@ export const EVENT_TYPES = {
   PURCHASE: "purchase",
   /** Time spent on a page before leave/navigation (metadata.durationMs). */
   SESSION_PING: "session_ping",
+  COUNTRY_CHANGED: "country_changed",
+  POSTAL_CODE_ENTERED: "postal_code_entered",
 } as const;
 
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
@@ -85,6 +87,8 @@ export const EVENT_TTL_DAYS = 90;
 export const USER_ROLES = {
   CUSTOMER: "customer",
   ADMIN: "admin",
+  SUPER_ADMIN: "super-admin",
+  VENDOR: "vendor",
 } as const;
 
 export const PAYMENT_REGIONS = {

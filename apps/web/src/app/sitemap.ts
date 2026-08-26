@@ -5,6 +5,7 @@ import { siteUrl } from "@/lib/env";
 import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
+import { allCountrySeoSlugs } from "@/lib/content/country-pages";
 
 /** Handwritten + SEO blog posts, deduped by slug. */
 function mergedBlogRoutes(): MetadataRoute.Sitemap {
@@ -70,6 +71,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
+  const countryRoutes = allCountrySeoSlugs().map((slug) => ({
+    url: `${siteUrl}/countries/${slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
   const cityRoutes = allSeoLocationSlugs().map((slug) => ({
     url: `${siteUrl}/cities/${slug}`,
     lastModified: now,
@@ -88,8 +96,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticRoutes, ...categoryRoutes, ...cityRoutes, ...blogRoutes, ...productRoutes];
+    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes, ...productRoutes];
   } catch {
-    return [...staticRoutes, ...categoryRoutes, ...cityRoutes, ...blogRoutes];
+    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes];
   }
 }

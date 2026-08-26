@@ -105,16 +105,16 @@ export declare const rateQuoteSchema: z.ZodObject<{
     rateId: string;
     mailClass: string;
     serviceName: string;
-    estimatedDeliveryDate?: string | undefined;
     estimatedDeliveryDays?: number | undefined;
+    estimatedDeliveryDate?: string | undefined;
 }, {
     price: number;
     rateId: string;
     mailClass: string;
     serviceName: string;
     currency?: "USD" | undefined;
-    estimatedDeliveryDate?: string | undefined;
     estimatedDeliveryDays?: number | undefined;
+    estimatedDeliveryDate?: string | undefined;
 }>;
 export declare const labelResultSchema: z.ZodObject<{
     trackingNumber: z.ZodString;

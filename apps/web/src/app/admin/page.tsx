@@ -84,6 +84,15 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-6 text-sm">
+        <Link href="/admin/orders" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">All orders</Link>
+        <Link href="/admin/orders?country=US" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">US</Link>
+        <Link href="/admin/orders?country=GB" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">UK</Link>
+        <Link href="/admin/orders?country=IN" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">India</Link>
+        <Link href="/admin/network?tab=warehouses" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">Warehouses</Link>
+        <Link href="/admin/network?tab=vendors" className="rounded-lg border px-3 py-1.5 hover:bg-slate-50">Vendors</Link>
+      </div>
+
       {loading ? (
         <p className="text-slate-500">Loading analytics…</p>
       ) : error ? (

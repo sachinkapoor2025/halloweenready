@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { CurrencyProvider } from "@/lib/currency-context";
+import { MarketProvider } from "@/lib/market-context";
 import { HeaderShell } from "@/components/HeaderShell";
 import { FooterShell } from "@/components/FooterShell";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
@@ -32,11 +33,12 @@ export const metadata: Metadata = {
     languages: {
       "x-default": canonical("/"),
       en: canonical("/"),
-      "en-US": canonical("/"),
-      "en-IN": canonical("/"),
-      "en-GB": canonical("/"),
-      "en-CA": canonical("/"),
-      "en-AU": canonical("/"),
+      "en-US": canonical("/countries/us"),
+      "en-GB": canonical("/countries/uk"),
+      "en-CA": canonical("/countries/ca"),
+      "en-AU": canonical("/countries/au"),
+      "en-IN": canonical("/countries/in"),
+      "en-AE": canonical("/countries/ae"),
     },
   },
   openGraph: {
@@ -111,6 +113,7 @@ fbq('track', 'PageView');
           <CartProvider>
             <WishlistProvider>
             <CurrencyProvider>
+            <MarketProvider>
             <TrackingProvider />
             <HalloweenCountdown />
             <HeaderShell />
@@ -119,6 +122,7 @@ fbq('track', 'PageView');
             <CurrencySwitcher />
             <ClientDeferredWidgets />
             <WhatsAppFloat />
+            </MarketProvider>
             </CurrencyProvider>
             </WishlistProvider>
           </CartProvider>

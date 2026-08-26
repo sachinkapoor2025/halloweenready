@@ -18,7 +18,7 @@ export async function detectViewerCountry(): Promise<string> {
   return geo.country;
 }
 
-/** Map visitor country to default storefront currency. */
+/** Map visitor country to default storefront checkout currency. */
 export function defaultCurrencyForCountry(country: string): "USD" | "INR" {
   if (country === "IN") return "INR";
   return "USD";

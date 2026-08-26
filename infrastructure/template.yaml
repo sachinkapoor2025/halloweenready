@@ -639,6 +639,13 @@ Resources:
       UserPoolId: !Ref UserPool
       Description: Legacy email group — marketing email is now under /admin/email for all admins
 
+  VendorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: vendor
+      UserPoolId: !Ref UserPool
+      Description: Vendor portal — sees only their assigned orders, inventory, and warehouses
+
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:

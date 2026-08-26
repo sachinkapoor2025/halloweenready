@@ -104,6 +104,37 @@ export const configKeys = {
   shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
 };
 
+/** Multi-warehouse / multi-vendor registry (config table). */
+export const warehouseKeys = {
+  pk: (warehouseId: string) => `WAREHOUSE#${warehouseId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "WAREHOUSE#" as const,
+};
+
+export const vendorRecordKeys = {
+  pk: (vendorId: string) => `VENDOR#${vendorId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "VENDOR#" as const,
+};
+
+export const marketKeys = {
+  pk: (countryCode: string) => `MARKET#${countryCode.trim().toUpperCase()}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "MARKET#" as const,
+};
+
+export const inventoryListingKeys = {
+  pk: (listingId: string) => `INVLIST#${listingId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "INVLIST#" as const,
+};
+
+export const auditLogKeys = {
+  pk: (auditId: string) => `AUDIT#${auditId}`,
+  sk: () => "META" as const,
+  pkPrefix: () => "AUDIT#" as const,
+};
+
 /** Tracks admin S3 uploads → product slug for recovery if DB is reset. */
 export const uploadRegistryKeys = {
   pk: (storageKey: string) => `UPLOAD#${storageKey.replace(/^\/+/, "")}`,

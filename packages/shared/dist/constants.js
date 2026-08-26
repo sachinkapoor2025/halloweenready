@@ -77,12 +77,16 @@ exports.EVENT_TYPES = {
     PURCHASE: "purchase",
     /** Time spent on a page before leave/navigation (metadata.durationMs). */
     SESSION_PING: "session_ping",
+    COUNTRY_CHANGED: "country_changed",
+    POSTAL_CODE_ENTERED: "postal_code_entered",
 };
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */
 exports.EVENT_TTL_DAYS = 90;
 exports.USER_ROLES = {
     CUSTOMER: "customer",
     ADMIN: "admin",
+    SUPER_ADMIN: "super-admin",
+    VENDOR: "vendor",
 };
 exports.PAYMENT_REGIONS = {
     US: "US",
