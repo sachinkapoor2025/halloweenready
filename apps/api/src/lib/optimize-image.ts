@@ -10,7 +10,10 @@ import {
   type ImageVariantName,
 } from "@halloweenready/shared";
 
-const s3 = new S3Client({});
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1",
+  followRegionRedirects: true,
+});
 
 function decodeS3Key(key: string): string {
   try {
