@@ -40,5 +40,6 @@ describe("orderConfirmationHeadline", () => {
   it("uses shipped copy instead of awaiting payment", () => {
     assert.match(orderConfirmationHeadline("shipped"), /shipped/i);
     assert.match(orderConfirmationHeadline("pending_payment"), /Awaiting payment/i);
+    assert.match(orderConfirmationHeadline("accepted"), /confirmed/i);
   });
 });

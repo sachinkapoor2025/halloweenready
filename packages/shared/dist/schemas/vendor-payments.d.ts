@@ -8,60 +8,8 @@ export declare const VENDOR_PAYMENT_SLUG_LABELS: Record<VendorPaymentSlug, strin
 export declare const VENDOR_PAYOUT_METHODS: readonly ["bank_transfer", "wire", "zelle", "venmo", "upi", "cash", "other"];
 export type VendorPayoutMethod = (typeof VENDOR_PAYOUT_METHODS)[number];
 export declare const VENDOR_PAYOUT_METHOD_LABELS: Record<VendorPayoutMethod, string>;
-export declare const createVendorPayoutSchema: z.ZodObject<{
-    vendorSlug: z.ZodDefault<z.ZodEnum<["orange-county"]>>;
-    amount: z.ZodNumber;
-    currency: z.ZodDefault<z.ZodEnum<["USD", "INR"]>>;
-    paidDate: z.ZodString;
-    paymentMethod: z.ZodDefault<z.ZodEnum<["bank_transfer", "wire", "zelle", "venmo", "upi", "cash", "other"]>>;
-    /** Optional human order numbers / UUIDs this payment covers. */
-    orderIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    notes: z.ZodOptional<z.ZodString>;
-    reference: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    currency: "USD" | "INR";
-    vendorSlug: "orange-county";
-    paymentMethod: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash";
-    amount: number;
-    paidDate: string;
-    notes?: string | undefined;
-    orderIds?: string[] | undefined;
-    reference?: string | undefined;
-}, {
-    amount: number;
-    paidDate: string;
-    currency?: "USD" | "INR" | undefined;
-    vendorSlug?: "orange-county" | undefined;
-    paymentMethod?: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash" | undefined;
-    notes?: string | undefined;
-    orderIds?: string[] | undefined;
-    reference?: string | undefined;
-}>;
-export declare const updateVendorPayoutSchema: z.ZodObject<{
-    amount: z.ZodOptional<z.ZodNumber>;
-    currency: z.ZodOptional<z.ZodEnum<["USD", "INR"]>>;
-    paidDate: z.ZodOptional<z.ZodString>;
-    paymentMethod: z.ZodOptional<z.ZodEnum<["bank_transfer", "wire", "zelle", "venmo", "upi", "cash", "other"]>>;
-    orderIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    notes: z.ZodOptional<z.ZodString>;
-    reference: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    currency?: "USD" | "INR" | undefined;
-    paymentMethod?: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash" | undefined;
-    amount?: number | undefined;
-    notes?: string | undefined;
-    paidDate?: string | undefined;
-    orderIds?: string[] | undefined;
-    reference?: string | undefined;
-}, {
-    currency?: "USD" | "INR" | undefined;
-    paymentMethod?: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash" | undefined;
-    amount?: number | undefined;
-    notes?: string | undefined;
-    paidDate?: string | undefined;
-    orderIds?: string[] | undefined;
-    reference?: string | undefined;
-}>;
+export declare const createVendorPayoutSchema: any;
+export declare const updateVendorPayoutSchema: any;
 export type CreateVendorPayoutInput = z.infer<typeof createVendorPayoutSchema>;
 export type UpdateVendorPayoutInput = z.infer<typeof updateVendorPayoutSchema>;
 export type VendorPayoutEntry = {

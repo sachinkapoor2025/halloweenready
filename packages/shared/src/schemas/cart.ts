@@ -13,6 +13,8 @@ export const cartItemSchema = z.object({
   lineId: z.string().min(1).optional(),
   productSlug: z.string(),
   name: z.string(),
+  /** Plain-text product snippet for order emails (optional; older carts omit this). */
+  description: z.string().max(200).optional(),
   price: z.number(),
   currency: z.enum(["USD", "INR"]),
   quantity: z.number().int().min(1),

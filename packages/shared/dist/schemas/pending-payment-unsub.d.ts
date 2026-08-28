@@ -1,11 +1,5 @@
 import { z } from "zod";
-export declare const pendingPaymentUnsubscribeSchema: z.ZodObject<{
-    email: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    email: string;
-}, {
-    email: string;
-}>;
+export declare const pendingPaymentUnsubscribeSchema: any;
 export type PendingPaymentUnsubscribeInput = z.infer<typeof pendingPaymentUnsubscribeSchema>;
 export type PendingPaymentUnsubRecord = {
     email: string;

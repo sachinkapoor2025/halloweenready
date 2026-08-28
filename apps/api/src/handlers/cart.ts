@@ -16,6 +16,7 @@ import {
   productUsesFixedStorefrontPrice,
   type Cart,
   type CartItem,
+  plainProductDescription,
 } from "@halloweenready/shared";
 import { docClient, CARTS_TABLE, PRODUCTS_TABLE, now, ttlInDays } from "../lib/db";
 import { ok, badRequest, unauthorized } from "../lib/response";
@@ -179,6 +180,7 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
       cartAddonSignature(i.addons) === signature
   );
 
+  const description = plainProductDescription(product.description);
   const item: CartItem = {
     lineId: uuidv4(),
     productSlug: product.slug,
@@ -194,6 +196,7 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     ...(product.sku ? { sku: product.sku } : {}),
     ...(couponExcluded ? { couponExcluded: true } : {}),
     ...(addons.length ? { addons } : {}),
+    ...(description ? { description } : {}),
   };
 
   if (existingIdx >= 0) {
@@ -204,6 +207,9 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     if (addons.length) cart.items[existingIdx].addons = addons;
     else delete cart.items[existingIdx].addons;
     if (!cart.items[existingIdx].lineId) cart.items[existingIdx].lineId = uuidv4();
+    if (description && !cart.items[existingIdx].description) {
+      cart.items[existingIdx].description = description;
+    }
   } else {
     cart.items.push(item);
   }
