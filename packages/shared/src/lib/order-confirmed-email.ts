@@ -80,8 +80,56 @@ export function isOrderConfirmedStatus(status: string): boolean {
   return status === ORDER_STATUS.ACCEPTED;
 }
 
+export function isDeliveredNotifyStatus(status: string): boolean {
+  return status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.COMPLETE;
+}
+
+/** Statuses that email automatically and expose a manual Admin WhatsApp deep-link. */
+export function isManualWhatsAppStatus(status: string): boolean {
+  return isOrderConfirmedStatus(status) || isDeliveredNotifyStatus(status);
+}
+
+export function shouldSendOrderDeliveredNotification(
+  previousStatus: string,
+  nextStatus: string
+): boolean {
+  return isDeliveredNotifyStatus(nextStatus) && previousStatus !== nextStatus;
+}
+
+export const ORDER_CONFIRMED_HEADING = "Your Order is Confirmed!";
+export const ORDER_DELIVERED_HEADING = "Your Order Has Been Delivered!";
+export const ORDER_COMPLETE_HEADING = "Your Order is Complete!";
+export const ORDER_REVIEW_HEADING = "We Value Your Feedback!";
+export const ORDER_REVIEW_CTA = "Write a Review";
+export const ORDER_SEO_BLURB =
+  "HalloweenReady is a USA Halloween store for decorations, costumes, and party supplies. Shoppers trust us for quality party supplies, secure checkout, and reliable shipping to all 50 states.";
+
+export type DeliveredNotifyKind = "delivered" | "complete";
+
+export function orderReviewUrl(): string {
+  return `${siteBaseUrl()}/reviews`;
+}
+
+export function customerPhoneDigits(phone?: string | null): string {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  return digits.length >= 10 ? digits : "";
+}
+
+export function customerWhatsAppDeepLink(
+  phone: string | undefined | null,
+  message: string
+): string | null {
+  const digits = customerPhoneDigits(phone);
+  if (!digits || !message.trim()) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
 export function siteBaseUrl(): string {
-  return (process.env.SITE_URL ?? DEFAULT_SITE).replace(/\/$/, "");
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.SITE_URL ??
+    DEFAULT_SITE
+  ).replace(/\/$/, "");
 }
 
 export function formatOrderMoney(amount: number, currency: string): string {
@@ -318,7 +366,15 @@ function trustCell(title: string, subtitle: string): string {
                   </td>`;
 }
 
-export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): string {
+type StatusEmailCopy = {
+  heroTitle: string;
+  heading: string;
+  intro: string;
+  preheader: string;
+  afterOrderHtml: string;
+};
+
+function buildStatusEmailHtml(order: OrderConfirmedNotifyOrder, copy: StatusEmailCopy): string {
   const site = siteBaseUrl();
   const ref = displayOrderRef(order);
   const first = customerFirstName(order);
@@ -370,7 +426,7 @@ export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): 
 </head>
 <body style="margin:0;padding:0;background-color:${PAGE_BG};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
   <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
-    ${escapeHtml(orderConfirmedPreheader(order))}
+    ${escapeHtml(copy.preheader)}
   </div>
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background-color:${PAGE_BG};">
     <tr>
@@ -401,7 +457,7 @@ export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): 
                 HalloweenReady
               </div>
               <div class="hero-title" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:38px;font-weight:bold;color:${WHITE};letter-spacing:0.5px;">
-                THANK YOU FOR YOUR ORDER!
+                ${escapeHtml(copy.heroTitle)}
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#f0d78c;padding-top:10px;">
                 Halloween decorations, costumes, and party supplies
@@ -430,13 +486,13 @@ export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): 
                 </tr>
               </table>
               <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:32px;font-weight:bold;color:${HERO_BG};padding:16px 0 8px 0;">
-                Your Order is Confirmed!
+                ${escapeHtml(copy.heading)}
               </div>
               <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:24px;color:${TEXT};padding-bottom:10px;">
                 Hi ${escapeHtml(first)},
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:${MUTED};max-width:480px;margin:0 auto;">
-                Thank you for shopping with HalloweenReady. We have confirmed your order and our team is preparing it for fulfillment and USA dispatch.
+                ${escapeHtml(copy.intro)}
               </div>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:20px auto 8px auto;">
                 <tr>
@@ -483,17 +539,7 @@ export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): 
             </td>
           </tr>
 
-          <!-- Thank you -->
-          <tr>
-            <td class="mobile-pad" align="center" bgcolor="${CREAM}" style="padding:28px 28px 32px 28px;background-color:${CREAM};border-top:1px solid ${LINE};">
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:28px;font-weight:bold;color:${HERO_BG};padding-bottom:10px;">
-                Thank you for shopping with us
-              </div>
-              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;">
-                We appreciate your HalloweenReady order, ${escapeHtml(customerFullName(order))}. You will receive another update when packing starts and when your package ships. If you have any questions, our support team is here to help.
-              </div>
-            </td>
-          </tr>
+          ${copy.afterOrderHtml}
 
           <!-- Footer -->
           <tr>
@@ -551,6 +597,217 @@ export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): 
   </table>
 </body>
 </html>`;
+}
+
+function confirmedAfterOrderHtml(order: OrderConfirmedNotifyOrder): string {
+  return `
+          <tr>
+            <td class="mobile-pad" align="center" bgcolor="${CREAM}" style="padding:28px 28px 32px 28px;background-color:${CREAM};border-top:1px solid ${LINE};">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:28px;font-weight:bold;color:${HERO_BG};padding-bottom:10px;">
+                Thank you for shopping with us
+              </div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;">
+                We appreciate your HalloweenReady order, ${escapeHtml(customerFullName(order))}. You will receive another update when packing starts and when your package ships. If you have any questions, our support team is here to help.
+              </div>
+            </td>
+          </tr>`;
+}
+
+function deliveredAfterOrderHtml(): string {
+  const reviewHref = orderReviewUrl();
+  return `
+          <tr>
+            <td class="mobile-pad" align="center" bgcolor="${CREAM}" style="padding:28px 28px 12px 28px;background-color:${CREAM};border-top:1px solid ${LINE};">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:28px;font-weight:bold;color:${HERO_BG};padding-bottom:10px;">
+                ${escapeHtml(ORDER_REVIEW_HEADING)}
+              </div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;padding-bottom:18px;">
+                Your experience helps other customers choose HalloweenReady with confidence. Please take a moment to share how your Halloween order arrived.
+              </div>
+              ${ctaButtonHtml(reviewHref, ORDER_REVIEW_CTA)}
+            </td>
+          </tr>
+          <tr>
+            <td class="mobile-pad" align="center" style="padding:22px 28px 32px 28px;background-color:${WHITE};">
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${ORANGE};font-weight:bold;padding-bottom:8px;">
+                About HalloweenReady
+              </div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;">
+                ${escapeHtml(ORDER_SEO_BLURB)}
+              </div>
+            </td>
+          </tr>`;
+}
+
+function ctaButtonHtml(href: string, label: string): string {
+  return viewOrderButton(href).replace(/View your order/g, escapeHtml(label));
+}
+
+export function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): string {
+  return buildStatusEmailHtml(order, {
+    heroTitle: "THANK YOU FOR YOUR ORDER!",
+    heading: ORDER_CONFIRMED_HEADING,
+    intro:
+      "Thank you for shopping with HalloweenReady. We have confirmed your order and our team is preparing it for fulfillment and USA dispatch.",
+    preheader: orderConfirmedPreheader(order),
+    afterOrderHtml: confirmedAfterOrderHtml(order),
+  });
+}
+
+function deliveredCopy(kind: DeliveredNotifyKind): { heading: string; intro: string; statusLine: string } {
+  if (kind === "complete") {
+    return {
+      heading: ORDER_COMPLETE_HEADING,
+      intro: "Thank you for celebrating Halloween with HalloweenReady. We hope your order arrived ready for the party.",
+      statusLine: "Your HalloweenReady order is complete.",
+    };
+  }
+  return {
+    heading: ORDER_DELIVERED_HEADING,
+    intro: "Your Halloween order has arrived. We hope you love your decorations, costumes, and party supplies.",
+    statusLine: "Your HalloweenReady order has been delivered.",
+  };
+}
+
+export function orderDeliveredSubject(order: OrderConfirmedNotifyOrder, kind: DeliveredNotifyKind): string {
+  const ref = displayOrderRef(order);
+  return `${deliveredCopy(kind).heading.replace(/!$/, "")} — ${ref} | ${SITE_NAME}`;
+}
+
+export function buildOrderDeliveredEmailHtml(
+  order: OrderConfirmedNotifyOrder,
+  kind: DeliveredNotifyKind = "delivered"
+): string {
+  const copy = deliveredCopy(kind);
+  const ref = displayOrderRef(order);
+  return buildStatusEmailHtml(order, {
+    heroTitle: "THANK YOU FOR YOUR ORDER!",
+    heading: copy.heading,
+    intro: copy.intro,
+    preheader: `${copy.heading} Order ${ref} — thank you for choosing ${SITE_NAME}.`,
+    afterOrderHtml: deliveredAfterOrderHtml(),
+  });
+}
+
+export function buildOrderDeliveredEmailText(
+  order: OrderConfirmedNotifyOrder,
+  kind: DeliveredNotifyKind = "delivered"
+): string {
+  const site = siteBaseUrl();
+  const ref = displayOrderRef(order);
+  const first = customerFirstName(order);
+  const money = (n: number) => formatOrderMoney(n, order.currency);
+  const t = totals(order);
+  const copy = deliveredCopy(kind);
+  const itemLines = order.items
+    .map((item) => {
+      const addons = (item.addons ?? [])
+        .map((a) => {
+          const qtyLabel = a.quantity > 1 ? `${a.quantity}x ` : "";
+          return `    + ${qtyLabel}${a.name}`;
+        })
+        .join("\n");
+      const desc = item.description ? `\n  ${item.description}` : "";
+      const line = `- ${item.name} x ${item.quantity} — ${money(lineTotal(item))}${desc}`;
+      return addons ? `${line}\n${addons}` : line;
+    })
+    .join("\n");
+  const discountLine =
+    t.discount > 0
+      ? `Discount${order.couponCode ? ` (${order.couponCode})` : ""}: -${money(t.discount)}\n`
+      : "";
+
+  return `Hi ${first},
+
+${copy.heading}
+
+${copy.intro}
+
+Order ID: ${ref}
+
+ORDER DETAILS
+${itemLines}
+
+Subtotal: ${money(t.subtotal)}
+Shipping charges: ${money(t.shipping)}
+Tax: ${money(t.tax)}
+${discountLine}Total amount: ${money(t.total)}
+
+${ORDER_REVIEW_HEADING}
+Your experience helps other customers choose HalloweenReady with confidence. Please share how your Halloween order arrived.
+${ORDER_REVIEW_CTA}: ${orderReviewUrl()}
+
+${ORDER_SEO_BLURB}
+
+View your order: ${site}/orders/${order.orderId}
+
+Questions? Reply to this email or contact ${SUPPORT_EMAIL} / ${SUPPORT_PHONE}.
+
+— ${SITE_NAME} Team
+${site}`;
+}
+
+export function buildOrderDeliveredWhatsAppMessage(
+  order: OrderConfirmedNotifyOrder,
+  kind: DeliveredNotifyKind = "delivered"
+): string {
+  const site = siteBaseUrl();
+  const ref = displayOrderRef(order);
+  const first = customerFirstName(order);
+  const money = (n: number) => formatOrderMoney(n, order.currency);
+  const t = totals(order);
+  const copy = deliveredCopy(kind);
+  const itemLines = order.items
+    .map((item) => {
+      const addons = (item.addons ?? [])
+        .map((a) => `  + ${a.quantity > 1 ? `${a.quantity}x ` : ""}${a.name}`)
+        .join("\n");
+      const line = `- ${item.name} x ${item.quantity} — ${money(lineTotal(item))}`;
+      return addons ? `${line}\n${addons}` : line;
+    })
+    .join("\n");
+  const discountLine =
+    t.discount > 0
+      ? `Discount${order.couponCode ? ` (${order.couponCode})` : ""}: -${money(t.discount)}\n`
+      : "";
+
+  return `Hi ${first},
+
+${copy.statusLine}
+
+Order ID: ${ref}
+
+Items:
+${itemLines}
+
+Subtotal: ${money(t.subtotal)}
+Shipping: ${money(t.shipping)}
+Tax: ${money(t.tax)}
+${discountLine}Total: ${money(t.total)}
+
+${ORDER_REVIEW_HEADING}
+Please write a short review:
+${orderReviewUrl()}
+
+View order: ${site}/orders/${order.orderId}
+
+Thank you for shopping with HalloweenReady.`;
+}
+
+export function orderStatusWhatsAppDeepLink(
+  order: OrderConfirmedNotifyOrder & { status: string }
+): string | null {
+  const phone = order.shippingAddress?.phone;
+  let message: string | null = null;
+  if (isOrderConfirmedStatus(order.status)) {
+    message = buildOrderConfirmedWhatsAppMessage(order);
+  } else if (order.status === ORDER_STATUS.DELIVERED) {
+    message = buildOrderDeliveredWhatsAppMessage(order, "delivered");
+  } else if (order.status === ORDER_STATUS.COMPLETE) {
+    message = buildOrderDeliveredWhatsAppMessage(order, "complete");
+  }
+  if (!message) return null;
+  return customerWhatsAppDeepLink(phone, message);
 }
 
 export function buildOrderConfirmedEmailText(order: OrderConfirmedNotifyOrder): string {

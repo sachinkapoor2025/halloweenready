@@ -11,9 +11,13 @@ import {
   isAdminExtremeDiscount,
   buildOrderConfirmedEmailHtml,
   buildOrderConfirmedEmailText,
-  buildOrderConfirmedWhatsAppMessage,
+  buildOrderDeliveredEmailHtml,
+  buildOrderDeliveredEmailText,
+  isDeliveredNotifyStatus,
+  isManualWhatsAppStatus,
   isOrderConfirmedStatus,
   orderConfirmedSubject,
+  orderDeliveredSubject,
 } from "@halloweenready/shared";
 import {
   abandonedCartWhatsAppMessage,
@@ -741,24 +745,32 @@ Order total: ${total}
 
 Typical USA delivery is 5–7 business days after dispatch (faster to many metros).${footer}`,
       };
-    case ORDER_STATUS.DELIVERED:
+    case ORDER_STATUS.DELIVERED: {
+      let html: string | undefined;
+      try {
+        html = buildOrderDeliveredEmailHtml(order, "delivered");
+      } catch (err) {
+        console.error("Order delivered HTML failed; sending text fallback:", err);
+      }
       return {
-        subject: `Order delivered — #${shortId} | ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Your order #${shortId} has been marked as delivered.
-
-We hope you love your Halloween haul! If anything looks wrong with the package, reply to this email and we'll help right away.${footer}`,
+        subject: orderDeliveredSubject(order, "delivered"),
+        body: buildOrderDeliveredEmailText(order, "delivered"),
+        html,
       };
-    case ORDER_STATUS.COMPLETE:
+    }
+    case ORDER_STATUS.COMPLETE: {
+      let html: string | undefined;
+      try {
+        html = buildOrderDeliveredEmailHtml(order, "complete");
+      } catch (err) {
+        console.error("Order complete HTML failed; sending text fallback:", err);
+      }
       return {
-        subject: `Order complete — #${shortId} | ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Your order #${shortId} is complete. Thank you for celebrating Halloween with ${SITE_NAME}.
-
-We'd love a quick review when you have a moment: ${siteUrl()}/reviews${footer}`,
+        subject: orderDeliveredSubject(order, "complete"),
+        body: buildOrderDeliveredEmailText(order, "complete"),
+        html,
       };
+    }
     case ORDER_STATUS.CANCELLED:
       return {
         subject: `Order cancelled — #${shortId} | ${SITE_NAME}`,
@@ -934,6 +946,8 @@ export async function notifyCustomerOrderStatusChange(
     }
 
     const confirmed = isOrderConfirmedStatus(order.status);
+    const delivered = isDeliveredNotifyStatus(order.status);
+    const skipAutoWhatsApp = isManualWhatsAppStatus(order.status);
 
     if (smtpConfigured()) {
       const adminResult = await notifyAdminOrderStatusChange(order);
@@ -949,11 +963,16 @@ export async function notifyCustomerOrderStatusChange(
       emailResult = { ok: false, skipped: true, error: "SMTP not configured" };
     } else if (customerEmail?.includes("@")) {
       let html = content.html;
-      if (confirmed && !html) {
+      if ((confirmed || delivered) && !html) {
         try {
-          html = buildOrderConfirmedEmailHtml(order);
+          html = confirmed
+            ? buildOrderConfirmedEmailHtml(order)
+            : buildOrderDeliveredEmailHtml(
+                order,
+                order.status === ORDER_STATUS.COMPLETE ? "complete" : "delivered"
+              );
         } catch (err) {
-          console.error("Order confirmed HTML failed; sending text fallback:", err);
+          console.error("Order status HTML failed; sending text fallback:", err);
         }
       }
       emailResult = await sendEmail({
@@ -965,27 +984,28 @@ export async function notifyCustomerOrderStatusChange(
       });
     }
 
-    let waMessage: string | null = null;
-    try {
-      waMessage = confirmed
-        ? buildOrderConfirmedWhatsAppMessage(order)
-        : orderStatusWhatsAppMessage({
-            name: order.shippingAddress?.name?.split(" ")[0],
-            orderId: order.orderId,
-            status: order.status,
-            totalLabel: `${order.currency} ${order.total.toFixed(2)}`,
-            carrier: order.carrier,
-            trackingNumber: order.trackingNumber,
-          });
-    } catch (err) {
-      console.error("Order status WhatsApp copy failed:", err);
-    }
+    // Confirmed / delivered / complete WhatsApp is owner-initiated via Admin "Send WhatsApp".
+    if (!skipAutoWhatsApp) {
+      let waMessage: string | null = null;
+      try {
+        waMessage = orderStatusWhatsAppMessage({
+          name: order.shippingAddress?.name?.split(" ")[0],
+          orderId: order.orderId,
+          status: order.status,
+          totalLabel: `${order.currency} ${order.total.toFixed(2)}`,
+          carrier: order.carrier,
+          trackingNumber: order.trackingNumber,
+        });
+      } catch (err) {
+        console.error("Order status WhatsApp copy failed:", err);
+      }
 
-    await notifyCustomerWhatsApp({
-      phone: order.shippingAddress?.phone,
-      context: confirmed ? "order-confirmed" : `order-status-${order.status}`,
-      message: waMessage,
-    });
+      await notifyCustomerWhatsApp({
+        phone: order.shippingAddress?.phone,
+        context: `order-status-${order.status}`,
+        message: waMessage,
+      });
+    }
 
     return emailResult;
   } catch (err) {

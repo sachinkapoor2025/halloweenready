@@ -37,6 +37,20 @@ export type OrderConfirmedNotifyOrder = {
 /** True when admin moved the order into Confirmed (stored as `accepted`). */
 export declare function shouldSendOrderConfirmedNotification(previousStatus: string, nextStatus: string): boolean;
 export declare function isOrderConfirmedStatus(status: string): boolean;
+export declare function isDeliveredNotifyStatus(status: string): boolean;
+/** Statuses that email automatically and expose a manual Admin WhatsApp deep-link. */
+export declare function isManualWhatsAppStatus(status: string): boolean;
+export declare function shouldSendOrderDeliveredNotification(previousStatus: string, nextStatus: string): boolean;
+export declare const ORDER_CONFIRMED_HEADING = "Your Order is Confirmed!";
+export declare const ORDER_DELIVERED_HEADING = "Your Order Has Been Delivered!";
+export declare const ORDER_COMPLETE_HEADING = "Your Order is Complete!";
+export declare const ORDER_REVIEW_HEADING = "We Value Your Feedback!";
+export declare const ORDER_REVIEW_CTA = "Write a Review";
+export declare const ORDER_SEO_BLURB = "HalloweenReady is a USA Halloween store for decorations, costumes, and party supplies. Shoppers trust us for quality party supplies, secure checkout, and reliable shipping to all 50 states.";
+export type DeliveredNotifyKind = "delivered" | "complete";
+export declare function orderReviewUrl(): string;
+export declare function customerPhoneDigits(phone?: string | null): string;
+export declare function customerWhatsAppDeepLink(phone: string | undefined | null, message: string): string | null;
 export declare function siteBaseUrl(): string;
 export declare function formatOrderMoney(amount: number, currency: string): string;
 export declare function customerFirstName(order: OrderConfirmedNotifyOrder): string;
@@ -48,5 +62,12 @@ export declare function plainProductDescription(raw: string | undefined | null, 
 export declare function orderConfirmedSubject(order: OrderConfirmedNotifyOrder): string;
 export declare function orderConfirmedPreheader(order: OrderConfirmedNotifyOrder): string;
 export declare function buildOrderConfirmedEmailHtml(order: OrderConfirmedNotifyOrder): string;
+export declare function orderDeliveredSubject(order: OrderConfirmedNotifyOrder, kind: DeliveredNotifyKind): string;
+export declare function buildOrderDeliveredEmailHtml(order: OrderConfirmedNotifyOrder, kind?: DeliveredNotifyKind): string;
+export declare function buildOrderDeliveredEmailText(order: OrderConfirmedNotifyOrder, kind?: DeliveredNotifyKind): string;
+export declare function buildOrderDeliveredWhatsAppMessage(order: OrderConfirmedNotifyOrder, kind?: DeliveredNotifyKind): string;
+export declare function orderStatusWhatsAppDeepLink(order: OrderConfirmedNotifyOrder & {
+    status: string;
+}): string | null;
 export declare function buildOrderConfirmedEmailText(order: OrderConfirmedNotifyOrder): string;
 export declare function buildOrderConfirmedWhatsAppMessage(order: OrderConfirmedNotifyOrder): string;

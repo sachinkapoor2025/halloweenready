@@ -5,12 +5,20 @@ import {
   buildOrderConfirmedEmailHtml,
   buildOrderConfirmedEmailText,
   buildOrderConfirmedWhatsAppMessage,
+  buildOrderDeliveredEmailHtml,
+  buildOrderDeliveredEmailText,
+  buildOrderDeliveredWhatsAppMessage,
   customerFirstName,
+  customerWhatsAppDeepLink,
   formatOrderMoney,
+  isDeliveredNotifyStatus,
+  isManualWhatsAppStatus,
   isOrderConfirmedStatus,
   orderConfirmedSubject,
+  orderStatusWhatsAppDeepLink,
   plainProductDescription,
   shouldSendOrderConfirmedNotification,
+  shouldSendOrderDeliveredNotification,
   type OrderConfirmedNotifyOrder,
 } from "./order-confirmed-email";
 
@@ -90,6 +98,8 @@ describe("order-confirmed-email", () => {
     assert.match(html, /logo\.png/);
     assert.match(html, /pumpkin\.thumb\.webp|pumpkin\.jpg/);
     assert.match(html, /449cd53d-8a7e-4494-9479-b3c342380828/);
+    assert.doesNotMatch(html, /We Value Your Feedback/);
+    assert.doesNotMatch(html, /\/reviews/);
     assert.equal(EMOJI_RE.test(html), false);
     assert.doesNotMatch(html, /Priya Yadav hardcoded|John Doe|\$99\.00/);
   });
@@ -127,5 +137,78 @@ describe("order-confirmed-email", () => {
       "Spooky porch lantern"
     );
     assert.equal(plainProductDescription("   "), undefined);
+  });
+});
+
+describe("order-delivered-email", () => {
+  it("fires only when status actually changes to delivered or complete", () => {
+    assert.equal(isDeliveredNotifyStatus("delivered"), true);
+    assert.equal(isDeliveredNotifyStatus("complete"), true);
+    assert.equal(isDeliveredNotifyStatus("accepted"), false);
+    assert.equal(shouldSendOrderDeliveredNotification("shipped", "delivered"), true);
+    assert.equal(shouldSendOrderDeliveredNotification("delivered", "delivered"), false);
+    assert.equal(shouldSendOrderDeliveredNotification("delivered", "complete"), true);
+    assert.equal(isManualWhatsAppStatus("accepted"), true);
+    assert.equal(isManualWhatsAppStatus("processing"), false);
+  });
+
+  it("builds delivered HTML with review section, same branding, and no emoji", () => {
+    const html = buildOrderDeliveredEmailHtml(sampleOrder, "delivered");
+    assert.match(html, /THANK YOU FOR YOUR ORDER!/);
+    assert.match(html, /Your Order Has Been Delivered!/);
+    assert.match(html, /We Value Your Feedback!/);
+    assert.match(html, /Write a Review/);
+    assert.match(html, /\/reviews/);
+    assert.match(html, /LED Pumpkin Lantern/);
+    assert.match(html, /\$53\.48/);
+    assert.match(html, /100% Secure Payment/);
+    assert.match(html, /logo\.png/);
+    assert.match(html, /About HalloweenReady/);
+    assert.doesNotMatch(html, /Your Order is Confirmed!/);
+    assert.equal(EMOJI_RE.test(html), false);
+  });
+
+  it("uses complete heading for complete kind", () => {
+    const html = buildOrderDeliveredEmailHtml(sampleOrder, "complete");
+    assert.match(html, /Your Order is Complete!/);
+    assert.match(html, /We Value Your Feedback!/);
+  });
+
+  it("keeps confirmed WhatsApp free of the review section and uses a separate delivered template", () => {
+    const confirmed = buildOrderConfirmedWhatsAppMessage(sampleOrder);
+    const delivered = buildOrderDeliveredWhatsAppMessage(sampleOrder, "delivered");
+    const complete = buildOrderDeliveredWhatsAppMessage(sampleOrder, "complete");
+    assert.doesNotMatch(confirmed, /We Value Your Feedback/);
+    assert.doesNotMatch(confirmed, /\/reviews/);
+    assert.match(delivered, /has been delivered/);
+    assert.match(delivered, /We Value Your Feedback!/);
+    assert.match(delivered, /\/reviews/);
+    assert.match(complete, /is complete/);
+    assert.match(complete, /We Value Your Feedback!/);
+    for (const body of [confirmed, delivered, complete, buildOrderDeliveredEmailText(sampleOrder)]) {
+      assert.match(body, /US10360/);
+      assert.match(body, /LED Pumpkin Lantern x 2/);
+      assert.match(body, /\$53\.48/);
+      assert.equal(EMOJI_RE.test(body), false);
+    }
+  });
+
+  it("builds a customer wa.me deep link and skips when phone is missing", () => {
+    const href = orderStatusWhatsAppDeepLink({ ...sampleOrder, status: "accepted" });
+    assert.ok(href);
+    assert.match(href!, /^https:\/\/wa\.me\/14085550100\?text=/);
+    assert.match(decodeURIComponent(href!), /Your HalloweenReady order is confirmed/);
+    const deliveredHref = orderStatusWhatsAppDeepLink({ ...sampleOrder, status: "delivered" });
+    assert.match(decodeURIComponent(deliveredHref!), /We Value Your Feedback!/);
+    assert.equal(customerWhatsAppDeepLink("", "hello"), null);
+    assert.equal(orderStatusWhatsAppDeepLink({ ...sampleOrder, status: "processing" }), null);
+    assert.equal(
+      orderStatusWhatsAppDeepLink({
+        ...sampleOrder,
+        status: "accepted",
+        shippingAddress: { ...sampleOrder.shippingAddress, phone: undefined },
+      }),
+      null
+    );
   });
 });

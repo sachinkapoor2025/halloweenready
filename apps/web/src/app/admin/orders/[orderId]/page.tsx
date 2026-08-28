@@ -15,6 +15,8 @@ import {
   orderHasOrangeCounty,
   orderHasUsarakhi,
   vendorDisplayLabel,
+  isManualWhatsAppStatus,
+  orderStatusWhatsAppDeepLink,
 } from "@halloweenready/shared";
 import {
   statusLabel,
@@ -326,6 +328,8 @@ export default function AdminOrderDetailPage() {
   const hasUs = orderHasUsarakhi(order);
   const multiVendor = isMultiVendorOrder(order);
   const fulfillments = ensureVendorFulfillments(order);
+  const whatsappHref = orderStatusWhatsAppDeepLink(order);
+  const showWhatsApp = isManualWhatsAppStatus(order.status);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -380,6 +384,16 @@ export default function AdminOrderDetailPage() {
             >
               Download shipping label
             </button>
+          )}
+          {showWhatsApp && whatsappHref && (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm bg-[#25D366] text-white rounded-lg px-3 py-1.5 hover:bg-[#1ebe5d] print:hidden font-medium"
+            >
+              Send WhatsApp
+            </a>
           )}
           {order.status === ORDER_STATUS.PENDING_PAYMENT && (
             <Link
@@ -877,9 +891,36 @@ export default function AdminOrderDetailPage() {
 
               {isAcceptOnly && !isReviveFromCancelled && (
                 <p className="text-xs text-slate-500">
-                  Confirming the order emails and WhatsApps the customer and queues it for fulfillment. Add
-                  tracking when you move it to Processing or Shipped.
+                  Confirming the order emails the customer automatically. Use Send WhatsApp to open a pre-filled
+                  message you can review and send. Add tracking when you move it to Processing or Shipped.
                 </p>
+              )}
+              {order.status === ORDER_STATUS.ACCEPTED && (
+                <p className="text-xs text-slate-500">
+                  The Order Confirmed email was sent when this status was set. Use Send WhatsApp to open a
+                  pre-filled message with the same order details.
+                </p>
+              )}
+              {(order.status === ORDER_STATUS.DELIVERED || order.status === ORDER_STATUS.COMPLETE) && (
+                <p className="text-xs text-slate-500">
+                  The delivered/completed email was sent when this status was set. Use Send WhatsApp to open a
+                  pre-filled message with order details and the review link.
+                </p>
+              )}
+              {showWhatsApp && !whatsappHref && (
+                <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
+                  No customer phone on this order, so WhatsApp cannot be opened.
+                </p>
+              )}
+              {showWhatsApp && whatsappHref && (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-full bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1ebe5d]"
+                >
+                  Send WhatsApp
+                </a>
               )}
 
               {showShippingFields && (
