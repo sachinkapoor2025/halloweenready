@@ -132,6 +132,7 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
   const product = productItem as {
     slug: string;
     name: string;
+    description?: string;
     price: number;
     currency: "USD" | "INR";
     images?: string[];
