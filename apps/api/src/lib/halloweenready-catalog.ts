@@ -126,6 +126,7 @@ export async function ensureHalloweenreadyCatalogProductInDb(
 ): Promise<Record<string, unknown> | null> {
   const bundled = bySlug.get(slug);
   if (!bundled) return null;
+  if (bundled.vendorSlug !== "cj-dropshipping" && !bundled.cjPid) return null;
 
   const key = { PK: productKeys.pk(slug), SK: productKeys.sk() };
   const existing = await docClient.send(

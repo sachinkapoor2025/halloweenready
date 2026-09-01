@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ORANGE_COUNTY_LIST_MARKUP, ORANGE_COUNTY_SALE_MARKUP } from "@halloweenready/shared";
+import { ORANGE_COUNTY_LIST_MARKUP, ORANGE_COUNTY_SALE_MARKUP, isCjDropshippingProduct, type Product } from "@halloweenready/shared";
 import { useApiClient } from "@/lib/auth-context";
 import { formatMoney } from "@/lib/admin-utils";
 
@@ -27,7 +27,7 @@ function chunkPids(pids: string[], size: number) {
   return batches;
 }
 
-type Tab = "catalog" | "import" | "orders" | "settings";
+type Tab = "catalog" | "import" | "pricing" | "orders" | "settings";
 
 type ConnectionStatus = {
   configured: boolean;
@@ -67,6 +67,7 @@ export default function AdminCjDropshippingPage() {
   const [balance, setBalance] = useState<unknown>(null);
   const [cjOrders, setCjOrders] = useState<unknown>(null);
   const [fulfillOrderId, setFulfillOrderId] = useState("");
+  const [costRows, setCostRows] = useState<Product[]>([]);
 
   const loadStatus = useCallback(async () => {
     try {
@@ -262,9 +263,42 @@ export default function AdminCjDropshippingPage() {
     }
   };
 
+  const loadCosts = useCallback(async () => {
+    setBusy("pricing");
+    try {
+      const purged = await api<{ deleted: number }>("/admin/products/purge-samples", { method: "POST" }).catch(
+        () => ({ deleted: 0 })
+      );
+      const data = await api<{ products: Product[] }>("/admin/products");
+      setCostRows(data.products.filter(isCjDropshippingProduct));
+      if (purged.deleted > 0) {
+        setMessage(`Removed ${purged.deleted} sample product(s). Storefront now shows CJ imports only.`);
+      }
+    } catch (err) {
+      setMessage(humanizeError(err) || "Could not load CJ cost data");
+    } finally {
+      setBusy("");
+    }
+  }, [api]);
+
+  const costSummary = useMemo(() => {
+    const withCost = costRows.filter((p) => typeof p.vendorCost === "number" && p.vendorCost > 0);
+    const cjCost = withCost.reduce((sum, p) => sum + (p.vendorCost ?? 0), 0);
+    const sale = withCost.reduce((sum, p) => sum + p.price, 0);
+    return {
+      count: costRows.length,
+      priced: withCost.length,
+      cjCost,
+      sale,
+      added: sale - cjCost,
+      marginPct: sale > 0 ? ((sale - cjCost) / sale) * 100 : 0,
+    };
+  }, [costRows]);
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "catalog", label: "CJ catalog" },
     { id: "import", label: "Import Halloween" },
+    { id: "pricing", label: "Cost & pricing" },
     { id: "orders", label: "Orders & freight" },
     { id: "settings", label: "API connection" },
   ];
@@ -303,6 +337,7 @@ export default function AdminCjDropshippingPage() {
             onClick={() => {
               setTab(t.id);
               if (t.id === "orders") void loadOps();
+              if (t.id === "pricing") void loadCosts();
             }}
             className={`text-sm px-3 py-2 rounded-lg border ${
               tab === t.id ? "bg-nav text-white border-nav" : "border-slate-300 hover:bg-slate-50"
@@ -507,6 +542,85 @@ export default function AdminCjDropshippingPage() {
             >
               Import next page
             </button>
+          )}
+        </section>
+      )}
+
+      )}
+
+      {tab === "pricing" && (
+        <section className="space-y-4">
+          <p className="text-sm text-slate-600">
+            What CJ charges you (wholesale) versus what customers pay on HalloweenReady. Sale price is{" "}
+            {ORANGE_COUNTY_SALE_MARKUP}× CJ cost (~50% product margin). List/compare-at is {ORANGE_COUNTY_LIST_MARKUP}×.
+            Shipping is extra.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="border rounded-lg p-4 bg-slate-50">
+              <p className="text-xs text-slate-500 uppercase tracking-wide">CJ products on site</p>
+              <p className="text-2xl font-bold mt-1">{costSummary.count}</p>
+            </div>
+            <div className="border rounded-lg p-4 bg-slate-50">
+              <p className="text-xs text-slate-500 uppercase tracking-wide">CJ cost (1 of each)</p>
+              <p className="text-2xl font-bold mt-1">{formatMoney(costSummary.cjCost, "USD")}</p>
+            </div>
+            <div className="border rounded-lg p-4 bg-slate-50">
+              <p className="text-xs text-slate-500 uppercase tracking-wide">Customer sale total</p>
+              <p className="text-2xl font-bold mt-1">{formatMoney(costSummary.sale, "USD")}</p>
+            </div>
+            <div className="border rounded-lg p-4 bg-emerald-50 border-emerald-200">
+              <p className="text-xs text-emerald-800 uppercase tracking-wide">Markup added</p>
+              <p className="text-2xl font-bold mt-1 text-emerald-900">{formatMoney(costSummary.added, "USD")}</p>
+              <p className="text-xs text-emerald-800 mt-1">{costSummary.marginPct.toFixed(0)}% margin on sale</p>
+            </div>
+          </div>
+          {busy === "pricing" ? (
+            <p className="text-sm text-slate-500">Loading cost sheet…</p>
+          ) : (
+            <div className="bg-white border rounded-lg overflow-x-auto">
+              <table className="w-full text-sm min-w-[720px]">
+                <thead className="bg-slate-50 text-left">
+                  <tr>
+                    <th className="py-2 px-3">Product</th>
+                    <th className="py-2 px-3">CJ cost (you pay)</th>
+                    <th className="py-2 px-3">Sale price (customer)</th>
+                    <th className="py-2 px-3">Amount added</th>
+                    <th className="py-2 px-3">Margin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {costRows.map((p) => {
+                    const cost = typeof p.vendorCost === "number" ? p.vendorCost : undefined;
+                    const added = cost != null ? p.price - cost : undefined;
+                    const margin = cost != null && p.price > 0 ? ((p.price - cost) / p.price) * 100 : undefined;
+                    return (
+                      <tr key={p.slug} className="border-t">
+                        <td className="py-2 px-3">
+                          <div className="font-medium">{p.name}</div>
+                          <div className="text-xs text-slate-400">{p.slug}</div>
+                        </td>
+                        <td className="py-2 px-3">{cost != null ? formatMoney(cost, "USD") : "—"}</td>
+                        <td className="py-2 px-3">
+                          {formatMoney(p.price, p.currency)}
+                          {p.compareAtPrice ? (
+                            <div className="text-xs text-slate-400 line-through">
+                              list {formatMoney(p.compareAtPrice, p.currency)}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="py-2 px-3 font-medium">
+                          {added != null ? formatMoney(added, "USD") : "—"}
+                        </td>
+                        <td className="py-2 px-3">{margin != null ? `${margin.toFixed(0)}%` : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {costRows.length === 0 && (
+                <p className="text-sm text-slate-500 p-4">No CJ products imported yet.</p>
+              )}
+            </div>
           )}
         </section>
       )}

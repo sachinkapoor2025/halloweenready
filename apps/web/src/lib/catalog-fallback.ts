@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { categorySlugVariants, type Category, type Product } from "@halloweenready/shared";
+import { categorySlugVariants, isCjDropshippingProduct, type Category, type Product } from "@halloweenready/shared";
 
 interface CatalogFile {
   categories: Category[];
@@ -28,7 +28,7 @@ function loadCatalogFile(): CatalogFile {
 /** Read bundled catalog JSON — reliable when API is empty or category metadata is missing. */
 export function getCatalogProducts(): Product[] {
   if (cachedProducts) return cachedProducts;
-  cachedProducts = loadCatalogFile().products ?? [];
+  cachedProducts = (loadCatalogFile().products ?? []).filter(isCjDropshippingProduct);
   return cachedProducts;
 }
 

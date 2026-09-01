@@ -12,6 +12,7 @@ import {
   resolveProductImagesForUpsert,
   productVisibleToActor,
   defaultVendorSlugForNewProduct,
+  isCjDropshippingProduct,
   type Product,
 } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
@@ -155,6 +156,7 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   }
 
   items = items.filter((p) => p.published !== false && (p.inventory ?? 0) > 0);
+  items = items.filter(isCjDropshippingProduct);
   if (search) {
     items = items.filter(
       (p) =>
@@ -187,10 +189,13 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   );
 
   let item = result.Item as (Product & { published?: boolean }) | undefined;
+  if (item && !isCjDropshippingProduct(item)) {
+    item = undefined;
+  }
   if (!item) {
     // Storefront may list bundled catalog SKUs before DynamoDB import — upsert on first view.
     const upserted = await ensureProductInDb(slug);
-    if (upserted) {
+    if (upserted && isCjDropshippingProduct(upserted as Product)) {
       item = upserted as Product & { published?: boolean };
       invalidateProductListCache(item.categorySlug);
     }
@@ -303,6 +308,41 @@ export async function listAdminProducts(event: APIGatewayProxyEventV2) {
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
   return ok({ products: items.map(withResolvedProductImages) });
+}
+
+/** Delete bundled sample catalog SKUs; keep CJ Dropshipping imports. */
+export async function purgeSampleCatalogProducts(event: APIGatewayProxyEventV2) {
+  const actor = await resolveStaffActor(event);
+  if (!actor?.isAdmin) return forbidden();
+
+  const deleted: string[] = [];
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PRODUCTS_TABLE,
+        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+        ExclusiveStartKey,
+      })
+    );
+    for (const raw of result.Items ?? []) {
+      const product = raw as Product;
+      if (isCjDropshippingProduct(product)) continue;
+      if (!product.slug) continue;
+      await docClient.send(
+        new DeleteCommand({
+          TableName: PRODUCTS_TABLE,
+          Key: { PK: productKeys.pk(product.slug), SK: productKeys.sk() },
+        })
+      );
+      deleted.push(product.slug);
+    }
+    ExclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+
+  invalidateProductListCache();
+  return ok({ deleted: deleted.length, slugs: deleted });
 }
 
 export async function deleteProduct(event: APIGatewayProxyEventV2) {

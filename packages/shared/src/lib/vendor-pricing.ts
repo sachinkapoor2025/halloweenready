@@ -2,7 +2,16 @@ import { roundForCurrency, type ShopCurrency } from "../currency";
 import {
   ORANGE_COUNTY_LIST_MARKUP,
   ORANGE_COUNTY_SALE_MARKUP,
+  VENDOR_CJ_DROPSHIPPING,
 } from "../constants";
+
+/** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
+export function isCjDropshippingProduct(product: {
+  vendorSlug?: string | null;
+  cjPid?: string | null;
+}): boolean {
+  return product.vendorSlug === VENDOR_CJ_DROPSHIPPING || Boolean(product.cjPid);
+}
 
 /** Round money to cents for USD (or currency-aware). */
 export function roundMoney(n: number, currency: ShopCurrency = "USD"): number {
