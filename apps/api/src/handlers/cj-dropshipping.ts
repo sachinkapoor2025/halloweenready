@@ -29,6 +29,14 @@ import {
 import { catalogPreviewFromList, importCjProducts } from "../lib/cj-import";
 import { fulfillOrderWithCj } from "../lib/cj-fulfill";
 
+function readJsonBody(event: APIGatewayProxyEventV2): unknown {
+  try {
+    return JSON.parse(event.body ?? "{}");
+  } catch {
+    return null;
+  }
+}
+
 function handleCjError(err: unknown) {
   if (err instanceof CjApiError) {
     return badGateway(err.message);
@@ -108,13 +116,17 @@ export async function getCjProduct(event: APIGatewayProxyEventV2) {
 
 export async function importCjCatalog(event: APIGatewayProxyEventV2) {
   if (!requireAdmin(event)) return forbidden();
-  const parsed = cjImportProductsSchema.safeParse(JSON.parse(event.body ?? "{}"));
-  if (!parsed.success) return badRequest(parsed.error.message);
+  const body = readJsonBody(event);
+  if (body == null) return badRequest("Invalid JSON body");
+  const parsed = cjImportProductsSchema.safeParse(body);
+  if (!parsed.success) {
+    return badRequest(parsed.error.issues[0]?.message ?? "Invalid import request");
+  }
   try {
     const result = await importCjProducts(parsed.data.pids, {
       categorySlug: parsed.data.categorySlug,
       published: parsed.data.published,
-      addToMyProduct: parsed.data.addToMyProduct,
+      addToMyProduct: false,
     });
     return ok(result);
   } catch (err) {
@@ -138,7 +150,7 @@ export async function importHalloweenCatalog(event: APIGatewayProxyEventV2) {
     const result = await importCjProducts(pids, {
       categorySlug: parsed.data.categorySlug,
       published: parsed.data.published,
-      addToMyProduct: parsed.data.addToMyProduct,
+      addToMyProduct: false,
     });
     return ok({
       ...result,

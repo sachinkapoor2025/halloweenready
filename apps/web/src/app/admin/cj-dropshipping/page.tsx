@@ -1,8 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ORANGE_COUNTY_LIST_MARKUP, ORANGE_COUNTY_SALE_MARKUP } from "@halloweenready/shared";
 import { useApiClient } from "@/lib/auth-context";
 import { formatMoney } from "@/lib/admin-utils";
+
+/** Stay under API Gateway's ~29s limit (CJ is 1 request/second). */
+const IMPORT_BATCH_SIZE = 4;
+
+function humanizeError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  try {
+    const parsed = JSON.parse(raw) as Array<{ message?: string }>;
+    if (Array.isArray(parsed) && parsed.some((item) => item?.message)) {
+      return parsed.map((item) => item.message).filter(Boolean).join("; ");
+    }
+  } catch {
+    /* not JSON */
+  }
+  return raw;
+}
+
+function chunkPids(pids: string[], size: number) {
+  const batches: string[][] = [];
+  for (let i = 0; i < pids.length; i += size) batches.push(pids.slice(i, i + size));
+  return batches;
+}
 
 type Tab = "catalog" | "import" | "orders" | "settings";
 
@@ -20,6 +43,7 @@ type CatalogRow = {
   sku?: string;
   image?: string;
   price?: number;
+  compareAtPrice?: number;
   vendorCost?: number;
   inventory?: number;
   categorySlug?: string;
@@ -37,6 +61,7 @@ export default function AdminCjDropshippingPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [hideUnpriced, setHideUnpriced] = useState(false);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [balance, setBalance] = useState<unknown>(null);
@@ -60,7 +85,21 @@ export default function AdminCjDropshippingPage() {
     void loadStatus();
   }, [loadStatus]);
 
-  const search = async (nextPage = 1) => {
+  const visibleProducts = useMemo(
+    () => (hideUnpriced ? products.filter((p) => typeof p.price === "number") : products),
+    [hideUnpriced, products]
+  );
+  const pagePids = useMemo(
+    () => visibleProducts.map((p) => p.pid).filter((pid): pid is string => Boolean(pid)),
+    [visibleProducts]
+  );
+  const selectedPids = useMemo(
+    () => Object.entries(selected).filter(([, on]) => on).map(([pid]) => pid),
+    [selected]
+  );
+  const allPageSelected = pagePids.length > 0 && pagePids.every((pid) => selected[pid]);
+
+  const search = async (nextPage = 1, keepSelection = false) => {
     setBusy("search");
     setMessage("");
     try {
@@ -76,37 +115,65 @@ export default function AdminCjDropshippingPage() {
       setPage(data.page);
       setTotalPages(data.totalPages);
       setTotalRecords(data.totalRecords);
-      setSelected({});
+      if (!keepSelection) setSelected({});
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Search failed");
+      setMessage(humanizeError(err) || "Search failed");
     } finally {
       setBusy("");
     }
   };
 
+  const toggleSelectAllPage = () => {
+    setSelected((current) => {
+      const next = { ...current };
+      const select = !allPageSelected;
+      for (const pid of pagePids) next[pid] = select;
+      return next;
+    });
+  };
+
   const importSelected = async () => {
-    const pids = Object.entries(selected)
-      .filter(([, on]) => on)
-      .map(([pid]) => pid);
+    const pids = selectedPids;
     if (!pids.length) {
       setMessage("Select at least one product");
       return;
     }
     setBusy("import");
     setMessage("");
+    const batches = chunkPids(pids, IMPORT_BATCH_SIZE);
+    let imported = 0;
+    const failures: string[] = [];
     try {
-      const data = await api<{
-        imported: unknown[];
-        errors: Array<{ pid: string; error: string }>;
-      }>("/admin/cj/products/import", {
-        method: "POST",
-        body: JSON.stringify({ pids, published: true, addToMyProduct: true }),
+      for (let i = 0; i < batches.length; i++) {
+        setMessage(`Importing batch ${i + 1} of ${batches.length} (${pids.length} selected)…`);
+        const data = await api<{
+          imported: unknown[];
+          errors: Array<{ pid: string; error: string }>;
+        }>("/admin/cj/products/import", {
+          method: "POST",
+          body: JSON.stringify({ pids: batches[i], published: true, addToMyProduct: false }),
+        });
+        imported += data.imported.length;
+        for (const row of data.errors) {
+          failures.push(`${row.pid}: ${row.error}`);
+        }
+      }
+      setSelected((current) => {
+        const next = { ...current };
+        for (const pid of pids) next[pid] = false;
+        return next;
       });
       setMessage(
-        `Imported ${data.imported.length} product(s)${data.errors.length ? `; ${data.errors.length} failed` : ""}.`
+        `Imported ${imported} product(s)${
+          failures.length ? `; ${failures.length} failed. ${failures.slice(0, 3).join("; ")}` : "."
+        }`
       );
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Import failed");
+      setMessage(
+        imported
+          ? `Imported ${imported} then stopped: ${humanizeError(err)}`
+          : humanizeError(err) || "Import failed"
+      );
     } finally {
       setBusy("");
     }
@@ -129,7 +196,7 @@ export default function AdminCjDropshippingPage() {
           size: 8,
           keyWord: keyword || "halloween",
           published: true,
-          addToMyProduct: true,
+          addToMyProduct: false,
         }),
       });
       setPage(data.page);
@@ -279,7 +346,19 @@ export default function AdminCjDropshippingPage() {
 
       {tab === "catalog" && (
         <section>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 space-y-1">
+            <p>
+              <strong>Pricing:</strong> CJ wholesale × {ORANGE_COUNTY_SALE_MARKUP} = your sale price (~50%
+              product margin). Compare-at (strikethrough) is × {ORANGE_COUNTY_LIST_MARKUP}. Shipping is
+              extra — CJ freight is quoted at checkout.
+            </p>
+            <p className="text-slate-600">
+              Do not import all 6,000 SKUs. Select costumes and décor you want to sell; skip $100+ items
+              until you open the CJ listing (those are often large inflatables). Cards with no price still
+              import — we pull the variant sell price from CJ’s product API.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4 items-center">
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -296,18 +375,46 @@ export default function AdminCjDropshippingPage() {
             </button>
             <button
               type="button"
-              onClick={() => void importSelected()}
-              disabled={busy === "import"}
+              onClick={toggleSelectAllPage}
+              disabled={!pagePids.length || Boolean(busy)}
               className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50"
             >
-              {busy === "import" ? "Importing…" : "Import selected"}
+              {allPageSelected ? "Clear this page" : "Select all on this page"}
             </button>
+            <button
+              type="button"
+              onClick={() => setSelected({})}
+              disabled={!selectedPids.length || Boolean(busy)}
+              className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50"
+            >
+              Clear selection
+            </button>
+            <button
+              type="button"
+              onClick={() => void importSelected()}
+              disabled={busy === "import" || !selectedPids.length}
+              className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+            >
+              {busy === "import"
+                ? "Importing…"
+                : `Import selected${selectedPids.length ? ` (${selectedPids.length})` : ""}`}
+            </button>
+            <label className="flex items-center gap-2 text-sm text-slate-600 ml-1">
+              <input
+                type="checkbox"
+                checked={hideUnpriced}
+                onChange={(e) => setHideUnpriced(e.target.checked)}
+              />
+              Hide items without a listed price
+            </label>
           </div>
           <p className="text-xs text-slate-500 mb-3">
-            {totalRecords ? `${totalRecords} results · page ${page} of ${totalPages}` : "Search the CJ catalog, then import into HalloweenReady."}
+            {totalRecords
+              ? `${totalRecords} results · page ${page} of ${totalPages} · ${selectedPids.length} selected (kept when you change pages)`
+              : "Search the CJ catalog, then import into HalloweenReady."}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {products.map((p) => {
+            {visibleProducts.map((p) => {
               const pid = p.pid || "";
               return (
                 <label
@@ -330,8 +437,20 @@ export default function AdminCjDropshippingPage() {
                   )}
                   <p className="font-medium line-clamp-2">{p.name}</p>
                   <p className="text-xs text-slate-500 mt-1">{p.categoryName || p.categorySlug}</p>
-                  {typeof p.price === "number" && (
-                    <p className="text-sm font-semibold mt-1">{formatMoney(p.price, "USD")}</p>
+                  {typeof p.price === "number" ? (
+                    <div className="mt-1">
+                      <p className="text-sm font-semibold">{formatMoney(p.price, "USD")} sale</p>
+                      {typeof p.vendorCost === "number" && (
+                        <p className="text-xs text-slate-500">
+                          CJ {formatMoney(p.vendorCost, "USD")}
+                          {typeof p.compareAtPrice === "number"
+                            ? ` · list ${formatMoney(p.compareAtPrice, "USD")}`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-700 mt-1">Price on import</p>
                   )}
                 </label>
               );
@@ -342,7 +461,7 @@ export default function AdminCjDropshippingPage() {
               <button
                 type="button"
                 disabled={page <= 1 || Boolean(busy)}
-                onClick={() => void search(page - 1)}
+                onClick={() => void search(page - 1, true)}
                 className="px-3 py-1.5 text-sm border rounded-lg"
               >
                 Previous
@@ -350,7 +469,7 @@ export default function AdminCjDropshippingPage() {
               <button
                 type="button"
                 disabled={page >= totalPages || Boolean(busy)}
-                onClick={() => void search(page + 1)}
+                onClick={() => void search(page + 1, true)}
                 className="px-3 py-1.5 text-sm border rounded-lg"
               >
                 Next
@@ -364,7 +483,8 @@ export default function AdminCjDropshippingPage() {
         <section className="max-w-xl space-y-3">
           <p className="text-sm text-slate-600">
             Imports one page of CJ Halloween products into your live catalog (about 8 SKUs per run because CJ
-            allows 1 request/second). Repeat to pull the next page.
+            allows 1 request/second). Repeat to pull the next page. Prefer <strong>Select all on this page</strong> on
+            the CJ catalog tab when you want to review prices first.
           </p>
           <input
             value={keyword}

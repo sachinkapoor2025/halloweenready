@@ -248,7 +248,12 @@ async function cjFetch<T>(
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
-  const json = (await res.json()) as CjEnvelope<T>;
+  let json: CjEnvelope<T>;
+  try {
+    json = (await res.json()) as CjEnvelope<T>;
+  } catch {
+    throw new CjApiError(`CJ ${method} ${path} returned a non-JSON response`, res.status);
+  }
   const authFailed = json.code === 1600001 || /auth/i.test(json.message ?? "");
   if (authFailed && !retried) {
     tokenMemory = { ...(await loadTokenRecord()), accessToken: undefined, accessTokenExpiryDate: undefined };
@@ -278,6 +283,10 @@ export type CjListProduct = {
   sellPrice?: string | number;
   nowPrice?: string | number;
   discountPrice?: string | number;
+  productSellPrice?: string | number;
+  suggestSellPrice?: string | number;
+  price?: string | number;
+  variants?: Array<{ variantSellPrice?: string | number }>;
   categoryId?: string;
   threeCategoryName?: string;
   twoCategoryName?: string;
@@ -356,7 +365,12 @@ export async function cjGetCategories(): Promise<unknown> {
 }
 
 export async function cjGetProduct(pid: string): Promise<CjProductDetail> {
-  return cjFetch<CjProductDetail>("GET", "/product/query", { query: { pid } });
+  const data = await cjFetch<CjProductDetail | CjProductDetail[]>("GET", "/product/query", { query: { pid } });
+  const product = Array.isArray(data) ? data[0] : data;
+  if (!product || typeof product !== "object") {
+    throw new CjApiError(`CJ product ${pid} was not found`);
+  }
+  return product;
 }
 
 export async function cjAddToMyProduct(productId: string): Promise<boolean> {

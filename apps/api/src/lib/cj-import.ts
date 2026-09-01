@@ -35,6 +35,7 @@ function inventoryFromVariant(variant: CjVariantRaw | undefined): number {
 function mapVariants(detail: CjProductDetail) {
   return (detail.variants ?? [])
     .filter((v): v is CjVariantRaw & { vid: string } => Boolean(v.vid))
+    .slice(0, 40)
     .map((v) => {
       const cost = num(v.variantSellPrice);
       const priced = cost ? pricingFromVendorCost(cost, "USD") : undefined;
@@ -69,8 +70,27 @@ function productSlug(name: string, pid: string): string {
   return suffix ? `${base}-${suffix}` : base;
 }
 
+function listVendorCost(row: CjListProduct): number | undefined {
+  const fromFields = [
+    row.nowPrice,
+    row.discountPrice,
+    row.sellPrice,
+    row.productSellPrice,
+    row.suggestSellPrice,
+    row.price,
+  ];
+  for (const value of fromFields) {
+    const n = num(value);
+    if (n) return n;
+  }
+  const variantCosts = (row.variants ?? [])
+    .map((variant) => num(variant.variantSellPrice))
+    .filter((n): n is number => n != null);
+  return variantCosts.length ? Math.min(...variantCosts) : undefined;
+}
+
 export function catalogPreviewFromList(row: CjListProduct) {
-  const cost = num(row.nowPrice) ?? num(row.discountPrice) ?? num(row.sellPrice);
+  const cost = listVendorCost(row);
   const priced = cost ? pricingFromVendorCost(cost, "USD") : undefined;
   return {
     pid: row.id,
@@ -113,7 +133,9 @@ export async function importCjProduct(
     detail.bigImage,
     ...(detail.productImageSet ?? []),
     ...variants.map((v) => v.image),
-  ].filter((url): url is string => Boolean(url && /^https?:\/\//i.test(url)));
+  ]
+    .filter((url): url is string => Boolean(url && /^https?:\/\//i.test(url)))
+    .slice(0, 12);
 
   const categorySlug =
     options.categorySlug ||
@@ -138,7 +160,7 @@ export async function importCjProduct(
   const previous = existing.Item as Product | undefined;
   const imageUpdate = resolveProductImagesForUpsert(images, previous?.images);
   const timestamp = now();
-  const description = stripHtml(detail.description || "") || name;
+  const description = (stripHtml(detail.description || "") || name).slice(0, 8000);
 
   const item: Product & { PK: string; SK: string; GSI1PK: string; GSI1SK: string } = {
     ...(previous ?? {}),
@@ -177,7 +199,7 @@ export async function importCjProduct(
   const { invalidateProductListCache } = await import("../handlers/products");
   invalidateProductListCache(categorySlug);
 
-  if (options.addToMyProduct !== false) {
+  if (options.addToMyProduct === true) {
     try {
       await cjAddToMyProduct(detail.pid || pid);
     } catch (err) {
@@ -188,16 +210,30 @@ export async function importCjProduct(
   return { product: item, created: !previous };
 }
 
+export type CjImportedSummary = {
+  slug: string;
+  name: string;
+  pid?: string;
+  price: number;
+  vendorCost?: number;
+};
+
 export async function importCjProducts(
   pids: string[],
   options: { categorySlug?: string; published?: boolean; addToMyProduct?: boolean } = {}
 ) {
-  const imported: Product[] = [];
+  const imported: CjImportedSummary[] = [];
   const errors: Array<{ pid: string; error: string }> = [];
   for (const pid of pids) {
     try {
       const result = await importCjProduct(pid, options);
-      imported.push(result.product);
+      imported.push({
+        slug: result.product.slug,
+        name: result.product.name,
+        pid: result.product.cjPid,
+        price: result.product.price,
+        vendorCost: result.product.vendorCost,
+      });
     } catch (err) {
       errors.push({ pid, error: err instanceof Error ? err.message : "Import failed" });
     }

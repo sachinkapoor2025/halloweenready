@@ -25,8 +25,14 @@ export const cjSearchQuerySchema = z.object({
   countryCode: z.string().trim().length(2).optional(),
 });
 
+/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
+export const CJ_IMPORT_MAX_PIDS = 6;
+
 export const cjImportProductsSchema = z.object({
-  pids: z.array(z.string().min(1).max(80)).min(1).max(12),
+  pids: z
+    .array(z.string().min(1).max(80))
+    .min(1)
+    .max(CJ_IMPORT_MAX_PIDS, `Import at most ${CJ_IMPORT_MAX_PIDS} products per request`),
   categorySlug: z.string().min(1).max(80).optional(),
   published: z.boolean().optional(),
   addToMyProduct: z.boolean().optional(),

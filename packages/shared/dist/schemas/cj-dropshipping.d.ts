@@ -60,6 +60,7 @@ export declare const cjSearchQuerySchema: z.ZodObject<{
     categoryId?: string | undefined;
     countryCode?: string | undefined;
 }>;
+export declare const CJ_IMPORT_MAX_PIDS = 6;
 export declare const cjImportProductsSchema: z.ZodObject<{
     pids: z.ZodArray<z.ZodString, "many">;
     categorySlug: z.ZodOptional<z.ZodString>;

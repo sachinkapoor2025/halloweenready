@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cjFulfillOrderSchema = exports.cjFreightQuoteSchema = exports.cjSaveApiKeySchema = exports.cjImportHalloweenSchema = exports.cjImportProductsSchema = exports.cjSearchQuerySchema = exports.cjVariantSchema = void 0;
+exports.cjFulfillOrderSchema = exports.cjFreightQuoteSchema = exports.cjSaveApiKeySchema = exports.cjImportHalloweenSchema = exports.cjImportProductsSchema = exports.cjSearchQuerySchema = exports.cjVariantSchema = exports.CJ_IMPORT_MAX_PIDS = void 0;
 const zod_1 = require("zod");
+/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
+exports.CJ_IMPORT_MAX_PIDS = 6;
 exports.cjVariantSchema = zod_1.z.object({
     vid: zod_1.z.string().min(1),
     sku: zod_1.z.string().optional(),
@@ -26,7 +28,7 @@ exports.cjSearchQuerySchema = zod_1.z.object({
     countryCode: zod_1.z.string().trim().length(2).optional(),
 });
 exports.cjImportProductsSchema = zod_1.z.object({
-    pids: zod_1.z.array(zod_1.z.string().min(1).max(80)).min(1).max(12),
+    pids: zod_1.z.array(zod_1.z.string().min(1).max(80)).min(1).max(exports.CJ_IMPORT_MAX_PIDS, `Import at most ${exports.CJ_IMPORT_MAX_PIDS} products per request`),
     categorySlug: zod_1.z.string().min(1).max(80).optional(),
     published: zod_1.z.boolean().optional(),
     addToMyProduct: zod_1.z.boolean().optional(),

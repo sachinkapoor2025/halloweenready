@@ -6,7 +6,7 @@ import {
   type Order,
 } from "@halloweenready/shared";
 import { docClient, ORDERS_TABLE, now } from "./db";
-import { cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
+import { cjAddToMyProduct, cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
 
 type StoredOrder = Order & Record<string, unknown>;
 
@@ -108,6 +108,15 @@ export async function fulfillOrderWithCj(
     }
   }
   if (!logisticName) logisticName = "CJPacket Ordinary";
+
+  const pids = [...new Set(lines.map((item) => item.cjPid).filter((id): id is string => Boolean(id)))];
+  for (const pid of pids) {
+    try {
+      await cjAddToMyProduct(pid);
+    } catch (err) {
+      console.warn("CJ addToMyProduct before fulfill failed", pid, err);
+    }
+  }
 
   const created = await cjCreateOrderV2({
     orderNumber: order.orderNumber || order.orderId,
