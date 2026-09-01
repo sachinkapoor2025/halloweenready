@@ -27,15 +27,15 @@ export declare const chatRequestSchema: z.ZodObject<{
         content: string;
         role: "user" | "assistant";
     }[];
-    sessionId?: string | undefined;
     page?: string | undefined;
+    sessionId?: string | undefined;
 }, {
     messages: {
         content: string;
         role: "user" | "assistant";
     }[];
-    sessionId?: string | undefined;
     page?: string | undefined;
+    sessionId?: string | undefined;
 }>;
 export declare const chatResponseSchema: z.ZodObject<{
     message: z.ZodString;

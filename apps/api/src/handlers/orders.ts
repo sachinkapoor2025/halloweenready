@@ -804,6 +804,16 @@ export async function markOrderPaid(
   }
   await decrementInventoryForOrder(updated);
 
+  try {
+    const { fulfillOrderWithCj } = await import("../lib/cj-fulfill");
+    const cjResult = await fulfillOrderWithCj(updated.orderId, { payType: 3 });
+    if (!cjResult.ok) {
+      console.warn("CJ auto-fulfill failed:", orderId, cjResult.message);
+    }
+  } catch (err) {
+    console.error("CJ auto-fulfill error:", orderId, err);
+  }
+
   const settings = await loadShippingSettings();
   if (
     settings.autoPurchaseOnPayment &&

@@ -116,6 +116,9 @@ export const VENDOR_ORANGE_COUNTY = "orange-county" as const;
 /** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
 export const VENDOR_HALLOWEENREADY = "halloweenready" as const;
 
+/** CJ Dropshipping catalog + fulfillment vendor. */
+export const VENDOR_CJ_DROPSHIPPING = "cj-dropshipping" as const;
+
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export const ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers" as const;
 

@@ -56,6 +56,7 @@ const navItems: NavItem[] = [
       { href: "/admin/network?tab=inventory", label: "Inventory", vendorAllowed: true },
       { href: "/admin/vendor-management?tab=expense", label: "Vendor expense" },
       { href: "/admin/vendor-management?tab=api", label: "Vendor API" },
+      { href: "/admin/cj-dropshipping", label: "CJ Dropshipping" },
     ],
   },
   { type: "link", href: "/admin/email", label: "Marketing Email" },
@@ -217,7 +218,9 @@ function NavButtons({
           );
         }
 
-        const groupActive = pathActive(pathname, item.href);
+        const groupActive =
+          pathActive(pathname, item.href) ||
+          item.children.some((c) => pathActive(pathname, c.href.split("?")[0]!));
         const children =
           item.id === "vendor" && !showSuper
             ? item.children.filter((c) => !c.href.includes("tab=expense"))

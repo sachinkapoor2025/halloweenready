@@ -992,6 +992,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         vendorSlug: z.ZodOptional<z.ZodString>;
         vendorCost: z.ZodOptional<z.ZodNumber>;
         sku: z.ZodOptional<z.ZodString>;
+        cjPid: z.ZodOptional<z.ZodString>;
+        cjVid: z.ZodOptional<z.ZodString>;
+        variantKey: z.ZodOptional<z.ZodString>;
         couponExcluded: z.ZodOptional<z.ZodBoolean>;
         addons: z.ZodOptional<z.ZodArray<z.ZodObject<{
             id: z.ZodString;
@@ -1020,6 +1023,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1038,6 +1044,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1070,6 +1079,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1116,6 +1128,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1185,6 +1200,9 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug: z.ZodOptional<z.ZodString>;
         vendorCost: z.ZodOptional<z.ZodNumber>;
         sku: z.ZodOptional<z.ZodString>;
+        cjPid: z.ZodOptional<z.ZodString>;
+        cjVid: z.ZodOptional<z.ZodString>;
+        variantKey: z.ZodOptional<z.ZodString>;
         couponExcluded: z.ZodOptional<z.ZodBoolean>;
         addons: z.ZodOptional<z.ZodArray<z.ZodObject<{
             id: z.ZodString;
@@ -1213,6 +1231,9 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1231,6 +1252,9 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1355,6 +1379,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug: z.ZodOptional<z.ZodString>;
             vendorCost: z.ZodOptional<z.ZodNumber>;
             sku: z.ZodOptional<z.ZodString>;
+            cjPid: z.ZodOptional<z.ZodString>;
+            cjVid: z.ZodOptional<z.ZodString>;
+            variantKey: z.ZodOptional<z.ZodString>;
             couponExcluded: z.ZodOptional<z.ZodBoolean>;
             addons: z.ZodOptional<z.ZodArray<z.ZodObject<{
                 id: z.ZodString;
@@ -1383,6 +1410,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -1401,6 +1431,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -1433,6 +1466,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -1479,6 +1515,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -1531,6 +1570,9 @@ export declare const orderSchema: z.ZodObject<{
         carrier: z.ZodOptional<z.ZodString>;
         status: z.ZodOptional<z.ZodEnum<["pending", "processing", "shipped", "delivered"]>>;
         updatedAt: z.ZodOptional<z.ZodString>;
+        cjOrderId: z.ZodOptional<z.ZodString>;
+        cjOrderNumber: z.ZodOptional<z.ZodString>;
+        cjPayUrl: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
@@ -1538,6 +1580,9 @@ export declare const orderSchema: z.ZodObject<{
         warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+        cjOrderId?: string | undefined;
+        cjOrderNumber?: string | undefined;
+        cjPayUrl?: string | undefined;
     }, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
@@ -1545,6 +1590,9 @@ export declare const orderSchema: z.ZodObject<{
         warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+        cjOrderId?: string | undefined;
+        cjOrderNumber?: string | undefined;
+        cjPayUrl?: string | undefined;
     }>, "many">>;
     assignedVendorId: z.ZodOptional<z.ZodString>;
     assignedWarehouseId: z.ZodOptional<z.ZodString>;
@@ -1985,6 +2033,9 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -1993,6 +2044,7 @@ export declare const orderSchema: z.ZodObject<{
             quantity: number;
         }[] | undefined;
     }[];
+    orderId: string;
     shippingAddress: {
         name: string;
         email: string;
@@ -2008,7 +2060,6 @@ export declare const orderSchema: z.ZodObject<{
     };
     subtotal: number;
     shipping: number;
-    orderId: string;
     discount: number;
     tax: number;
     total: number;
@@ -2025,6 +2076,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -2174,6 +2228,9 @@ export declare const orderSchema: z.ZodObject<{
         warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+        cjOrderId?: string | undefined;
+        cjOrderNumber?: string | undefined;
+        cjPayUrl?: string | undefined;
     }[] | undefined;
     assignedVendorId?: string | undefined;
     assignedWarehouseId?: string | undefined;
@@ -2211,6 +2268,9 @@ export declare const orderSchema: z.ZodObject<{
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -2219,6 +2279,7 @@ export declare const orderSchema: z.ZodObject<{
             quantity?: number | undefined;
         }[] | undefined;
     }[];
+    orderId: string;
     shippingAddress: {
         name: string;
         email: string;
@@ -2233,7 +2294,6 @@ export declare const orderSchema: z.ZodObject<{
         senderMessage?: string | undefined;
     };
     subtotal: number;
-    orderId: string;
     total: number;
     sessionId?: string | undefined;
     shipments?: {
@@ -2248,6 +2308,9 @@ export declare const orderSchema: z.ZodObject<{
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
             sku?: string | undefined;
+            cjPid?: string | undefined;
+            cjVid?: string | undefined;
+            variantKey?: string | undefined;
             couponExcluded?: boolean | undefined;
             addons?: {
                 id: string;
@@ -2400,6 +2463,9 @@ export declare const orderSchema: z.ZodObject<{
         warehouseId?: string | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
+        cjOrderId?: string | undefined;
+        cjOrderNumber?: string | undefined;
+        cjPayUrl?: string | undefined;
     }[] | undefined;
     assignedVendorId?: string | undefined;
     assignedWarehouseId?: string | undefined;

@@ -27,7 +27,12 @@ function pricingFromVendorCost(vendorCost, currency = "USD") {
 /** Strip backend-only vendor fields before public product APIs / SSR. */
 function stripVendorPrivateFields(product) {
     const { vendorCost: _c, vendorSlug: _v, ...rest } = product;
-    return rest;
+    if (!rest.cjVariants?.length)
+        return rest;
+    return {
+        ...rest,
+        cjVariants: rest.cjVariants.map(({ vendorCost: _vc, ...variant }) => variant),
+    };
 }
 /** @deprecated Use stripVendorPrivateFields */
 function stripVendorCost(product) {

@@ -26,6 +26,7 @@ import * as paymentReconciliation from "./handlers/payment-reconciliation";
 import * as vendorManagement from "./handlers/vendor-management";
 import * as markets from "./handlers/markets";
 import * as reviews from "./handlers/reviews";
+import * as cjDropshipping from "./handlers/cj-dropshipping";
 import { stripeWebhook } from "./handlers/payments/stripe";
 import {
   razorpayWebhook,
@@ -267,6 +268,27 @@ const routes: Route[] = [
   { method: "DELETE", pattern: /^\/products\/([^/]+)\/images$/, handler: uploads.deleteImageFromProduct, params: ["slug"] },
   { method: "POST", pattern: /^\/webhooks\/stripe$/, handler: stripeWebhook },
   { method: "POST", pattern: /^\/webhooks\/razorpay$/, handler: razorpayWebhook },
+  { method: "POST", pattern: /^\/webhooks\/cj$/, handler: cjDropshipping.cjWebhook },
+  { method: "GET", pattern: /^\/admin\/cj\/status$/, handler: cjDropshipping.getCjStatus },
+  { method: "PUT", pattern: /^\/admin\/cj\/api-key$/, handler: cjDropshipping.saveCjKey },
+  { method: "GET", pattern: /^\/admin\/cj\/categories$/, handler: cjDropshipping.listCjCategories },
+  { method: "GET", pattern: /^\/admin\/cj\/products$/, handler: cjDropshipping.searchCjProducts },
+  { method: "GET", pattern: /^\/admin\/cj\/products\/([^/]+)$/, handler: cjDropshipping.getCjProduct, params: ["pid"] },
+  { method: "POST", pattern: /^\/admin\/cj\/products\/import$/, handler: cjDropshipping.importCjCatalog },
+  { method: "POST", pattern: /^\/admin\/cj\/products\/import-halloween$/, handler: cjDropshipping.importHalloweenCatalog },
+  { method: "GET", pattern: /^\/admin\/cj\/my-products$/, handler: cjDropshipping.listCjMyProducts },
+  { method: "GET", pattern: /^\/admin\/cj\/warehouses$/, handler: cjDropshipping.listCjWarehouses },
+  { method: "GET", pattern: /^\/admin\/cj\/balance$/, handler: cjDropshipping.getCjBalance },
+  { method: "POST", pattern: /^\/admin\/cj\/freight$/, handler: cjDropshipping.quoteCjFreight },
+  { method: "GET", pattern: /^\/admin\/cj\/orders$/, handler: cjDropshipping.listCjOrders },
+  {
+    method: "POST",
+    pattern: /^\/admin\/cj\/orders\/([^/]+)\/fulfill$/,
+    handler: cjDropshipping.fulfillCjOrder,
+    params: ["orderId"],
+  },
+  { method: "GET", pattern: /^\/admin\/cj\/tracking$/, handler: cjDropshipping.getCjTracking },
+  { method: "POST", pattern: /^\/admin\/cj\/webhook$/, handler: cjDropshipping.enableCjWebhook },
   /** Mailercloud bounce/complaint/unsub → marketing SUPPRESS# (no SMTP credential changes). */
   { method: "POST", pattern: /^\/webhooks\/mailercloud$/, handler: sesEmail.mailercloudWebhook },
   { method: "POST", pattern: /^\/payments\/razorpay\/verify$/, handler: verifyRazorpayPayment },

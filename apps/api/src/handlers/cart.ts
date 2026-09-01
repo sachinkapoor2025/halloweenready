@@ -141,9 +141,28 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     couponExcluded?: boolean;
     tags?: string[];
     categorySlug?: string;
+    cjPid?: string;
+    cjVid?: string;
+    cjVariants?: Array<{
+      vid: string;
+      sku?: string;
+      key?: string;
+      name?: string;
+      image?: string;
+      inventory?: number;
+      price?: number;
+      vendorCost?: number;
+    }>;
   };
 
-  if (product.inventory < parsed.data.quantity) {
+  const variants = product.cjVariants ?? [];
+  const requestedVid = parsed.data.cjVid || product.cjVid;
+  const variant = requestedVid ? variants.find((v) => v.vid === requestedVid) : undefined;
+  if (requestedVid && variants.length && !variant) {
+    return badRequest("Unknown product variant");
+  }
+  const lineInventory = variant?.inventory ?? product.inventory;
+  if (lineInventory < parsed.data.quantity) {
     return badRequest("Insufficient inventory");
   }
 
@@ -165,40 +184,50 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     Boolean(product.vendorSlug) ||
     product.categorySlug === "rakhi-hampers" ||
     productUsesFixedStorefrontPrice(product);
+  const basePrice = variant?.price ?? product.price;
   const unitPrice = isFlashComboProduct(product.slug)
     ? flashComboUnitPriceUsd()
     : skipCompetitive
-      ? product.price
-      : applyCompetitivePriceReduction(product.price, product.currency);
+      ? basePrice
+      : applyCompetitivePriceReduction(basePrice, product.currency);
   const couponExcluded =
     Boolean(product.couponExcluded) || isFlashComboProduct(product.slug);
+  const lineVendorCost = variant?.vendorCost ?? product.vendorCost;
+  const lineSku = variant?.sku || product.sku;
+  const lineImage = variant?.image || product.images?.[0];
+  const variantLabel = variant?.key || variant?.name;
+  const lineName = variantLabel ? `${product.name} (${variantLabel})` : product.name;
 
   const existingIdx = cart.items.findIndex(
     (i) =>
       i.productSlug === parsed.data.productSlug &&
-      cartAddonSignature(i.addons) === signature
+      cartAddonSignature(i.addons) === signature &&
+      (i.cjVid || "") === (requestedVid || "")
   );
 
   const item: CartItem = {
     lineId: uuidv4(),
     productSlug: product.slug,
-    name: product.name,
+    name: lineName,
     price: unitPrice,
     currency: product.currency,
     quantity: parsed.data.quantity,
-    image: resolveProductImageUrl(product.images?.[0]),
+    image: resolveProductImageUrl(lineImage),
     ...(product.vendorSlug ? { vendorSlug: product.vendorSlug } : {}),
-    ...(typeof product.vendorCost === "number" && product.vendorCost >= 0
-      ? { vendorCost: product.vendorCost }
+    ...(typeof lineVendorCost === "number" && lineVendorCost >= 0
+      ? { vendorCost: lineVendorCost }
       : {}),
-    ...(product.sku ? { sku: product.sku } : {}),
+    ...(lineSku ? { sku: lineSku } : {}),
+    ...(product.cjPid ? { cjPid: product.cjPid } : {}),
+    ...(requestedVid ? { cjVid: requestedVid } : {}),
+    ...(variant?.key ? { variantKey: variant.key } : {}),
     ...(couponExcluded ? { couponExcluded: true } : {}),
     ...(addons.length ? { addons } : {}),
   };
 
   if (existingIdx >= 0) {
     const newQty = cart.items[existingIdx].quantity + parsed.data.quantity;
-    if (newQty > product.inventory) return badRequest("Insufficient inventory");
+    if (newQty > lineInventory) return badRequest("Insufficient inventory");
     cart.items[existingIdx].quantity = newQty;
     cart.items[existingIdx].price = item.price;
     if (addons.length) cart.items[existingIdx].addons = addons;

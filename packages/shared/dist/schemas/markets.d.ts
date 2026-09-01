@@ -71,13 +71,13 @@ export declare const warehouseSchema: z.ZodObject<{
     name: string;
     phone: string;
     warehouseId: string;
+    countryCode: string;
     city: string;
     postalCode: string;
     timezone: string;
     warehouseCode: string;
     addressLine1: string;
     stateOrRegion: string;
-    countryCode: string;
     active: boolean;
     fulfillmentEnabled: boolean;
     pickupEnabled: boolean;
@@ -100,12 +100,12 @@ export declare const warehouseSchema: z.ZodObject<{
     name: string;
     phone: string;
     warehouseId: string;
+    countryCode: string;
     city: string;
     postalCode: string;
     warehouseCode: string;
     addressLine1: string;
     stateOrRegion: string;
-    countryCode: string;
     email?: string | undefined;
     updatedAt?: string | undefined;
     vendorId?: string | null | undefined;
@@ -173,13 +173,13 @@ export declare const createWarehouseSchema: z.ZodObject<Omit<{
 }, "updatedAt" | "warehouseId" | "createdAt">, "strip", z.ZodTypeAny, {
     name: string;
     phone: string;
+    countryCode: string;
     city: string;
     postalCode: string;
     timezone: string;
     warehouseCode: string;
     addressLine1: string;
     stateOrRegion: string;
-    countryCode: string;
     active: boolean;
     fulfillmentEnabled: boolean;
     pickupEnabled: boolean;
@@ -199,12 +199,12 @@ export declare const createWarehouseSchema: z.ZodObject<Omit<{
 }, {
     name: string;
     phone: string;
+    countryCode: string;
     city: string;
     postalCode: string;
     warehouseCode: string;
     addressLine1: string;
     stateOrRegion: string;
-    countryCode: string;
     email?: string | undefined;
     vendorId?: string | null | undefined;
     timezone?: string | undefined;
@@ -227,6 +227,7 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     email: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     phone: z.ZodOptional<z.ZodString>;
+    countryCode: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     city: z.ZodOptional<z.ZodString>;
     postalCode: z.ZodOptional<z.ZodString>;
     vendorId: z.ZodOptional<z.ZodOptional<z.ZodNullable<z.ZodString>>>;
@@ -235,7 +236,6 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     addressLine1: z.ZodOptional<z.ZodString>;
     addressLine2: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     stateOrRegion: z.ZodOptional<z.ZodString>;
-    countryCode: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     phoneNormalized: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     latitude: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     longitude: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
@@ -265,6 +265,7 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     name?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
+    countryCode?: string | undefined;
     city?: string | undefined;
     postalCode?: string | undefined;
     vendorId?: string | null | undefined;
@@ -273,7 +274,6 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     addressLine1?: string | undefined;
     addressLine2?: string | undefined;
     stateOrRegion?: string | undefined;
-    countryCode?: string | undefined;
     phoneNormalized?: string | undefined;
     latitude?: number | undefined;
     longitude?: number | undefined;
@@ -291,6 +291,7 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     name?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
+    countryCode?: string | undefined;
     city?: string | undefined;
     postalCode?: string | undefined;
     vendorId?: string | null | undefined;
@@ -299,7 +300,6 @@ export declare const updateWarehouseSchema: z.ZodObject<{
     addressLine1?: string | undefined;
     addressLine2?: string | undefined;
     stateOrRegion?: string | undefined;
-    countryCode?: string | undefined;
     phoneNormalized?: string | undefined;
     latitude?: number | undefined;
     longitude?: number | undefined;
@@ -365,8 +365,8 @@ export declare const vendorSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     name: string;
     slug: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     active: boolean;
     priority: number;
     companyOwned: boolean;
@@ -386,8 +386,8 @@ export declare const vendorSchema: z.ZodObject<{
 }, {
     name: string;
     slug: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     updatedAt?: string | undefined;
     createdAt?: string | undefined;
     contactEmail?: string | undefined;
@@ -477,8 +477,8 @@ export declare const createVendorSchema: z.ZodObject<Omit<{
 export declare const updateVendorSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     slug: z.ZodOptional<z.ZodString>;
-    contactEmail: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     countryCode: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    contactEmail: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     active: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
     priority: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     companyOwned: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
@@ -505,8 +505,8 @@ export declare const updateVendorSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     slug?: string | undefined;
-    contactEmail?: string | undefined;
     countryCode?: string | undefined;
+    contactEmail?: string | undefined;
     active?: boolean | undefined;
     priority?: number | undefined;
     companyOwned?: boolean | undefined;
@@ -523,8 +523,8 @@ export declare const updateVendorSchema: z.ZodObject<{
 }, {
     name?: string | undefined;
     slug?: string | undefined;
-    contactEmail?: string | undefined;
     countryCode?: string | undefined;
+    contactEmail?: string | undefined;
     active?: boolean | undefined;
     priority?: number | undefined;
     companyOwned?: boolean | undefined;
@@ -553,23 +553,23 @@ export declare const marketContactSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     email?: string | undefined;
     phone?: string | undefined;
+    countryCode?: string | undefined;
     city?: string | undefined;
     postalCode?: string | undefined;
     addressLine1?: string | undefined;
     addressLine2?: string | undefined;
     stateOrRegion?: string | undefined;
-    countryCode?: string | undefined;
     phoneNormalized?: string | undefined;
     whatsapp?: string | undefined;
 }, {
     email?: string | undefined;
     phone?: string | undefined;
+    countryCode?: string | undefined;
     city?: string | undefined;
     postalCode?: string | undefined;
     addressLine1?: string | undefined;
     addressLine2?: string | undefined;
     stateOrRegion?: string | undefined;
-    countryCode?: string | undefined;
     phoneNormalized?: string | undefined;
     whatsapp?: string | undefined;
 }>;
@@ -600,23 +600,23 @@ export declare const marketSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }>>;
@@ -627,20 +627,20 @@ export declare const marketSchema: z.ZodObject<{
     name: string;
     currency: "USD" | "INR" | "GBP" | "CAD" | "AUD" | "AED" | "EUR";
     slug: string;
+    countryCode: string;
     checkoutCurrency: "USD" | "INR";
     contact: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     };
-    countryCode: string;
     active: boolean;
     locale: string;
     flagEmoji: string;
@@ -660,12 +660,12 @@ export declare const marketSchema: z.ZodObject<{
     contact?: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     } | undefined;
@@ -705,23 +705,23 @@ export declare const createMarketSchema: z.ZodObject<Omit<{
     }, "strip", z.ZodTypeAny, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }>>;
@@ -732,20 +732,20 @@ export declare const createMarketSchema: z.ZodObject<Omit<{
     name: string;
     currency: "USD" | "INR" | "GBP" | "CAD" | "AUD" | "AED" | "EUR";
     slug: string;
+    countryCode: string;
     checkoutCurrency: "USD" | "INR";
     contact: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     };
-    countryCode: string;
     active: boolean;
     locale: string;
     flagEmoji: string;
@@ -762,12 +762,12 @@ export declare const createMarketSchema: z.ZodObject<Omit<{
     contact?: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     } | undefined;
@@ -783,6 +783,7 @@ export declare const updateMarketSchema: z.ZodObject<Omit<{
     name: z.ZodOptional<z.ZodString>;
     currency: z.ZodOptional<z.ZodDefault<z.ZodEnum<["USD", "GBP", "CAD", "AUD", "INR", "AED", "EUR"]>>>;
     slug: z.ZodOptional<z.ZodString>;
+    countryCode: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     checkoutCurrency: z.ZodOptional<z.ZodDefault<z.ZodEnum<["USD", "INR"]>>>;
     contact: z.ZodOptional<z.ZodDefault<z.ZodObject<{
         phone: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
@@ -798,27 +799,26 @@ export declare const updateMarketSchema: z.ZodObject<Omit<{
     }, "strip", z.ZodTypeAny, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }, {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     }>>>;
-    countryCode: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     active: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
     locale: z.ZodOptional<z.ZodDefault<z.ZodString>>;
     flagEmoji: z.ZodOptional<z.ZodDefault<z.ZodString>>;
@@ -834,12 +834,12 @@ export declare const updateMarketSchema: z.ZodObject<Omit<{
     contact?: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     } | undefined;
@@ -858,12 +858,12 @@ export declare const updateMarketSchema: z.ZodObject<Omit<{
     contact?: {
         email?: string | undefined;
         phone?: string | undefined;
+        countryCode?: string | undefined;
         city?: string | undefined;
         postalCode?: string | undefined;
         addressLine1?: string | undefined;
         addressLine2?: string | undefined;
         stateOrRegion?: string | undefined;
-        countryCode?: string | undefined;
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     } | undefined;
@@ -893,8 +893,8 @@ export declare const inventoryListingSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     productSlug: string;
     warehouseId: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     active: boolean;
     listingId: string;
     quantityAvailable: number;
@@ -908,8 +908,8 @@ export declare const inventoryListingSchema: z.ZodObject<{
 }, {
     productSlug: string;
     warehouseId: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     listingId: string;
     sku?: string | undefined;
     updatedAt?: string | undefined;
@@ -939,8 +939,8 @@ export declare const upsertInventoryListingSchema: z.ZodObject<Omit<{
 }, "updatedAt" | "createdAt" | "listingId">, "strip", z.ZodTypeAny, {
     productSlug: string;
     warehouseId: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     active: boolean;
     quantityAvailable: number;
     quantityReserved: number;
@@ -951,8 +951,8 @@ export declare const upsertInventoryListingSchema: z.ZodObject<Omit<{
 }, {
     productSlug: string;
     warehouseId: string;
-    vendorId: string;
     countryCode: string;
+    vendorId: string;
     sku?: string | undefined;
     active?: boolean | undefined;
     quantityAvailable?: number | undefined;

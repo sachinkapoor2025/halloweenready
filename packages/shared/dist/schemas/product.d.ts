@@ -27,6 +27,51 @@ export declare const productSchema: z.ZodObject<{
     availableCountryCodes: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>;
     /** Wholesale cost from vendor — never expose on public storefront APIs. */
     vendorCost: z.ZodOptional<z.ZodNumber>;
+    /** CJ Dropshipping product id (pid). */
+    cjPid: z.ZodOptional<z.ZodString>;
+    /** Default CJ variant id used when the shopper does not pick another. */
+    cjVid: z.ZodOptional<z.ZodString>;
+    /** CJ variants for size/color (storefront picker). */
+    cjVariants: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        vid: z.ZodString;
+        sku: z.ZodOptional<z.ZodString>;
+        key: z.ZodOptional<z.ZodString>;
+        name: z.ZodOptional<z.ZodString>;
+        image: z.ZodOptional<z.ZodString>;
+        inventory: z.ZodOptional<z.ZodNumber>;
+        price: z.ZodOptional<z.ZodNumber>;
+        vendorCost: z.ZodOptional<z.ZodNumber>;
+        weightOz: z.ZodOptional<z.ZodNumber>;
+        lengthIn: z.ZodOptional<z.ZodNumber>;
+        widthIn: z.ZodOptional<z.ZodNumber>;
+        heightIn: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }>, "many">>;
     /**
      * Public storefront flag: show dry-fruit / chocolate add-on picker.
      * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
@@ -84,11 +129,31 @@ export declare const productSchema: z.ZodObject<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     compareAtPrice?: number | undefined;
     additionalCategorySlugs?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -100,10 +165,6 @@ export declare const productSchema: z.ZodObject<{
         bestRating: number;
         worstRating: number;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }, {
     name: string;
     price: number;
@@ -114,6 +175,8 @@ export declare const productSchema: z.ZodObject<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
     compareAtPrice?: number | undefined;
@@ -123,6 +186,24 @@ export declare const productSchema: z.ZodObject<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -134,10 +215,6 @@ export declare const productSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }>;
 export declare const createProductSchema: z.ZodObject<{
     price: z.ZodNumber;
@@ -145,6 +222,8 @@ export declare const createProductSchema: z.ZodObject<{
     vendorSlug: z.ZodOptional<z.ZodString>;
     vendorCost: z.ZodOptional<z.ZodNumber>;
     sku: z.ZodOptional<z.ZodString>;
+    cjPid: z.ZodOptional<z.ZodString>;
+    cjVid: z.ZodOptional<z.ZodString>;
     couponExcluded: z.ZodOptional<z.ZodBoolean>;
     published: z.ZodDefault<z.ZodBoolean>;
     description: z.ZodString;
@@ -156,6 +235,50 @@ export declare const createProductSchema: z.ZodObject<{
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     warehouseId: z.ZodOptional<z.ZodString>;
     availableCountryCodes: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>;
+    weightOz: z.ZodOptional<z.ZodNumber>;
+    lengthIn: z.ZodOptional<z.ZodNumber>;
+    widthIn: z.ZodOptional<z.ZodNumber>;
+    heightIn: z.ZodOptional<z.ZodNumber>;
+    cjVariants: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        vid: z.ZodString;
+        sku: z.ZodOptional<z.ZodString>;
+        key: z.ZodOptional<z.ZodString>;
+        name: z.ZodOptional<z.ZodString>;
+        image: z.ZodOptional<z.ZodString>;
+        inventory: z.ZodOptional<z.ZodNumber>;
+        price: z.ZodOptional<z.ZodNumber>;
+        vendorCost: z.ZodOptional<z.ZodNumber>;
+        weightOz: z.ZodOptional<z.ZodNumber>;
+        lengthIn: z.ZodOptional<z.ZodNumber>;
+        widthIn: z.ZodOptional<z.ZodNumber>;
+        heightIn: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }>, "many">>;
     allowsAddons: z.ZodOptional<z.ZodBoolean>;
     seoTitle: z.ZodOptional<z.ZodString>;
     seoDescription: z.ZodOptional<z.ZodString>;
@@ -177,10 +300,6 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     }>>;
-    weightOz: z.ZodOptional<z.ZodNumber>;
-    lengthIn: z.ZodOptional<z.ZodNumber>;
-    widthIn: z.ZodOptional<z.ZodNumber>;
-    heightIn: z.ZodOptional<z.ZodNumber>;
 } & {
     name: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -196,11 +315,31 @@ export declare const createProductSchema: z.ZodObject<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     compareAtPrice?: number | undefined;
     additionalCategorySlugs?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -212,10 +351,6 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating: number;
         worstRating: number;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }, {
     name: string;
     price: number;
@@ -225,6 +360,8 @@ export declare const createProductSchema: z.ZodObject<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
     compareAtPrice?: number | undefined;
@@ -234,6 +371,24 @@ export declare const createProductSchema: z.ZodObject<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -245,10 +400,6 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }>;
 export declare const updateProductSchema: z.ZodObject<Omit<{
     slug: z.ZodOptional<z.ZodString>;
@@ -267,6 +418,48 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     warehouseId: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     availableCountryCodes: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>>;
     vendorCost: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
+    cjPid: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    cjVid: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    cjVariants: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+        vid: z.ZodString;
+        sku: z.ZodOptional<z.ZodString>;
+        key: z.ZodOptional<z.ZodString>;
+        name: z.ZodOptional<z.ZodString>;
+        image: z.ZodOptional<z.ZodString>;
+        inventory: z.ZodOptional<z.ZodNumber>;
+        price: z.ZodOptional<z.ZodNumber>;
+        vendorCost: z.ZodOptional<z.ZodNumber>;
+        weightOz: z.ZodOptional<z.ZodNumber>;
+        lengthIn: z.ZodOptional<z.ZodNumber>;
+        widthIn: z.ZodOptional<z.ZodNumber>;
+        heightIn: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }, {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }>, "many">>>;
     allowsAddons: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
     couponExcluded: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
     seoTitle: z.ZodOptional<z.ZodOptional<z.ZodString>>;
@@ -301,6 +494,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
     description?: string | undefined;
@@ -312,6 +507,24 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -323,10 +536,6 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         bestRating: number;
         worstRating: number;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }, {
     name?: string | undefined;
     price?: number | undefined;
@@ -334,6 +543,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
     description?: string | undefined;
@@ -345,6 +556,24 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    weightOz?: number | undefined;
+    lengthIn?: number | undefined;
+    widthIn?: number | undefined;
+    heightIn?: number | undefined;
+    cjVariants?: {
+        vid: string;
+        name?: string | undefined;
+        price?: number | undefined;
+        image?: string | undefined;
+        vendorCost?: number | undefined;
+        sku?: string | undefined;
+        inventory?: number | undefined;
+        key?: string | undefined;
+        weightOz?: number | undefined;
+        lengthIn?: number | undefined;
+        widthIn?: number | undefined;
+        heightIn?: number | undefined;
+    }[] | undefined;
     allowsAddons?: boolean | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
@@ -356,10 +585,6 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
-    weightOz?: number | undefined;
-    lengthIn?: number | undefined;
-    widthIn?: number | undefined;
-    heightIn?: number | undefined;
 }>;
 export declare const bulkProductRowSchema: z.ZodObject<{
     name: z.ZodString;
@@ -393,12 +618,12 @@ export declare const bulkProductRowSchema: z.ZodObject<{
     sku?: string | undefined;
     compareAtPrice?: number | undefined;
     tags?: string | undefined;
-    seoTitle?: string | undefined;
-    seoDescription?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
     heightIn?: number | undefined;
+    seoTitle?: string | undefined;
+    seoDescription?: string | undefined;
 }, {
     name: string;
     price: number;
@@ -412,12 +637,12 @@ export declare const bulkProductRowSchema: z.ZodObject<{
     compareAtPrice?: number | undefined;
     inventory?: number | undefined;
     tags?: string | undefined;
-    seoTitle?: string | undefined;
-    seoDescription?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
     heightIn?: number | undefined;
+    seoTitle?: string | undefined;
+    seoDescription?: string | undefined;
 }>;
 export type Product = z.infer<typeof productSchema> & {
     createdAt: string;

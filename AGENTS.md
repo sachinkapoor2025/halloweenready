@@ -47,6 +47,10 @@ This repository is an **AI-first e-commerce platform**. Developers add features 
 - IN → Razorpay (`apps/api/src/handlers/payments/razorpay.ts`)
 - Never store card data; use gateway tokens only
 
+## CJ Dropshipping
+
+CJ provides the API — we do not create one. Get an **API Key** from My CJ → Authorization → API (install the API app first). Website email/password cannot call the API. Store the key as `CJ_API_KEY` or paste it in Admin → Vendor Management → CJ Dropshipping. Access tokens are cached in `CONFIG#CJ_DROPSHIPPING`.
+
 ## Database
 
 - Single-table DynamoDB — follow PK/SK patterns in ARCHITECTURE.md

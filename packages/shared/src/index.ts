@@ -1,4 +1,6 @@
 export * from "./schemas/product";
+export * from "./schemas/cj-dropshipping";
+export * from "./lib/cj-category";
 export * from "./schemas/review";
 export * from "./schemas/category";
 export * from "./schemas/cart";

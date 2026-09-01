@@ -20,29 +20,29 @@ export declare const createPaymentLedgerSchema: z.ZodEffects<z.ZodObject<{
     receivedDate: string;
     paymentSource: "stripe" | "razorpay" | "other";
     currency?: "USD" | "INR" | undefined;
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
 }, {
     amount: number;
     receivedDate: string;
     paymentSource: "stripe" | "razorpay" | "other";
     currency?: "USD" | "INR" | undefined;
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
 }>, {
     currency: "USD" | "INR";
     amount: number;
     receivedDate: string;
     paymentSource: "stripe" | "razorpay" | "other";
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
 }, {
     amount: number;
     receivedDate: string;
     paymentSource: "stripe" | "razorpay" | "other";
     currency?: "USD" | "INR" | undefined;
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
 }>;
 export declare const updatePaymentLedgerSchema: z.ZodEffects<z.ZodObject<{
     amount: z.ZodOptional<z.ZodNumber>;
@@ -53,32 +53,32 @@ export declare const updatePaymentLedgerSchema: z.ZodEffects<z.ZodObject<{
     notes: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     currency?: "USD" | "INR" | undefined;
+    notes?: string | undefined;
     amount?: number | undefined;
     receivedDate?: string | undefined;
     paymentSource?: "stripe" | "razorpay" | "other" | undefined;
     gatewayFee?: number | undefined;
-    notes?: string | undefined;
 }, {
     currency?: "USD" | "INR" | undefined;
+    notes?: string | undefined;
     amount?: number | undefined;
     receivedDate?: string | undefined;
     paymentSource?: "stripe" | "razorpay" | "other" | undefined;
     gatewayFee?: number | undefined;
-    notes?: string | undefined;
 }>, {
     currency?: "USD" | "INR" | undefined;
+    notes?: string | undefined;
     amount?: number | undefined;
     receivedDate?: string | undefined;
     paymentSource?: "stripe" | "razorpay" | "other" | undefined;
     gatewayFee?: number | undefined;
-    notes?: string | undefined;
 }, {
     currency?: "USD" | "INR" | undefined;
+    notes?: string | undefined;
     amount?: number | undefined;
     receivedDate?: string | undefined;
     paymentSource?: "stripe" | "razorpay" | "other" | undefined;
     gatewayFee?: number | undefined;
-    notes?: string | undefined;
 }>;
 export type CreatePaymentLedgerInput = z.infer<typeof createPaymentLedgerSchema>;
 export type UpdatePaymentLedgerInput = z.infer<typeof updatePaymentLedgerSchema>;
@@ -105,14 +105,14 @@ export declare const bulkPaymentLedgerRowSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     amount: number;
     receivedDate: string;
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
     rowNumber?: number | undefined;
 }, {
     amount: number;
     receivedDate: string;
-    gatewayFee?: number | undefined;
     notes?: string | undefined;
+    gatewayFee?: number | undefined;
     rowNumber?: number | undefined;
 }>;
 export declare const bulkCreatePaymentLedgerSchema: z.ZodObject<{
@@ -127,14 +127,14 @@ export declare const bulkCreatePaymentLedgerSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         amount: number;
         receivedDate: string;
-        gatewayFee?: number | undefined;
         notes?: string | undefined;
+        gatewayFee?: number | undefined;
         rowNumber?: number | undefined;
     }, {
         amount: number;
         receivedDate: string;
-        gatewayFee?: number | undefined;
         notes?: string | undefined;
+        gatewayFee?: number | undefined;
         rowNumber?: number | undefined;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
@@ -142,8 +142,8 @@ export declare const bulkCreatePaymentLedgerSchema: z.ZodObject<{
     rows: {
         amount: number;
         receivedDate: string;
-        gatewayFee?: number | undefined;
         notes?: string | undefined;
+        gatewayFee?: number | undefined;
         rowNumber?: number | undefined;
     }[];
 }, {
@@ -151,8 +151,8 @@ export declare const bulkCreatePaymentLedgerSchema: z.ZodObject<{
     rows: {
         amount: number;
         receivedDate: string;
-        gatewayFee?: number | undefined;
         notes?: string | undefined;
+        gatewayFee?: number | undefined;
         rowNumber?: number | undefined;
     }[];
 }>;

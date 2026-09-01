@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CATEGORY_SLUG_ALIASES = exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.ORANGE_COUNTY_SALE_MARKUP = exports.ORANGE_COUNTY_LIST_MARKUP = exports.ORANGE_COUNTY_CATEGORY_SLUG = exports.VENDOR_HALLOWEENREADY = exports.VENDOR_ORANGE_COUNTY = exports.ORANGE_COUNTY_PRODUCT_INVENTORY = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
+exports.CATEGORY_SLUG_ALIASES = exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.ORANGE_COUNTY_SALE_MARKUP = exports.ORANGE_COUNTY_LIST_MARKUP = exports.ORANGE_COUNTY_CATEGORY_SLUG = exports.VENDOR_CJ_DROPSHIPPING = exports.VENDOR_HALLOWEENREADY = exports.VENDOR_ORANGE_COUNTY = exports.ORANGE_COUNTY_PRODUCT_INVENTORY = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
 exports.categorySlugVariants = categorySlugVariants;
 exports.ORDER_STATUS = {
     PENDING_PAYMENT: "pending_payment",
@@ -107,6 +107,8 @@ exports.ORANGE_COUNTY_PRODUCT_INVENTORY = 500;
 exports.VENDOR_ORANGE_COUNTY = "orange-county";
 /** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
 exports.VENDOR_HALLOWEENREADY = "halloweenready";
+/** CJ Dropshipping catalog + fulfillment vendor. */
+exports.VENDOR_CJ_DROPSHIPPING = "cj-dropshipping";
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 exports.ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers";
 /**

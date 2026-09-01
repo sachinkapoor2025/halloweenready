@@ -102,6 +102,7 @@ export const configKeys = {
   payments: { pk: "CONFIG#PAYMENTS", sk: "META" as const },
   blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" as const },
   shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
+  cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" as const },
 };
 
 /** Multi-warehouse / multi-vendor registry (config table). */

@@ -33,6 +33,10 @@ type CatalogProduct = {
   seoTitle?: string;
   seoDescription?: string;
   published?: boolean;
+  vendorSlug?: string;
+  vendorCost?: number;
+  cjPid?: string;
+  cjVid?: string;
 };
 
 const categories = (catalogJson as { categories?: CatalogCategory[] }).categories ?? [];
@@ -148,6 +152,10 @@ export async function ensureHalloweenreadyCatalogProductInDb(
     inventory: bundled.inventory ?? DEFAULT_PRODUCT_INVENTORY,
     tags: bundled.tags ?? [],
     ...(bundled.couponExcluded ? { couponExcluded: true } : {}),
+    ...(bundled.vendorSlug ? { vendorSlug: bundled.vendorSlug } : {}),
+    ...(typeof bundled.vendorCost === "number" ? { vendorCost: bundled.vendorCost } : {}),
+    ...(bundled.cjPid ? { cjPid: bundled.cjPid } : {}),
+    ...(bundled.cjVid ? { cjVid: bundled.cjVid } : {}),
     seoTitle: bundled.seoTitle,
     seoDescription: bundled.seoDescription,
     published: bundled.published !== false,

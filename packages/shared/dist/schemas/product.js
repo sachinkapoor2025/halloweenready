@@ -32,6 +32,27 @@ exports.productSchema = zod_1.z.object({
     availableCountryCodes: zod_1.z.array(zod_1.z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
     /** Wholesale cost from vendor — never expose on public storefront APIs. */
     vendorCost: zod_1.z.number().positive().optional(),
+    /** CJ Dropshipping product id (pid). */
+    cjPid: zod_1.z.string().min(1).max(80).optional(),
+    /** Default CJ variant id used when the shopper does not pick another. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
+    /** CJ variants for size/color (storefront picker). */
+    cjVariants: zod_1.z
+        .array(zod_1.z.object({
+        vid: zod_1.z.string().min(1),
+        sku: zod_1.z.string().optional(),
+        key: zod_1.z.string().optional(),
+        name: zod_1.z.string().optional(),
+        image: zod_1.z.string().optional(),
+        inventory: zod_1.z.number().int().min(0).optional(),
+        price: zod_1.z.number().positive().optional(),
+        vendorCost: zod_1.z.number().positive().optional(),
+        weightOz: zod_1.z.number().positive().optional(),
+        lengthIn: zod_1.z.number().positive().optional(),
+        widthIn: zod_1.z.number().positive().optional(),
+        heightIn: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
     /**
      * Public storefront flag: show dry-fruit / chocolate add-on picker.
      * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).

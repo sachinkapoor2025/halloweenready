@@ -47,6 +47,8 @@ interface AddToCartControlProps {
   getContact?: () => { name?: string; email?: string; phone?: string };
   /** Selected product add-ons with quantities (HalloweenReady only). */
   addons?: ProductAddonSelection[];
+  /** CJ Dropshipping variant id. */
+  cjVid?: string;
 }
 
 export function AddToCartControl({
@@ -57,14 +59,15 @@ export function AddToCartControl({
   variant = "default",
   getContact,
   addons = [],
+  cjVid,
 }: AddToCartControlProps) {
   const { sessionReady, addItem, updateItem, removeItem, quantityFor, lineIdFor } = useCart();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [addedNote, setAddedNote] = useState("");
 
-  const quantity = quantityFor(productSlug, addons);
-  const lineId = lineIdFor(productSlug, addons);
+  const quantity = quantityFor(productSlug, addons, cjVid);
+  const lineId = lineIdFor(productSlug, addons, cjVid);
   const inCart = quantity > 0 && Boolean(lineId);
   const addonsPayload = addons.length ? addons : undefined;
 
@@ -99,7 +102,7 @@ export function AddToCartControl({
             stop(e);
             void run(async () => {
               const contact = getContact?.();
-              await addItem(productSlug, 1, contact, addonsPayload);
+              await addItem(productSlug, 1, contact, addonsPayload, cjVid);
               setAddedNote(`Added! Est. delivery ${estimatedDeliveryShort()}`);
               window.setTimeout(() => setAddedNote(""), 5000);
             });

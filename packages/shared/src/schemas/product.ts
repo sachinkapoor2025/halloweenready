@@ -30,6 +30,29 @@ export const productSchema = z.object({
   availableCountryCodes: z.array(z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
   /** Wholesale cost from vendor — never expose on public storefront APIs. */
   vendorCost: z.number().positive().optional(),
+  /** CJ Dropshipping product id (pid). */
+  cjPid: z.string().min(1).max(80).optional(),
+  /** Default CJ variant id used when the shopper does not pick another. */
+  cjVid: z.string().min(1).max(80).optional(),
+  /** CJ variants for size/color (storefront picker). */
+  cjVariants: z
+    .array(
+      z.object({
+        vid: z.string().min(1),
+        sku: z.string().optional(),
+        key: z.string().optional(),
+        name: z.string().optional(),
+        image: z.string().optional(),
+        inventory: z.number().int().min(0).optional(),
+        price: z.number().positive().optional(),
+        vendorCost: z.number().positive().optional(),
+        weightOz: z.number().positive().optional(),
+        lengthIn: z.number().positive().optional(),
+        widthIn: z.number().positive().optional(),
+        heightIn: z.number().positive().optional(),
+      })
+    )
+    .optional(),
   /**
    * Public storefront flag: show dry-fruit / chocolate add-on picker.
    * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).

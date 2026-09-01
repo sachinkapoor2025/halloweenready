@@ -15,6 +15,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./schemas/product"), exports);
+__exportStar(require("./schemas/cj-dropshipping"), exports);
+__exportStar(require("./lib/cj-category"), exports);
 __exportStar(require("./schemas/review"), exports);
 __exportStar(require("./schemas/category"), exports);
 __exportStar(require("./schemas/cart"), exports);

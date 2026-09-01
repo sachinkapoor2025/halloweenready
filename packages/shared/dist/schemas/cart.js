@@ -26,6 +26,12 @@ exports.cartItemSchema = zod_1.z.object({
      */
     vendorCost: zod_1.z.number().nonnegative().optional(),
     sku: zod_1.z.string().optional(),
+    /** CJ product id snapshot (fulfillment). */
+    cjPid: zod_1.z.string().min(1).max(80).optional(),
+    /** CJ variant id for this cart line. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
+    /** Human variant label, e.g. Black-XL. */
+    variantKey: zod_1.z.string().max(120).optional(),
     /** Copied from product — flash / fixed deals are not coupon-eligible. */
     couponExcluded: zod_1.z.boolean().optional(),
     /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -49,6 +55,8 @@ exports.addToCartSchema = zod_1.z.object({
      * Plain string ids still accepted (= quantity 1).
      */
     addons: zod_1.z.array(addToCartAddonSchema).max(20).optional(),
+    /** Optional CJ variant when the product has multiple SKUs. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
 });
 exports.cartSchema = zod_1.z.object({
     items: zod_1.z.array(exports.cartItemSchema).default([]),

@@ -10,10 +10,12 @@ export function StickyAddToCartBar({
   product,
   getContact,
   addons = [],
+  cjVid,
 }: {
   product: Product;
   getContact?: () => { name?: string; email?: string; phone?: string };
   addons?: ProductAddonSelection[];
+  cjVid?: string;
 }) {
   const { format } = useCurrency();
   const [visible, setVisible] = useState(false);
@@ -58,6 +60,7 @@ export function StickyAddToCartBar({
             variant="detail"
             getContact={getContact}
             addons={addons}
+            cjVid={cjVid}
           />
         </div>
       </div>

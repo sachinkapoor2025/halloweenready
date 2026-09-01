@@ -86,6 +86,10 @@ export declare const configKeys: {
         pk: string;
         sk: "META";
     };
+    cjDropshipping: {
+        pk: string;
+        sk: "META";
+    };
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 export declare const warehouseKeys: {
