@@ -1,5 +1,4 @@
 /** Rich SEO layout content for category pages (mirrors city page structure). */
-import { productKeywordsForCategory } from "./seo-data";
 
 export interface CategoryRichContent {
   slug: string;
@@ -61,21 +60,14 @@ function relatedExcept(slug: string) {
   return relatedAll.filter((c) => !c.href.endsWith(`/${slug}`)).slice(0, 4);
 }
 
-function topKeywordPhrase(slug: string): string {
-  const kws = productKeywordsForCategory(slug).slice(0, 3);
-  if (kws.length === 0) return "Halloween essentials";
-  if (kws.length === 1) return kws[0];
-  if (kws.length === 2) return `${kws[0]} and ${kws[1]}`;
-  return `${kws[0]}, ${kws[1]}, and ${kws[2]}`;
-}
-
 export const categoryRichContent: Record<string, CategoryRichContent> = {
   "home-decoration": {
     slug: "home-decoration",
-    headline: "Halloween Decorations — Yard & Indoor Props | USA Shipping",
+    headline: "Halloween decorations for yards, porches, and indoor spaces",
     intro: [
-      `Shop ${topKeywordPhrase("home-decoration")} for haunted homes and yard displays. Inflatables, LED pumpkins, skeletons, and fog machines ship fast across all 50 US states.`,
-      "Indoor and outdoor decor ships from domestic warehouses — order by October 25 to set up before trick-or-treat night.",
+      "Shop inflatables, LED pumpkins, skeletons, and fog machines for haunted homes and yard displays. Pair a statement piece with Halloween costumes if you are hosting a themed night at home.",
+      "Indoor and outdoor decor ships from domestic warehouses — order by October 25 so you have time to set up before trick-or-treat. Add party supplies in the same cart if you need matching tableware.",
+      "For costumes, candy, and timing in one overview, use the Halloween planning guide before you build a long shopping list.",
     ],
     delivery: {
       heading: "Halloween Decor Delivery",
@@ -132,10 +124,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   costumesandaccessories: {
     slug: "costumesandaccessories",
-    headline: "Halloween Costumes — Adult & Kids | USA Delivery",
+    headline: "Halloween costumes for adults, teens, and kids",
     intro: [
-      `Browse ${topKeywordPhrase("costumesandaccessories")} for parties, trick-or-treat, and group looks. From classic vampires and witches to pop-culture sets — find your Halloween 2026 outfit here.`,
-      "Order online from anywhere. Enter your US shipping address at checkout and we deliver domestically within America in 2–5 business days.",
+      "Browse adult, teen, and kids outfits for parties, trick-or-treat, and group looks. Classic vampires and witches still work; add a few Halloween decorations at home if you want photos to match the costume.",
+      "Order online from anywhere, then enter a US shipping address at checkout. Add jewelry and accessories such as masks, hats, and gothic finishes so a simple base outfit looks complete.",
+      "For sizing windows and Halloween 2026 timing, the Halloween planning guide outlines when to order so outfits arrive before October 31.",
     ],
     delivery: {
       heading: "Costume Delivery Across the USA",
@@ -192,10 +185,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   partysupplier: {
     slug: "partysupplier",
-    headline: "Halloween Party Supplies — Tableware, Balloons & Candy",
+    headline: "Halloween party supplies for tables, photos, and treats",
     intro: [
-      `Host a haunted party with ${topKeywordPhrase("partysupplier")}. Themed tableware, balloon garlands, treat bowls, and photo booth props ship across the USA.`,
-      "Bundle plates, candy, and decor in one order for a single domestic delivery before your Halloween celebration.",
+      "Host a haunted gathering with themed tableware, balloon garlands, treat bowls, and photo booth props. Match the table to Halloween decorations in the same room so the setup looks planned rather than pieced together.",
+      "Bundle plates, candy, and toys and novelty fillers in one order when you are packing goodie bags or a kids' table.",
+      "The Halloween planning guide covers guest flow, treats, and timing if you are still mapping the night.",
     ],
     delivery: {
       heading: "Party Supply Delivery",
@@ -252,10 +246,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   toysandnovelty: {
     slug: "toysandnovelty",
-    headline: "Halloween Toys & Novelty Gifts | Fast USA Shipping",
+    headline: "Halloween toys and novelty gifts for bags and parties",
     intro: [
-      `Stock goodie bags and party favors with ${topKeywordPhrase("toysandnovelty")}. Spooky fidget toys, prank props, and novelty gifts ship fast nationwide.`,
-      "Ideal for classroom treats, office parties, and trick-or-treat fillers — order ahead for Halloween 2026.",
+      "Stock goodie bags and party favors with fidget toys, prank props, and small spooky gifts. Mix them with party supplies such as treat bags and themed bowls so fillers and wrapping match.",
+      "These pieces work for classroom treats, office parties, and trick-or-treat extras. Pair a few items with Halloween costumes when kids want a toy that matches their look.",
+      "The Halloween planning guide helps you estimate quantities before you order for a school or community event.",
     ],
     delivery: {
       heading: "Novelty Toy Delivery",
@@ -312,10 +307,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   candlesandfragrance: {
     slug: "candlesandfragrance",
-    headline: "Halloween Candles & Fragrance | Pumpkin Spice USA",
+    headline: "Halloween candles and fragrance for a seasonal mood",
     intro: [
-      `Set the mood with ${topKeywordPhrase("candlesandfragrance")}. Pumpkin spice candles, skull tealights, and haunted-house reed diffusers ship across America.`,
-      "Perfect for mantel displays, party tables, and cozy October nights — order with decor in one shipment.",
+      "Set the mood with pumpkin spice candles, skull tealights, and haunted-house reed diffusers. They sit naturally next to home decorations on a mantel or dining table.",
+      "Use them for party tables and quiet October evenings. If you are hosting a Halloween party, keep open flames away from fabric table runners and hanging props.",
+      "The Halloween planning guide covers lighting and safety alongside costumes and decor timing.",
     ],
     delivery: {
       heading: "Candle & Fragrance Delivery",
@@ -372,10 +368,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   jewellryandaccessories: {
     slug: "jewellryandaccessories",
-    headline: "Halloween Jewelry & Costume Accessories",
+    headline: "Halloween jewelry and finishing touches for costumes",
     intro: [
-      `Finish your look with ${topKeywordPhrase("jewellryandaccessories")}. Spider-web chokers, skeleton rings, gothic pendants, and charm keychains ship fast nationwide.`,
-      "Pair jewelry with costumes for parties, photos, and trick-or-treat — all in one USA order.",
+      "Finish a look with spider-web chokers, skeleton rings, gothic pendants, and charm keychains. These pieces work especially well with Halloween costumes when you want impact without a full extra outfit.",
+      "Pair jewelry with lifestyle wearables such as a hoodie or tote if the gift needs to last past October 31.",
+      "The Halloween planning guide can help you decide what to order first when you are assembling group looks.",
     ],
     delivery: {
       heading: "Jewelry & Accessory Delivery",
@@ -432,10 +429,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   lifestyleandwearable: {
     slug: "lifestyleandwearable",
-    headline: "Halloween Apparel & Lifestyle Gifts | USA Shipping",
+    headline: "Halloween apparel and everyday October gifts",
     intro: [
-      `Wear the season with ${topKeywordPhrase("lifestyleandwearable")}. Hoodies, socks, tote bags, printed mugs, and cozy gifts ship across the USA.`,
-      "Great for everyday October style, hostess gifts, and matching family looks — not just costume night.",
+      "Wear the season with hoodies, socks, tote bags, printed mugs, and cozy gifts. Add Halloween jewelry if you want a small finishing piece that still works after costume night.",
+      "These items work for everyday October style, hostess gifts, and family photos. Layer costume accessories such as a pin or hat when you need a quicker dress-up option.",
+      "The Halloween planning guide covers what to order first if you are gifting and dressing up in the same week.",
     ],
     delivery: {
       heading: "Apparel & Lifestyle Delivery",
@@ -492,10 +490,11 @@ export const categoryRichContent: Record<string, CategoryRichContent> = {
 
   printedandpapercrafts: {
     slug: "printedandpapercrafts",
-    headline: "Halloween Paper Crafts & Cards | Printables USA",
+    headline: "Halloween paper crafts, cards, and wrapping",
     intro: [
-      `Craft and wrap with ${topKeywordPhrase("printedandpapercrafts")}. Wrapping paper, gift tags, window clings, greeting cards, and coloring books ship nationwide.`,
-      "Ideal for party invitations, treat bag tags, classroom crafts, and last-minute mantel accents.",
+      "Craft and wrap with wrapping paper, gift tags, window clings, greeting cards, and coloring books. Use tags and bags with party supplies so treat bags look finished.",
+      "These pieces work for invitations, classroom crafts, and last-minute mantel accents. Window clings and paper bats also count as light Halloween decorations when you cannot use large props.",
+      "The Halloween planning guide is useful if you are timing crafts, candy, and costumes in the same week.",
     ],
     delivery: {
       heading: "Paper Craft Delivery",

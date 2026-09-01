@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { faqJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "FAQ — Halloween Shopping USA",
+    title: "FAQ — Halloween Shipping, Costumes & Decor",
   description:
     "Frequently asked questions about Halloween costumes, decor, candy delivery in the USA: shipping times, ordering, and Halloween 2026 planning.",
   path: "/faq",
@@ -17,7 +17,7 @@ export default function FaqPage() {
       <JsonLd data={faqJsonLd(faqs)} />
       <h1 className="text-3xl font-bold text-primary mb-2">Frequently Asked Questions</h1>
       <p className="text-slate-600 mb-8">
-        Everything you need to know about Halloween shopping with {site.name}.
+        Short answers about shipping, costumes, decorations, and Halloween 2026 timing with {site.name}.
       </p>
       <div className="space-y-4">
         {faqs.map((f) => (

@@ -1,11 +1,11 @@
 /** SEO-rich homepage copy — Halloween / USA delivery keywords, internal link targets. */
 export const homeSeoContent = {
   intro: {
-    heading: "Shop Halloween Costumes & Decor Online — Fast USA Delivery",
+    heading: "Shop Halloween costumes, decorations, and party supplies",
     paragraphs: [
-      "Halloween is the season for costumes, haunted decor, candy, and unforgettable parties. Whether you're planning a family trick-or-treat route or transforming your home into a haunted mansion, HalloweenReady makes it simple to shop premium Halloween gear with reliable domestic delivery across America.",
-      "We ship from within the United States to all 50 states — California, New York, Texas, Florida, and beyond. Order costumes, decorations, candy, accessories, and party supplies with 2–5 business day delivery to major metros.",
-      "Browse our curated collections across Costumes, Decorations, Candy & Treats, Accessories, and Party Supplies — everything you need for a spooktacular October 31.",
+      "Halloween is the season for gatherings, trick-or-treat, and home displays that feel festive without being hard to plan. Halloween decorations set the mood at the door, while the rest of the evening comes together with costumes, treats, and a few well-chosen extras.",
+      "HalloweenReady ships from within the United States to all 50 states, including California, New York, Texas, and Florida. Most orders of Halloween costumes, decor, and accessories arrive in about 2–5 business days when you enter a US delivery address at checkout.",
+      "If you are hosting, shop Halloween party supplies alongside your display pieces so plates, balloons, and tableware match the same theme. Browse costumes, decorations, and treats in one place for a simpler October 31.",
     ],
   },
   categories: {
@@ -40,10 +40,10 @@ export const homeSeoContent = {
     ],
   },
   delivery: {
-    heading: "Halloween Delivery to All 50 US States",
+    heading: "Halloween delivery to all 50 US states",
     paragraphs: [
-      "We deliver Halloween orders across California, New York, Texas, Florida, New Jersey, Illinois, and every other US state. Domestic fulfillment means your costumes and decor arrive quickly — without international shipping delays.",
-      "Planning for Halloween 2026? Order by October 25 for guaranteed pre-Halloween delivery. Popular costumes sell out early — shop in October for the best selection.",
+      "Orders ship domestically across California, New York, Texas, Florida, New Jersey, Illinois, and every other US state. Fulfillment inside the country helps costumes and decor arrive without international customs delays.",
+      "Halloween 2026 falls on Saturday, October 31. For the most reliable arrival, order costumes by around October 20 and decorations or candy by October 25 — popular sizes and inflatables tend to sell through earlier in the month.",
     ],
   },
   howItWorks: {
@@ -57,10 +57,10 @@ export const homeSeoContent = {
     ],
   },
   tradition: {
-    heading: "The Spirit of Halloween",
+    heading: "What makes Halloween feel special",
     paragraphs: [
-      "Halloween brings communities together for trick-or-treat, costume parties, haunted houses, and creative home displays. From classic horror to playful family fun, the right costume and decor turn an ordinary October night into something magical.",
-      "Whether you're handing out candy, hosting a party, or going all-out on yard decor, HalloweenReady helps you celebrate with quality products and fast USA shipping.",
+      "Halloween brings neighbors together for trick-or-treat, costume parties, and creative home displays. A clear theme — classic horror, playful family fun, or a simple orange-and-black porch — usually looks more intentional than mixing every idea at once.",
+      "Whether you are handing out candy, hosting friends, or building a yard haunt, it helps to start with the spaces guests will actually use, then add lighting and a few statement pieces rather than filling every surface.",
     ],
   },
   whyUs: {
