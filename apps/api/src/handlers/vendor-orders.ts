@@ -382,9 +382,15 @@ async function persistVendorOrderUpdate(
   await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: updated }));
 
   if (statusChanged) {
-    const emailResult = await notifyCustomerOrderStatusChange(updated);
-    if (!emailResult.ok && !emailResult.skipped) {
-      console.error("Vendor status customer email failed:", emailResult.error);
+    try {
+      const emailResult = await notifyCustomerOrderStatusChange(updated, {
+        previousNotificationStatus: order.status,
+      });
+      if (!emailResult.ok && !emailResult.skipped) {
+        console.error("Vendor status customer email failed:", emailResult.error);
+      }
+    } catch (err) {
+      console.error("Vendor status notification failed:", err);
     }
   }
 

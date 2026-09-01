@@ -985,6 +985,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
         lineId: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodString;
         name: z.ZodString;
+        description: z.ZodOptional<z.ZodString>;
         price: z.ZodNumber;
         currency: z.ZodEnum<["USD", "INR"]>;
         quantity: z.ZodNumber;
@@ -1019,6 +1020,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1040,6 +1042,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1075,6 +1078,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1124,6 +1128,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1193,6 +1198,7 @@ export declare const orderSchema: z.ZodObject<{
         lineId: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodString;
         name: z.ZodString;
+        description: z.ZodOptional<z.ZodString>;
         price: z.ZodNumber;
         currency: z.ZodEnum<["USD", "INR"]>;
         quantity: z.ZodNumber;
@@ -1227,6 +1233,7 @@ export declare const orderSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1248,6 +1255,7 @@ export declare const orderSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -1372,6 +1380,7 @@ export declare const orderSchema: z.ZodObject<{
             lineId: z.ZodOptional<z.ZodString>;
             productSlug: z.ZodString;
             name: z.ZodString;
+            description: z.ZodOptional<z.ZodString>;
             price: z.ZodNumber;
             currency: z.ZodEnum<["USD", "INR"]>;
             quantity: z.ZodNumber;
@@ -1406,6 +1415,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
@@ -1427,6 +1437,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
@@ -1462,6 +1473,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
@@ -1511,6 +1523,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
@@ -2029,6 +2042,7 @@ export declare const orderSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -2072,6 +2086,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;
@@ -2264,6 +2279,7 @@ export declare const orderSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -2304,6 +2320,7 @@ export declare const orderSchema: z.ZodObject<{
             productSlug: string;
             currency: "USD" | "INR";
             lineId?: string | undefined;
+            description?: string | undefined;
             image?: string | undefined;
             vendorSlug?: string | undefined;
             vendorCost?: number | undefined;

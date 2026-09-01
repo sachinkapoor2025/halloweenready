@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { site, categoryOrder, homeBanners, cityLinks, faqs } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
+import { halloweenGuideInlineLinks } from "@/lib/content/page-inline-links";
+import { applyInlineLinks } from "@/lib/inline-links";
 import { faqJsonLd, pageMetadata } from "@/lib/seo";
+import { site, categoryOrder, homeBanners, cityLinks, faqs } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Halloween Guide 2026 — Costumes, Decor & Party Tips | USA",
@@ -81,15 +83,25 @@ export default function HalloweenGuidePage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-accent mb-6">Why Shop Halloween Early?</h2>
+        <h2 className="text-2xl font-bold text-accent mb-6">Why it helps to shop Halloween early</h2>
         <div className="space-y-4 text-slate-600 leading-relaxed">
           <p>
-            Popular costumes and decor sell out fast every October. Ordering early guarantees size availability,
-            on-time delivery, and less stress as Halloween night approaches.
+            {applyInlineLinks(
+              "Popular Halloween costumes sell out fast every October. Ordering early helps you lock in adult and kids sizes before the best looks disappear.",
+              halloweenGuideInlineLinks
+            )}
           </p>
           <p>
-            {site.name} ships from within the United States — 2–5 business day delivery to California, New York,
-            Texas, Florida, and all 50 states. No customs delays, just spooky fun at your doorstep.
+            {applyInlineLinks(
+              "Halloween decorations for the porch and living room also move quickly, so it helps to order display pieces with enough time to set them up before trick-or-treat night.",
+              halloweenGuideInlineLinks
+            )}
+          </p>
+          <p>
+            {applyInlineLinks(
+              `${site.name} ships from within the United States — typically 2–5 business days to California, New York, Texas, Florida, and all 50 states. Add Halloween party supplies to the same order so tableware and treats arrive with the rest of your celebration.`,
+              halloweenGuideInlineLinks
+            )}
           </p>
         </div>
       </section>
@@ -125,7 +137,7 @@ export default function HalloweenGuidePage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-accent mb-6">Costume Ideas for 2026</h2>
+        <h2 className="text-2xl font-bold text-accent mb-6">Costume ideas for 2026</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {costumeIdeas.map((idea) => (
             <div key={idea.title} className="p-5 card-spooky">

@@ -19,9 +19,9 @@ export default function ShippingPage() {
       <h1 className="text-3xl font-bold text-accent mb-6">Shipping & Delivery</h1>
       <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
-          {site.name} delivers Halloween costumes, decor, candy, and party supplies to{" "}
-          <strong>all 50 United States</strong> via <strong>domestic US fulfillment</strong>. Your order ships inside
-          America with <strong>no international customs delays</strong>.
+          {site.name} delivers Halloween costumes, decorations, candy, and tableware to{" "}
+          <strong>all 50 United States</strong> from <strong>domestic US fulfillment</strong>. Your order ships inside
+          America, so you are not waiting on international customs.
         </p>
         <h2 className="text-xl font-bold text-accent">Delivery times</h2>
         <ul className="list-disc list-inside space-y-2">
@@ -40,7 +40,12 @@ export default function ShippingPage() {
         </ul>
         <h2 className="text-xl font-bold text-accent">Halloween 2026 order deadlines</h2>
         <p>
-          Halloween 2026 is <strong>{HALLOWEEN_2026_DATE}</strong>. Recommended order-by dates:
+          Halloween 2026 is <strong>{HALLOWEEN_2026_DATE}</strong>. Use the dates below as a planning window, and
+          see the{" "}
+          <Link href="/halloween-guide" className="text-nav hover:underline">
+            Halloween planning guide
+          </Link>{" "}
+          if you are still deciding what to order first.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-nav/30 rounded-lg">
@@ -69,8 +74,12 @@ export default function ShippingPage() {
         </p>
         <h2 className="text-xl font-bold text-accent">Packaging</h2>
         <p>
-          Costumes are folded and bagged with care. Decor items are packed to prevent damage in transit. Candy is
-          sealed for freshness.
+          Costumes are folded and bagged with care. Decor items are packed to limit transit damage. Candy is sealed
+          for freshness. Browse{" "}
+          <Link href="/products" className="text-nav hover:underline">
+            all Halloween products
+          </Link>{" "}
+          if you want to combine categories in one shipment.
         </p>
         <h2 className="text-xl font-bold text-accent">Cities we deliver to</h2>
         <p>Popular delivery destinations include:</p>
@@ -84,8 +93,8 @@ export default function ShippingPage() {
           ))}
         </ul>
         <p className="pt-4">
-          Need help? <Link href="/contact" className="text-nav hover:underline">Contact us</Link> or read our{" "}
-          <Link href="/faq" className="text-nav hover:underline">FAQ</Link>.
+          Need help with an order?{" "}
+          <Link href="/contact" className="text-nav hover:underline">Contact us</Link>.
         </p>
       </div>
     </div>

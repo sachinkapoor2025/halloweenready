@@ -202,12 +202,12 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
         title: z.ZodString;
         description: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }, {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }>, "many">;
     midCtaHeading: z.ZodString;
@@ -250,8 +250,8 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     promiseHeading: string;
     promiseSubheading: string;
     promises: {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }[];
     midCtaHeading: string;
@@ -294,8 +294,8 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     promiseHeading: string;
     promiseSubheading: string;
     promises: {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }[];
     midCtaHeading: string;
@@ -365,12 +365,12 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
             title: z.ZodString;
             description: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }>, "many">;
         midCtaHeading: z.ZodString;
@@ -413,8 +413,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -457,8 +457,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -508,8 +508,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -559,8 +559,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -610,8 +610,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -661,8 +661,8 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -729,12 +729,12 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
             title: z.ZodString;
             description: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }>, "many">;
         midCtaHeading: z.ZodString;
@@ -777,8 +777,8 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -821,8 +821,8 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -872,8 +872,8 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -923,8 +923,8 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;

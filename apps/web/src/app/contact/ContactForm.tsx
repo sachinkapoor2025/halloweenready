@@ -64,8 +64,16 @@ export function ContactForm() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-primary mb-6">Contact Us</h1>
       <p className="text-slate-600 mb-8">
-        Have questions about your Halloween order or delivery to the USA? Our team is here to help you before, during, and
-        after Halloween.
+        Have questions about your Halloween order or USA delivery? We can help before, during, and after Halloween.
+        For cutoffs and transit times, see{" "}
+        <Link href="/shipping" className="text-nav hover:underline">
+          shipping and delivery
+        </Link>
+        . Common answers also live on our{" "}
+        <Link href="/faq" className="text-nav hover:underline">
+          FAQ page
+        </Link>
+        .
       </p>
       <div className="grid md:grid-cols-3 gap-6 mb-10">
         <div className="border border-slate-200 rounded-xl p-6">

@@ -14,6 +14,8 @@ exports.cartItemSchema = zod_1.z.object({
     lineId: zod_1.z.string().min(1).optional(),
     productSlug: zod_1.z.string(),
     name: zod_1.z.string(),
+    /** Plain-text product snippet for order emails (optional; older carts omit this). */
+    description: zod_1.z.string().max(200).optional(),
     price: zod_1.z.number(),
     currency: zod_1.z.enum(["USD", "INR"]),
     quantity: zod_1.z.number().int().min(1),

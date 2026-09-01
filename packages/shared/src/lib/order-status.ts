@@ -24,6 +24,7 @@ export function isOrderAwaitingPayment(status: string): boolean {
 
 /** Human-readable customer-facing status label. */
 export function formatOrderStatusLabel(status: string): string {
+  if (status === ORDER_STATUS.ACCEPTED) return "Order Confirmed";
   return status.replace(/_/g, " ");
 }
 
@@ -36,8 +37,9 @@ export function orderConfirmationHeadline(status: string): string {
       return "Your order was delivered!";
     case ORDER_STATUS.COMPLETE:
       return "Your order is complete!";
-    case ORDER_STATUS.PROCESSING:
     case ORDER_STATUS.ACCEPTED:
+      return "Your order is confirmed!";
+    case ORDER_STATUS.PROCESSING:
       return "Your order is being prepared!";
     case ORDER_STATUS.ON_HOLD:
       return "Your order is on hold";
@@ -64,8 +66,9 @@ export function orderConfirmationSubcopy(status: string): string {
       return "Your gift has arrived. We hope your brother loves it — thank you for choosing HalloweenReady.";
     case ORDER_STATUS.COMPLETE:
       return "Thank you for shopping Halloween with HalloweenReady.";
-    case ORDER_STATUS.PROCESSING:
     case ORDER_STATUS.ACCEPTED:
+      return "We've confirmed your order and our team is preparing it for USA dispatch.";
+    case ORDER_STATUS.PROCESSING:
       return "We've received your payment and our team is preparing your order for USA dispatch.";
     case ORDER_STATUS.ON_HOLD:
       return "Our team is reviewing your order. We'll email you with an update shortly.";

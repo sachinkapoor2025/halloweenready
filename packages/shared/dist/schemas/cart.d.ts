@@ -21,6 +21,8 @@ export declare const cartItemSchema: z.ZodObject<{
     lineId: z.ZodOptional<z.ZodString>;
     productSlug: z.ZodString;
     name: z.ZodString;
+    /** Plain-text product snippet for order emails (optional; older carts omit this). */
+    description: z.ZodOptional<z.ZodString>;
     price: z.ZodNumber;
     currency: z.ZodEnum<["USD", "INR"]>;
     quantity: z.ZodNumber;
@@ -66,6 +68,7 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
@@ -87,6 +90,7 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
@@ -153,6 +157,8 @@ export declare const cartSchema: z.ZodObject<{
         lineId: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodString;
         name: z.ZodString;
+        /** Plain-text product snippet for order emails (optional; older carts omit this). */
+        description: z.ZodOptional<z.ZodString>;
         price: z.ZodNumber;
         currency: z.ZodEnum<["USD", "INR"]>;
         quantity: z.ZodNumber;
@@ -198,6 +204,7 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -219,6 +226,7 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -243,6 +251,7 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
@@ -268,6 +277,7 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;

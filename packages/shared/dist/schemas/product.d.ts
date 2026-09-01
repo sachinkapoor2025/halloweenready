@@ -118,10 +118,10 @@ export declare const productSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
+    description: string;
     currency: "USD" | "INR";
     published: boolean;
     slug: string;
-    description: string;
     categorySlug: string;
     images: string[];
     inventory: number;
@@ -168,8 +168,8 @@ export declare const productSchema: z.ZodObject<{
 }, {
     name: string;
     price: number;
-    slug: string;
     description: string;
+    slug: string;
     categorySlug: string;
     currency?: "USD" | "INR" | undefined;
     vendorSlug?: string | undefined;
@@ -218,6 +218,7 @@ export declare const productSchema: z.ZodObject<{
 }>;
 export declare const createProductSchema: z.ZodObject<{
     price: z.ZodNumber;
+    description: z.ZodString;
     currency: z.ZodDefault<z.ZodEnum<["USD", "INR"]>>;
     vendorSlug: z.ZodOptional<z.ZodString>;
     vendorCost: z.ZodOptional<z.ZodNumber>;
@@ -226,7 +227,6 @@ export declare const createProductSchema: z.ZodObject<{
     cjVid: z.ZodOptional<z.ZodString>;
     couponExcluded: z.ZodOptional<z.ZodBoolean>;
     published: z.ZodDefault<z.ZodBoolean>;
-    description: z.ZodString;
     compareAtPrice: z.ZodOptional<z.ZodNumber>;
     categorySlug: z.ZodString;
     additionalCategorySlugs: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
@@ -305,9 +305,9 @@ export declare const createProductSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
+    description: string;
     currency: "USD" | "INR";
     published: boolean;
-    description: string;
     categorySlug: string;
     images: string[];
     inventory: number;
@@ -490,6 +490,7 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
 }, "slug">, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     price?: number | undefined;
+    description?: string | undefined;
     currency?: "USD" | "INR" | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
@@ -498,7 +499,6 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     compareAtPrice?: number | undefined;
     categorySlug?: string | undefined;
     additionalCategorySlugs?: string[] | undefined;
@@ -539,6 +539,7 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
 }, {
     name?: string | undefined;
     price?: number | undefined;
+    description?: string | undefined;
     currency?: "USD" | "INR" | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
@@ -547,7 +548,6 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     cjVid?: string | undefined;
     couponExcluded?: boolean | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     compareAtPrice?: number | undefined;
     categorySlug?: string | undefined;
     additionalCategorySlugs?: string[] | undefined;
@@ -608,9 +608,9 @@ export declare const bulkProductRowSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
+    description: string;
     currency: "USD" | "INR";
     published: boolean;
-    description: string;
     categorySlug: string;
     inventory: number;
     vendorSlug?: string | undefined;
@@ -628,12 +628,12 @@ export declare const bulkProductRowSchema: z.ZodObject<{
     name: string;
     price: number;
     categorySlug: string;
+    description?: string | undefined;
     currency?: "USD" | "INR" | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     compareAtPrice?: number | undefined;
     inventory?: number | undefined;
     tags?: string | undefined;
