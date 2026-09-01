@@ -1,4 +1,6 @@
 export * from "./schemas/product";
+export * from "./schemas/cj-dropshipping";
+export * from "./lib/cj-category";
 export * from "./schemas/review";
 export * from "./schemas/category";
 export * from "./schemas/cart";
@@ -54,6 +56,7 @@ export * from "./lib/schedule-delivery";
 export * from "./lib/marketing-email-html";
 export * from "./lib/marketing-campaign-emails";
 export * from "./lib/order-number";
+export * from "./lib/order-confirmed-email";
 export * from "./lib/order-status";
 export * from "./lib/order-vendors";
 export * from "./lib/product-addons";

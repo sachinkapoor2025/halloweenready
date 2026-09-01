@@ -95,6 +95,7 @@ exports.configKeys = {
     payments: { pk: "CONFIG#PAYMENTS", sk: "META" },
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
+    cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" },
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 exports.warehouseKeys = {

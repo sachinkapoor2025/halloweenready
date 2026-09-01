@@ -82,18 +82,24 @@ export function ProductDetailClient({
   const [phone, setPhone] = useState("");
   const [tab, setTab] = useState<Tab>("description");
   const [productUrl, setProductUrl] = useState("");
+  const variants = product.cjVariants ?? [];
+  const [selectedVid, setSelectedVid] = useState(
+    product.cjVid || variants[0]?.vid || ""
+  );
+  const selectedVariant = variants.find((v) => v.vid === selectedVid);
 
   useEffect(() => {
     trackProductView(product.slug);
     setProductUrl(window.location.href);
   }, [product.slug]);
 
-  const price = format(product.price, product.currency);
+  const displayPrice = selectedVariant?.price ?? product.price;
+  const price = format(displayPrice, product.currency);
   const comparePrice =
-    product.compareAtPrice && product.compareAtPrice > product.price
+    product.compareAtPrice && product.compareAtPrice > displayPrice
       ? format(product.compareAtPrice, product.currency)
       : null;
-  const discount = getDiscountPercent(product.price, product.compareAtPrice);
+  const discount = getDiscountPercent(displayPrice, product.compareAtPrice);
   const summary = shortDescription(product.description);
   const cartQuantity = cart?.items.find((i) => i.productSlug === product.slug)?.quantity ?? 0;
   const inCart = cartQuantity > 0;
@@ -136,6 +142,33 @@ export function ProductDetailClient({
 
           <EstimatedDeliveryNote variant="banner" prefix="Estimated delivery:" className="mb-4" />
 
+          {variants.length > 1 && (
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-slate-700 mb-2">Options</p>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v) => {
+                  const active = v.vid === selectedVid;
+                  const oos = (v.inventory ?? 1) <= 0;
+                  return (
+                    <button
+                      key={v.vid}
+                      type="button"
+                      disabled={oos}
+                      onClick={() => setSelectedVid(v.vid)}
+                      className={`text-sm px-3 py-1.5 rounded-lg border transition ${
+                        active
+                          ? "bg-nav text-white border-nav"
+                          : "border-slate-300 hover:bg-slate-50"
+                      } ${oos ? "opacity-40 cursor-not-allowed" : ""}`}
+                    >
+                      {v.key || v.name || v.sku || v.vid.slice(0, 8)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <TrustBadges variant="compact" className="mb-5" />
 
           {inCart ? (
@@ -160,6 +193,7 @@ export function ProductDetailClient({
                   disabled={product.inventory <= 0}
                   fullWidth
                   variant="detail"
+                  cjVid={selectedVid || undefined}
                 />
               </div>
 
@@ -176,6 +210,7 @@ export function ProductDetailClient({
                   disabled={product.inventory <= 0}
                   fullWidth
                   variant="detail"
+                  cjVid={selectedVid || undefined}
                 />
               </div>
               <WishlistButton product={product} variant="toolbar" />
@@ -334,7 +369,7 @@ export function ProductDetailClient({
         )}
       </section>
     </div>
-    <StickyAddToCartBar product={product} />
+    <StickyAddToCartBar product={product} cjVid={selectedVid || undefined} />
     </>
   );
 }

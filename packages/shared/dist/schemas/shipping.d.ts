@@ -145,20 +145,20 @@ export declare const trackingStatusSchema: z.ZodObject<{
         description: z.ZodString;
         location: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        date: string;
         description: string;
+        date: string;
         location?: string | undefined;
     }, {
-        date: string;
         description: string;
+        date: string;
         location?: string | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     status: string;
     trackingNumber: string;
     events?: {
-        date: string;
         description: string;
+        date: string;
         location?: string | undefined;
     }[] | undefined;
     estimatedDeliveryDate?: string | undefined;
@@ -167,8 +167,8 @@ export declare const trackingStatusSchema: z.ZodObject<{
     status: string;
     trackingNumber: string;
     events?: {
-        date: string;
         description: string;
+        date: string;
         location?: string | undefined;
     }[] | undefined;
     estimatedDeliveryDate?: string | undefined;

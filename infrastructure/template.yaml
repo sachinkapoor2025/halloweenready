@@ -120,6 +120,11 @@ Parameters:
     Type: String
     Default: ""
     Description: e.g. whatsapp:+14155238886 (optional Twilio WhatsApp sender)
+  CjApiKey:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: CJ Dropshipping API Key (My CJ → Authorization → API). Not the website password.
 
 Conditions:
   VendorApiEnabled: !Equals [!Ref EnableVendorApi, "true"]
@@ -190,6 +195,7 @@ Globals:
         TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
         TWILIO_WHATSAPP_FROM: !Ref TwilioWhatsAppFrom
+        CJ_API_KEY: !Ref CjApiKey
 
 Resources:
   ProductsTable:

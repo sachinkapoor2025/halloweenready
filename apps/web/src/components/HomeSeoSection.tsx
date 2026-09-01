@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { cityLinks, whatsappChatUrl } from "@/lib/site";
+import { homepageInlineLinks } from "@/lib/content/page-inline-links";
 import { homeSeoContent } from "@/lib/content/home-seo";
+import { applyInlineLinks } from "@/lib/inline-links";
+import { cityLinks, whatsappChatUrl } from "@/lib/site";
 
 export function HomeSeoSection() {
   const { intro, categories, delivery, howItWorks, tradition, whyUs, faqs } = homeSeoContent;
@@ -17,7 +19,7 @@ export function HomeSeoSection() {
               </h2>
               {intro.paragraphs.map((para, i) => (
                 <p key={i} className="mb-4">
-                  {para}
+                  {applyInlineLinks(para, homepageInlineLinks)}
                 </p>
               ))}
             </header>

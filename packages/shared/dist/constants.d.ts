@@ -54,6 +54,8 @@ export declare const ORANGE_COUNTY_PRODUCT_INVENTORY = 500;
 export declare const VENDOR_ORANGE_COUNTY: "orange-county";
 /** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
 export declare const VENDOR_HALLOWEENREADY: "halloweenready";
+/** CJ Dropshipping catalog + fulfillment vendor. */
+export declare const VENDOR_CJ_DROPSHIPPING: "cj-dropshipping";
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export declare const ORANGE_COUNTY_CATEGORY_SLUG: "rakhi-hampers";
 /**

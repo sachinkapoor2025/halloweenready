@@ -21,6 +21,8 @@ export declare const cartItemSchema: z.ZodObject<{
     lineId: z.ZodOptional<z.ZodString>;
     productSlug: z.ZodString;
     name: z.ZodString;
+    /** Plain-text product snippet for order emails (optional; older carts omit this). */
+    description: z.ZodOptional<z.ZodString>;
     price: z.ZodNumber;
     currency: z.ZodEnum<["USD", "INR"]>;
     quantity: z.ZodNumber;
@@ -33,6 +35,12 @@ export declare const cartItemSchema: z.ZodObject<{
      */
     vendorCost: z.ZodOptional<z.ZodNumber>;
     sku: z.ZodOptional<z.ZodString>;
+    /** CJ product id snapshot (fulfillment). */
+    cjPid: z.ZodOptional<z.ZodString>;
+    /** CJ variant id for this cart line. */
+    cjVid: z.ZodOptional<z.ZodString>;
+    /** Human variant label, e.g. Black-XL. */
+    variantKey: z.ZodOptional<z.ZodString>;
     /** Copied from product — flash / fixed deals are not coupon-eligible. */
     couponExcluded: z.ZodOptional<z.ZodBoolean>;
     /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -60,10 +68,14 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
+    variantKey?: string | undefined;
     couponExcluded?: boolean | undefined;
     addons?: {
         id: string;
@@ -78,10 +90,14 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
+    variantKey?: string | undefined;
     couponExcluded?: boolean | undefined;
     addons?: {
         id: string;
@@ -110,10 +126,13 @@ export declare const addToCartSchema: z.ZodObject<{
         id: string;
         quantity?: number | undefined;
     }>]>, "many">>;
+    /** Optional CJ variant when the product has multiple SKUs. */
+    cjVid: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     quantity: number;
     productSlug: string;
     name?: string | undefined;
+    cjVid?: string | undefined;
     addons?: (string | {
         id: string;
         quantity: number;
@@ -124,6 +143,7 @@ export declare const addToCartSchema: z.ZodObject<{
     productSlug: string;
     name?: string | undefined;
     quantity?: number | undefined;
+    cjVid?: string | undefined;
     addons?: (string | {
         id: string;
         quantity?: number | undefined;
@@ -137,6 +157,8 @@ export declare const cartSchema: z.ZodObject<{
         lineId: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodString;
         name: z.ZodString;
+        /** Plain-text product snippet for order emails (optional; older carts omit this). */
+        description: z.ZodOptional<z.ZodString>;
         price: z.ZodNumber;
         currency: z.ZodEnum<["USD", "INR"]>;
         quantity: z.ZodNumber;
@@ -149,6 +171,12 @@ export declare const cartSchema: z.ZodObject<{
          */
         vendorCost: z.ZodOptional<z.ZodNumber>;
         sku: z.ZodOptional<z.ZodString>;
+        /** CJ product id snapshot (fulfillment). */
+        cjPid: z.ZodOptional<z.ZodString>;
+        /** CJ variant id for this cart line. */
+        cjVid: z.ZodOptional<z.ZodString>;
+        /** Human variant label, e.g. Black-XL. */
+        variantKey: z.ZodOptional<z.ZodString>;
         /** Copied from product — flash / fixed deals are not coupon-eligible. */
         couponExcluded: z.ZodOptional<z.ZodBoolean>;
         /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -176,10 +204,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -194,10 +226,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -215,10 +251,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -237,10 +277,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;

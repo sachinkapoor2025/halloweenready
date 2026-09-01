@@ -1,4 +1,4 @@
-import { VENDOR_ORANGE_COUNTY } from "../constants";
+import { VENDOR_ORANGE_COUNTY, VENDOR_CJ_DROPSHIPPING, VENDOR_HALLOWEENREADY } from "../constants";
 
 export type ProductAddonGroup = "dry-fruits" | "chocolates";
 
@@ -99,8 +99,9 @@ export function productAllowsAddons(product: {
   vendorSlug?: string | null;
 }): boolean {
   const v = product.vendorSlug?.trim();
-  if (!v) return true;
-  return v !== VENDOR_ORANGE_COUNTY;
+  if (!v || v === VENDOR_HALLOWEENREADY) return true;
+  if (v === VENDOR_ORANGE_COUNTY || v === VENDOR_CJ_DROPSHIPPING) return false;
+  return true;
 }
 
 export type CartAddonLike = {

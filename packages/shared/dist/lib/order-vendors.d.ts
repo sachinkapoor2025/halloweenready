@@ -1,6 +1,6 @@
-import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY } from "../constants";
-export { VENDOR_HALLOWEENREADY };
-export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | string;
+import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING } from "../constants";
+export { VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING };
+export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | typeof VENDOR_CJ_DROPSHIPPING | string;
 export type VendorFulfillment = {
     vendorSlug: string;
     warehouseId?: string;
@@ -9,6 +9,10 @@ export type VendorFulfillment = {
     /** pending until AWB recorded; shipped once tracking is set. */
     status?: "pending" | "processing" | "shipped" | "delivered";
     updatedAt?: string;
+    /** CJ shopping order id after createOrderV2. */
+    cjOrderId?: string;
+    cjOrderNumber?: string;
+    cjPayUrl?: string;
 };
 export declare function lineVendorKey(item: {
     vendorSlug?: string | null;
@@ -62,6 +66,9 @@ export declare function upsertVendorFulfillment(fulfillments: VendorFulfillment[
     carrier?: string;
     status?: VendorFulfillment["status"];
     updatedAt?: string;
+    cjOrderId?: string;
+    cjOrderNumber?: string;
+    cjPayUrl?: string;
 }): VendorFulfillment[];
 export declare function allVendorsHaveTracking(fulfillments: VendorFulfillment[]): boolean;
 export declare function anyVendorHasTracking(fulfillments: VendorFulfillment[]): boolean;

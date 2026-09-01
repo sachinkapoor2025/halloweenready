@@ -156,42 +156,42 @@ export const testimonials = [
 export const faqs = [
   {
     q: "How quickly do you ship Halloween decorations?",
-    a: "Most orders are processed quickly and shipped within standard business timeframes. Delivery times vary based on location and shipping method selected.",
+    a: "Most orders are packed shortly after they are placed and then ship with standard carriers. Typical delivery is about 2–5 business days inside the USA, depending on your address and the method selected at checkout.",
   },
   {
     q: "Do you offer outdoor Halloween decorations?",
-    a: "Yes, we offer a wide range of outdoor decorations including inflatables, yard signs, tombstones, lighting, and large display props.",
+    a: "Yes. The collection includes inflatables, yard signs, tombstones, lighting, and larger display props. Choose outdoor-rated items for yards and porches, and keep walkways clear when you set them up.",
   },
   {
     q: "Are your Halloween products suitable for parties?",
-    a: "Absolutely. We offer party supplies, tableware, decorations, banners, balloons, and themed accessories for Halloween events of all sizes.",
+    a: "Yes. You can find tableware, banners, balloons, photo props, and themed accessories for small family gatherings or larger Halloween events.",
   },
   {
     q: "Can I decorate both indoor and outdoor spaces?",
-    a: "Yes. Our collection includes products specifically designed for both indoor and outdoor Halloween decorating.",
+    a: "Yes. Indoor pieces work well on tables, shelves, and walls. Outdoor pieces are meant for yards and porches — check each product page if you need weather-resistant materials.",
   },
   {
     q: "Do you sell inflatable Halloween decorations?",
-    a: "Yes. We carry a variety of inflatable pumpkins, ghosts, skeletons, and other popular Halloween characters.",
+    a: "Yes. We carry inflatable pumpkins, ghosts, skeletons, and other popular characters. Most include stakes and a blower unless the product page says otherwise.",
   },
   {
     q: "What are your most popular Halloween categories?",
-    a: "Our best-selling categories include hanging decorations, inflatables, skeletons, lighting, yard décor, party supplies, and trick-or-treat accessories.",
+    a: "Shoppers often start with hanging decorations, inflatables, skeletons, lighting, yard pieces, party supplies, and trick-or-treat accessories, then add costumes if they need outfits too.",
   },
   {
     q: "Does HalloweenReady ship across the USA?",
-    a: "Yes. We deliver Halloween orders to all 50 US states with fast domestic fulfillment.",
+    a: "Yes. We deliver to all 50 US states with domestic fulfillment, so orders do not go through international customs.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "Stripe (USD — Visa, Mastercard, Amex) and Razorpay (INR — UPI, cards, netbanking) for secure online checkout.",
+    a: "You can pay with Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking) at secure checkout.",
   },
   {
     q: "Can I trust HalloweenReady for Halloween shopping?",
-    a: "HalloweenReady offers secure checkout, WhatsApp and email support, domestic USA shipping, and a satisfaction guarantee.",
+    a: "Checkout is encrypted, and you can reach the team on WhatsApp or email for sizing and delivery questions. Orders ship from within the USA, and we stand behind the purchase if something arrives damaged.",
   },
   {
     q: "When should I order for Halloween 2026?",
-    a: "Halloween 2026 is October 31, 2026. Order decor and party supplies by October 25 for guaranteed pre-Halloween delivery.",
+    a: "Halloween 2026 is Saturday, October 31. Aim to order costumes by about October 20 and decorations or party supplies by October 25 so there is time for delivery and setup.",
   },
 ] as const;

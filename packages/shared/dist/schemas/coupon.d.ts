@@ -117,8 +117,8 @@ export declare const couponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
-    sessionId?: string | undefined;
     orderId?: string | undefined;
+    sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
@@ -131,8 +131,8 @@ export declare const couponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
-    sessionId?: string | undefined;
     orderId?: string | undefined;
+    sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
@@ -183,8 +183,8 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
-    sessionId?: string | undefined;
     orderId?: string | undefined;
+    sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
@@ -197,8 +197,8 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
-    sessionId?: string | undefined;
     orderId?: string | undefined;
+    sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;

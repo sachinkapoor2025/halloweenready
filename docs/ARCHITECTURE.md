@@ -104,6 +104,14 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | POST | `/checkout` | Create order + payment intent |
 | POST | `/webhooks/stripe` | Stripe webhook |
 | POST | `/webhooks/razorpay` | Razorpay webhook |
+| POST | `/webhooks/cj` | CJ Dropshipping product/stock/order/logistics webhook |
+| GET | `/admin/cj/status` | Admin: CJ API connection status |
+| PUT | `/admin/cj/api-key` | Admin: save CJ API key |
+| GET | `/admin/cj/products` | Admin: search CJ catalog (`?keyWord=halloween`) |
+| POST | `/admin/cj/products/import` | Admin: import selected CJ pids into the store catalog |
+| POST | `/admin/cj/products/import-halloween` | Admin: import one page of Halloween products from CJ |
+| GET | `/admin/cj/orders` | Admin: list CJ shopping orders |
+| POST | `/admin/cj/orders/{orderId}/fulfill` | Admin: create a CJ fulfillment order from a HalloweenReady order |
 | POST | `/leads` | Save partial customer info |
 | POST | `/events` | First-party analytics events (batched, public) |
 | GET | `/orders` | User orders |

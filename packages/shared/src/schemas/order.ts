@@ -172,6 +172,9 @@ export const orderSchema = z.object({
         carrier: z.string().optional(),
         status: z.enum(["pending", "processing", "shipped", "delivered"]).optional(),
         updatedAt: z.string().optional(),
+        cjOrderId: z.string().optional(),
+        cjOrderNumber: z.string().optional(),
+        cjPayUrl: z.string().optional(),
       })
     )
     .optional(),

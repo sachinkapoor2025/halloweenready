@@ -13,6 +13,8 @@ export const cartItemSchema = z.object({
   lineId: z.string().min(1).optional(),
   productSlug: z.string(),
   name: z.string(),
+  /** Plain-text product snippet for order emails (optional; older carts omit this). */
+  description: z.string().max(200).optional(),
   price: z.number(),
   currency: z.enum(["USD", "INR"]),
   quantity: z.number().int().min(1),
@@ -25,6 +27,12 @@ export const cartItemSchema = z.object({
    */
   vendorCost: z.number().nonnegative().optional(),
   sku: z.string().optional(),
+  /** CJ product id snapshot (fulfillment). */
+  cjPid: z.string().min(1).max(80).optional(),
+  /** CJ variant id for this cart line. */
+  cjVid: z.string().min(1).max(80).optional(),
+  /** Human variant label, e.g. Black-XL. */
+  variantKey: z.string().max(120).optional(),
   /** Copied from product — flash / fixed deals are not coupon-eligible. */
   couponExcluded: z.boolean().optional(),
   /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -50,6 +58,8 @@ export const addToCartSchema = z.object({
    * Plain string ids still accepted (= quantity 1).
    */
   addons: z.array(addToCartAddonSchema).max(20).optional(),
+  /** Optional CJ variant when the product has multiple SKUs. */
+  cjVid: z.string().min(1).max(80).optional(),
 });
 
 export const cartSchema = z.object({

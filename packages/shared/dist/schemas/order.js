@@ -164,6 +164,9 @@ exports.orderSchema = zod_1.z.object({
         carrier: zod_1.z.string().optional(),
         status: zod_1.z.enum(["pending", "processing", "shipped", "delivered"]).optional(),
         updatedAt: zod_1.z.string().optional(),
+        cjOrderId: zod_1.z.string().optional(),
+        cjOrderNumber: zod_1.z.string().optional(),
+        cjPayUrl: zod_1.z.string().optional(),
     }))
         .optional(),
     assignedVendorId: zod_1.z.string().min(1).max(80).optional(),

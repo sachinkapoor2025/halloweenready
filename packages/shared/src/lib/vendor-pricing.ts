@@ -28,11 +28,19 @@ export function pricingFromVendorCost(
 }
 
 /** Strip backend-only vendor fields before public product APIs / SSR. */
-export function stripVendorPrivateFields<T extends { vendorCost?: number; vendorSlug?: string }>(
-  product: T
-): Omit<T, "vendorCost" | "vendorSlug"> {
+export function stripVendorPrivateFields<
+  T extends {
+    vendorCost?: number;
+    vendorSlug?: string;
+    cjVariants?: Array<{ vendorCost?: number }>;
+  },
+>(product: T): Omit<T, "vendorCost" | "vendorSlug"> {
   const { vendorCost: _c, vendorSlug: _v, ...rest } = product;
-  return rest;
+  if (!rest.cjVariants?.length) return rest as Omit<T, "vendorCost" | "vendorSlug">;
+  return {
+    ...rest,
+    cjVariants: rest.cjVariants.map(({ vendorCost: _vc, ...variant }) => variant),
+  } as Omit<T, "vendorCost" | "vendorSlug">;
 }
 
 /** @deprecated Use stripVendorPrivateFields */

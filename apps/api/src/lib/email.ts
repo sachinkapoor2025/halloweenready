@@ -9,6 +9,15 @@ import {
   LOW_STOCK_ALERT_EMAIL,
   ABANDONED_CART_DISCOUNT_PERCENT,
   isAdminExtremeDiscount,
+  buildOrderConfirmedEmailHtml,
+  buildOrderConfirmedEmailText,
+  buildOrderDeliveredEmailHtml,
+  buildOrderDeliveredEmailText,
+  isDeliveredNotifyStatus,
+  isManualWhatsAppStatus,
+  isOrderConfirmedStatus,
+  orderConfirmedSubject,
+  orderDeliveredSubject,
 } from "@halloweenready/shared";
 import {
   abandonedCartWhatsAppMessage,
@@ -649,7 +658,7 @@ function siteUrl(): string {
 }
 
 /** Customer-facing copy for each fulfillment / terminal status step. */
-function customerStatusEmailContent(order: Order): { subject: string; body: string } | null {
+function customerStatusEmailContent(order: Order): { subject: string; body: string; html?: string } | null {
   const name = order.shippingAddress?.name?.split(" ")[0] ?? "there";
   const shortId = order.orderId.slice(0, 8).toUpperCase();
   const total = `${order.currency} ${order.total.toFixed(2)}`;
@@ -688,17 +697,19 @@ Total: ${total}
 
 We deliver to all 50 US states in 5–7 business days after dispatch.${footer}`,
       };
-    case ORDER_STATUS.ACCEPTED:
+    case ORDER_STATUS.ACCEPTED: {
+      let html: string | undefined;
+      try {
+        html = buildOrderConfirmedEmailHtml(order);
+      } catch (err) {
+        console.error("Order confirmed HTML failed; sending text fallback:", err);
+      }
       return {
-        subject: `Order accepted — #${shortId} | ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Good news — we've accepted your Halloween order #${shortId} and our team is preparing it for fulfillment.
-
-Order total: ${total}
-
-We'll email you again when packing starts and when your package ships.${footer}`,
+        subject: orderConfirmedSubject(order),
+        body: buildOrderConfirmedEmailText(order),
+        html,
       };
+    }
     case ORDER_STATUS.ON_HOLD:
       return {
         subject: `Order on hold — #${shortId} | ${SITE_NAME}`,
@@ -734,24 +745,32 @@ Order total: ${total}
 
 Typical USA delivery is 5–7 business days after dispatch (faster to many metros).${footer}`,
       };
-    case ORDER_STATUS.DELIVERED:
+    case ORDER_STATUS.DELIVERED: {
+      let html: string | undefined;
+      try {
+        html = buildOrderDeliveredEmailHtml(order, "delivered");
+      } catch (err) {
+        console.error("Order delivered HTML failed; sending text fallback:", err);
+      }
       return {
-        subject: `Order delivered — #${shortId} | ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Your order #${shortId} has been marked as delivered.
-
-We hope you love your Halloween haul! If anything looks wrong with the package, reply to this email and we'll help right away.${footer}`,
+        subject: orderDeliveredSubject(order, "delivered"),
+        body: buildOrderDeliveredEmailText(order, "delivered"),
+        html,
       };
-    case ORDER_STATUS.COMPLETE:
+    }
+    case ORDER_STATUS.COMPLETE: {
+      let html: string | undefined;
+      try {
+        html = buildOrderDeliveredEmailHtml(order, "complete");
+      } catch (err) {
+        console.error("Order complete HTML failed; sending text fallback:", err);
+      }
       return {
-        subject: `Order complete — #${shortId} | ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Your order #${shortId} is complete. Thank you for celebrating Halloween with ${SITE_NAME}.
-
-We'd love a quick review when you have a moment: ${siteUrl()}/reviews${footer}`,
+        subject: orderDeliveredSubject(order, "complete"),
+        body: buildOrderDeliveredEmailText(order, "complete"),
+        html,
       };
+    }
     case ORDER_STATUS.CANCELLED:
       return {
         subject: `Order cancelled — #${shortId} | ${SITE_NAME}`,
@@ -909,51 +928,91 @@ function nowIsoFallback(): string {
  * without opening the admin portal.
  * Uses SMTP via sendEmail() (same path as paid confirmation / review request).
  * Do NOT use SES here — SES is reserved for marketing campaigns (/ses-email/*).
- * Skips pending_payment and unknown statuses. Status update still succeeds if SMTP is down.
+ * Skips pending_payment and unknown statuses. Missing email or WhatsApp skips that
+ * channel only — the order-status update still succeeds.
  */
-export async function notifyCustomerOrderStatusChange(order: Order): Promise<EmailSendResult> {
-  if (!smtpConfigured()) {
-    return { ok: false, skipped: true, error: "SMTP not configured" };
+export async function notifyCustomerOrderStatusChange(
+  order: Order,
+  opts?: { previousNotificationStatus?: string }
+): Promise<EmailSendResult> {
+  try {
+    const content = customerStatusEmailContent(order);
+    if (!content) {
+      return { ok: true, skipped: true };
+    }
+
+    if (opts?.previousNotificationStatus && opts.previousNotificationStatus === order.status) {
+      return { ok: true, skipped: true, error: "Already notified for this status" };
+    }
+
+    const confirmed = isOrderConfirmedStatus(order.status);
+    const delivered = isDeliveredNotifyStatus(order.status);
+    const skipAutoWhatsApp = isManualWhatsAppStatus(order.status);
+
+    if (smtpConfigured()) {
+      const adminResult = await notifyAdminOrderStatusChange(order);
+      if (!adminResult.ok && !adminResult.skipped) {
+        console.error("Admin order status email failed:", adminResult.error);
+      }
+    }
+
+    const customerEmail = order.shippingAddress?.email?.trim();
+    let emailResult: EmailSendResult = { ok: true, skipped: true, error: "No customer email" };
+
+    if (!smtpConfigured()) {
+      emailResult = { ok: false, skipped: true, error: "SMTP not configured" };
+    } else if (customerEmail?.includes("@")) {
+      let html = content.html;
+      if ((confirmed || delivered) && !html) {
+        try {
+          html = confirmed
+            ? buildOrderConfirmedEmailHtml(order)
+            : buildOrderDeliveredEmailHtml(
+                order,
+                order.status === ORDER_STATUS.COMPLETE ? "complete" : "delivered"
+              );
+        } catch (err) {
+          console.error("Order status HTML failed; sending text fallback:", err);
+        }
+      }
+      emailResult = await sendEmail({
+        to: customerEmail,
+        subject: content.subject,
+        text: content.body,
+        html,
+        replyTo: notifyAddress(),
+      });
+    }
+
+    // Confirmed / delivered / complete WhatsApp is owner-initiated via Admin "Send WhatsApp".
+    if (!skipAutoWhatsApp) {
+      let waMessage: string | null = null;
+      try {
+        waMessage = orderStatusWhatsAppMessage({
+          name: order.shippingAddress?.name?.split(" ")[0],
+          orderId: order.orderId,
+          status: order.status,
+          totalLabel: `${order.currency} ${order.total.toFixed(2)}`,
+          carrier: order.carrier,
+          trackingNumber: order.trackingNumber,
+        });
+      } catch (err) {
+        console.error("Order status WhatsApp copy failed:", err);
+      }
+
+      await notifyCustomerWhatsApp({
+        phone: order.shippingAddress?.phone,
+        context: `order-status-${order.status}`,
+        message: waMessage,
+      });
+    }
+
+    return emailResult;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Order status notify failed:", message);
+    return { ok: false, error: message };
   }
-
-  const content = customerStatusEmailContent(order);
-  if (!content) {
-    return { ok: true, skipped: true };
-  }
-
-  const adminResult = await notifyAdminOrderStatusChange(order);
-  if (!adminResult.ok && !adminResult.skipped) {
-    console.error("Admin order status email failed:", adminResult.error);
-  }
-
-  const customerEmail = order.shippingAddress?.email?.trim();
-  if (!customerEmail?.includes("@")) {
-    return adminResult.ok
-      ? { ok: true, skipped: true, error: "No customer email" }
-      : { ok: false, skipped: true, error: "No customer email" };
-  }
-
-  const emailResult = await sendEmail({
-    to: customerEmail,
-    subject: content.subject,
-    text: content.body,
-    replyTo: notifyAddress(),
-  });
-
-  await notifyCustomerWhatsApp({
-    phone: order.shippingAddress?.phone,
-    context: `order-status-${order.status}`,
-    message: orderStatusWhatsAppMessage({
-      name: order.shippingAddress?.name?.split(" ")[0],
-      orderId: order.orderId,
-      status: order.status,
-      totalLabel: `${order.currency} ${order.total.toFixed(2)}`,
-      carrier: order.carrier,
-      trackingNumber: order.trackingNumber,
-    }),
-  });
-
-  return emailResult;
 }
 
 export async function sendReviewRequestEmail(order: Order): Promise<EmailSendResult> {

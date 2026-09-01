@@ -740,8 +740,9 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
     if (!emailResult.ok) console.error("Order payment failed email failed:", emailResult.error);
   }
 
-  // Notify customer + order@halloweenready on every status step (accepted → … → complete, cancelled/refunded).
+  // Notify customer + order@halloweenready on every status step (order confirmed → … → complete, cancelled/refunded).
   // Skip pending_payment → cancelled: shopper never paid; admin alert above is enough.
+  // Same-status saves do not notify (statusChanged). Missing email/WhatsApp skips that channel only.
   if (
     statusChanged &&
     !(
@@ -749,9 +750,15 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
       resolvedStatus === ORDER_STATUS.CANCELLED
     )
   ) {
-    const statusEmailResult = await notifyCustomerOrderStatusChange(updated);
-    if (!statusEmailResult.ok && !statusEmailResult.skipped) {
-      console.error("Order status email failed:", statusEmailResult.error);
+    try {
+      const statusEmailResult = await notifyCustomerOrderStatusChange(updated, {
+        previousNotificationStatus: order.status,
+      });
+      if (!statusEmailResult.ok && !statusEmailResult.skipped) {
+        console.error("Order status email failed:", statusEmailResult.error);
+      }
+    } catch (err) {
+      console.error("Order status notification failed:", err);
     }
   }
 
@@ -803,6 +810,16 @@ export async function markOrderPaid(
     }
   }
   await decrementInventoryForOrder(updated);
+
+  try {
+    const { fulfillOrderWithCj } = await import("../lib/cj-fulfill");
+    const cjResult = await fulfillOrderWithCj(updated.orderId, { payType: 3 });
+    if (!cjResult.ok) {
+      console.warn("CJ auto-fulfill failed:", orderId, cjResult.message);
+    }
+  } catch (err) {
+    console.error("CJ auto-fulfill error:", orderId, err);
+  }
 
   const settings = await loadShippingSettings();
   if (

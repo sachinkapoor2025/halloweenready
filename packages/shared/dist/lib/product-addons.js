@@ -84,9 +84,11 @@ function getProductAddon(id) {
 }
 function productAllowsAddons(product) {
     const v = product.vendorSlug?.trim();
-    if (!v)
+    if (!v || v === constants_1.VENDOR_HALLOWEENREADY)
         return true;
-    return v !== constants_1.VENDOR_ORANGE_COUNTY;
+    if (v === constants_1.VENDOR_ORANGE_COUNTY || v === constants_1.VENDOR_CJ_DROPSHIPPING)
+        return false;
+    return true;
 }
 function sumAddonPrices(addons) {
     if (!addons?.length)

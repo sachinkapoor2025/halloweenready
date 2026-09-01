@@ -15,6 +15,9 @@ export declare function pricingFromVendorCost(vendorCost: number, currency?: Sho
 export declare function stripVendorPrivateFields<T extends {
     vendorCost?: number;
     vendorSlug?: string;
+    cjVariants?: Array<{
+        vendorCost?: number;
+    }>;
 }>(product: T): Omit<T, "vendorCost" | "vendorSlug">;
 /** @deprecated Use stripVendorPrivateFields */
 export declare function stripVendorCost<T extends {

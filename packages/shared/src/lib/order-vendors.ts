@@ -1,8 +1,12 @@
-import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY } from "../constants";
+import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING } from "../constants";
 
-export { VENDOR_HALLOWEENREADY };
+export { VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING };
 
-export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | string;
+export type OrderVendorSlug =
+  | typeof VENDOR_ORANGE_COUNTY
+  | typeof VENDOR_HALLOWEENREADY
+  | typeof VENDOR_CJ_DROPSHIPPING
+  | string;
 
 export type VendorFulfillment = {
   vendorSlug: string;
@@ -12,6 +16,10 @@ export type VendorFulfillment = {
   /** pending until AWB recorded; shipped once tracking is set. */
   status?: "pending" | "processing" | "shipped" | "delivered";
   updatedAt?: string;
+  /** CJ shopping order id after createOrderV2. */
+  cjOrderId?: string;
+  cjOrderNumber?: string;
+  cjPayUrl?: string;
 };
 
 export function lineVendorKey(item: { vendorSlug?: string | null }): string {
@@ -22,6 +30,7 @@ export function lineVendorKey(item: { vendorSlug?: string | null }): string {
 export function vendorDisplayLabel(slug: string): string {
   if (slug === VENDOR_ORANGE_COUNTY) return "Orange County";
   if (slug === VENDOR_HALLOWEENREADY) return "HalloweenReady";
+  if (slug === VENDOR_CJ_DROPSHIPPING) return "CJ Dropshipping";
   return slug
     .split("-")
     .filter(Boolean)
@@ -142,6 +151,9 @@ export function upsertVendorFulfillment(
     carrier?: string;
     status?: VendorFulfillment["status"];
     updatedAt?: string;
+    cjOrderId?: string;
+    cjOrderNumber?: string;
+    cjPayUrl?: string;
   }
 ): VendorFulfillment[] {
   const slug = patch.vendorSlug.trim();
@@ -156,12 +168,19 @@ export function upsertVendorFulfillment(
   const status =
     patch.status ??
     (trackingNumber ? ("shipped" as const) : base.status ?? ("pending" as const));
+  const cjOrderId = patch.cjOrderId !== undefined ? patch.cjOrderId.trim() : base.cjOrderId;
+  const cjOrderNumber =
+    patch.cjOrderNumber !== undefined ? patch.cjOrderNumber.trim() : base.cjOrderNumber;
+  const cjPayUrl = patch.cjPayUrl !== undefined ? patch.cjPayUrl.trim() : base.cjPayUrl;
   const row: VendorFulfillment = {
     vendorSlug: slug,
     ...(warehouseId ? { warehouseId } : {}),
     ...(trackingNumber ? { trackingNumber } : {}),
     ...(carrier ? { carrier } : {}),
     status,
+    ...(cjOrderId ? { cjOrderId } : {}),
+    ...(cjOrderNumber ? { cjOrderNumber } : {}),
+    ...(cjPayUrl ? { cjPayUrl } : {}),
     ...(patch.updatedAt ? { updatedAt: patch.updatedAt } : base.updatedAt ? { updatedAt: base.updatedAt } : {}),
   };
   if (idx >= 0) next[idx] = row;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { Order } from "@halloweenready/shared";
+import { formatOrderStatusLabel, type Order } from "@halloweenready/shared";
 import { carrierTrackingUrl } from "@/lib/tracking-url";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -60,7 +60,7 @@ export function AccountOrdersPanel({
                   })}
                 </p>
                 <span className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusClass}`}>
-                  {order.status.replace(/_/g, " ")}
+                    {formatOrderStatusLabel(order.status)}
                 </span>
               </div>
               <div className="text-right">

@@ -50,8 +50,8 @@ export declare const createExpenseSchema: z.ZodEffects<z.ZodObject<{
 }, {
     amount: number;
     expenseDate: string;
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;
     billStatus?: "all_bills" | "partial_bills" | "no_bill" | undefined;
@@ -72,8 +72,8 @@ export declare const createExpenseSchema: z.ZodEffects<z.ZodObject<{
 }, {
     amount: number;
     expenseDate: string;
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;
     billStatus?: "all_bills" | "partial_bills" | "no_bill" | undefined;
@@ -93,8 +93,8 @@ export declare const updateExpenseSchema: z.ZodEffects<z.ZodObject<{
     billImageUrls: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     billImageUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
 }, "strip", z.ZodTypeAny, {
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     amount?: number | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;
@@ -104,8 +104,8 @@ export declare const updateExpenseSchema: z.ZodEffects<z.ZodObject<{
     billImageUrls?: string[] | undefined;
     billImageUrl?: string | undefined;
 }, {
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     amount?: number | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;
@@ -115,8 +115,8 @@ export declare const updateExpenseSchema: z.ZodEffects<z.ZodObject<{
     billImageUrls?: string[] | undefined;
     billImageUrl?: string | undefined;
 }>, {
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     amount?: number | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;
@@ -126,8 +126,8 @@ export declare const updateExpenseSchema: z.ZodEffects<z.ZodObject<{
     billImageUrls?: string[] | undefined;
     billImageUrl?: string | undefined;
 }, {
-    currency?: "USD" | "INR" | undefined;
     description?: string | undefined;
+    currency?: "USD" | "INR" | undefined;
     expenseTypes?: ("other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense")[] | undefined;
     amount?: number | undefined;
     expenseType?: "other" | "shipping_charges" | "inventory_purchase" | "bills" | "marketing" | "office_expense" | undefined;

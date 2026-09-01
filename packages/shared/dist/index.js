@@ -15,6 +15,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./schemas/product"), exports);
+__exportStar(require("./schemas/cj-dropshipping"), exports);
+__exportStar(require("./lib/cj-category"), exports);
 __exportStar(require("./schemas/review"), exports);
 __exportStar(require("./schemas/category"), exports);
 __exportStar(require("./schemas/cart"), exports);
@@ -70,6 +72,7 @@ __exportStar(require("./lib/schedule-delivery"), exports);
 __exportStar(require("./lib/marketing-email-html"), exports);
 __exportStar(require("./lib/marketing-campaign-emails"), exports);
 __exportStar(require("./lib/order-number"), exports);
+__exportStar(require("./lib/order-confirmed-email"), exports);
 __exportStar(require("./lib/order-status"), exports);
 __exportStar(require("./lib/order-vendors"), exports);
 __exportStar(require("./lib/product-addons"), exports);
