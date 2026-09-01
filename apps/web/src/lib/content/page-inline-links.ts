@@ -199,4 +199,29 @@ export const blogPostInlineLinks: Record<string, readonly InlineLink[]> = {
     { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
     { phrase: "Halloween planning guide", href: "/halloween-guide" },
   ],
+  "halloween-costumes-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-party-supplies-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "buy-halloween-decorations-online-uk": [
+    { phrase: "inflatable Halloween decorations", href: "/blog/inflatable-halloween-decorations-yard-displays" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+  ],
+  "halloween-decorations-delivery-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-decorations-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
 };
