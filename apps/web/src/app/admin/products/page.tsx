@@ -10,6 +10,7 @@ import {
   getUnitsSold,
   isFastSelling,
   productHasShippingDims,
+  isCjDropshippingProduct,
 } from "@halloweenready/shared";
 import { formatMoney, paginate, downloadCsv } from "@/lib/admin-utils";
 import { compressProductImage } from "@/lib/compress-product-image";
@@ -51,10 +52,19 @@ export default function AdminProductsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    Promise.all([
-      apiClient<{ products: Product[] }>("/admin/products"),
-      apiClient<{ categories: { slug: string; name: string }[] }>("/categories"),
-    ])
+    apiClient<{ deleted: number }>("/admin/products/purge-samples", { method: "POST" })
+      .then((purged) => {
+        if (purged.deleted > 0) {
+          setMessage(`Removed ${purged.deleted} sample product(s). Only CJ imports remain.`);
+        }
+      })
+      .catch(() => undefined)
+      .then(() =>
+        Promise.all([
+          apiClient<{ products: Product[] }>("/admin/products"),
+          apiClient<{ categories: { slug: string; name: string }[] }>("/categories"),
+        ])
+      )
       .then(([p, c]) => {
         setProducts(p.products);
         setCategories(c.categories);
@@ -586,7 +596,9 @@ export default function AdminProductsPage() {
                     <th className="py-3 px-4">Product</th>
                     <th className="py-3 px-4">SKU</th>
                     <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">CJ cost</th>
                     <th className="py-3 px-4">Price</th>
+                    <th className="py-3 px-4">Added</th>
                     <th className="py-3 px-4">Stock</th>
                     <th className="py-3 px-4">Sold</th>
                     <th className="py-3 px-4">Status</th>
@@ -654,11 +666,28 @@ export default function AdminProductsPage() {
                       <td className="py-3 px-4 text-xs">{p.sku ?? "—"}</td>
                       <td className="py-3 px-4">{p.categorySlug}</td>
                       <td className="py-3 px-4">
+                        {isCjDropshippingProduct(p) && typeof p.vendorCost === "number"
+                          ? formatMoney(p.vendorCost, "USD")
+                          : "—"}
+                      </td>
+                      <td className="py-3 px-4">
                         {formatMoney(p.price, p.currency)}
                         {p.compareAtPrice && (
                           <div className="text-xs text-slate-400 line-through">
                             {formatMoney(p.compareAtPrice, p.currency)}
                           </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {isCjDropshippingProduct(p) && typeof p.vendorCost === "number" ? (
+                          <span>
+                            {formatMoney(p.price - p.vendorCost, p.currency)}
+                            <span className="block text-xs text-slate-500">
+                              {p.price > 0 ? `${(((p.price - p.vendorCost) / p.price) * 100).toFixed(0)}% margin` : ""}
+                            </span>
+                          </span>
+                        ) : (
+                          "—"
                         )}
                       </td>
                       <td className="py-3 px-4">

@@ -40,11 +40,10 @@ export default async function HomePage() {
     categories = [];
   }
 
-  const catalogProducts = getCatalogProducts();
-  if (catalogProducts.length > 0) {
-    const apiBySlug = new Map(products.map((p) => [p.slug, p]));
-    // Prefer live API product data (including admin images); catalog only fills gaps
-    products = withListingImages(catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c));
+  // Live API is the catalog. Bundled JSON is offline fallback only — overlaying it
+  // resurrected deleted sample SKUs on the storefront after Dynamo cleanup.
+  if (products.length === 0) {
+    products = withListingImages(getCatalogProducts());
   } else {
     products = withListingImages(products);
   }
