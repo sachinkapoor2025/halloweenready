@@ -27,6 +27,7 @@ import * as vendorManagement from "./handlers/vendor-management";
 import * as markets from "./handlers/markets";
 import * as reviews from "./handlers/reviews";
 import * as cjDropshipping from "./handlers/cj-dropshipping";
+import * as cjProducts from "./handlers/cj-products";
 import { stripeWebhook } from "./handlers/payments/stripe";
 import {
   razorpayWebhook,
@@ -45,7 +46,38 @@ interface Route {
 
 const routes: Route[] = [
   { method: "GET", pattern: /^\/health$/, handler: async () => ok({ status: "ok" }) },
+  { method: "GET", pattern: /^\/cj\/products$/, handler: cjProducts.listCjStoreProducts },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)\/videos$/,
+    handler: cjProducts.getCjStoreProductVideos,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)\/shipping$/,
+    handler: cjProducts.getCjStoreProductShipping,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)$/,
+    handler: cjProducts.getCjStoreProduct,
+    params: ["slug"],
+  },
   { method: "GET", pattern: /^\/products$/, handler: products.listProducts },
+  {
+    method: "GET",
+    pattern: /^\/products\/([^/]+)\/videos$/,
+    handler: products.getProductVideos,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/products\/([^/]+)\/shipping$/,
+    handler: products.getProductShipping,
+    params: ["slug"],
+  },
   { method: "GET", pattern: /^\/products\/([^/]+)$/, handler: products.getProduct, params: ["slug"] },
   {
     method: "GET",

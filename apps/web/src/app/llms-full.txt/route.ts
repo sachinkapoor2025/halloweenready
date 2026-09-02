@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import { site, navItems, faqs } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
-import type { Product } from "@halloweenready/shared";
+import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 
@@ -12,7 +12,7 @@ import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-da
 export async function GET() {
   let products: Product[] = [];
   try {
-    const data = await api<{ products: Product[] }>("/products");
+    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath());
     products = data.products;
   } catch {
     products = [];

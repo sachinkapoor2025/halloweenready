@@ -11,6 +11,7 @@ import { VariantImg } from "@/components/VariantImg";
 
 interface ProductImageGalleryProps {
   images: string[];
+  videos?: Array<{ url: string; posterUrl?: string; durationSec?: number }>;
   alt: string;
 }
 
@@ -61,7 +62,11 @@ function useDesktopHoverZoom() {
   return isDesktop;
 }
 
-export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
+type GalleryMedia =
+  | { type: "video"; url: string; posterUrl?: string }
+  | { type: "image"; url: string };
+
+export function ProductImageGallery({ images, videos = [], alt }: ProductImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -73,11 +78,24 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const isDesktop = useDesktopHoverZoom();
 
+  const videoItems: GalleryMedia[] = useMemo(
+    () =>
+      videos
+        .filter((v) => /^https?:\/\//i.test(v.url))
+        .map((v) => ({ type: "video" as const, url: v.url, posterUrl: v.posterUrl })),
+    [videos]
+  );
   const resolved = useMemo(() => resolveImageUrls(images), [images]);
   // Show the full list immediately so multi-image PDPs never look like a single photo
   // while size filtering runs (or if remote probes fail).
-  const imgs = displayImgs.length > 0 ? displayImgs : resolved;
-  const current = imgs[selected] ?? "";
+  const imageUrls = displayImgs.length > 0 ? displayImgs : resolved;
+  const media: GalleryMedia[] = useMemo(
+    () => [...videoItems, ...imageUrls.map((url) => ({ type: "image" as const, url }))],
+    [videoItems, imageUrls]
+  );
+  const imgs = imageUrls;
+  const current = media[selected];
+  const currentImage = current?.type === "image" ? current.url : "";
 
   useEffect(() => {
     setDisplayImgs([]);
@@ -175,17 +193,17 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const goPrev = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
-      setSelected((i) => (i <= 0 ? imgs.length - 1 : i - 1));
+      setSelected((i) => (i <= 0 ? media.length - 1 : i - 1));
     },
-    [imgs.length]
+    [media.length]
   );
 
   const goNext = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
-      setSelected((i) => (i >= imgs.length - 1 ? 0 : i + 1));
+      setSelected((i) => (i >= media.length - 1 ? 0 : i + 1));
     },
-    [imgs.length]
+    [media.length]
   );
 
   useEffect(() => {
@@ -196,6 +214,14 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
     clearZoom();
     setImageBounds(null);
   }, [current, clearZoom]);
+
+  useEffect(() => {
+    setSelected((i) => (media.length === 0 ? 0 : Math.min(i, media.length - 1)));
+  }, [media.length]);
+
+  useEffect(() => {
+    if (current?.type === "video") setLightbox(false);
+  }, [current]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -220,31 +246,51 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
     );
   }
 
-  const showZoom = isDesktop && isHovering && lens && imageBounds;
+  const isVideo = current.type === "video";
+  const showZoom = !isVideo && isDesktop && isHovering && lens && imageBounds;
+  const videoCount = videoItems.length;
+  const imageCount = imgs.length;
 
   return (
     <>
       <div className="space-y-3">
         <div
           ref={containerRef}
-          className="relative aspect-square bg-slate-50 rounded-xl overflow-hidden border border-slate-100 cursor-zoom-in md:cursor-crosshair group"
-          onClick={() => setLightbox(true)}
-          onMouseEnter={() => isDesktop && setIsHovering(true)}
+          className={`relative aspect-square bg-slate-50 rounded-xl overflow-hidden border border-slate-100 group ${
+            isVideo ? "cursor-default" : "cursor-zoom-in md:cursor-crosshair"
+          }`}
+          onClick={() => {
+            if (!isVideo) setLightbox(true);
+          }}
+          onMouseEnter={() => !isVideo && isDesktop && setIsHovering(true)}
           onMouseLeave={clearZoom}
-          onMouseMove={handleMouseMove}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && setLightbox(true)}
-          aria-label="Open image zoom"
+          onMouseMove={isVideo ? undefined : handleMouseMove}
+          role={isVideo ? undefined : "button"}
+          tabIndex={isVideo ? undefined : 0}
+          onKeyDown={(e) => !isVideo && e.key === "Enter" && setLightbox(true)}
+          aria-label={isVideo ? undefined : "Open image zoom"}
         >
-          <VariantImg
-            imgRef={imgRef}
-            src={current}
-            variant="gallery"
-            alt={`${alt} — image ${selected + 1} of ${imgs.length}`}
-            onLoad={() => setImageBounds(updateBounds())}
-            className="w-full h-full object-contain p-2 transition-transform duration-200 group-hover:scale-[1.02] md:group-hover:scale-100 select-none"
-          />
+          {isVideo ? (
+            <video
+              key={current.url}
+              className="w-full h-full object-contain bg-black"
+              src={current.url}
+              poster={current.posterUrl}
+              controls
+              playsInline
+              preload="metadata"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <VariantImg
+              imgRef={imgRef}
+              src={currentImage}
+              variant="gallery"
+              alt={`${alt} — image ${selected + 1} of ${media.length}`}
+              onLoad={() => setImageBounds(updateBounds())}
+              className="w-full h-full object-contain p-2 transition-transform duration-200 group-hover:scale-[1.02] md:group-hover:scale-100 select-none"
+            />
+          )}
 
           {showZoom && (
             <>
@@ -263,7 +309,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                 style={{
                   width: ZOOM_PANEL_SIZE,
                   height: ZOOM_PANEL_SIZE,
-                  backgroundImage: `url(${productImageVariantUrl(current, "gallery")})`,
+                  backgroundImage: `url(${productImageVariantUrl(currentImage, "gallery")})`,
                   backgroundRepeat: "no-repeat",
                   backgroundSize: `${imageBounds.width * ZOOM_LEVEL}px ${imageBounds.height * ZOOM_LEVEL}px`,
                   backgroundPosition: `${lens.bgX}px ${lens.bgY}px`,
@@ -273,11 +319,11 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             </>
           )}
 
-          {imgs.length > 1 && (
+          {media.length > 1 && (
             <>
               <button
                 type="button"
-                aria-label="Previous image"
+                aria-label="Previous media"
                 onClick={goPrev}
                 className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[4]"
               >
@@ -285,44 +331,60 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
               </button>
               <button
                 type="button"
-                aria-label="Next image"
+                aria-label="Next media"
                 onClick={goNext}
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 shadow-md text-primary font-bold hover:bg-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[4]"
               >
                 ›
               </button>
               <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs bg-black/55 text-white px-2.5 py-1 rounded-full z-[4]">
-                {selected + 1} / {imgs.length}
+                {selected + 1} / {media.length}
+                {videoCount > 0 ? ` · ${videoCount} video${videoCount === 1 ? "" : "s"} · ${imageCount} photos` : ""}
               </span>
             </>
           )}
 
-          <span className="absolute bottom-3 right-3 text-[11px] bg-white/90 text-slate-600 px-2 py-0.5 rounded shadow-sm md:hidden">
-            Tap to zoom
-          </span>
+          {!isVideo && (
+            <span className="absolute bottom-3 right-3 text-[11px] bg-white/90 text-slate-600 px-2 py-0.5 rounded shadow-sm md:hidden">
+              Tap to zoom
+            </span>
+          )}
         </div>
 
-        {imgs.length > 1 && (
+        {media.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-            {imgs.map((src, i) => (
+            {media.map((item, i) => (
               <button
-                key={`${src}-${i}`}
+                key={`${item.type}-${item.url}-${i}`}
                 type="button"
-                aria-label={`View image ${i + 1}`}
+                aria-label={item.type === "video" ? `Play video ${i + 1}` : `View image ${i + 1}`}
                 aria-current={i === selected ? "true" : undefined}
                 onClick={() => setSelected(i)}
-                className={`shrink-0 w-[4.5rem] h-[4.5rem] rounded-lg overflow-hidden border-2 transition ${
+                className={`relative shrink-0 w-[4.5rem] h-[4.5rem] rounded-lg overflow-hidden border-2 transition ${
                   i === selected ? "border-nav ring-2 ring-nav/20" : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                <VariantImg src={src} variant="thumb" alt="" className="w-full h-full object-cover" />
+                {item.type === "video" ? (
+                  <>
+                    {item.posterUrl ? (
+                      <img src={item.posterUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-800" />
+                    )}
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white text-[10px] font-semibold">
+                      Video
+                    </span>
+                  </>
+                ) : (
+                  <VariantImg src={item.url} variant="thumb" alt="" className="w-full h-full object-cover" />
+                )}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {lightbox && (
+      {lightbox && current.type === "image" && (
         <div
           className="fixed inset-0 z-[100] bg-black/92 flex flex-col items-center justify-center p-4"
           onClick={() => setLightbox(false)}
@@ -339,11 +401,11 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             ×
           </button>
 
-          {imgs.length > 1 && (
+          {media.length > 1 && (
             <>
               <button
                 type="button"
-                aria-label="Previous image"
+                aria-label="Previous"
                 onClick={goPrev}
                 className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white text-2xl hover:bg-white/25"
               >
@@ -351,7 +413,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
               </button>
               <button
                 type="button"
-                aria-label="Next image"
+                aria-label="Next"
                 onClick={goNext}
                 className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white text-2xl hover:bg-white/25"
               >
@@ -362,7 +424,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
 
           <div onClick={(e) => e.stopPropagation()}>
             <VariantImg
-              src={current}
+              src={currentImage}
               variant="zoom"
               alt={alt}
               className="max-w-full max-h-[85vh] object-contain"
@@ -370,21 +432,28 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
             />
           </div>
 
-          {imgs.length > 1 && (
+          {media.length > 1 && (
             <div className="mt-4 flex gap-2 overflow-x-auto max-w-full px-2">
-              {imgs.map((src, i) => (
+              {media.map((item, i) => (
                 <button
-                  key={`lb-${src}-${i}`}
+                  key={`lb-${item.url}-${i}`}
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelected(i);
+                    if (item.type === "video") setLightbox(false);
                   }}
                   className={`shrink-0 w-14 h-14 rounded overflow-hidden border-2 ${
                     i === selected ? "border-white" : "border-white/30 opacity-70"
                   }`}
                 >
-                  <VariantImg src={src} variant="thumb" alt="" className="w-full h-full object-cover" />
+                  {item.type === "video" ? (
+                    <div className="w-full h-full bg-slate-700 text-white text-[10px] flex items-center justify-center">
+                      Video
+                    </div>
+                  ) : (
+                    <VariantImg src={item.url} variant="thumb" alt="" className="w-full h-full object-cover" />
+                  )}
                 </button>
               ))}
             </div>

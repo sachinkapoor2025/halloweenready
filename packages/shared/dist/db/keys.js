@@ -11,6 +11,8 @@ exports.productKeys = {
     sk: () => "META",
     gsi1pk: (categorySlug) => `CATEGORY#${categorySlug}`,
     gsi1sk: (slug) => `PRODUCT#${slug}`,
+    /** Cached CJ freight quote for one variant → destination. */
+    freightSk: (country, vid) => `FREIGHT#${country.toUpperCase()}#${vid}`,
 };
 exports.categoryKeys = {
     pk: (slug) => `CATEGORY#${slug}`,

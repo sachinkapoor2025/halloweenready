@@ -8,7 +8,7 @@ import { productPageFaqs } from "@/lib/content/product-faqs";
 import { resolveImageUrl } from "@/lib/images";
 import { loadProduct, loadRelatedProducts, getStaticProductSlugs } from "@/lib/product-loader";
 import { api } from "@/lib/api";
-import type { Product } from "@halloweenready/shared";
+import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,7 +24,7 @@ export async function generateStaticParams() {
     return slugs.map((slug) => ({ slug }));
   }
   try {
-    const data = await api<{ products: Product[] }>("/products", { revalidate: 3600 });
+    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath(), { revalidate: 3600 });
     return data.products.map((p) => ({ slug: p.slug }));
   } catch {
     return [];

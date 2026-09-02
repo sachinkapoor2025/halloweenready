@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cjFulfillOrderSchema = exports.cjFreightQuoteSchema = exports.cjSaveApiKeySchema = exports.cjImportHalloweenSchema = exports.cjImportProductsSchema = exports.cjSearchQuerySchema = exports.cjVariantSchema = exports.CJ_IMPORT_MAX_PIDS = void 0;
+exports.cjFulfillOrderSchema = exports.productShippingResponseSchema = exports.cjStorefrontShippingMethodSchema = exports.productShippingQuerySchema = exports.CJ_STOREFRONT_SHIP_COUNTRY_NAMES = exports.CJ_STOREFRONT_SHIP_COUNTRIES = exports.cjFreightQuoteSchema = exports.cjSaveApiKeySchema = exports.cjImportHalloweenSchema = exports.cjImportProductsSchema = exports.CJ_IMPORT_MAX_PIDS = exports.cjSearchQuerySchema = exports.cjVariantSchema = void 0;
 const zod_1 = require("zod");
-/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
-exports.CJ_IMPORT_MAX_PIDS = 6;
 exports.cjVariantSchema = zod_1.z.object({
     vid: zod_1.z.string().min(1),
     sku: zod_1.z.string().optional(),
@@ -27,8 +25,13 @@ exports.cjSearchQuerySchema = zod_1.z.object({
     categoryId: zod_1.z.string().max(200).optional(),
     countryCode: zod_1.z.string().trim().length(2).optional(),
 });
+/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
+exports.CJ_IMPORT_MAX_PIDS = 6;
 exports.cjImportProductsSchema = zod_1.z.object({
-    pids: zod_1.z.array(zod_1.z.string().min(1).max(80)).min(1).max(exports.CJ_IMPORT_MAX_PIDS, `Import at most ${exports.CJ_IMPORT_MAX_PIDS} products per request`),
+    pids: zod_1.z
+        .array(zod_1.z.string().min(1).max(80))
+        .min(1)
+        .max(exports.CJ_IMPORT_MAX_PIDS, `Import at most ${exports.CJ_IMPORT_MAX_PIDS} products per request`),
     categorySlug: zod_1.z.string().min(1).max(80).optional(),
     published: zod_1.z.boolean().optional(),
     addToMyProduct: zod_1.z.boolean().optional(),
@@ -55,6 +58,42 @@ exports.cjFreightQuoteSchema = zod_1.z.object({
     }))
         .min(1)
         .max(40),
+});
+/** Destinations we will quote on the storefront (ISO 3166-1 alpha-2). */
+exports.CJ_STOREFRONT_SHIP_COUNTRIES = ["US", "CA", "GB", "AU", "DE"];
+exports.CJ_STOREFRONT_SHIP_COUNTRY_NAMES = {
+    US: "United States",
+    CA: "Canada",
+    GB: "United Kingdom",
+    AU: "Australia",
+    DE: "Germany",
+};
+exports.productShippingQuerySchema = zod_1.z.object({
+    country: zod_1.z
+        .string()
+        .trim()
+        .toUpperCase()
+        .refine((v) => exports.CJ_STOREFRONT_SHIP_COUNTRIES.includes(v))
+        .default("US"),
+    vid: zod_1.z.string().trim().min(1).max(80).optional(),
+    quantity: zod_1.z.coerce.number().int().min(1).max(10).optional(),
+});
+exports.cjStorefrontShippingMethodSchema = zod_1.z.object({
+    name: zod_1.z.string().min(1),
+    daysLabel: zod_1.z.string().min(1),
+    priceUsd: zod_1.z.number().min(0),
+});
+exports.productShippingResponseSchema = zod_1.z.object({
+    available: zod_1.z.boolean(),
+    originCountry: zod_1.z.string(),
+    destCountry: zod_1.z.string(),
+    destCountryName: zod_1.z.string(),
+    vid: zod_1.z.string().optional(),
+    quantity: zod_1.z.number().int(),
+    methods: zod_1.z.array(exports.cjStorefrontShippingMethodSchema),
+    quotedAt: zod_1.z.string().optional(),
+    customerChargeUsd: zod_1.z.number().min(0),
+    customerChargeLabel: zod_1.z.string(),
 });
 exports.cjFulfillOrderSchema = zod_1.z.object({
     orderId: zod_1.z.string().min(1),

@@ -81,6 +81,14 @@ exports.productSchema = zod_1.z.object({
     lengthIn: zod_1.z.number().positive().optional(),
     widthIn: zod_1.z.number().positive().optional(),
     heightIn: zod_1.z.number().positive().optional(),
+    /** CJ / imported product videos shown in the PDP gallery. */
+    videos: zod_1.z
+        .array(zod_1.z.object({
+        url: zod_1.z.string().url(),
+        posterUrl: zod_1.z.string().url().optional(),
+        durationSec: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
 });
 exports.createProductSchema = exports.productSchema.omit({ slug: true }).extend({
     name: zod_1.z.string().min(1),

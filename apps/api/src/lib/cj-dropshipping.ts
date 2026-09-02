@@ -333,6 +333,7 @@ export type CjProductDetail = {
   productSku?: string;
   bigImage?: string;
   productImageSet?: string[];
+  productVideo?: string[];
   productWeight?: string | number;
   packingWeight?: string | number;
   categoryId?: string;
@@ -365,12 +366,34 @@ export async function cjGetCategories(): Promise<unknown> {
 }
 
 export async function cjGetProduct(pid: string): Promise<CjProductDetail> {
-  const data = await cjFetch<CjProductDetail | CjProductDetail[]>("GET", "/product/query", { query: { pid } });
+  const data = await cjFetch<CjProductDetail | CjProductDetail[]>("GET", "/product/query", {
+    query: { pid, features: ["enable_video"] },
+  });
   const product = Array.isArray(data) ? data[0] : data;
   if (!product || typeof product !== "object") {
     throw new CjApiError(`CJ product ${pid} was not found`);
   }
   return product;
+}
+
+export type CjProductVideo = {
+  id?: string;
+  videoId?: string;
+  videoUrl?: string;
+  coverURL?: string;
+  duration?: number;
+  videoState?: string;
+};
+
+export async function cjQueryVideosByProductId(productId: string): Promise<CjProductVideo[]> {
+  const data = await cjFetch<CjProductVideo[] | { list?: CjProductVideo[] }>(
+    "POST",
+    "/product/queryVideosByProductId",
+    { body: { productId } }
+  );
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.list)) return data.list;
+  return [];
 }
 
 export async function cjAddToMyProduct(productId: string): Promise<boolean> {

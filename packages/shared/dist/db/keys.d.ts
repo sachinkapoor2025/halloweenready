@@ -7,6 +7,8 @@ export declare const productKeys: {
     sk: () => "META";
     gsi1pk: (categorySlug: string) => string;
     gsi1sk: (slug: string) => string;
+    /** Cached CJ freight quote for one variant → destination. */
+    freightSk: (country: string, vid: string) => string;
 };
 export declare const categoryKeys: {
     pk: (slug: string) => string;

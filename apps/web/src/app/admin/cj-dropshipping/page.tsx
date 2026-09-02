@@ -546,8 +546,6 @@ export default function AdminCjDropshippingPage() {
         </section>
       )}
 
-      )}
-
       {tab === "pricing" && (
         <section className="space-y-4">
           <p className="text-sm text-slate-600">

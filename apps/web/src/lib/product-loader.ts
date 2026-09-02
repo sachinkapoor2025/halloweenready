@@ -1,4 +1,4 @@
-import type { Product } from "@halloweenready/shared";
+import { cjStorefrontProductPath, cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
 import { getCdnUrl } from "./env";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
@@ -39,7 +39,7 @@ function withDisplayImages(product: Product): Product {
  */
 export async function loadProduct(slug: string): Promise<Product | null> {
   try {
-    const data = await api<{ product: Product }>(`/products/${slug}`, { revalidate: false });
+    const data = await api<{ product: Product }>(cjStorefrontProductPath(slug), { revalidate: false });
     return withDisplayImages(data.product);
   } catch {
     const catalog = getCatalogProduct(slug);
@@ -49,7 +49,7 @@ export async function loadProduct(slug: string): Promise<Product | null> {
 
 export async function loadRelatedProducts(categorySlug: string, excludeSlug: string): Promise<Product[]> {
   try {
-    const data = await api<{ products: Product[] }>(`/products?category=${categorySlug}`, {
+    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath({ category: categorySlug }), {
       revalidate: false,
     });
     const related = data.products.filter((p) => p.slug !== excludeSlug).slice(0, 5);

@@ -1,4 +1,5 @@
 import { getApiUrl, getSiteUrl, getCdnUrl } from "@/lib/env";
+import { CJ_STOREFRONT_PRODUCTS_PATH } from "@halloweenready/shared";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { stripHtml } from "@/lib/html-text";
 
@@ -35,7 +36,7 @@ export async function GET() {
   let products: FeedProduct[] = [];
 
   try {
-    const res = await fetch(`${getApiUrl()}/products`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${getApiUrl()}${CJ_STOREFRONT_PRODUCTS_PATH}`, { next: { revalidate: 3600 } });
     if (res.ok) {
       const data = (await res.json()) as { products: FeedProduct[] };
       products = data.products ?? [];

@@ -60,6 +60,7 @@ export declare const cjSearchQuerySchema: z.ZodObject<{
     categoryId?: string | undefined;
     countryCode?: string | undefined;
 }>;
+/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
 export declare const CJ_IMPORT_MAX_PIDS = 6;
 export declare const cjImportProductsSchema: z.ZodObject<{
     pids: z.ZodArray<z.ZodString, "many">;
@@ -137,6 +138,93 @@ export declare const cjFreightQuoteSchema: z.ZodObject<{
     startCountryCode?: string | undefined;
     zip?: string | undefined;
 }>;
+/** Destinations we will quote on the storefront (ISO 3166-1 alpha-2). */
+export declare const CJ_STOREFRONT_SHIP_COUNTRIES: readonly ["US", "CA", "GB", "AU", "DE"];
+export type CjStorefrontShipCountry = (typeof CJ_STOREFRONT_SHIP_COUNTRIES)[number];
+export declare const CJ_STOREFRONT_SHIP_COUNTRY_NAMES: Record<CjStorefrontShipCountry, string>;
+export declare const productShippingQuerySchema: z.ZodObject<{
+    country: z.ZodDefault<z.ZodEffects<z.ZodString, "US" | "CA" | "GB" | "AU" | "DE", string>>;
+    vid: z.ZodOptional<z.ZodString>;
+    quantity: z.ZodOptional<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    country: "US" | "CA" | "GB" | "AU" | "DE";
+    quantity?: number | undefined;
+    vid?: string | undefined;
+}, {
+    quantity?: number | undefined;
+    vid?: string | undefined;
+    country?: string | undefined;
+}>;
+export declare const cjStorefrontShippingMethodSchema: z.ZodObject<{
+    name: z.ZodString;
+    daysLabel: z.ZodString;
+    priceUsd: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    name: string;
+    daysLabel: string;
+    priceUsd: number;
+}, {
+    name: string;
+    daysLabel: string;
+    priceUsd: number;
+}>;
+export declare const productShippingResponseSchema: z.ZodObject<{
+    available: z.ZodBoolean;
+    originCountry: z.ZodString;
+    destCountry: z.ZodString;
+    destCountryName: z.ZodString;
+    vid: z.ZodOptional<z.ZodString>;
+    quantity: z.ZodNumber;
+    methods: z.ZodArray<z.ZodObject<{
+        name: z.ZodString;
+        daysLabel: z.ZodString;
+        priceUsd: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        daysLabel: string;
+        priceUsd: number;
+    }, {
+        name: string;
+        daysLabel: string;
+        priceUsd: number;
+    }>, "many">;
+    quotedAt: z.ZodOptional<z.ZodString>;
+    customerChargeUsd: z.ZodNumber;
+    customerChargeLabel: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    quantity: number;
+    available: boolean;
+    originCountry: string;
+    destCountry: string;
+    destCountryName: string;
+    methods: {
+        name: string;
+        daysLabel: string;
+        priceUsd: number;
+    }[];
+    customerChargeUsd: number;
+    customerChargeLabel: string;
+    vid?: string | undefined;
+    quotedAt?: string | undefined;
+}, {
+    quantity: number;
+    available: boolean;
+    originCountry: string;
+    destCountry: string;
+    destCountryName: string;
+    methods: {
+        name: string;
+        daysLabel: string;
+        priceUsd: number;
+    }[];
+    customerChargeUsd: number;
+    customerChargeLabel: string;
+    vid?: string | undefined;
+    quotedAt?: string | undefined;
+}>;
+export type ProductShippingQuery = z.infer<typeof productShippingQuerySchema>;
+export type CjStorefrontShippingMethod = z.infer<typeof cjStorefrontShippingMethodSchema>;
+export type ProductShippingResponse = z.infer<typeof productShippingResponseSchema>;
 export declare const cjFulfillOrderSchema: z.ZodObject<{
     orderId: z.ZodString;
     /** 1=page pay URL, 2=CJ wallet, 3=create only (default). */

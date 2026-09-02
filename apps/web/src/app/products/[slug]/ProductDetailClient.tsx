@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AddToCartControl } from "@/components/AddToCartControl";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { api } from "@/lib/api";
 import { WishlistButton } from "@/components/WishlistButton";
 import { TrustBadges } from "@/components/TrustBadges";
 import { HalloweenCountdown } from "@/components/HalloweenCountdown";
@@ -18,9 +19,14 @@ import { HomeProductCard } from "@/components/HomeProductCard";
 import { useCart } from "@/lib/cart-context";
 import { productPageFaqs } from "@/lib/content/product-faqs";
 import { testimonials } from "@/lib/site";
-import { LOW_STOCK_THRESHOLD, isFastSelling, getUnitsSold, estimatedDeliveryLabel } from "@halloweenready/shared";
-import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
-import type { Product } from "@halloweenready/shared";
+import {
+  LOW_STOCK_THRESHOLD,
+  cjStorefrontProductVideosPath,
+  getUnitsSold,
+  isFastSelling,
+  type Product,
+} from "@halloweenready/shared";
+import { ProductShippingPanel } from "@/components/ProductShippingPanel";
 import { FastSellingBanner } from "@/components/FastSellingBadge";
 
 type Tab = "description" | "reviews" | "faq";
@@ -87,11 +93,38 @@ export function ProductDetailClient({
     product.cjVid || variants[0]?.vid || ""
   );
   const selectedVariant = variants.find((v) => v.vid === selectedVid);
+  const [videos, setVideos] = useState(product.videos ?? []);
+  const [images, setImages] = useState(product.images ?? []);
 
   useEffect(() => {
     trackProductView(product.slug);
     setProductUrl(window.location.href);
   }, [product.slug]);
+
+  useEffect(() => {
+    setVideos(product.videos ?? []);
+    setImages(product.images ?? []);
+  }, [product.slug, product.videos, product.images]);
+
+  useEffect(() => {
+    if ((product.videos?.length ?? 0) > 0 || !product.cjPid) return;
+    let cancelled = false;
+    api<{ videos: NonNullable<Product["videos"]>; images?: string[] }>(
+      cjStorefrontProductVideosPath(product.slug),
+      { revalidate: false }
+    )
+      .then((data) => {
+        if (cancelled) return;
+        if (data.videos?.length) setVideos(data.videos);
+        if (data.images?.length) setImages(data.images);
+      })
+      .catch(() => {
+        /* gallery still shows photos */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [product.slug, product.cjPid, product.videos]);
 
   const displayPrice = selectedVariant?.price ?? product.price;
   const price = format(displayPrice, product.currency);
@@ -112,7 +145,7 @@ export function ProductDetailClient({
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-12">
       <div className="grid md:grid-cols-2 gap-8 lg:gap-10 items-start">
         <div>
-          <ProductImageGallery images={product.images ?? []} alt={product.name} />
+          <ProductImageGallery images={images} videos={videos} alt={product.name} />
         </div>
 
         <div>
@@ -140,7 +173,7 @@ export function ProductDetailClient({
             </p>
           )}
 
-          <EstimatedDeliveryNote variant="banner" prefix="Estimated delivery:" className="mb-4" />
+          <ProductShippingPanel product={product} vid={selectedVid || undefined} />
 
           {variants.length > 1 && (
             <div className="mb-4">
