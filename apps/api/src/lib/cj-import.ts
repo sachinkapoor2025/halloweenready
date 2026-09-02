@@ -1,7 +1,8 @@
-import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import {
   DEFAULT_PRODUCT_INVENTORY,
   VENDOR_CJ_DROPSHIPPING,
+  cjPidKeys,
   gramsToOz,
   mapCjCategoryToStoreSlug,
   mmToInches,
@@ -180,9 +181,51 @@ export function catalogPreviewFromList(row: CjListProduct) {
   };
 }
 
+export async function listImportedCjPids(): Promise<Set<string>> {
+  const pids = new Set<string>();
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PRODUCTS_TABLE,
+        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk AND attribute_exists(cjPid)",
+        ProjectionExpression: "cjPid",
+        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+        ExclusiveStartKey,
+      })
+    );
+    for (const item of result.Items ?? []) {
+      if (typeof item.cjPid === "string" && item.cjPid) pids.add(item.cjPid);
+    }
+    ExclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+  return pids;
+}
+
+export async function rememberImportedCjPid(pid: string, slug: string, name?: string): Promise<void> {
+  await docClient.send(
+    new PutCommand({
+      TableName: PRODUCTS_TABLE,
+      Item: {
+        PK: cjPidKeys.pk(pid),
+        SK: cjPidKeys.sk(),
+        cjPid: pid,
+        slug,
+        ...(name ? { name } : {}),
+        updatedAt: now(),
+      },
+    })
+  );
+}
+
 export async function importCjProduct(
   pid: string,
-  options: { categorySlug?: string; published?: boolean; addToMyProduct?: boolean } = {}
+  options: {
+    categorySlug?: string;
+    published?: boolean;
+    addToMyProduct?: boolean;
+    skipVideos?: boolean;
+  } = {}
 ): Promise<{ product: Product; created: boolean }> {
   const detail = await cjGetProduct(pid);
   const name = (detail.productNameEn || "").trim() || `CJ product ${pid.slice(0, 8)}`;
@@ -262,17 +305,20 @@ export async function importCjProduct(
   };
 
   await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
+  await rememberImportedCjPid(detail.pid || pid, slug, name);
   const { invalidateProductListCache } = await import("../handlers/products");
   invalidateProductListCache(categorySlug);
 
-  try {
-    const fetchedVideos = await collectCjProductVideos(detail.pid || pid, detail);
-    if (fetchedVideos.length > 0) {
-      item.videos = fetchedVideos;
-      await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
+  if (!options.skipVideos) {
+    try {
+      const fetchedVideos = await collectCjProductVideos(detail.pid || pid, detail);
+      if (fetchedVideos.length > 0) {
+        item.videos = fetchedVideos;
+        await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
+      }
+    } catch (err) {
+      console.warn("CJ video import failed", pid, err);
     }
-  } catch (err) {
-    console.warn("CJ video import failed", pid, err);
   }
 
   if (options.addToMyProduct === true) {

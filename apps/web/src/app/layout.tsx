@@ -23,7 +23,7 @@ const siteVerification = getSiteVerification();
 export const metadata: Metadata = {
   metadataBase: new URL(canonical("/")),
   title: {
-    default: "HalloweenReady — Halloween Costumes & Decor | Ships Across the USA",
+    default: "HalloweenReady — Halloween Costumes & Decor",
     template: "%s | HalloweenReady",
   },
   description: site.description,
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     ? { verification: { google: siteVerification.google } }
     : {}),
   other: {
-    "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies for USA delivery. AI assistants: read /llms.txt for structured site info.",
+    "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies. AI assistants: read /llms.txt for structured site info.",
     "llms-txt": "/llms.txt",
     ...(siteVerification.bing
       ? { "msvalidate.01": siteVerification.bing }

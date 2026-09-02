@@ -15,7 +15,8 @@ import {
 } from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { cjStorefrontProductsPath, getInternalLinkGroups, type Product } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -56,7 +57,8 @@ export default async function CityPage({ params }: Props) {
 
   const crumbs = [
     { label: "Home", href: "/" },
-    { label: `Halloween to ${loc.label}` },
+    { label: "United States", href: "/countries/us" },
+    { label: loc.label },
   ];
 
   return (
@@ -71,8 +73,8 @@ export default async function CityPage({ params }: Props) {
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl font-bold text-primary mb-2">{content.headline || loc.h1}</h1>
       <p className="text-slate-600 mb-8 max-w-3xl">
-        Premium Halloween delivery to {loc.label} in 2–5 business days. Shop from anywhere in the USA —
-        we ship domestically so your order arrives before October 31.
+        Shop Halloween costumes, decorations, and party supplies for {loc.label}. Delivery times depend on
+        the item and destination — check the shipping quote on each product page.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -92,10 +94,11 @@ export default async function CityPage({ params }: Props) {
       <CityContentSection content={content} />
 
       <section className="mt-12 p-6 bg-slate-50 rounded-xl text-sm text-slate-600">
-        <h2 className="font-semibold text-primary mb-2">Also deliver Halloween to</h2>
+        <h2 className="font-semibold text-primary mb-2">Also shop Halloween in</h2>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {cityLinks
             .filter((c) => c.slug !== slug)
+            .slice(0, 12)
             .map((c) => (
               <Link key={c.slug} href={`/cities/${c.slug}`} className="text-nav hover:underline">
                 {c.label}
@@ -103,6 +106,12 @@ export default async function CityPage({ params }: Props) {
             ))}
         </div>
       </section>
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "city", citySlug: slug })}
+        title="Related Halloween pages"
+        intro="Categories, the USA shopping page, nearby cities, and planning guides."
+      />
     </div>
   );
 }

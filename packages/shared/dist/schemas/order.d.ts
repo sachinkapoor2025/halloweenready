@@ -1118,7 +1118,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
 }, {
     items: {
@@ -1168,7 +1168,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
 }>;
 export declare const orderStatusHistoryEntrySchema: z.ZodObject<{
@@ -1513,7 +1513,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }, {
         items: {
@@ -1563,7 +1563,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }>, "many">>;
     paymentProvider: z.ZodOptional<z.ZodEnum<["stripe", "razorpay"]>>;
@@ -2058,6 +2058,7 @@ export declare const orderSchema: z.ZodObject<{
             quantity: number;
         }[] | undefined;
     }[];
+    total: number;
     orderId: string;
     shippingAddress: {
         name: string;
@@ -2076,7 +2077,6 @@ export declare const orderSchema: z.ZodObject<{
     shipping: number;
     discount: number;
     tax: number;
-    total: number;
     sessionId?: string | undefined;
     shipments?: {
         items: {
@@ -2126,7 +2126,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }[] | undefined;
     couponCode?: string | undefined;
@@ -2222,7 +2222,7 @@ export declare const orderSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     orderNumber?: string | undefined;
     userId?: string | undefined;
@@ -2295,6 +2295,7 @@ export declare const orderSchema: z.ZodObject<{
             quantity?: number | undefined;
         }[] | undefined;
     }[];
+    total: number;
     orderId: string;
     shippingAddress: {
         name: string;
@@ -2310,7 +2311,6 @@ export declare const orderSchema: z.ZodObject<{
         senderMessage?: string | undefined;
     };
     subtotal: number;
-    total: number;
     sessionId?: string | undefined;
     shipments?: {
         items: {
@@ -2360,7 +2360,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }[] | undefined;
     couponCode?: string | undefined;
@@ -2457,7 +2457,7 @@ export declare const orderSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     orderNumber?: string | undefined;
     userId?: string | undefined;
@@ -2549,7 +2549,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     note?: string | undefined;
     vendorFulfillments?: {
@@ -2569,7 +2569,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     note?: string | undefined;
     vendorFulfillments?: {

@@ -4,7 +4,7 @@ export const homeSeoContent = {
     heading: "Shop Halloween costumes, decorations, and party supplies",
     paragraphs: [
       "Halloween is the season for gatherings, trick-or-treat, and home displays that feel festive without being hard to plan. Halloween decorations set the mood at the door, while the rest of the evening comes together with costumes, treats, and a few well-chosen extras.",
-      "HalloweenReady ships from within the United States to all 50 states, including California, New York, Texas, and Florida. Most orders of Halloween costumes, decor, and accessories arrive in about 2–5 business days when you enter a US delivery address at checkout.",
+      "HalloweenReady ships internationally through dropshipping partners. Check a product page for a shipping quote to California, New York, Texas, Florida, and other destinations. We do not assume every SKU ships everywhere.",
       "If you are hosting, shop Halloween party supplies alongside your display pieces so plates, balloons, and tableware match the same theme. Browse costumes, decorations, and treats in one place for a simpler October 31.",
     ],
   },
@@ -40,20 +40,20 @@ export const homeSeoContent = {
     ],
   },
   delivery: {
-    heading: "Halloween delivery to all 50 US states",
+    heading: "Halloween shopping across the USA",
     paragraphs: [
-      "Orders ship domestically across California, New York, Texas, Florida, New Jersey, Illinois, and every other US state. Fulfillment inside the country helps costumes and decor arrive without international customs delays.",
-      "Halloween 2026 falls on Saturday, October 31. For the most reliable arrival, order costumes by around October 20 and decorations or candy by October 25 — popular sizes and inflatables tend to sell through earlier in the month.",
+      "Use city pages for California, New York, Texas, Florida, and other metros as shopping context. Confirm whether an item can be quoted to your address on the product page.",
+      "Halloween 2026 falls on Saturday, October 31. Order earlier in October if you need buffer for international transit — we do not guarantee pre-Halloween arrival without a quote.",
     ],
   },
   howItWorks: {
     heading: "How to Shop Halloween on HalloweenReady",
     steps: [
       "Browse costumes, decor, candy, or party supplies and add items to your cart.",
-      "Enter your US shipping address at checkout — order from anywhere worldwide.",
+      "Enter your shipping address at checkout.",
       "Pay securely with Stripe (USD) or Razorpay (INR).",
-      "We pack your order with care and deliver within 2–5 business days across the USA.",
-      "Enjoy a spooktacular Halloween with gear delivered to your door.",
+      "Confirm the product-page shipping quote for that destination.",
+      "Track the order using the method shown after checkout.",
     ],
   },
   tradition: {
@@ -66,22 +66,22 @@ export const homeSeoContent = {
   whyUs: {
     heading: "Why Shoppers Choose HalloweenReady",
     bullets: [
-      "Domestic USA shipping — no customs hassle",
-      "Costumes, decor, candy, accessories, and party supplies in one store",
-      "2–5 business day delivery to all 50 states",
-      "Pay in USD (Stripe) or INR (Razorpay) from anywhere",
-      "Order by Oct 25 for guaranteed pre-Halloween delivery",
+      "Destination shipping quotes on product pages",
+      "Costumes, decor, accessories, and party supplies in one store",
+      "Quoted storefront destinations include the US, Canada, UK, Australia, and Germany",
+      "Pay in USD (Stripe) or INR (Razorpay)",
+      "Plan early — transit varies, so we do not guarantee October 31 arrival",
       "WhatsApp and email support for sizing and order help",
     ],
   },
   faqs: [
     {
       q: "How long does Halloween delivery take in the USA?",
-      a: "Most orders arrive in 2–5 business days after dispatch to any of the 50 US states.",
+      a: "Transit time depends on the product and destination. Open the product page and request a shipping quote rather than relying on a blanket nationwide SLA.",
     },
     {
       q: "When should I order for Halloween 2026?",
-      a: "Halloween 2026 is October 31, 2026. Order costumes by October 20 and decor or candy by October 25 for on-time delivery.",
+      a: "Halloween 2026 is October 31, 2026. Order earlier in October if you need transit buffer, and confirm the product-page quote before you treat a date as guaranteed.",
     },
     {
       q: "Do you sell kids Halloween costumes?",

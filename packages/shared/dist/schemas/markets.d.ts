@@ -90,8 +90,8 @@ export declare const warehouseSchema: z.ZodObject<{
     priority: number;
     email?: string | undefined;
     updatedAt?: string | undefined;
-    vendorId?: string | null | undefined;
     createdAt?: string | undefined;
+    vendorId?: string | null | undefined;
     addressLine2?: string | undefined;
     phoneNormalized?: string | undefined;
     latitude?: number | undefined;
@@ -108,8 +108,8 @@ export declare const warehouseSchema: z.ZodObject<{
     stateOrRegion: string;
     email?: string | undefined;
     updatedAt?: string | undefined;
-    vendorId?: string | null | undefined;
     createdAt?: string | undefined;
+    vendorId?: string | null | undefined;
     timezone?: string | undefined;
     addressLine2?: string | undefined;
     phoneNormalized?: string | undefined;
@@ -437,7 +437,7 @@ export declare const createVendorSchema: z.ZodObject<Omit<{
     priority: z.ZodDefault<z.ZodNumber>;
     createdAt: z.ZodOptional<z.ZodString>;
     updatedAt: z.ZodOptional<z.ZodString>;
-}, "updatedAt" | "vendorId" | "createdAt">, "strip", z.ZodTypeAny, {
+}, "updatedAt" | "createdAt" | "vendorId">, "strip", z.ZodTypeAny, {
     name: string;
     slug: string;
     countryCode: string;
@@ -656,6 +656,7 @@ export declare const marketSchema: z.ZodObject<{
     countryCode: string;
     currency?: "USD" | "INR" | "GBP" | "CAD" | "AUD" | "AED" | "EUR" | undefined;
     updatedAt?: string | undefined;
+    createdAt?: string | undefined;
     checkoutCurrency?: "USD" | "INR" | undefined;
     contact?: {
         email?: string | undefined;
@@ -669,7 +670,6 @@ export declare const marketSchema: z.ZodObject<{
         phoneNormalized?: string | undefined;
         whatsapp?: string | undefined;
     } | undefined;
-    createdAt?: string | undefined;
     active?: boolean | undefined;
     locale?: string | undefined;
     flagEmoji?: string | undefined;

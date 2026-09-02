@@ -111,9 +111,11 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | POST | `/webhooks/cj` | CJ Dropshipping product/stock/order/logistics webhook |
 | GET | `/admin/cj/status` | Admin: CJ API connection status |
 | PUT | `/admin/cj/api-key` | Admin: save CJ API key |
-| GET | `/admin/cj/products` | Admin: search CJ catalog (`?keyWord=halloween`) |
-| POST | `/admin/cj/products/import` | Admin: import selected CJ pids into the store catalog |
-| POST | `/admin/cj/products/import-halloween` | Admin: import one page of Halloween products from CJ |
+| GET | `/admin/cj/products` | Admin: search CJ catalog (500 per page; already-imported flagged) |
+| POST | `/admin/cj/products/import` | Admin: queue selected CJ pids (returns 202 + jobId; worker imports in background) |
+| POST | `/admin/cj/products/import-halloween` | Admin: queue one Halloween catalog page |
+| GET | `/admin/cj/imports` | Admin: list CJ import jobs |
+| GET | `/admin/cj/imports/{jobId}` | Admin: one CJ import job with per-product status |
 | GET | `/admin/cj/orders` | Admin: list CJ shopping orders |
 | POST | `/admin/cj/orders/{orderId}/fulfill` | Admin: create a CJ fulfillment order from a HalloweenReady order |
 | POST | `/leads` | Save partial customer info |

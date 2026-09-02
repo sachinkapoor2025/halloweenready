@@ -46,14 +46,14 @@ export declare const updateLeadSchema: z.ZodObject<{
     adminNotes: z.ZodOptional<z.ZodString>;
     assignedTo: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    sessionId: string;
     createdAt: string;
+    sessionId: string;
     adminNotes?: string | undefined;
     leadStatus?: "new" | "contacted" | "follow_up" | "converted" | undefined;
     assignedTo?: string | undefined;
 }, {
-    sessionId: string;
     createdAt: string;
+    sessionId: string;
     adminNotes?: string | undefined;
     leadStatus?: "new" | "contacted" | "follow_up" | "converted" | undefined;
     assignedTo?: string | undefined;

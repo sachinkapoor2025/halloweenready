@@ -41,7 +41,7 @@ export function HomeSeoSection() {
                 </p>
               ))}
               <div className="flex flex-wrap gap-2 mt-2">
-                {cityLinks.map((city) => (
+                {cityLinks.slice(0, 12).map((city) => (
                   <Link
                     key={city.slug}
                     href={`/cities/${city.slug}`}

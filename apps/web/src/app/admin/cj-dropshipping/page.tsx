@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ORANGE_COUNTY_LIST_MARKUP, ORANGE_COUNTY_SALE_MARKUP, isCjDropshippingProduct, type Product } from "@halloweenready/shared";
+import { ORANGE_COUNTY_LIST_MARKUP, ORANGE_COUNTY_SALE_MARKUP, isCjDropshippingProduct, type CjImportJob, type Product } from "@halloweenready/shared";
 import { useApiClient } from "@/lib/auth-context";
 import { formatMoney } from "@/lib/admin-utils";
 
-/** Stay under API Gateway's ~29s limit (CJ is 1 request/second). */
-const IMPORT_BATCH_SIZE = 4;
+const CATALOG_PAGE_SIZE = 500;
 
 function humanizeError(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err);
@@ -21,13 +20,15 @@ function humanizeError(err: unknown): string {
   return raw;
 }
 
-function chunkPids(pids: string[], size: number) {
-  const batches: string[][] = [];
-  for (let i = 0; i < pids.length; i += size) batches.push(pids.slice(i, i + size));
-  return batches;
+function jobBadgeClass(status: string): string {
+  if (status === "complete") return "bg-green-50 text-green-800 border-green-200";
+  if (status === "in_progress") return "bg-blue-50 text-blue-800 border-blue-200";
+  if (status === "failed") return "bg-red-50 text-red-800 border-red-200";
+  if (status === "skipped") return "bg-slate-100 text-slate-600 border-slate-200";
+  return "bg-amber-50 text-amber-800 border-amber-200";
 }
 
-type Tab = "catalog" | "import" | "pricing" | "orders" | "settings";
+type Tab = "catalog" | "import" | "jobs" | "pricing" | "orders" | "settings";
 
 type ConnectionStatus = {
   configured: boolean;
@@ -48,6 +49,7 @@ type CatalogRow = {
   inventory?: number;
   categorySlug?: string;
   categoryName?: string;
+  alreadyImported?: boolean;
 };
 
 export default function AdminCjDropshippingPage() {
@@ -68,6 +70,8 @@ export default function AdminCjDropshippingPage() {
   const [cjOrders, setCjOrders] = useState<unknown>(null);
   const [fulfillOrderId, setFulfillOrderId] = useState("");
   const [costRows, setCostRows] = useState<Product[]>([]);
+  const [jobs, setJobs] = useState<CjImportJob[]>([]);
+  const [expandedJobId, setExpandedJobId] = useState("");
 
   const loadStatus = useCallback(async () => {
     try {
@@ -91,12 +95,19 @@ export default function AdminCjDropshippingPage() {
     [hideUnpriced, products]
   );
   const pagePids = useMemo(
-    () => visibleProducts.map((p) => p.pid).filter((pid): pid is string => Boolean(pid)),
+    () =>
+      visibleProducts
+        .filter((p) => !p.alreadyImported)
+        .map((p) => p.pid)
+        .filter((pid): pid is string => Boolean(pid)),
     [visibleProducts]
   );
   const selectedPids = useMemo(
-    () => Object.entries(selected).filter(([, on]) => on).map(([pid]) => pid),
-    [selected]
+    () =>
+      Object.entries(selected)
+        .filter(([pid, on]) => on && !products.find((p) => p.pid === pid)?.alreadyImported)
+        .map(([pid]) => pid),
+    [selected, products]
   );
   const allPageSelected = pagePids.length > 0 && pagePids.every((pid) => selected[pid]);
 
@@ -110,7 +121,7 @@ export default function AdminCjDropshippingPage() {
         totalPages: number;
         totalRecords: number;
       }>(
-        `/admin/cj/products?keyWord=${encodeURIComponent(keyword)}&page=${nextPage}&size=20`
+        `/admin/cj/products?keyWord=${encodeURIComponent(keyword)}&page=${nextPage}&size=${CATALOG_PAGE_SIZE}`
       );
       setProducts(data.products);
       setPage(data.page);
@@ -133,6 +144,22 @@ export default function AdminCjDropshippingPage() {
     });
   };
 
+  const loadJobs = useCallback(async () => {
+    try {
+      const data = await api<{ jobs: CjImportJob[] }>("/admin/cj/imports");
+      setJobs(data.jobs);
+    } catch {
+      /* keep last list */
+    }
+  }, [api]);
+
+  useEffect(() => {
+    if (tab !== "jobs") return;
+    void loadJobs();
+    const timer = window.setInterval(() => void loadJobs(), 5000);
+    return () => window.clearInterval(timer);
+  }, [tab, loadJobs]);
+
   const importSelected = async () => {
     const pids = selectedPids;
     if (!pids.length) {
@@ -141,40 +168,33 @@ export default function AdminCjDropshippingPage() {
     }
     setBusy("import");
     setMessage("");
-    const batches = chunkPids(pids, IMPORT_BATCH_SIZE);
-    let imported = 0;
-    const failures: string[] = [];
+    const names: Record<string, string> = {};
+    for (const row of products) {
+      if (row.pid && row.name) names[row.pid] = row.name;
+    }
     try {
-      for (let i = 0; i < batches.length; i++) {
-        setMessage(`Importing batch ${i + 1} of ${batches.length} (${pids.length} selected)…`);
-        const data = await api<{
-          imported: unknown[];
-          errors: Array<{ pid: string; error: string }>;
-        }>("/admin/cj/products/import", {
-          method: "POST",
-          body: JSON.stringify({ pids: batches[i], published: true, addToMyProduct: false }),
-        });
-        imported += data.imported.length;
-        for (const row of data.errors) {
-          failures.push(`${row.pid}: ${row.error}`);
-        }
-      }
+      const data = await api<{
+        jobId: string;
+        queued: number;
+        skipped: number;
+        status: string;
+      }>("/admin/cj/products/import", {
+        method: "POST",
+        body: JSON.stringify({ pids, names, published: true, addToMyProduct: false }),
+      });
       setSelected((current) => {
         const next = { ...current };
         for (const pid of pids) next[pid] = false;
         return next;
       });
+      setExpandedJobId(data.jobId);
+      setTab("jobs");
       setMessage(
-        `Imported ${imported} product(s)${
-          failures.length ? `; ${failures.length} failed. ${failures.slice(0, 3).join("; ")}` : "."
-        }`
+        `Import started. ${data.queued} queued${data.skipped ? `, ${data.skipped} already on site` : ""}. Watch Import status.`
       );
+      void loadJobs();
     } catch (err) {
-      setMessage(
-        imported
-          ? `Imported ${imported} then stopped: ${humanizeError(err)}`
-          : humanizeError(err) || "Import failed"
-      );
+      setMessage(humanizeError(err) || "Import failed");
     } finally {
       setBusy("");
     }
@@ -185,8 +205,9 @@ export default function AdminCjDropshippingPage() {
     setMessage("");
     try {
       const data = await api<{
-        imported: unknown[];
-        errors: Array<{ pid: string; error: string }>;
+        jobId: string;
+        queued: number;
+        skipped: number;
         page: number;
         totalPages: number;
         searched: number;
@@ -194,7 +215,7 @@ export default function AdminCjDropshippingPage() {
         method: "POST",
         body: JSON.stringify({
           page: nextPage,
-          size: 8,
+          size: CATALOG_PAGE_SIZE,
           keyWord: keyword || "halloween",
           published: true,
           addToMyProduct: false,
@@ -202,9 +223,14 @@ export default function AdminCjDropshippingPage() {
       });
       setPage(data.page);
       setTotalPages(data.totalPages);
+      setExpandedJobId(data.jobId);
+      setTab("jobs");
       setMessage(
-        `Imported ${data.imported.length} of ${data.searched} Halloween products from page ${data.page}. ${data.errors.length ? `${data.errors.length} failed. ` : ""}Run again with the next page to continue.`
+        `Halloween import started (${data.searched} on page ${data.page}). ${data.queued} queued${
+          data.skipped ? `, ${data.skipped} already on site` : ""
+        }. Watch Import status.`
       );
+      void loadJobs();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Halloween import failed");
     } finally {
@@ -298,6 +324,7 @@ export default function AdminCjDropshippingPage() {
   const tabs: { id: Tab; label: string }[] = [
     { id: "catalog", label: "CJ catalog" },
     { id: "import", label: "Import Halloween" },
+    { id: "jobs", label: "Import status" },
     { id: "pricing", label: "Cost & pricing" },
     { id: "orders", label: "Orders & freight" },
     { id: "settings", label: "API connection" },
@@ -338,6 +365,7 @@ export default function AdminCjDropshippingPage() {
               setTab(t.id);
               if (t.id === "orders") void loadOps();
               if (t.id === "pricing") void loadCosts();
+              if (t.id === "jobs") void loadJobs();
             }}
             className={`text-sm px-3 py-2 rounded-lg border ${
               tab === t.id ? "bg-nav text-white border-nav" : "border-slate-300 hover:bg-slate-50"
@@ -431,8 +459,18 @@ export default function AdminCjDropshippingPage() {
               className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
             >
               {busy === "import"
-                ? "Importing…"
+                ? "Starting…"
                 : `Import selected${selectedPids.length ? ` (${selectedPids.length})` : ""}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTab("jobs");
+                void loadJobs();
+              }}
+              className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50"
+            >
+              Import status
             </button>
             <label className="flex items-center gap-2 text-sm text-slate-600 ml-1">
               <input
@@ -445,25 +483,32 @@ export default function AdminCjDropshippingPage() {
           </div>
           <p className="text-xs text-slate-500 mb-3">
             {totalRecords
-              ? `${totalRecords} results · page ${page} of ${totalPages} · ${selectedPids.length} selected (kept when you change pages)`
+              ? `${totalRecords} results · page ${page} of ${totalPages} · ${CATALOG_PAGE_SIZE} per page · ${selectedPids.length} selected (already-imported skipped)`
               : "Search the CJ catalog, then import into HalloweenReady."}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {visibleProducts.map((p) => {
               const pid = p.pid || "";
+              const onSite = Boolean(p.alreadyImported);
               return (
                 <label
                   key={pid}
-                  className={`border rounded-lg p-2 text-sm cursor-pointer ${
-                    selected[pid] ? "border-nav ring-1 ring-nav" : "border-slate-200"
-                  }`}
+                  className={`border rounded-lg p-2 text-sm ${
+                    onSite ? "cursor-default opacity-80" : "cursor-pointer"
+                  } ${selected[pid] ? "border-nav ring-1 ring-nav" : "border-slate-200"}`}
                 >
                   <input
                     type="checkbox"
                     className="mb-2"
+                    disabled={onSite}
                     checked={Boolean(selected[pid])}
                     onChange={(e) => setSelected((s) => ({ ...s, [pid]: e.target.checked }))}
                   />
+                  {onSite && (
+                    <span className="ml-2 text-[10px] uppercase font-semibold text-green-800 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
+                      On site
+                    </span>
+                  )}
                   {p.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.image} alt="" className="w-full h-32 object-cover rounded mb-2" />
@@ -517,9 +562,8 @@ export default function AdminCjDropshippingPage() {
       {tab === "import" && (
         <section className="max-w-xl space-y-3">
           <p className="text-sm text-slate-600">
-            Imports one page of CJ Halloween products into your live catalog (about 8 SKUs per run because CJ
-            allows 1 request/second). Repeat to pull the next page. Prefer <strong>Select all on this page</strong> on
-            the CJ catalog tab when you want to review prices first.
+            Imports one page of CJ Halloween products (up to {CATALOG_PAGE_SIZE}) in the background. Already-imported
+            SKUs are skipped. Track progress under <strong>Import status</strong>.
           </p>
           <input
             value={keyword}
@@ -542,6 +586,103 @@ export default function AdminCjDropshippingPage() {
             >
               Import next page
             </button>
+          )}
+        </section>
+      )}
+
+      {tab === "jobs" && (
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-slate-600">
+              Each Import selected / Import Halloween click is one job. Status updates every 5 seconds while this tab
+              is open. Videos are copied later when a shopper opens the product page.
+            </p>
+            <button
+              type="button"
+              onClick={() => void loadJobs()}
+              className="px-3 py-1.5 text-sm border rounded-lg"
+            >
+              Refresh
+            </button>
+          </div>
+          {jobs.length === 0 ? (
+            <p className="text-sm text-slate-500">No imports yet. Start one from the CJ catalog tab.</p>
+          ) : (
+            jobs.map((job) => {
+              const done = job.counts.complete + job.counts.skipped + job.counts.failed;
+              const pct = job.counts.total ? Math.round((done / job.counts.total) * 100) : 0;
+              const open = expandedJobId === job.jobId;
+              return (
+                <article key={job.jobId} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {job.source === "halloween" ? "Halloween page import" : "Selected catalog import"}
+                        {job.keyword ? ` · ${job.keyword}` : ""}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {new Date(job.createdAt).toLocaleString()}
+                        {job.createdBy ? ` · ${job.createdBy}` : ""}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${jobBadgeClass(job.status)}`}>
+                      {job.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-700">
+                    {job.counts.complete} imported · {job.counts.skipped} skipped · {job.counts.pending} pending ·{" "}
+                    {job.counts.inProgress} in progress · {job.counts.failed} failed
+                  </p>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-nav" style={{ width: `${pct}%` }} />
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm underline"
+                    onClick={() => setExpandedJobId(open ? "" : job.jobId)}
+                  >
+                    {open ? "Hide products" : "Show products"}
+                  </button>
+                  {open && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-xs text-slate-500 border-b">
+                            <th className="py-2 pr-3">Product</th>
+                            <th className="py-2 pr-3">Status</th>
+                            <th className="py-2">Detail</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {job.items.map((item) => (
+                            <tr key={item.pid} className="border-b border-slate-100">
+                              <td className="py-2 pr-3">
+                                <p className="font-medium">{item.name || item.pid}</p>
+                                <p className="text-xs text-slate-500">{item.pid}</p>
+                              </td>
+                              <td className="py-2 pr-3">
+                                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${jobBadgeClass(item.status)}`}>
+                                  {item.status.replace("_", " ")}
+                                </span>
+                              </td>
+                              <td className="py-2 text-xs text-slate-600">
+                                {item.slug ? (
+                                  <a href={`/products/${item.slug}`} className="text-nav underline" target="_blank" rel="noreferrer">
+                                    {item.slug}
+                                  </a>
+                                ) : (
+                                  item.error || "—"
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </article>
+              );
+            })
           )}
         </section>
       )}

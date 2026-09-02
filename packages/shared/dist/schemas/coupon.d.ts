@@ -117,12 +117,12 @@ export declare const couponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
+    createdBy?: string | undefined;
     orderId?: string | undefined;
     sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
-    createdBy?: string | undefined;
 }, {
     code: string;
     source: "admin" | "welcome" | "abandoned";
@@ -131,12 +131,12 @@ export declare const couponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
+    createdBy?: string | undefined;
     orderId?: string | undefined;
     sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
-    createdBy?: string | undefined;
 }>;
 export type StoreCoupon = z.infer<typeof couponSchema>;
 export declare const couponValidateSchema: z.ZodEffects<z.ZodObject<{
@@ -183,12 +183,12 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
+    createdBy?: string | undefined;
     orderId?: string | undefined;
     sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
-    createdBy?: string | undefined;
 }, {
     code: string;
     source: "welcome";
@@ -197,12 +197,12 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     expiresAt: string;
     email?: string | undefined;
     phone?: string | undefined;
+    createdBy?: string | undefined;
     orderId?: string | undefined;
     sessionId?: string | undefined;
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
-    createdBy?: string | undefined;
 }>;
 export type CouponValidateInput = z.infer<typeof couponValidateSchema>;
 export type WelcomeCoupon = z.infer<typeof welcomeCouponSchema>;

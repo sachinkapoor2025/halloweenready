@@ -6,13 +6,14 @@ import { CustomerReviews } from "@/components/CustomerReviews";
 import { HomeProductCard } from "@/components/HomeProductCard";
 import { FastSellingSection } from "@/components/FastSellingSection";
 import { HomeSeoSection } from "@/components/HomeSeoSection";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { TrustStrip } from "@/components/TrustStrip";
 import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
 import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants, cjStorefrontProductsPath } from "@halloweenready/shared";
+import { categorySlugVariants, cjStorefrontProductsPath, getInternalLinkGroups } from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
@@ -112,6 +113,14 @@ export default async function HomePage() {
       <CustomerReviews />
 
       <HomeSeoSection />
+
+      <section className="max-w-7xl mx-auto px-4">
+        <InternalLinksSection
+          groups={getInternalLinkGroups({ type: "home" })}
+          title="Explore HalloweenReady"
+          intro="Shop by category and destination, or read the Halloween planning guides."
+        />
+      </section>
 
       <section className="max-w-7xl mx-auto px-4 py-12 bg-white">
         <h2 className="text-2xl font-bold text-primary text-center mb-2">FAQ</h2>

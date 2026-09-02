@@ -1,4 +1,4 @@
-.PHONY: build-ApiFunction build-VendorApiFunction build-ReviewEmailsCronFunction build-SesEmailCronFunction build-BounceSyncFunction build-ImageOptimizeFunction api-deps api-bundle
+.PHONY: build-ApiFunction build-VendorApiFunction build-ReviewEmailsCronFunction build-SesEmailCronFunction build-BounceSyncFunction build-ImageOptimizeFunction build-CjImportWorkerFunction api-deps api-bundle
 
 api-deps:
 	npm ci
@@ -14,7 +14,8 @@ api-bundle: api-deps
 		--external:@aws-sdk/client-dynamodb \
 		--external:@aws-sdk/lib-dynamodb \
 		--external:@aws-sdk/client-s3 \
-		--external:@aws-sdk/s3-request-presigner
+		--external:@aws-sdk/s3-request-presigner \
+		--external:@aws-sdk/client-lambda
 	npx esbuild apps/api/src/vendor-api.ts \
 		--bundle \
 		--platform=node \
@@ -55,6 +56,17 @@ api-bundle: api-deps
 		--external:@aws-sdk/lib-dynamodb \
 		--external:@aws-sdk/client-s3 \
 		--external:@aws-sdk/s3-request-presigner
+	npx esbuild apps/api/src/cj-import-worker.ts \
+		--bundle \
+		--platform=node \
+		--target=es2022 \
+		--minify \
+		--outfile=$(ARTIFACTS_DIR)/cj-import-worker.js \
+		--external:@aws-sdk/client-dynamodb \
+		--external:@aws-sdk/lib-dynamodb \
+		--external:@aws-sdk/client-s3 \
+		--external:@aws-sdk/s3-request-presigner \
+		--external:@aws-sdk/client-lambda
 
 build-ApiFunction: api-bundle
 
@@ -65,6 +77,8 @@ build-ReviewEmailsCronFunction: api-bundle
 build-SesEmailCronFunction: api-bundle
 
 build-BounceSyncFunction: api-bundle
+
+build-CjImportWorkerFunction: api-bundle
 
 # Separate artifact: sharp native binary for linux/arm64 (Lambda architecture).
 # Do not bundle sharp into the API function — it would bloat every request path.
