@@ -224,4 +224,29 @@ export const blogPostInlineLinks: Record<string, readonly InlineLink[]> = {
     { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
     { phrase: "Halloween planning guide", href: "/halloween-guide" },
   ],
+  "halloween-decorations-delivery-london": [
+    { phrase: "inflatable Halloween decorations", href: "/blog/inflatable-halloween-decorations-yard-displays" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+  ],
+  "halloween-pumpkin-decorations-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-decorations-next-day-delivery-uk": [
+    { phrase: "inflatable Halloween decorations", href: "/blog/inflatable-halloween-decorations-yard-displays" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+  ],
+  "kids-halloween-fancy-dress-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "outdoor-halloween-decorations-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
 };
