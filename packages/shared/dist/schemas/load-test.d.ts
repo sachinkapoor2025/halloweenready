@@ -119,9 +119,9 @@ export declare const loadTestRunResultSchema: z.ZodObject<{
     reliabilityPass: boolean;
     latencyPass: boolean;
     p95LimitMs: number;
+    skipped?: number | undefined;
     users?: number | undefined;
     parallel?: number | undefined;
-    skipped?: number | undefined;
     failRateLimit?: number | undefined;
     reasons?: string[] | undefined;
     truncated?: boolean | undefined;
@@ -144,9 +144,9 @@ export declare const loadTestRunResultSchema: z.ZodObject<{
     reliabilityPass: boolean;
     latencyPass: boolean;
     p95LimitMs: number;
+    skipped?: number | undefined;
     users?: number | undefined;
     parallel?: number | undefined;
-    skipped?: number | undefined;
     failRateLimit?: number | undefined;
     reasons?: string[] | undefined;
     truncated?: boolean | undefined;

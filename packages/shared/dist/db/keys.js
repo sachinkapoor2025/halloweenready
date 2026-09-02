@@ -4,7 +4,7 @@
  * Each domain has its own table; builders below are grouped per table.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.auditLogKeys = exports.inventoryListingKeys = exports.marketKeys = exports.vendorRecordKeys = exports.warehouseKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
+exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.auditLogKeys = exports.inventoryListingKeys = exports.marketKeys = exports.vendorRecordKeys = exports.warehouseKeys = exports.cjPidKeys = exports.cjImportJobKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
 // ---- products table (products + categories) ----
 exports.productKeys = {
     pk: (slug) => `PRODUCT#${slug}`,
@@ -98,6 +98,18 @@ exports.configKeys = {
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
     cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" },
+};
+/** Admin CJ catalog import jobs (config table). */
+exports.cjImportJobKeys = {
+    pk: (jobId) => `CJ_IMPORT#${jobId}`,
+    sk: () => "META",
+    listPk: () => "ENTITY#CJ_IMPORT",
+    listSk: (createdAt, jobId) => `${createdAt}#${jobId}`,
+};
+/** Lookup so we skip a CJ pid that is already on the store. */
+exports.cjPidKeys = {
+    pk: (pid) => `CJPID#${pid}`,
+    sk: () => "META",
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 exports.warehouseKeys = {

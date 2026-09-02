@@ -41,6 +41,9 @@ export declare const cjVariantSchema: z.ZodObject<{
     widthIn?: number | undefined;
     heightIn?: number | undefined;
 }>;
+/** Admin catalog page size (CJ listV2 is fetched in 100-row pages and stitched). */
+export declare const CJ_ADMIN_CATALOG_PAGE_SIZE = 500;
+export declare const CJ_LIST_V2_PAGE_SIZE = 100;
 export declare const cjSearchQuerySchema: z.ZodObject<{
     keyWord: z.ZodOptional<z.ZodString>;
     page: z.ZodOptional<z.ZodNumber>;
@@ -60,10 +63,138 @@ export declare const cjSearchQuerySchema: z.ZodObject<{
     categoryId?: string | undefined;
     countryCode?: string | undefined;
 }>;
-/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
-export declare const CJ_IMPORT_MAX_PIDS = 6;
+/** Queue size for async import (worker Lambda, 15 min). */
+export declare const CJ_IMPORT_MAX_PIDS = 500;
+export declare const cjImportLineStatusSchema: z.ZodEnum<["pending", "in_progress", "complete", "skipped", "failed"]>;
+export type CjImportLineStatus = z.infer<typeof cjImportLineStatusSchema>;
+export declare const cjImportJobStatusSchema: z.ZodEnum<["pending", "in_progress", "complete", "failed"]>;
+export type CjImportJobStatus = z.infer<typeof cjImportJobStatusSchema>;
+export declare const cjImportJobLineSchema: z.ZodObject<{
+    pid: z.ZodString;
+    name: z.ZodOptional<z.ZodString>;
+    status: z.ZodEnum<["pending", "in_progress", "complete", "skipped", "failed"]>;
+    slug: z.ZodOptional<z.ZodString>;
+    error: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+    pid: string;
+    name?: string | undefined;
+    error?: string | undefined;
+    slug?: string | undefined;
+}, {
+    status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+    pid: string;
+    name?: string | undefined;
+    error?: string | undefined;
+    slug?: string | undefined;
+}>;
+export type CjImportJobLine = z.infer<typeof cjImportJobLineSchema>;
+export declare const cjImportJobSchema: z.ZodObject<{
+    jobId: z.ZodString;
+    status: z.ZodEnum<["pending", "in_progress", "complete", "failed"]>;
+    createdAt: z.ZodString;
+    updatedAt: z.ZodString;
+    startedAt: z.ZodOptional<z.ZodString>;
+    finishedAt: z.ZodOptional<z.ZodString>;
+    createdBy: z.ZodOptional<z.ZodString>;
+    source: z.ZodOptional<z.ZodEnum<["selected", "halloween"]>>;
+    keyword: z.ZodOptional<z.ZodString>;
+    items: z.ZodArray<z.ZodObject<{
+        pid: z.ZodString;
+        name: z.ZodOptional<z.ZodString>;
+        status: z.ZodEnum<["pending", "in_progress", "complete", "skipped", "failed"]>;
+        slug: z.ZodOptional<z.ZodString>;
+        error: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+        pid: string;
+        name?: string | undefined;
+        error?: string | undefined;
+        slug?: string | undefined;
+    }, {
+        status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+        pid: string;
+        name?: string | undefined;
+        error?: string | undefined;
+        slug?: string | undefined;
+    }>, "many">;
+    counts: z.ZodObject<{
+        total: z.ZodNumber;
+        pending: z.ZodNumber;
+        inProgress: z.ZodNumber;
+        complete: z.ZodNumber;
+        skipped: z.ZodNumber;
+        failed: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        complete: number;
+        pending: number;
+        skipped: number;
+        failed: number;
+        total: number;
+        inProgress: number;
+    }, {
+        complete: number;
+        pending: number;
+        skipped: number;
+        failed: number;
+        total: number;
+        inProgress: number;
+    }>;
+}, "strip", z.ZodTypeAny, {
+    status: "complete" | "pending" | "in_progress" | "failed";
+    items: {
+        status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+        pid: string;
+        name?: string | undefined;
+        error?: string | undefined;
+        slug?: string | undefined;
+    }[];
+    updatedAt: string;
+    jobId: string;
+    createdAt: string;
+    counts: {
+        complete: number;
+        pending: number;
+        skipped: number;
+        failed: number;
+        total: number;
+        inProgress: number;
+    };
+    source?: "selected" | "halloween" | undefined;
+    startedAt?: string | undefined;
+    finishedAt?: string | undefined;
+    createdBy?: string | undefined;
+    keyword?: string | undefined;
+}, {
+    status: "complete" | "pending" | "in_progress" | "failed";
+    items: {
+        status: "complete" | "pending" | "in_progress" | "skipped" | "failed";
+        pid: string;
+        name?: string | undefined;
+        error?: string | undefined;
+        slug?: string | undefined;
+    }[];
+    updatedAt: string;
+    jobId: string;
+    createdAt: string;
+    counts: {
+        complete: number;
+        pending: number;
+        skipped: number;
+        failed: number;
+        total: number;
+        inProgress: number;
+    };
+    source?: "selected" | "halloween" | undefined;
+    startedAt?: string | undefined;
+    finishedAt?: string | undefined;
+    createdBy?: string | undefined;
+    keyword?: string | undefined;
+}>;
+export type CjImportJob = z.infer<typeof cjImportJobSchema>;
 export declare const cjImportProductsSchema: z.ZodObject<{
     pids: z.ZodArray<z.ZodString, "many">;
+    names: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
     categorySlug: z.ZodOptional<z.ZodString>;
     published: z.ZodOptional<z.ZodBoolean>;
     addToMyProduct: z.ZodOptional<z.ZodBoolean>;
@@ -71,11 +202,13 @@ export declare const cjImportProductsSchema: z.ZodObject<{
     pids: string[];
     published?: boolean | undefined;
     categorySlug?: string | undefined;
+    names?: Record<string, string> | undefined;
     addToMyProduct?: boolean | undefined;
 }, {
     pids: string[];
     published?: boolean | undefined;
     categorySlug?: string | undefined;
+    names?: Record<string, string> | undefined;
     addToMyProduct?: boolean | undefined;
 }>;
 export declare const cjImportHalloweenSchema: z.ZodObject<{

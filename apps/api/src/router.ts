@@ -309,6 +309,13 @@ const routes: Route[] = [
   { method: "GET", pattern: /^\/admin\/cj\/products\/([^/]+)$/, handler: cjDropshipping.getCjProduct, params: ["pid"] },
   { method: "POST", pattern: /^\/admin\/cj\/products\/import$/, handler: cjDropshipping.importCjCatalog },
   { method: "POST", pattern: /^\/admin\/cj\/products\/import-halloween$/, handler: cjDropshipping.importHalloweenCatalog },
+  { method: "GET", pattern: /^\/admin\/cj\/imports$/, handler: cjDropshipping.listCjImportJobsHandler },
+  {
+    method: "GET",
+    pattern: /^\/admin\/cj\/imports\/([^/]+)$/,
+    handler: cjDropshipping.getCjImportJobHandler,
+    params: ["jobId"],
+  },
   { method: "GET", pattern: /^\/admin\/cj\/my-products$/, handler: cjDropshipping.listCjMyProducts },
   { method: "GET", pattern: /^\/admin\/cj\/warehouses$/, handler: cjDropshipping.listCjWarehouses },
   { method: "GET", pattern: /^\/admin\/cj\/balance$/, handler: cjDropshipping.getCjBalance },

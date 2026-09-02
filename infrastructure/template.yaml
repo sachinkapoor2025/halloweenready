@@ -196,6 +196,7 @@ Globals:
         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
         TWILIO_WHATSAPP_FROM: !Ref TwilioWhatsAppFrom
         CJ_API_KEY: !Ref CjApiKey
+        CJ_IMPORT_WORKER_FUNCTION: !Sub halloweenready-cj-import-${Environment}
 
 Resources:
   ProductsTable:
@@ -702,6 +703,10 @@ Resources:
                 - sesv2:GetAccount
                 - sesv2:GetEmailIdentity
               Resource: "*"
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:halloweenready-cj-import-${Environment}
       Events:
         ApiRoot:
           Type: HttpApi
@@ -715,6 +720,29 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /health
             Method: GET
+    Metadata:
+      BuildMethod: makefile
+
+  CjImportWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub halloweenready-cj-import-${Environment}
+      Handler: cj-import-worker.handler
+      CodeUri: ..
+      Timeout: 900
+      MemorySize: 1024
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConfigTable
+        - S3CrudPolicy:
+            BucketName: !Ref UploadBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:halloweenready-cj-import-${Environment}
     Metadata:
       BuildMethod: makefile
 
