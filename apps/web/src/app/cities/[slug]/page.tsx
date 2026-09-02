@@ -15,7 +15,7 @@ import {
 } from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
-import type { Product } from "@halloweenready/shared";
+import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -46,7 +46,7 @@ export default async function CityPage({ params }: Props) {
 
   let products: Product[] = [];
   try {
-    const data = await api<{ products: Product[] }>("/products");
+    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath());
     products = data.products;
   } catch {
     products = [];

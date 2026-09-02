@@ -115,6 +115,20 @@ export declare const productSchema: z.ZodObject<{
     lengthIn: z.ZodOptional<z.ZodNumber>;
     widthIn: z.ZodOptional<z.ZodNumber>;
     heightIn: z.ZodOptional<z.ZodNumber>;
+    /** CJ / imported product videos shown in the PDP gallery. */
+    videos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        url: z.ZodString;
+        posterUrl: z.ZodOptional<z.ZodString>;
+        durationSec: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
@@ -165,6 +179,11 @@ export declare const productSchema: z.ZodObject<{
         bestRating: number;
         worstRating: number;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }, {
     name: string;
     price: number;
@@ -215,6 +234,11 @@ export declare const productSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }>;
 export declare const createProductSchema: z.ZodObject<{
     price: z.ZodNumber;
@@ -300,6 +324,19 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     }>>;
+    videos: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        url: z.ZodString;
+        posterUrl: z.ZodOptional<z.ZodString>;
+        durationSec: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }>, "many">>;
 } & {
     name: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -351,6 +388,11 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating: number;
         worstRating: number;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }, {
     name: string;
     price: number;
@@ -400,6 +442,11 @@ export declare const createProductSchema: z.ZodObject<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }>;
 export declare const updateProductSchema: z.ZodObject<Omit<{
     slug: z.ZodOptional<z.ZodString>;
@@ -487,6 +534,19 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     lengthIn: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     widthIn: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     heightIn: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
+    videos: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+        url: z.ZodString;
+        posterUrl: z.ZodOptional<z.ZodString>;
+        durationSec: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }, {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }>, "many">>>;
 }, "slug">, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     price?: number | undefined;
@@ -536,6 +596,11 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         bestRating: number;
         worstRating: number;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }, {
     name?: string | undefined;
     price?: number | undefined;
@@ -585,6 +650,11 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         bestRating?: number | undefined;
         worstRating?: number | undefined;
     } | undefined;
+    videos?: {
+        url: string;
+        posterUrl?: string | undefined;
+        durationSec?: number | undefined;
+    }[] | undefined;
 }>;
 export declare const bulkProductRowSchema: z.ZodObject<{
     name: z.ZodString;

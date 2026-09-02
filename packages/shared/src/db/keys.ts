@@ -9,6 +9,8 @@ export const productKeys = {
   sk: () => "META" as const,
   gsi1pk: (categorySlug: string) => `CATEGORY#${categorySlug}`,
   gsi1sk: (slug: string) => `PRODUCT#${slug}`,
+  /** Cached CJ freight quote for one variant → destination. */
+  freightSk: (country: string, vid: string) => `FREIGHT#${country.toUpperCase()}#${vid}`,
 };
 
 export const categoryKeys = {

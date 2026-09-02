@@ -15,7 +15,7 @@ import {
   getCatalogProductsByCategory,
 } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants } from "@halloweenready/shared";
+import { categorySlugVariants, cjStorefrontProductsPath } from "@halloweenready/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -76,13 +76,13 @@ export default async function ProductsPage({ searchParams }: Props) {
   let categories: Category[] = [];
 
   try {
-    const query = new URLSearchParams();
-    if (search) query.set("search", search);
-    if (category) query.set("category", category);
-    const qs = query.toString() ? `?${query.toString()}` : "";
-
     const [productsData, categoriesData] = await Promise.all([
-      api<{ products: Product[] }>(`/products${qs}`),
+      api<{ products: Product[] }>(
+        cjStorefrontProductsPath({
+          ...(search ? { search } : {}),
+          ...(category ? { category } : {}),
+        })
+      ),
       api<{ categories: Category[] }>("/categories"),
     ]);
     products = productsData.products;

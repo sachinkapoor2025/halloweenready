@@ -90,8 +90,12 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/products` | List/search products |
-| GET | `/products/{slug}` | Product detail |
+| GET | `/cj/products` | Storefront CJ catalog (list/search) |
+| GET | `/cj/products/{slug}` | Storefront CJ product detail |
+| GET | `/cj/products/{slug}/videos` | CJ videos for the PDP gallery (copies to CDN; hydrates Dynamo if import skipped them) |
+| GET | `/cj/products/{slug}/shipping` | CJ freight methods, USD cost, and transit time (cached) |
+| GET | `/products` | Alias of `/cj/products` (admin CRUD still uses POST/PUT/DELETE here) |
+| GET | `/products/{slug}` | Alias of `/cj/products/{slug}` |
 | POST | `/products` | Admin: create product |
 | PUT | `/products/{slug}` | Admin: update |
 | DELETE | `/products/{slug}` | Admin: delete |

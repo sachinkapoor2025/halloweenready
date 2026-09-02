@@ -66,6 +66,54 @@ export const cjFreightQuoteSchema = z.object({
     .max(40),
 });
 
+/** Destinations we will quote on the storefront (ISO 3166-1 alpha-2). */
+export const CJ_STOREFRONT_SHIP_COUNTRIES = ["US", "CA", "GB", "AU", "DE"] as const;
+export type CjStorefrontShipCountry = (typeof CJ_STOREFRONT_SHIP_COUNTRIES)[number];
+
+export const CJ_STOREFRONT_SHIP_COUNTRY_NAMES: Record<CjStorefrontShipCountry, string> = {
+  US: "United States",
+  CA: "Canada",
+  GB: "United Kingdom",
+  AU: "Australia",
+  DE: "Germany",
+};
+
+export const productShippingQuerySchema = z.object({
+  country: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((v): v is CjStorefrontShipCountry =>
+      (CJ_STOREFRONT_SHIP_COUNTRIES as readonly string[]).includes(v)
+    )
+    .default("US"),
+  vid: z.string().trim().min(1).max(80).optional(),
+  quantity: z.coerce.number().int().min(1).max(10).optional(),
+});
+
+export const cjStorefrontShippingMethodSchema = z.object({
+  name: z.string().min(1),
+  daysLabel: z.string().min(1),
+  priceUsd: z.number().min(0),
+});
+
+export const productShippingResponseSchema = z.object({
+  available: z.boolean(),
+  originCountry: z.string(),
+  destCountry: z.string(),
+  destCountryName: z.string(),
+  vid: z.string().optional(),
+  quantity: z.number().int(),
+  methods: z.array(cjStorefrontShippingMethodSchema),
+  quotedAt: z.string().optional(),
+  customerChargeUsd: z.number().min(0),
+  customerChargeLabel: z.string(),
+});
+
+export type ProductShippingQuery = z.infer<typeof productShippingQuerySchema>;
+export type CjStorefrontShippingMethod = z.infer<typeof cjStorefrontShippingMethodSchema>;
+export type ProductShippingResponse = z.infer<typeof productShippingResponseSchema>;
+
 export const cjFulfillOrderSchema = z.object({
   orderId: z.string().min(1),
   /** 1=page pay URL, 2=CJ wallet, 3=create only (default). */

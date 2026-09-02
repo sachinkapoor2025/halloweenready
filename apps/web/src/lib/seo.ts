@@ -222,12 +222,22 @@ export function productJsonLd(product: {
   name: string;
   description: string;
   images?: string[];
+  videos?: Array<{ url: string; posterUrl?: string; durationSec?: number }>;
   sku?: string;
   price: number;
   currency: string;
   inventory: number;
   categorySlug?: string;
 }) {
+  const video = (product.videos ?? [])
+    .filter((v) => /^https?:\/\//i.test(v.url))
+    .map((v) => ({
+      "@type": "VideoObject" as const,
+      name: product.name,
+      contentUrl: v.url,
+      ...(v.posterUrl ? { thumbnailUrl: v.posterUrl } : {}),
+      ...(v.durationSec ? { duration: `PT${Math.round(v.durationSec)}S` } : {}),
+    }));
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -235,6 +245,7 @@ export function productJsonLd(product: {
     name: product.name,
     description: productMetaDescription(undefined, product.description),
     image: product.images ?? [],
+    ...(video.length ? { video } : {}),
     sku: product.sku ?? product.slug,
     mpn: product.slug,
     url: canonical(`/products/${product.slug}`),

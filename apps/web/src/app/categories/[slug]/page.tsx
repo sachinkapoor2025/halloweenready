@@ -18,7 +18,7 @@ import { resolveImageUrl } from "@/lib/images";
 import { withListingImages } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
-import type { Product, Category } from "@halloweenready/shared";
+import { cjStorefrontProductsPath, type Product, type Category } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -103,7 +103,7 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   try {
-    const prodData = await api<{ products: Product[] }>(`/products?category=${slug}`, {
+    const prodData = await api<{ products: Product[] }>(cjStorefrontProductsPath({ category: slug }), {
       revalidate: false,
     });
     products = withListingImages(prodData.products);

@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isCjDropshippingProduct = isCjDropshippingProduct;
 exports.roundMoney = roundMoney;
 exports.pricingFromVendorCost = pricingFromVendorCost;
-exports.isCjDropshippingProduct = isCjDropshippingProduct;
 exports.stripVendorPrivateFields = stripVendorPrivateFields;
 exports.stripVendorCost = stripVendorCost;
 const currency_1 = require("../currency");
 const constants_1 = require("../constants");
-/** Round money to cents for USD (or currency-aware). */
-function roundMoney(n, currency = "USD") {
-    return (0, currency_1.roundForCurrency)(n, currency);
-}
 /** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
 function isCjDropshippingProduct(product) {
     return product.vendorSlug === constants_1.VENDOR_CJ_DROPSHIPPING || Boolean(product.cjPid);
+}
+/** Round money to cents for USD (or currency-aware). */
+function roundMoney(n, currency = "USD") {
+    return (0, currency_1.roundForCurrency)(n, currency);
 }
 /**
  * Convert vendor wholesale cost → store list + sale prices.

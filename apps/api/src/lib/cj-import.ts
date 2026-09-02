@@ -15,10 +15,12 @@ import { docClient, PRODUCTS_TABLE, now, slugify } from "./db";
 import {
   cjAddToMyProduct,
   cjGetProduct,
+  cjQueryVideosByProductId,
   type CjListProduct,
   type CjProductDetail,
   type CjVariantRaw,
 } from "./cj-dropshipping";
+import { copyCjVideoToCdn, type StoredProductVideo } from "./cj-media";
 
 function num(value: unknown): number | undefined {
   const n = typeof value === "number" ? value : Number(String(value ?? "").replace(/[^\d.-]/g, ""));
@@ -89,6 +91,72 @@ function listVendorCost(row: CjListProduct): number | undefined {
   return variantCosts.length ? Math.min(...variantCosts) : undefined;
 }
 
+function uniqueHttpUrls(urls: Array<string | undefined>, max: number): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    if (!url || !/^https?:\/\//i.test(url)) continue;
+    const key = url.split("?")[0].toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(url);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+export function cjProductImageUrls(detail: CjProductDetail, extra: Array<string | undefined> = []): string[] {
+  return uniqueHttpUrls([detail.bigImage, ...(detail.productImageSet ?? []), ...extra], 40);
+}
+
+function videosFromDescription(html: string | undefined): string[] {
+  if (!html) return [];
+  return uniqueHttpUrls([...(html.match(/https?:\/\/[^"'>\s]+\.mp4/gi) ?? [])], 4);
+}
+
+export async function collectCjProductVideos(
+  pid: string,
+  detail?: CjProductDetail
+): Promise<StoredProductVideo[]> {
+  let rows: Awaited<ReturnType<typeof cjQueryVideosByProductId>> = [];
+  try {
+    rows = await cjQueryVideosByProductId(pid);
+  } catch (err) {
+    console.warn("CJ queryVideosByProductId failed", pid, err);
+  }
+
+  const fromApi = rows
+    .filter((row) => row.videoState !== "OFF_STATE" && row.videoUrl)
+    .slice(0, 3);
+
+  const stored: StoredProductVideo[] = [];
+  for (const row of fromApi) {
+    const copied = await copyCjVideoToCdn({
+      pid,
+      videoId: row.videoId || row.id,
+      videoUrl: row.videoUrl as string,
+      posterUrl: row.coverURL,
+      durationSec: typeof row.duration === "number" ? row.duration : undefined,
+    });
+    if (copied) stored.push(copied);
+  }
+
+  const have = new Set(stored.map((v) => v.url.split("?")[0].toLowerCase()));
+  for (const url of uniqueHttpUrls(
+    [...(detail?.productVideo ?? []), ...videosFromDescription(detail?.description)],
+    3
+  )) {
+    const key = url.split("?")[0].toLowerCase();
+    if (have.has(key) || stored.length >= 3) continue;
+    const copied = await copyCjVideoToCdn({ pid, videoUrl: url });
+    if (copied) {
+      stored.push(copied);
+      have.add(copied.url.split("?")[0].toLowerCase());
+    }
+  }
+  return stored;
+}
+
 export function catalogPreviewFromList(row: CjListProduct) {
   const cost = listVendorCost(row);
   const priced = cost ? pricingFromVendorCost(cost, "USD") : undefined;
@@ -129,13 +197,10 @@ export async function importCjProduct(
     throw new Error(`CJ product ${pid} has no sell price`);
   }
   const priced = pricingFromVendorCost(cost, "USD");
-  const images = [
-    detail.bigImage,
-    ...(detail.productImageSet ?? []),
-    ...variants.map((v) => v.image),
-  ]
-    .filter((url): url is string => Boolean(url && /^https?:\/\//i.test(url)))
-    .slice(0, 12);
+  const images = cjProductImageUrls(
+    detail,
+    variants.map((v) => v.image)
+  );
 
   const categorySlug =
     options.categorySlug ||
@@ -172,6 +237,7 @@ export async function importCjProduct(
     currency: "USD",
     categorySlug,
     images: imageUpdate.images,
+    ...(previous?.videos?.length ? { videos: previous.videos } : {}),
     sku: chosen?.sku || detail.productSku,
     inventory,
     tags: Array.from(new Set([...(previous?.tags ?? []), "cj-dropshipping", "halloween"])),
@@ -198,6 +264,16 @@ export async function importCjProduct(
   await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
   const { invalidateProductListCache } = await import("../handlers/products");
   invalidateProductListCache(categorySlug);
+
+  try {
+    const fetchedVideos = await collectCjProductVideos(detail.pid || pid, detail);
+    if (fetchedVideos.length > 0) {
+      item.videos = fetchedVideos;
+      await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
+    }
+  } catch (err) {
+    console.warn("CJ video import failed", pid, err);
+  }
 
   if (options.addToMyProduct === true) {
     try {

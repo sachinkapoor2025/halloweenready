@@ -13,13 +13,17 @@ import {
   productVisibleToActor,
   defaultVendorSlugForNewProduct,
   isCjDropshippingProduct,
+  CJ_STOREFRONT_SHIP_COUNTRIES,
   type Product,
+  type CjStorefrontShipCountry,
 } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
 import { ok, okCached, created, badRequest, notFound, forbidden } from "../lib/response";
 import { getAuth, resolveStaffActor } from "../lib/auth";
 import { withResolvedProductImages, resolveProductImageUrl } from "../lib/images";
 import { syncInventoryAlertState } from "../lib/inventory";
+import { quoteProductShipping, checkoutOnlyShipping } from "../lib/cj-product-shipping";
+import { CjApiError } from "../lib/cj-dropshipping";
 import { ensureProductInDb } from "../lib/ensure-product";
 
 function forStorefront(product: Product): Product {
@@ -206,6 +210,91 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   if (product.published === false) return notFound("Product not found");
   productGetCache.set(slug, { at: nowMs, product });
   return okCached({ product: forStorefront(product) }, 10);
+}
+
+/** Live CJ freight methods + transit time for the product page. */
+export async function getProductShipping(event: APIGatewayProxyEventV2) {
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
+  const q = event.queryStringParameters ?? {};
+  const dest = (q.country ?? "US").toUpperCase();
+  if (!(CJ_STOREFRONT_SHIP_COUNTRIES as readonly string[]).includes(dest)) {
+    return badRequest("Unsupported destination country");
+  }
+  const quantity = Math.min(10, Math.max(1, Number(q.quantity) || 1));
+  const vid = q.vid?.trim() || undefined;
+
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  const product = result.Item as Product | undefined;
+  if (!product || product.published === false) return notFound("Product not found");
+
+  try {
+    const shipping = await quoteProductShipping({
+      product,
+      destCountry: dest as CjStorefrontShipCountry,
+      vid,
+      quantity,
+    });
+    return okCached({ shipping }, 300);
+  } catch (err) {
+    if (err instanceof CjApiError) {
+      return okCached(
+        { shipping: checkoutOnlyShipping(product, dest as CjStorefrontShipCountry, quantity) },
+        30
+      );
+    }
+    throw err;
+  }
+}
+
+/** CJ product videos for the PDP gallery. Hydrates Dynamo if import skipped them. */
+export async function getProductVideos(event: APIGatewayProxyEventV2) {
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  const product = result.Item as Product | undefined;
+  if (!product || product.published === false) return notFound("Product not found");
+  if (product.videos && product.videos.length > 0) {
+    return okCached({ videos: product.videos }, 300);
+  }
+  if (!product.cjPid) return okCached({ videos: [] }, 60);
+
+  try {
+    const { collectCjProductVideos, cjProductImageUrls } = await import("../lib/cj-import");
+    const { cjGetProduct } = await import("../lib/cj-dropshipping");
+    const detail = await cjGetProduct(product.cjPid);
+    const videos = await collectCjProductVideos(product.cjPid, detail);
+    const images = resolveProductImagesForUpsert(cjProductImageUrls(detail), product.images).images;
+    if (videos.length > 0 || images.length !== (product.images?.length ?? 0)) {
+      await docClient.send(
+        new PutCommand({
+          TableName: PRODUCTS_TABLE,
+          Item: {
+            ...product,
+            ...(videos.length > 0 ? { videos } : {}),
+            images,
+            updatedAt: now(),
+          },
+        })
+      );
+      invalidateProductListCache(product.categorySlug);
+    }
+    return okCached({ videos, images }, 300);
+  } catch {
+    return okCached({ videos: [], images: product.images ?? [] }, 30);
+  }
 }
 
 export async function createProduct(event: APIGatewayProxyEventV2) {

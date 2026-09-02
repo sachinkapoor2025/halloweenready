@@ -12,7 +12,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants } from "@halloweenready/shared";
+import { categorySlugVariants, cjStorefrontProductsPath } from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
@@ -30,7 +30,7 @@ export default async function HomePage() {
 
   try {
     const [productsData, categoriesData] = await Promise.all([
-      api<{ products: Product[] }>("/products"),
+      api<{ products: Product[] }>(cjStorefrontProductsPath()),
       api<{ categories: Category[] }>("/categories"),
     ]);
     products = productsData.products;

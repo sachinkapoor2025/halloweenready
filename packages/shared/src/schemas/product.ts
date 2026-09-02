@@ -81,6 +81,16 @@ export const productSchema = z.object({
   lengthIn: z.number().positive().optional(),
   widthIn: z.number().positive().optional(),
   heightIn: z.number().positive().optional(),
+  /** CJ / imported product videos shown in the PDP gallery. */
+  videos: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        posterUrl: z.string().url().optional(),
+        durationSec: z.number().positive().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const createProductSchema = productSchema.omit({ slug: true }).extend({
