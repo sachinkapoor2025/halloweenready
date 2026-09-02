@@ -95,8 +95,8 @@ function categoryIncludeLines(categorySlug: string): string[] {
 /** Shown on every product's What's included checklist. */
 function shippingIncludeLines(): string[] {
   return [
-    "Ships from our USA warehouse",
-    "Domestic delivery across all 50 states",
+    "Packed by international dropshipping partners",
+    "Destination shipping quote on the product page",
     "Best quality at competitive rates",
   ];
 }

@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { listAllBlogPosts } from "@/lib/content/seo-blog";
 import { pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
   title: "Halloween Blog — Guides for Decor, Costumes & Parties",
@@ -67,6 +69,11 @@ export default function BlogPage() {
           </article>
         ))}
       </div>
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "guide" })}
+        title="Shop and plan Halloween"
+        intro="From the blog hub, continue to categories, destinations, and the main Halloween guide."
+      />
     </div>
   );
 }

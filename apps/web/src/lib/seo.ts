@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { productMetaDescription } from "@halloweenready/shared";
+import { productMetaDescription, VERIFIED_COUNTRY_LINKS } from "@halloweenready/shared";
 import { site, testimonials } from "./site";
 import { siteUrl } from "./env";
 import { extendedKeywords } from "./ai-recommendation";
@@ -46,7 +46,9 @@ export function pageMetadata(opts: {
       description: opts.description,
       images: [image],
     },
-    robots: opts.noIndex ? { index: false, follow: false } : { index: true, follow: true },
+    robots: opts.noIndex
+      ? { index: false, follow: true, googleBot: { index: false, follow: true } }
+      : { index: true, follow: true },
   };
 }
 
@@ -114,7 +116,10 @@ export function organizationJsonLd() {
       "https://www.instagram.com/halloweenready/",
       siteUrl,
     ],
-    areaServed: { "@type": "Country", name: "United States" },
+    areaServed: VERIFIED_COUNTRY_LINKS.map((c) => ({
+      "@type": "Country",
+      name: c.name,
+    })),
     knowsAbout: [
       "Halloween",
       "Halloween costumes USA",
@@ -155,19 +160,17 @@ export function onlineStoreJsonLd() {
     image: site.logoSrc,
     email: site.supportEmail,
     telephone: site.phone,
-    areaServed: { "@type": "Country", name: "United States" },
+    areaServed: VERIFIED_COUNTRY_LINKS.map((c) => ({
+      "@type": "Country",
+      name: c.name,
+    })),
     priceRange: "$$",
     currenciesAccepted: "USD, INR",
     paymentAccepted: "Credit Card, Debit Card, UPI, Razorpay, Stripe",
-    shippingDetails: {
+    shippingDetails: VERIFIED_COUNTRY_LINKS.map((c) => ({
       "@type": "OfferShippingDetails",
-      shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
-      deliveryTime: {
-        "@type": "ShippingDeliveryTime",
-        handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
-        transitTime: { "@type": "QuantitativeValue", minValue: 2, maxValue: 7, unitCode: "DAY" },
-      },
-    },
+      shippingDestination: { "@type": "DefinedRegion", addressCountry: c.code },
+    })),
     parentOrganization: { "@id": `${siteUrl}/#organization` },
   };
 }
@@ -355,8 +358,8 @@ export function howToShopHalloweenJsonLd() {
       {
         "@type": "HowToStep",
         position: 3,
-        name: "Enter US delivery address",
-        text: "At checkout, enter your full US address — city, state, and ZIP code.",
+        name: "Enter your delivery address",
+        text: "At checkout, enter the full destination address. Confirm the product-page shipping quote first.",
         url: canonical("/shipping"),
       },
       {
@@ -368,8 +371,8 @@ export function howToShopHalloweenJsonLd() {
       {
         "@type": "HowToStep",
         position: 5,
-        name: "Receive delivery in USA",
-        text: "HalloweenReady delivers domestically within America in 2–5 business days to all 50 states.",
+        name: "Check the shipping quote",
+        text: "Delivery time depends on the product and destination. Use the quote on the product page rather than a blanket nationwide SLA.",
       },
     ],
   };
@@ -415,8 +418,8 @@ export function serviceAreaJsonLd(city: { label: string; slug: string; state?: s
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `Halloween Delivery to ${city.label}, USA`,
-    description: `Shop Halloween costumes and decor for ${city.label} with ${site.name}. Delivered in 2–5 business days across the United States.`,
+    name: `Halloween shopping for ${city.label}, USA`,
+    description: `Shop Halloween costumes and decor for ${city.label} with ${site.name}. Check each product page for a destination shipping quote.`,
     url: canonical(`/cities/${city.slug}`),
     provider: { "@id": `${siteUrl}/#organization` },
     areaServed: {

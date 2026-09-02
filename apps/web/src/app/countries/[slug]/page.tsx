@@ -4,8 +4,12 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { allCountrySeoSlugs, getCountrySeoPage, countrySeoPages } from "@/lib/content/country-pages";
+import { countryPageInlineLinks } from "@/lib/content/page-inline-links";
+import { applyInlineLinks } from "@/lib/inline-links";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, canonical } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { site } from "@/lib/site";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -52,8 +56,10 @@ export default async function CountryLandingPage({ params }: Props) {
 
   const crumbs = [
     { label: "Home", href: "/" },
-    { label: `Halloween in ${page.name}` },
+    { label: "Shop", href: "/products" },
+    { label: page.name },
   ];
+  const inlineLinks = countryPageInlineLinks[slug] ?? [];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -75,7 +81,7 @@ export default async function CountryLandingPage({ params }: Props) {
       />
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl font-bold text-primary mb-3">{page.h1}</h1>
-      <p className="text-slate-600 mb-6">{page.intro}</p>
+      <p className="text-slate-600 mb-6">{applyInlineLinks(page.intro, inlineLinks)}</p>
       <p className="text-slate-700 mb-8">{page.fulfillment}</p>
 
       {page.sections.map((section) => (
@@ -122,6 +128,12 @@ export default async function CountryLandingPage({ params }: Props) {
       <p className="text-xs text-slate-500 mt-8">
         {site.name} does not redirect search engines by IP. Country selection is optional and always changeable.
       </p>
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "country", countrySlug: slug })}
+        title="Related Halloween pages"
+        intro="Shop categories, other destinations, and Halloween guides from this country page."
+      />
     </div>
   );
 }

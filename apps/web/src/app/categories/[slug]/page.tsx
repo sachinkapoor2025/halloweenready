@@ -8,6 +8,7 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CategoryContentSection } from "@/components/CategoryContentSection";
 import { CategoryProductLinks } from "@/components/CategoryProductLinks";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { JsonLd } from "@/components/JsonLd";
 import { getCategoryContent } from "@/lib/content/category-content";
 import { getCategoryPageSeo } from "@/lib/content/category-seo";
@@ -18,7 +19,7 @@ import { resolveImageUrl } from "@/lib/images";
 import { withListingImages } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
-import { cjStorefrontProductsPath, type Product, type Category } from "@halloweenready/shared";
+import { cjStorefrontProductsPath, getInternalLinkGroups, type Product, type Category } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -128,7 +129,7 @@ export default async function CategoryPage({ params }: Props) {
   const h1 = pageSeo?.h1 ?? `${name} — Halloween USA`;
   const baseDescription =
     category?.description?.trim() ||
-    `Browse our ${name} collection — Halloween products delivered to all 50 US states.`;
+    `Browse our ${name} collection — Halloween products with destination shipping quotes on each product page.`;
   const extra = getCategoryContent(slug);
   const rich = getCategoryRichContent(slug);
   const shipsTo = pickShipsToCities(slug, 3);
@@ -179,12 +180,12 @@ export default async function CategoryPage({ params }: Props) {
 
       {shipsTo.length > 0 && (
         <section className="mt-8 text-sm text-slate-600">
-          <h2 className="font-semibold text-primary mb-2">Ships nationwide</h2>
+          <h2 className="font-semibold text-primary mb-2">Halloween shopping by location</h2>
           <p className="flex flex-wrap gap-x-1 gap-y-1">
             {shipsTo.map((city, i) => (
               <span key={city.slug}>
                 <Link href={`/cities/${city.slug}`} className="text-nav hover:underline">
-                  Ships to {city.label}
+                  {city.label}
                 </Link>
                 {i < shipsTo.length - 1 ? <span className="text-slate-400"> · </span> : null}
               </span>
@@ -232,7 +233,7 @@ export default async function CategoryPage({ params }: Props) {
             <ul className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-2 text-sm text-slate-600">
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
-                Fast Halloween delivery to all 50 US states (5–7 business days)
+                Check the product-page shipping quote for your destination
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
@@ -240,7 +241,7 @@ export default async function CategoryPage({ params }: Props) {
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
-                Same-day dispatch on most orders
+                Partner fulfillment — transit times vary by item
               </li>
               <li className="flex gap-2">
                 <span className="text-nav shrink-0">✓</span>
@@ -250,6 +251,12 @@ export default async function CategoryPage({ params }: Props) {
           </section>
         </>
       )}
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "category", categorySlug: slug })}
+        title="Related Halloween pages"
+        intro="Continue to related categories, destination pages, and planning guides."
+      />
     </div>
   );
 }

@@ -22,7 +22,7 @@ const sharedCategories: CityPageContent["relatedCategories"] = [
   {
     label: "Costumes & Accessories",
     href: "/categories/costumesandaccessories",
-    text: "Adult, teen, and kids Halloween costumes with fast delivery.",
+    text: "Adult, teen, and kids Halloween costumes with destination shipping quotes.",
   },
   {
     label: "Home Decorations",
@@ -54,14 +54,14 @@ function halloweenCityContent(loc: SeoLocation): CityPageContent {
     headline: h1,
     metaExtra: description,
     intro: [
-      `Getting ready for Halloween in ${place}? HalloweenReady delivers costumes, decorations, party supplies, and novelty items across ${label} with domestic US shipping — no customs delays.`,
+      `Getting ready for Halloween in ${place}? HalloweenReady offers costumes, decorations, party supplies, and novelty items with shopping pages for ${label}. Confirm delivery on each product — we do not assume every SKU ships to every address.`,
       seasonalNote,
-      `Order from anywhere in the USA or abroad; enter your ${place} delivery address at checkout. We ship from US warehouses so your Halloween gear arrives before October 31.`,
+      `Order from the catalog and enter your ${place} delivery address at checkout. Transit time comes from the product shipping quote, not a blanket nationwide SLA.`,
     ],
     delivery: {
-      heading: `Halloween Delivery Across ${label}`,
+      heading: `Halloween shopping in ${label}`,
       paragraphs: [
-        `Standard delivery to ${place} is 2–5 business days. Express shipping reaches major metros in 2–3 business days.`,
+        `Delivery to ${place} depends on the item and destination. Open a product page to request a shipping quote before you rely on a Halloween arrival date.`,
         `Popular orders include kids costumes, yard inflatables, party supply bundles, and novelty add-ons — geared for ${label} shoppers. ${seasonalNote}`,
       ],
     },
@@ -72,10 +72,10 @@ function halloweenCityContent(loc: SeoLocation): CityPageContent {
     whyUs: {
       heading: `Why ${label} Shoppers Choose HalloweenReady`,
       bullets: [
-        "Domestic US fulfillment — fast delivery",
+        "Check the product shipping quote for your destination",
         "Costumes, decor, party supplies, and novelty in one store",
         "Secure Stripe (USD) and Razorpay (INR) checkout",
-        "Order by October 25 for guaranteed pre-Halloween delivery",
+        "Plan early — transit varies by item, so we do not guarantee October 31 arrival",
         "WhatsApp and email customer support",
       ],
     },
@@ -85,18 +85,18 @@ function halloweenCityContent(loc: SeoLocation): CityPageContent {
         "Browse costumes, decor, party supplies, or toys & novelty.",
         `Enter your ${place} address at checkout.`,
         "Pay securely online.",
-        "We ship domestically within the USA.",
-        "Receive delivery in 2–5 business days.",
+        "Confirm the product-page shipping quote for that destination.",
+        "Track the order using the method shown after checkout.",
       ],
     },
     faqs: [
       {
         q: `Do you deliver Halloween orders to ${label}?`,
-        a: `Yes. We deliver to ${place} and surrounding areas with domestic US shipping in 2–5 business days.`,
+        a: `We publish a shopping page for ${place}. Confirm whether a product can be quoted to your address on the product page — we do not assume every SKU ships there.`,
       },
       {
         q: "Can I order from outside the USA?",
-        a: `Yes. Order on HalloweenReady.com, enter the ${place} delivery address, and pay in USD or INR. We ship domestically within America.`,
+        a: `Yes. Order on HalloweenReady.com, enter the ${place} delivery address, and pay in USD or INR. Confirm shipping on the product page.`,
       },
       {
         q: `What should I know about Halloween in ${label}?`,

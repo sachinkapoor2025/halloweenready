@@ -11,17 +11,19 @@ export function CategoryProductLinks({
 }) {
   if (products.length === 0) return null;
 
+  const listed = products.slice(0, 24);
+
   return (
     <section className="mt-10 pt-8 border-t border-slate-200" aria-labelledby="category-product-links">
       <h2 id="category-product-links" className="text-xl font-bold text-primary mb-2">
-        Shop {categoryName} — All Products
+        Shop {categoryName}
       </h2>
       <p className="text-sm text-slate-600 mb-4">
-        Browse every {categoryName.toLowerCase()} item in this collection. Each link goes to the full product page
-        with photos, pricing, and add-to-cart.
+        Jump to individual product pages for photos, pricing, and a destination shipping quote.
+        {products.length > listed.length ? ` Showing ${listed.length} of ${products.length} items.` : ""}
       </p>
       <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-        {products.map((product) => (
+        {listed.map((product) => (
           <li key={product.slug}>
             <Link
               href={`/products/${product.slug}`}
