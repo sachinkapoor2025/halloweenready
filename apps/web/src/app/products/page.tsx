@@ -96,14 +96,12 @@ export default async function ProductsPage({ searchParams }: Props) {
     categories = getCatalogCategories();
   }
 
-  const catalogProducts = getCatalogProducts();
-  if (catalogProducts.length > 0) {
-    if (category) {
-      if (products.length === 0) products = getCatalogProductsByCategory(category);
-    } else if (!search) {
-      const apiBySlug = new Map(products.map((p) => [p.slug, p]));
-      products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
-    }
+  if (products.length === 0) {
+    products = category
+      ? getCatalogProductsByCategory(category)
+      : search
+        ? []
+        : getCatalogProducts();
   }
   products = withListingImages(products);
 
