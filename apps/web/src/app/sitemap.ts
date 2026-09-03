@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-import { api } from "@/lib/api";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { siteUrl } from "@/lib/env";
 import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
@@ -96,25 +95,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes = mergedBlogRoutes();
 
-  try {
-    const productsData = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-    const productRoutes = productsData.products.map((p) => ({
-      url: `${siteUrl}/products/${p.slug}`,
-      lastModified: new Date(p.updatedAt),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const products = await loadStorefrontProducts();
+  const productRoutes = products.map((p) => ({
+    url: `${siteUrl}/products/${p.slug}`,
+    lastModified: new Date(p.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
-    return [
-      ...staticRoutes,
-      ...categoryRoutes,
-      ...countryRoutes,
-      ...cityRoutes,
-      ...halloweenRoutes,
-      ...blogRoutes,
-      ...productRoutes,
-    ];
-  } catch {
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...halloweenRoutes, ...blogRoutes];
-  }
+  return [
+    ...staticRoutes,
+    ...categoryRoutes,
+    ...countryRoutes,
+    ...cityRoutes,
+    ...halloweenRoutes,
+    ...blogRoutes,
+    ...productRoutes,
+  ];
 }

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { api } from "@/lib/api";
 import { HalloweenLocationView } from "@/components/HalloweenLocationView";
 import {
   buildLocationContent,
   findGeoLocation,
   halloweenRegionParams,
 } from "@/lib/content/geo";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { pageMetadata } from "@/lib/seo";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import type { Product } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ country: string; region: string }>;
@@ -42,12 +42,7 @@ export default async function HalloweenRegionPage({ params }: Props) {
 
   let products: Product[] = [];
   if (buildLocationContent(loc).quoteable) {
-    try {
-      const data = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-      products = data.products;
-    } catch {
-      products = [];
-    }
+    products = await loadStorefrontProducts();
   }
 
   return <HalloweenLocationView location={loc} products={products} />;
