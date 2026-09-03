@@ -21,6 +21,8 @@ __exportStar(require("./lib/cj-freight"), exports);
 __exportStar(require("./lib/cj-storefront-api"), exports);
 __exportStar(require("./lib/shipping-availability"), exports);
 __exportStar(require("./lib/seo-internal-links"), exports);
+__exportStar(require("./schemas/homepage-ranking"), exports);
+__exportStar(require("./lib/homepage-ranking"), exports);
 __exportStar(require("./schemas/review"), exports);
 __exportStar(require("./schemas/category"), exports);
 __exportStar(require("./schemas/cart"), exports);

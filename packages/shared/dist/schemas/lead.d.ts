@@ -11,7 +11,7 @@ export declare const leadCaptureSchema: z.ZodObject<{
     source: z.ZodDefault<z.ZodEnum<["checkout", "newsletter", "product", "browse", "admin", "contact", "chat", "review"]>>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    source: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review";
+    source: "admin" | "product" | "checkout" | "newsletter" | "browse" | "contact" | "chat" | "review";
     sessionId: string;
     name?: string | undefined;
     productSlug?: string | undefined;
@@ -26,7 +26,7 @@ export declare const leadCaptureSchema: z.ZodObject<{
     productSlug?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    source?: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review" | undefined;
+    source?: "admin" | "product" | "checkout" | "newsletter" | "browse" | "contact" | "chat" | "review" | undefined;
     page?: string | undefined;
     metadata?: Record<string, string> | undefined;
     userId?: string | undefined;

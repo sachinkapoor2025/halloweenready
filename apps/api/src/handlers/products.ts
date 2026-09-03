@@ -112,6 +112,10 @@ async function scanAllProducts(): Promise<Product[]> {
   return items;
 }
 
+export async function listCatalogProducts(): Promise<Product[]> {
+  return scanAllProducts();
+}
+
 /** Call after product create/update/delete so storefront list stays fresh. */
 export function invalidateProductListCache(categorySlug?: string) {
   productListCache = null;

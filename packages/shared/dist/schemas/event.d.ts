@@ -1,7 +1,7 @@
 import { z } from "zod";
-export declare const eventTypeEnum: z.ZodEnum<["page_view", "product_view", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
+export declare const eventTypeEnum: z.ZodEnum<["page_view", "product_view", "product_impression", "product_click", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
 export declare const trackEventSchema: z.ZodObject<{
-    type: z.ZodEnum<["page_view", "product_view", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
+    type: z.ZodEnum<["page_view", "product_view", "product_impression", "product_click", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
     sessionId: z.ZodString;
     path: z.ZodOptional<z.ZodString>;
     productSlug: z.ZodOptional<z.ZodString>;
@@ -12,7 +12,7 @@ export declare const trackEventSchema: z.ZodObject<{
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
     at: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+    type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
     sessionId: string;
     value?: number | undefined;
     path?: string | undefined;
@@ -23,7 +23,7 @@ export declare const trackEventSchema: z.ZodObject<{
     query?: string | undefined;
     resultCount?: number | undefined;
 }, {
-    type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+    type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
     sessionId: string;
     value?: number | undefined;
     path?: string | undefined;
@@ -37,7 +37,7 @@ export declare const trackEventSchema: z.ZodObject<{
 /** Events are sent in batches to reduce request volume. */
 export declare const trackEventBatchSchema: z.ZodObject<{
     events: z.ZodArray<z.ZodObject<{
-        type: z.ZodEnum<["page_view", "product_view", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
+        type: z.ZodEnum<["page_view", "product_view", "product_impression", "product_click", "search", "cart_add", "cart_remove", "checkout_start", "purchase", "session_ping", "country_changed", "postal_code_entered"]>;
         sessionId: z.ZodString;
         path: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodOptional<z.ZodString>;
@@ -48,7 +48,7 @@ export declare const trackEventBatchSchema: z.ZodObject<{
         metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+        type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
         sessionId: string;
         value?: number | undefined;
         path?: string | undefined;
@@ -59,7 +59,7 @@ export declare const trackEventBatchSchema: z.ZodObject<{
         query?: string | undefined;
         resultCount?: number | undefined;
     }, {
-        type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+        type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
         sessionId: string;
         value?: number | undefined;
         path?: string | undefined;
@@ -72,7 +72,7 @@ export declare const trackEventBatchSchema: z.ZodObject<{
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
     events: {
-        type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+        type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
         sessionId: string;
         value?: number | undefined;
         path?: string | undefined;
@@ -85,7 +85,7 @@ export declare const trackEventBatchSchema: z.ZodObject<{
     }[];
 }, {
     events: {
-        type: "page_view" | "product_view" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
+        type: "page_view" | "product_view" | "product_impression" | "product_click" | "search" | "cart_add" | "cart_remove" | "checkout_start" | "purchase" | "session_ping" | "country_changed" | "postal_code_entered";
         sessionId: string;
         value?: number | undefined;
         path?: string | undefined;

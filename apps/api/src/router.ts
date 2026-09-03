@@ -9,6 +9,7 @@ import * as config from "./handlers/config";
 import * as uploads from "./handlers/uploads";
 import * as events from "./handlers/events";
 import * as analytics from "./handlers/analytics";
+import * as homepageRanking from "./handlers/homepage-ranking";
 import * as salesReport from "./handlers/sales-report";
 import * as adminCarts from "./handlers/admin-carts";
 import * as adminCustomers from "./handlers/admin-customers";
@@ -271,6 +272,13 @@ const routes: Route[] = [
   { method: "GET", pattern: /^\/admin\/analytics\/overview$/, handler: analytics.getAnalyticsOverview },
   { method: "GET", pattern: /^\/admin\/analytics\/sales$/, handler: salesReport.getSalesReport },
   { method: "GET", pattern: /^\/admin\/analytics\/products$/, handler: analytics.getTopProducts },
+  { method: "GET", pattern: /^\/admin\/analytics\/performance$/, handler: homepageRanking.getProductPerformance },
+  { method: "GET", pattern: /^\/admin\/analytics\/performance\/([^/]+)$/, handler: homepageRanking.getProductPerformanceDetail, params: ["slug"] },
+  { method: "GET", pattern: /^\/admin\/analytics\/merchandising$/, handler: homepageRanking.getMerchandisingInsights },
+  { method: "GET", pattern: /^\/admin\/homepage-ranking$/, handler: homepageRanking.getHomepageRankingConfig },
+  { method: "PUT", pattern: /^\/admin\/homepage-ranking$/, handler: homepageRanking.updateHomepageRankingConfig },
+  { method: "POST", pattern: /^\/admin\/homepage-ranking\/refresh$/, handler: homepageRanking.postRefreshHomepageRanking },
+  { method: "GET", pattern: /^\/homepage\/products$/, handler: homepageRanking.getHomepageCatalog },
   { method: "GET", pattern: /^\/admin\/analytics\/searches$/, handler: analytics.getTopSearches },
   { method: "GET", pattern: /^\/admin\/analytics\/insights$/, handler: analytics.getAnalyticsInsights },
   { method: "GET", pattern: /^\/admin\/analytics\/visitors$/, handler: analytics.getVisitorAnalytics },

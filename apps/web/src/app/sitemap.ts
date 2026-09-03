@@ -6,6 +6,7 @@ import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 import { allCountrySeoSlugs } from "@/lib/content/country-pages";
+import { indexableGeoPaths } from "@/lib/content/geo";
 
 /** Handwritten + SEO blog posts, deduped by slug. */
 function mergedBlogRoutes(): MetadataRoute.Sitemap {
@@ -46,6 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/shipping`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/halloween`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/halloween-guide`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     {
       url: `${siteUrl}${seoEventsHub.hubPath}`,
@@ -85,6 +87,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
+  const halloweenRoutes = indexableGeoPaths().map((path) => ({
+    url: `${siteUrl}${path}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: path.split("/").length <= 3 ? 0.8 : 0.7,
+  }));
+
   const blogRoutes = mergedBlogRoutes();
 
   try {
@@ -96,8 +105,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes, ...productRoutes];
+    return [
+      ...staticRoutes,
+      ...categoryRoutes,
+      ...countryRoutes,
+      ...cityRoutes,
+      ...halloweenRoutes,
+      ...blogRoutes,
+      ...productRoutes,
+    ];
   } catch {
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes];
+    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...halloweenRoutes, ...blogRoutes];
   }
 }

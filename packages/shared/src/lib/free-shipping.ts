@@ -10,19 +10,30 @@ import {
 import { cartLineUnitTotal } from "./product-addons";
 
 /** Cart subtotal at or above this (USD) unlocks free shipping. */
-export const FREE_SHIPPING_MIN_SUBTOTAL_USD = 10.99;
+export const FREE_SHIPPING_MIN_SUBTOTAL_USD = 49;
 
 /**
- * At or above this (USD) and below free-shipping threshold → reduced $2.99 shipping.
- * Below this → $6.99 shipping.
+ * Paid shipping bands (USD). `maxUsd` is exclusive.
+ * below $10 → $10; below $20 → $8; below $30 → $6; below $40 → $4; below $49 → $2.
  */
-export const REDUCED_SHIPPING_MIN_SUBTOTAL_USD = 7;
+export const SHIPPING_RATE_BANDS = [
+  { minUsd: 0, maxUsd: 10, feeUsd: 10 },
+  { minUsd: 10, maxUsd: 20, feeUsd: 8 },
+  { minUsd: 20, maxUsd: 30, feeUsd: 6 },
+  { minUsd: 30, maxUsd: 40, feeUsd: 4 },
+  { minUsd: 40, maxUsd: 49, feeUsd: 2 },
+] as const;
 
-/** Flat shipping when bucket is under $7. */
-export const BELOW_THRESHOLD_SHIPPING_USD = 6.99;
+export type ShippingRateBand = (typeof SHIPPING_RATE_BANDS)[number];
 
-/** Flat shipping when bucket is $7+ but under $10.99. */
-export const REDUCED_SHIPPING_USD = 2.99;
+/** Lowest paid fee (cart under $10). Kept for existing imports. */
+export const BELOW_THRESHOLD_SHIPPING_USD = SHIPPING_RATE_BANDS[0].feeUsd;
+
+/** Start of the $2 shipping band (cart $40–$48.99). */
+export const REDUCED_SHIPPING_MIN_SUBTOTAL_USD = 40;
+
+/** $2 shipping when cart is $40+ but under $49. */
+export const REDUCED_SHIPPING_USD = 2;
 
 export type FreeShippingTier = "low" | "mid" | "free";
 
@@ -32,17 +43,17 @@ export type FreeShippingQuote = {
   qualifiesForFreeShipping: boolean;
   /** How much more cart value (in `currency`) is needed for free shipping. */
   amountAwayFromFreeShipping: number;
-  /** How much more cart value (in `currency`) is needed to reach the $2.99 tier. */
+  /** How much more cart value (in `currency`) is needed to reach the next cheaper paid band. */
   amountAwayFromReducedShipping: number;
   /** Free-shipping threshold expressed in `currency`. */
   thresholdInCurrency: number;
-  /** Reduced-shipping ($2.99) threshold expressed in `currency`. */
+  /** Next cheaper paid-band minimum, or the $2-band minimum when already there. */
   reducedThresholdInCurrency: number;
-  /** $6.99 tier fee in `currency`. */
+  /** Current band fee in `currency` (or $10 band fee when free). */
   lowTierFeeInCurrency: number;
-  /** $2.99 tier fee in `currency`. */
+  /** Next cheaper paid fee in `currency` (or $2 when none). */
   midTierFeeInCurrency: number;
-  /** Current tier for this bucket. */
+  /** Current tier for this bucket. `mid` = $2 band; `low` = any higher paid fee. */
   tier: FreeShippingTier;
   /** Shipping fee for the current bucket tier, in `currency`. */
   belowThresholdFeeInCurrency: number;
@@ -69,11 +80,31 @@ function toUsd(
   return convertCurrencyAmount(amount, "INR", "USD", usdInrRate);
 }
 
+export function shippingBandForSubtotalUsd(
+  subtotalUsd: number
+): ShippingRateBand | null {
+  if (subtotalUsd >= FREE_SHIPPING_MIN_SUBTOTAL_USD) return null;
+  return (
+    SHIPPING_RATE_BANDS.find((b) => subtotalUsd >= b.minUsd && subtotalUsd < b.maxUsd) ??
+    SHIPPING_RATE_BANDS[0]
+  );
+}
+
+function nextCheaperBand(subtotalUsd: number): ShippingRateBand | null {
+  const current = shippingBandForSubtotalUsd(subtotalUsd);
+  if (!current) return null;
+  const idx = SHIPPING_RATE_BANDS.findIndex((b) => b.minUsd === current.minUsd);
+  return idx >= 0 ? SHIPPING_RATE_BANDS[idx + 1] ?? null : null;
+}
+
 /**
  * Shipping tiers (per address × vendor bucket, in USD):
- * - under $7 → $6.99
- * - $7 to under $10.99 → $2.99
- * - $10.99+ → free
+ * - under $10 → $10
+ * - $10 to under $20 → $8
+ * - $20 to under $30 → $6
+ * - $30 to under $40 → $4
+ * - $40 to under $49 → $2
+ * - $49+ → free
  * Evaluated in USD, then converted when the shopper currency is INR.
  */
 export function quoteFreeShippingThreshold(input: {
@@ -87,37 +118,38 @@ export function quoteFreeShippingThreshold(input: {
     currency,
     usdInrRate
   );
-  const reducedThresholdInCurrency = toCurrency(
-    REDUCED_SHIPPING_MIN_SUBTOTAL_USD,
-    currency,
-    usdInrRate
-  );
+  const subtotalUsd = toUsd(subtotal, currency, usdInrRate);
+  const band = shippingBandForSubtotalUsd(subtotalUsd);
+  const next = nextCheaperBand(subtotalUsd);
+
   const lowTierFee = toCurrency(BELOW_THRESHOLD_SHIPPING_USD, currency, usdInrRate);
   const midTierFee = toCurrency(REDUCED_SHIPPING_USD, currency, usdInrRate);
-  const subtotalUsd = toUsd(subtotal, currency, usdInrRate);
 
   let charge = 0;
   let qualifiesForFreeShipping = false;
   let tier: FreeShippingTier = "low";
-  if (subtotalUsd >= FREE_SHIPPING_MIN_SUBTOTAL_USD) {
+
+  if (!band) {
     qualifiesForFreeShipping = true;
     tier = "free";
     charge = 0;
-  } else if (subtotalUsd >= REDUCED_SHIPPING_MIN_SUBTOTAL_USD) {
-    tier = "mid";
-    charge = midTierFee;
   } else {
-    tier = "low";
-    charge = lowTierFee;
+    charge = toCurrency(band.feeUsd, currency, usdInrRate);
+    tier = band.feeUsd === REDUCED_SHIPPING_USD ? "mid" : "low";
   }
+
+  const nextMinUsd = next?.minUsd ?? REDUCED_SHIPPING_MIN_SUBTOTAL_USD;
+  const reducedThresholdInCurrency = toCurrency(nextMinUsd, currency, usdInrRate);
+  const nextFeeUsd = next?.feeUsd ?? REDUCED_SHIPPING_USD;
+  const nextFeeInCurrency = toCurrency(nextFeeUsd, currency, usdInrRate);
 
   const amountAwayFromFreeShipping = qualifiesForFreeShipping
     ? 0
     : Math.max(0, roundForCurrency(thresholdInCurrency - subtotal, currency));
   const amountAwayFromReducedShipping =
-    tier === "low"
-      ? Math.max(0, roundForCurrency(reducedThresholdInCurrency - subtotal, currency))
-      : 0;
+    qualifiesForFreeShipping || !next
+      ? 0
+      : Math.max(0, roundForCurrency(reducedThresholdInCurrency - subtotal, currency));
 
   return {
     charge,
@@ -126,8 +158,8 @@ export function quoteFreeShippingThreshold(input: {
     amountAwayFromReducedShipping,
     thresholdInCurrency,
     reducedThresholdInCurrency,
-    lowTierFeeInCurrency: lowTierFee,
-    midTierFeeInCurrency: midTierFee,
+    lowTierFeeInCurrency: band ? charge : lowTierFee,
+    midTierFeeInCurrency: next ? nextFeeInCurrency : midTierFee,
     tier,
     belowThresholdFeeInCurrency: charge,
   };

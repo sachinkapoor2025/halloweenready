@@ -26,7 +26,7 @@ export const trustHighlights = [
   {
     icon: "📦",
     title: "Free Shipping & Reliable Service",
-    detail: "Enjoy free shipping on selected orders. Every order is handled with care for timely and safe delivery.",
+    detail: "Free shipping on orders of $49 or more. Smaller carts use a stepped shipping fee.",
   },
   {
     icon: "📍",

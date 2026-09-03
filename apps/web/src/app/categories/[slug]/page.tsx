@@ -165,7 +165,7 @@ export default async function CategoryPage({ params }: Props) {
 
       {products.length > 0 ? (
         <Suspense fallback={<p className="text-slate-500">Loading products…</p>}>
-          <ProductGrid products={products} />
+          <ProductGrid products={products} listingPage={`category:${slug}`} />
         </Suspense>
       ) : (
         <p className="text-slate-500">

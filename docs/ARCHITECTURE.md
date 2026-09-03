@@ -82,7 +82,7 @@ leads/sessions; products re-seed via `import:usarakhi`).
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
-| `ReviewEmailsCronFunction` | Every hour | Email customers 1 day after order is marked **Delivered** or **Complete**, linking to `/reviews` |
+| `ReviewEmailsCronFunction` | Every 15 min + hourly Razorpay reconcile + hourly homepage ranking | Review emails, abandoned carts, pending-payment reminders; Razorpay safety net; homepage ranking snapshot |
 
 When admin sets order status to **Delivered** or **Complete**, the API sets `reviewEmailDueAt` (delivery + 1 day). The cron sends one email per order (tracked via `reviewEmailSentAt`).
 
@@ -127,7 +127,14 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | PATCH | `/admin/orders/{orderId}` | Admin: update status + tracking (schedules review email 1 day after delivered) |
 | GET | `/admin/analytics/sales` | Admin: day/week/month payments received (excludes refunds) |
 | GET | `/admin/analytics/overview` | Admin: traffic + funnel (`?days=`) |
-| GET | `/admin/analytics/products` | Admin: most-viewed products |
+| GET | `/admin/analytics/products` | Admin: most-viewed products (legacy rollup) |
+| GET | `/admin/analytics/performance` | Admin: product performance scores + funnel (`?days=`) |
+| GET | `/admin/analytics/performance/{slug}` | Admin: one product + geo drill-down |
+| GET | `/admin/analytics/merchandising` | Admin: quadrants, countries, SEO opportunities |
+| GET | `/admin/homepage-ranking` | Admin: ranking weights / slot config |
+| PUT | `/admin/homepage-ranking` | Admin: save ranking config and refresh snapshot |
+| POST | `/admin/homepage-ranking/refresh` | Admin: rebuild homepage snapshot |
+| GET | `/homepage/products` | Storefront ranked homepage pool (~500) |
 | GET | `/admin/analytics/searches` | Admin: top + zero-result searches |
 | GET | `/admin/sessions` | Admin: recent visitor sessions |
 | GET | `/admin/sessions/{sessionId}` | Admin: full visitor journey |

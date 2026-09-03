@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SHIPPING_VENDOR_HALLOWEENREADY = exports.REDUCED_SHIPPING_USD = exports.BELOW_THRESHOLD_SHIPPING_USD = exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD = exports.FREE_SHIPPING_MIN_SUBTOTAL_USD = void 0;
+exports.SHIPPING_VENDOR_HALLOWEENREADY = exports.REDUCED_SHIPPING_USD = exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD = exports.BELOW_THRESHOLD_SHIPPING_USD = exports.SHIPPING_RATE_BANDS = exports.FREE_SHIPPING_MIN_SUBTOTAL_USD = void 0;
+exports.shippingBandForSubtotalUsd = shippingBandForSubtotalUsd;
 exports.quoteFreeShippingThreshold = quoteFreeShippingThreshold;
 exports.shippingVendorKey = shippingVendorKey;
 exports.quoteShipmentsShipping = quoteShipmentsShipping;
@@ -10,16 +11,24 @@ const currency_1 = require("../currency");
 const flash_sale_1 = require("./flash-sale");
 const product_addons_1 = require("./product-addons");
 /** Cart subtotal at or above this (USD) unlocks free shipping. */
-exports.FREE_SHIPPING_MIN_SUBTOTAL_USD = 10.99;
+exports.FREE_SHIPPING_MIN_SUBTOTAL_USD = 49;
 /**
- * At or above this (USD) and below free-shipping threshold → reduced $2.99 shipping.
- * Below this → $6.99 shipping.
+ * Paid shipping bands (USD). `maxUsd` is exclusive.
+ * below $10 → $10; below $20 → $8; below $30 → $6; below $40 → $4; below $49 → $2.
  */
-exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD = 7;
-/** Flat shipping when bucket is under $7. */
-exports.BELOW_THRESHOLD_SHIPPING_USD = 6.99;
-/** Flat shipping when bucket is $7+ but under $10.99. */
-exports.REDUCED_SHIPPING_USD = 2.99;
+exports.SHIPPING_RATE_BANDS = [
+    { minUsd: 0, maxUsd: 10, feeUsd: 10 },
+    { minUsd: 10, maxUsd: 20, feeUsd: 8 },
+    { minUsd: 20, maxUsd: 30, feeUsd: 6 },
+    { minUsd: 30, maxUsd: 40, feeUsd: 4 },
+    { minUsd: 40, maxUsd: 49, feeUsd: 2 },
+];
+/** Lowest paid fee (cart under $10). Kept for existing imports. */
+exports.BELOW_THRESHOLD_SHIPPING_USD = exports.SHIPPING_RATE_BANDS[0].feeUsd;
+/** Start of the $2 shipping band (cart $40–$48.99). */
+exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD = 40;
+/** $2 shipping when cart is $40+ but under $49. */
+exports.REDUCED_SHIPPING_USD = 2;
 function toCurrency(amountUsd, currency, usdInrRate) {
     if (currency === "USD")
         return (0, currency_1.roundForCurrency)(amountUsd, "USD");
@@ -30,42 +39,59 @@ function toUsd(amount, currency, usdInrRate) {
         return amount;
     return (0, currency_1.convertCurrencyAmount)(amount, "INR", "USD", usdInrRate);
 }
+function shippingBandForSubtotalUsd(subtotalUsd) {
+    if (subtotalUsd >= exports.FREE_SHIPPING_MIN_SUBTOTAL_USD)
+        return null;
+    return (exports.SHIPPING_RATE_BANDS.find((b) => subtotalUsd >= b.minUsd && subtotalUsd < b.maxUsd) ??
+        exports.SHIPPING_RATE_BANDS[0]);
+}
+function nextCheaperBand(subtotalUsd) {
+    const current = shippingBandForSubtotalUsd(subtotalUsd);
+    if (!current)
+        return null;
+    const idx = exports.SHIPPING_RATE_BANDS.findIndex((b) => b.minUsd === current.minUsd);
+    return idx >= 0 ? exports.SHIPPING_RATE_BANDS[idx + 1] ?? null : null;
+}
 /**
  * Shipping tiers (per address × vendor bucket, in USD):
- * - under $7 → $6.99
- * - $7 to under $10.99 → $2.99
- * - $10.99+ → free
+ * - under $10 → $10
+ * - $10 to under $20 → $8
+ * - $20 to under $30 → $6
+ * - $30 to under $40 → $4
+ * - $40 to under $49 → $2
+ * - $49+ → free
  * Evaluated in USD, then converted when the shopper currency is INR.
  */
 function quoteFreeShippingThreshold(input) {
     const { subtotal, currency, usdInrRate } = input;
     const thresholdInCurrency = toCurrency(exports.FREE_SHIPPING_MIN_SUBTOTAL_USD, currency, usdInrRate);
-    const reducedThresholdInCurrency = toCurrency(exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD, currency, usdInrRate);
+    const subtotalUsd = toUsd(subtotal, currency, usdInrRate);
+    const band = shippingBandForSubtotalUsd(subtotalUsd);
+    const next = nextCheaperBand(subtotalUsd);
     const lowTierFee = toCurrency(exports.BELOW_THRESHOLD_SHIPPING_USD, currency, usdInrRate);
     const midTierFee = toCurrency(exports.REDUCED_SHIPPING_USD, currency, usdInrRate);
-    const subtotalUsd = toUsd(subtotal, currency, usdInrRate);
     let charge = 0;
     let qualifiesForFreeShipping = false;
     let tier = "low";
-    if (subtotalUsd >= exports.FREE_SHIPPING_MIN_SUBTOTAL_USD) {
+    if (!band) {
         qualifiesForFreeShipping = true;
         tier = "free";
         charge = 0;
     }
-    else if (subtotalUsd >= exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD) {
-        tier = "mid";
-        charge = midTierFee;
-    }
     else {
-        tier = "low";
-        charge = lowTierFee;
+        charge = toCurrency(band.feeUsd, currency, usdInrRate);
+        tier = band.feeUsd === exports.REDUCED_SHIPPING_USD ? "mid" : "low";
     }
+    const nextMinUsd = next?.minUsd ?? exports.REDUCED_SHIPPING_MIN_SUBTOTAL_USD;
+    const reducedThresholdInCurrency = toCurrency(nextMinUsd, currency, usdInrRate);
+    const nextFeeUsd = next?.feeUsd ?? exports.REDUCED_SHIPPING_USD;
+    const nextFeeInCurrency = toCurrency(nextFeeUsd, currency, usdInrRate);
     const amountAwayFromFreeShipping = qualifiesForFreeShipping
         ? 0
         : Math.max(0, (0, currency_1.roundForCurrency)(thresholdInCurrency - subtotal, currency));
-    const amountAwayFromReducedShipping = tier === "low"
-        ? Math.max(0, (0, currency_1.roundForCurrency)(reducedThresholdInCurrency - subtotal, currency))
-        : 0;
+    const amountAwayFromReducedShipping = qualifiesForFreeShipping || !next
+        ? 0
+        : Math.max(0, (0, currency_1.roundForCurrency)(reducedThresholdInCurrency - subtotal, currency));
     return {
         charge,
         qualifiesForFreeShipping,
@@ -73,8 +99,8 @@ function quoteFreeShippingThreshold(input) {
         amountAwayFromReducedShipping,
         thresholdInCurrency,
         reducedThresholdInCurrency,
-        lowTierFeeInCurrency: lowTierFee,
-        midTierFeeInCurrency: midTierFee,
+        lowTierFeeInCurrency: band ? charge : lowTierFee,
+        midTierFeeInCurrency: next ? nextFeeInCurrency : midTierFee,
         tier,
         belowThresholdFeeInCurrency: charge,
     };

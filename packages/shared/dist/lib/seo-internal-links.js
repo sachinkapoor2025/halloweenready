@@ -36,6 +36,7 @@ exports.PRIORITY_CITY_LINKS = [
     { href: "/cities/texas", label: "Halloween in Texas" },
 ];
 exports.PLANNING_LINKS = [
+    { href: "/halloween", label: "Halloween by location" },
     { href: "/halloween-guide", label: "Halloween planning guide" },
     { href: "/halloween-guide/events", label: "Halloween events guide" },
     { href: "/blog", label: "Halloween blog" },

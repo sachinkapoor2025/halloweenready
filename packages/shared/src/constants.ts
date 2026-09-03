@@ -68,6 +68,10 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
 export const EVENT_TYPES = {
   PAGE_VIEW: "page_view",
   PRODUCT_VIEW: "product_view",
+  /** Listing card entered the viewport (prefer rollup-only writes). */
+  PRODUCT_IMPRESSION: "product_impression",
+  /** Listing card click through to PDP. */
+  PRODUCT_CLICK: "product_click",
   SEARCH: "search",
   CART_ADD: "cart_add",
   CART_REMOVE: "cart_remove",
