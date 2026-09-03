@@ -34,6 +34,26 @@ function forStorefront(product: Product): Product {
   return { ...stripped, allowsAddons } as Product;
 }
 
+/** Listing payloads must stay under API Gateway’s 6MB cap once the catalog is thousands of SKUs. */
+function forStorefrontListing(product: Product): Product {
+  const full = forStorefront(product);
+  return {
+    ...full,
+    description: (full.description ?? "").slice(0, 280),
+    images: (full.images ?? []).slice(0, 2),
+  };
+}
+
+function forAdminList(product: Product): Product {
+  const images = (product.images ?? []).slice(0, 2).map((url) => resolveProductImageUrl(url));
+  return {
+    ...product,
+    description: (product.description ?? "").slice(0, 280),
+    images,
+    cjVariants: undefined,
+  };
+}
+
 function isKidsComboProduct(product: Product): boolean {
   return false; // halloweenready: no usarakhi kids-rakhi combos
 
@@ -175,8 +195,8 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   }
 
   // Short CDN TTL only — listing + PDP must not drift for minutes after price edits.
-  if (search) return ok({ products: items.map(forStorefront) });
-  return okCached({ products: items.map(forStorefront) }, 10);
+  if (search) return ok({ products: items.map(forStorefrontListing) });
+  return okCached({ products: items.map(forStorefrontListing) }, 10);
 }
 
 export async function getProduct(event: APIGatewayProxyEventV2) {
@@ -382,25 +402,17 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
   return ok({ product: updated });
 }
 
-/** Admin: list all products including unpublished. */
+/** Admin: list all products including unpublished. Paginate the table scan — a single 1MB page is only ~250 SKUs. */
 export async function listAdminProducts(event: APIGatewayProxyEventV2) {
   const actor = await resolveStaffActor(event);
   if (!actor) return forbidden();
 
-  const result = await docClient.send(
-    new ScanCommand({
-      TableName: PRODUCTS_TABLE,
-      FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
-      ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
-    })
-  );
-
-  const items = ((result.Items ?? []) as Product[])
+  const items = (await scanAllProducts())
     .filter((p) => productVisibleToActor(p, actor))
     .sort(
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
-  return ok({ products: items.map(withResolvedProductImages) });
+  return ok({ products: items.map(forAdminList), total: items.length });
 }
 
 /** Delete bundled sample catalog SKUs; keep CJ Dropshipping imports. */
