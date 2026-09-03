@@ -14,7 +14,7 @@ export const deliveryClaims = {
   dispatch: "Partner warehouses dispatch after the order is paid and accepted. Timing varies by SKU.",
   fulfillment:
     "Halloween catalog items are fulfilled through international dropshipping partners. We do not claim a local warehouse for every destination.",
-  shipping: "Checkout follows store shipping policy. The product-page quote is the destination-specific estimate.",
+  shipping: "Free shipping on orders of $49 or more. Smaller carts use a stepped shipping fee.",
 } as const;
 
 export const halloween2026Deadlines = [

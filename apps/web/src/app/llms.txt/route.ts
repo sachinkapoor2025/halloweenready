@@ -123,6 +123,7 @@ ${categoryTable}
 - **Home:** ${siteUrl}/
 - **Shop all products:** ${siteUrl}/products
 - **Halloween guide:** ${siteUrl}/halloween-guide
+- **Halloween by location:** ${siteUrl}/halloween
 - **Halloween events (informational — no tickets sold):** ${siteUrl}${seoEventsHub.hubPath}
 - **Shipping & delivery:** ${siteUrl}/shipping
 - **FAQ:** ${siteUrl}/faq

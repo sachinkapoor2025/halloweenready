@@ -92,6 +92,14 @@ export declare const configKeys: {
         pk: string;
         sk: "META";
     };
+    homepageRanking: {
+        pk: string;
+        sk: "META";
+    };
+    homepageSnapshot: {
+        pk: string;
+        sk: "META";
+    };
 };
 /** Admin CJ catalog import jobs (config table). */
 export declare const cjImportJobKeys: {

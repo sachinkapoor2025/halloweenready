@@ -42,6 +42,11 @@ describe("internal link graph", () => {
     assert.equal(a.length, 4);
   });
 
+  it("includes the halloween location hub in planning links", () => {
+    const groups = getInternalLinkGroups({ type: "home" });
+    assert.ok(hrefs(groups).includes("/halloween"));
+  });
+
   it("connects city pages back to the USA country page", () => {
     const groups = getInternalLinkGroups({ type: "city", citySlug: "new-york" });
     assert.ok(hrefs(groups).includes("/countries/us"));

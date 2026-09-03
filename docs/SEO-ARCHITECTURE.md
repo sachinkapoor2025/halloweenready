@@ -1,9 +1,9 @@
 # HalloweenReady global SEO architecture
 
-**Status:** Phase 1 audit + Phase 2 design. No bulk page generation in this document’s implementation.  
+**Status:** Location tree implemented at `/halloween/{country}/{region}/{city}`. Existing `/countries/` and `/cities/` URLs are kept (no 301 yet). City pages are only those named in the geographic brief — not every municipality. Australia “Other Territories” are generated but `noindex`. Live freight quotes remain US, CA, GB, AU, DE only.  
 **Site:** https://www.halloweenready.com/  
 **Catalog:** CJ Dropshipping Halloween SKUs stored in Dynamo (`cjPid` / `cjVid`), storefront API `/cj/products`.  
-**Principle:** 20,000+ keyword *targets*, not 20,000 indexable URLs. One strong page owns a cluster.
+**Principle:** 20,000+ keyword *targets*, not 20,000 indexable URLs. One strong page owns a cluster. Location pages use Country → administrative region → city with the correct local unit name (state, UT, province, prefecture, emirate, constituent country, district, Land).
 
 ---
 
@@ -19,12 +19,13 @@
 | Categories | `/categories/{slug}` | 8 | Unique titles/H1 from `seo-data` + rich copy |
 | Countries | `/countries/{slug}` | 13 | US, UK, CA, AU, IN, AE, DE, FR, ES, IT, NL, IE, BE |
 | Cities/states | `/cities/{slug}` | 31 | Mix of US cities **and** states in one path |
+| Halloween location tree | `/halloween/`, `/halloween/{country}/…` | ~300 | Country → admin region → named city. Hub + geo catalog in `apps/web/src/lib/content/geo/` |
 | Guide | `/halloween-guide`, `/halloween-guide/events` | 2 | Strong hub; USA-centric copy |
 | Blog | `/blog`, `/blog/{slug}` | ~40 | Handwritten + generated SEO posts |
 | Utility | `/shipping`, `/faq`, `/about`, `/reviews`, `/llms.txt` | several | Keep |
 | Legacy 301s | `/shop`, `/product/:slug`, WP paths | many | `legacy-urls.ts` — keep |
 
-**Routing:** Next.js App Router. No `/halloween/{country}/…` tree. Location SEO is flat (`/cities/new-york`, `/cities/california`).
+**Routing:** Next.js App Router. Location SEO now has a hierarchical tree at `/halloween/{country}/{region}/{city}` in addition to the older flat `/countries/{slug}` and `/cities/{slug}` URLs.
 
 **Product model (normalized already, keep extending):** Dynamo `PRODUCT#{slug}` with `name`, `description`, `images`, `videos`, `price`, `compareAtPrice`, `currency`, `categorySlug`, `sku`, `inventory`, `cjPid`, `cjVid`, `cjVariants[]`, `weightOz`, dims, `availableCountryCodes?`, `seoTitle`, `seoDescription`. Vendor cost stripped on public APIs.
 
@@ -53,7 +54,7 @@ CJ category names are mapped onto these via `mapCjCategoryToStoreSlug`. Sub-taxo
 
 - Import + async jobs (`/admin/cj/imports`)
 - PDP freight: `GET /cj/products/{slug}/shipping?country=` for **US, CA, GB, AU, DE only**
-- Checkout shipping is **store policy** (free over $10.99), not CJ postage
+- Checkout shipping is **store policy** (free at $49+; stepped fees below that), not CJ postage
 - Freight is **quoted live + cached 6h per vid/country**, not a 200-country matrix
 
 **Markets (keep as checkout/display layer):** Dynamo markets (locale, currency, hreflang). Default warehouses still describe San Jose / Southampton / India — leftover from the previous fulfillment story. **CJ products ship from China.** Country landing copy that promises a US warehouse is now a factual risk.

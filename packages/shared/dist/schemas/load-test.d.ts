@@ -74,7 +74,7 @@ export declare function loadTestLimits(preset: LoadTestPreset): {
     users: 500 | 20 | 100 | 1000 | 250 | 750;
     parallel: 10 | 40 | 50;
     p95LimitMs: 4000 | 15000 | 18000 | 20000 | 22000 | 25000;
-    failRateLimit: 0.01 | 0.03 | 0.04;
+    failRateLimit: 0.03 | 0.04 | 0.01;
 };
 export declare const loadTestRunResultSchema: z.ZodObject<{
     preset: z.ZodEnum<["smoke", "u100", "u250", "u500", "u750", "u1000"]>;

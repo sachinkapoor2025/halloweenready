@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { HomeProductCard } from "@/components/HomeProductCard";
+import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
 import { SearchTracker } from "@/components/SearchTracker";
@@ -187,8 +187,13 @@ export default async function ProductsPage({ searchParams }: Props) {
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-                  {section.products.map((p) => (
-                    <HomeProductCard key={p.slug} product={p} />
+                  {section.products.map((p, i) => (
+                    <TrackedProductCard
+                      key={p.slug}
+                      product={p}
+                      position={i + 1}
+                      listingPage={`category:${section.slug}`}
+                    />
                   ))}
                 </div>
               </section>

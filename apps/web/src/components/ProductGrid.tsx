@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { HomeProductCard } from "@/components/HomeProductCard";
+import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { ProductSortBar, sortProducts, type ProductSort } from "@/components/ProductSortBar";
 import type { Product } from "@halloweenready/shared";
 
@@ -13,11 +13,13 @@ export function ProductGrid({
   products,
   showSort = true,
   sort = "featured",
+  listingPage = "listing",
 }: {
   products: Product[];
   showSort?: boolean;
   /** Server-resolved sort so the grid HTML matches ?sort= without waiting on hydration. */
   sort?: ProductSort;
+  listingPage?: string;
 }) {
   const sorted = sortProducts(products, sort);
 
@@ -31,8 +33,8 @@ export function ProductGrid({
         </div>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-        {sorted.map((p) => (
-          <HomeProductCard key={p.slug} product={p} />
+        {sorted.map((p, i) => (
+          <TrackedProductCard key={p.slug} product={p} position={i + 1} listingPage={listingPage} />
         ))}
       </div>
     </>

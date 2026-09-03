@@ -62,6 +62,7 @@ export const PRIORITY_CITY_LINKS: readonly SeoLink[] = [
 ];
 
 export const PLANNING_LINKS: readonly SeoLink[] = [
+  { href: "/halloween", label: "Halloween by location" },
   { href: "/halloween-guide", label: "Halloween planning guide" },
   { href: "/halloween-guide/events", label: "Halloween events guide" },
   { href: "/blog", label: "Halloween blog" },

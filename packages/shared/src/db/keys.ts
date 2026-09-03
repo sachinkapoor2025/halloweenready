@@ -105,6 +105,8 @@ export const configKeys = {
   blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" as const },
   shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
   cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" as const },
+  homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" as const },
+  homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" as const },
 };
 
 /** Admin CJ catalog import jobs (config table). */

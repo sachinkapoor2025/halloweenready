@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { allCountrySeoSlugs, getCountrySeoPage, countrySeoPages } from "@/lib/content/country-pages";
+import { geoCountries } from "@/lib/content/geo";
 import { countryPageInlineLinks } from "@/lib/content/page-inline-links";
 import { applyInlineLinks } from "@/lib/inline-links";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, canonical } from "@/lib/seo";
@@ -60,6 +61,7 @@ export default async function CountryLandingPage({ params }: Props) {
     { label: page.name },
   ];
   const inlineLinks = countryPageInlineLinks[slug] ?? [];
+  const halloweenCountry = geoCountries().find((c) => c.legacyCountryPath === `/countries/${slug}`);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -83,6 +85,14 @@ export default async function CountryLandingPage({ params }: Props) {
       <h1 className="text-3xl font-bold text-primary mb-3">{page.h1}</h1>
       <p className="text-slate-600 mb-6">{applyInlineLinks(page.intro, inlineLinks)}</p>
       <p className="text-slate-700 mb-8">{page.fulfillment}</p>
+
+      {halloweenCountry && (
+        <p className="mb-8 text-sm">
+          <Link href={halloweenCountry.path} className="text-nav underline">
+            Browse Halloween {page.name} by region and city
+          </Link>
+        </p>
+      )}
 
       {page.sections.map((section) => (
         <section key={section.heading} className="mb-8">

@@ -115,7 +115,10 @@ function CheckoutPageInner() {
       const lineCurrency = (item.currency ?? "USD") as DisplayCurrency;
       return sum + convert(item.price * item.quantity, lineCurrency);
     }, 0);
-    trackCheckoutStart(value);
+    trackCheckoutStart(
+      value,
+      cart.items.map((item) => item.productSlug)
+    );
   }, [cart, convert]);
 
   useEffect(() => {

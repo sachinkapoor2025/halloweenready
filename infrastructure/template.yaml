@@ -870,7 +870,8 @@ Resources:
     Properties:
       FunctionName: !Sub halloweenready-review-emails-${Environment}
       Handler: scheduled.handler
-      Timeout: 120
+      Timeout: 180
+      MemorySize: 512
       CodeUri: ..
       Policies:
         - DynamoDBCrudPolicy:
@@ -883,6 +884,10 @@ Resources:
             TableName: !Ref ConfigTable
         - DynamoDBCrudPolicy:
             TableName: !Ref PendingPaymentUnsubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         EmailJobsEvery15Minutes:
           Type: Schedule
@@ -897,6 +902,13 @@ Resources:
             Description: Reconcile Razorpay captured payments stuck in pending_payment (webhook safety net)
             Enabled: true
             Input: '{"task":"razorpayReconcile"}'
+        HomepageRankingHourly:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Description: Rebuild homepage product ranking snapshot from daily rollups
+            Enabled: true
+            Input: '{"task":"homepageRanking"}'
     Metadata:
       BuildMethod: makefile
 

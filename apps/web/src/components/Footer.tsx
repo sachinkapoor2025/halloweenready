@@ -106,6 +106,7 @@ export function Footer() {
           <div className="min-w-0">
             <p className="font-semibold text-white mb-3 sm:mb-4">Help &amp; Info</p>
             <ul className="space-y-2 text-white/80">
+              <li><Link href="/halloween" className="hover:text-white hover:underline">Halloween by location</Link></li>
               <li><Link href="/halloween-guide" className="hover:text-white hover:underline">Halloween Guide 2026</Link></li>
               <li><Link href="/blog" className="hover:text-white hover:underline">Blog &amp; Guides</Link></li>
               <li><Link href="/shipping" className="hover:text-white hover:underline">Shipping &amp; Delivery</Link></li>

@@ -14,6 +14,7 @@ import {
   getSeoLocation,
 } from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
+import { halloweenPathForLegacyCitySlug } from "@/lib/content/geo";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { cjStorefrontProductsPath, getInternalLinkGroups, type Product } from "@halloweenready/shared";
@@ -60,6 +61,7 @@ export default async function CityPage({ params }: Props) {
     { label: "United States", href: "/countries/us" },
     { label: loc.label },
   ];
+  const halloweenPath = halloweenPathForLegacyCitySlug(slug);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -75,6 +77,26 @@ export default async function CityPage({ params }: Props) {
       <p className="text-slate-600 mb-8 max-w-3xl">
         Shop Halloween costumes, decorations, and party supplies for {loc.label}. Delivery times depend on
         the item and destination — check the shipping quote on each product page.
+        {halloweenPath ? (
+          <>
+            {" "}
+            <Link href={halloweenPath} className="text-nav hover:underline">
+              Open the {loc.label} page in the country → region tree
+            </Link>
+            {slug === "new-york" ? (
+              <>
+                {" "}
+                or{" "}
+                <Link href="/halloween/usa/new-york/new-york-city" className="text-nav hover:underline">
+                  Halloween New York City
+                </Link>
+                .
+              </>
+            ) : (
+              "."
+            )}
+          </>
+        ) : null}
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

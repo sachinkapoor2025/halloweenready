@@ -98,6 +98,8 @@ exports.configKeys = {
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
     cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" },
+    homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" },
+    homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" },
 };
 /** Admin CJ catalog import jobs (config table). */
 exports.cjImportJobKeys = {

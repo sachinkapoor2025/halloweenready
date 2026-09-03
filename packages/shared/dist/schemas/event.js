@@ -6,6 +6,8 @@ const constants_1 = require("../constants");
 exports.eventTypeEnum = zod_1.z.enum([
     constants_1.EVENT_TYPES.PAGE_VIEW,
     constants_1.EVENT_TYPES.PRODUCT_VIEW,
+    constants_1.EVENT_TYPES.PRODUCT_IMPRESSION,
+    constants_1.EVENT_TYPES.PRODUCT_CLICK,
     constants_1.EVENT_TYPES.SEARCH,
     constants_1.EVENT_TYPES.CART_ADD,
     constants_1.EVENT_TYPES.CART_REMOVE,
