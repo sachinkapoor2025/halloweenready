@@ -86,7 +86,7 @@ export function SecondaryCityLanding({ city }: { city: SecondaryCity }) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          WhatsApp {site.whatsappDisplay}
+          WhatsApp
         </a>
       </p>
     </div>

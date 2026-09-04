@@ -94,11 +94,7 @@ function categoryIncludeLines(categorySlug: string): string[] {
 
 /** Shown on every product's What's included checklist. */
 function shippingIncludeLines(): string[] {
-  return [
-    "Packed by international dropshipping partners",
-    "Destination shipping quote on the product page",
-    "Best quality at competitive rates",
-  ];
+  return ["Delivering in 5–7 days", "Best quality at competitive rates"];
 }
 
 function fromHtmlList(description: string): string[] {
@@ -108,7 +104,7 @@ function fromHtmlList(description: string): string[] {
 }
 
 function isMarketingLine(line: string): boolean {
-  return /clear what'?s-included|domestic usa shipping|festive packaging|secure checkout|no international customs|stripe|razorpay/i.test(
+  return /clear what'?s-included|domestic usa shipping|ships from|from china|from usa|california warehouse|festive packaging|secure checkout|no international customs|stripe|razorpay/i.test(
     line
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/lib/site";
+import { site, whatsappChatUrl } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -34,7 +34,16 @@ export default function TermsPage() {
           <a href={`mailto:${site.supportEmail}`} className="text-nav underline">
             {site.supportEmail}
           </a>{" "}
-          or WhatsApp {site.whatsappDisplay}.
+          or{" "}
+          <a
+            href={whatsappChatUrl("Hi HalloweenReady, I have a question about my order.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-nav underline"
+          >
+            WhatsApp
+          </a>
+          .
         </p>
         <p className="text-slate-500 text-sm">Last updated: June 2025</p>
         <p>

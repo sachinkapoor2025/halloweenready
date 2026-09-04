@@ -73,7 +73,7 @@ function CheckoutPageInner() {
 
   useEffect(() => {
     if (displayCurrency === "INR") setPaymentMethod("razorpay");
-    else if (displayCurrency === "USD") setPaymentMethod("stripe");
+    else setPaymentMethod("stripe");
     setStripeCheckout(null);
   }, [displayCurrency]);
 

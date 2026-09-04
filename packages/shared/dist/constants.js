@@ -83,6 +83,9 @@ exports.EVENT_TYPES = {
     SESSION_PING: "session_ping",
     COUNTRY_CHANGED: "country_changed",
     POSTAL_CODE_ENTERED: "postal_code_entered",
+    CHAT_OPEN: "chat_open",
+    CHAT_CLOSE: "chat_close",
+    CHAT_MESSAGE: "chat_message",
 };
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */
 exports.EVENT_TTL_DAYS = 90;

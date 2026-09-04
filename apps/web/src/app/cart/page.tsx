@@ -7,6 +7,7 @@ import { useCurrency } from "@/lib/currency-context";
 import { SecureCheckoutBadge } from "@/components/SecureCheckoutBadge";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { CheckoutLegalNotice } from "@/components/CheckoutLegalNotice";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ProductImage } from "@/components/ProductImage";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
@@ -21,7 +22,17 @@ function TrashIcon() {
   );
 }
 
-function CartQuantityControls({ productSlug, quantity }: { productSlug: string; quantity: number }) {
+function CartQuantityControls({
+  lineId,
+  productSlug,
+  quantity,
+  cjVid,
+}: {
+  lineId: string;
+  productSlug: string;
+  quantity: number;
+  cjVid?: string;
+}) {
   const { addItem, updateItem, removeItem } = useCart();
   const [busy, setBusy] = useState(false);
 
@@ -41,7 +52,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
           type="button"
           disabled={busy}
           aria-label="Decrease quantity"
-          onClick={() => void run(() => (quantity <= 1 ? removeItem(productSlug) : updateItem(productSlug, quantity - 1)))}
+          onClick={() => void run(() => (quantity <= 1 ? removeItem(lineId) : updateItem(lineId, quantity - 1)))}
           className="px-3 py-2 text-primary font-bold hover:bg-violet-200/60 disabled:opacity-50 transition"
         >
           −
@@ -53,7 +64,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
           type="button"
           disabled={busy}
           aria-label="Increase quantity"
-          onClick={() => void run(() => addItem(productSlug, 1))}
+          onClick={() => void run(() => addItem(productSlug, 1, undefined, undefined, cjVid))}
           className="px-3 py-2 text-primary font-bold hover:bg-violet-200/60 disabled:opacity-50 transition"
         >
           +
@@ -63,7 +74,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
         type="button"
         disabled={busy}
         aria-label="Remove item"
-        onClick={() => void run(() => removeItem(productSlug))}
+        onClick={() => void run(() => removeItem(lineId))}
         className="text-red-500 hover:text-red-600 p-1 disabled:opacity-50 transition"
       >
         <TrashIcon />
@@ -104,10 +115,11 @@ export default function CartPage() {
               {items.map((item) => {
                 const lineCurrency = (item.currency ?? currency) as DisplayCurrency;
                 const lineTotal = item.price * item.quantity;
+                const lineId = item.lineId ?? item.productSlug;
 
                 return (
                   <li
-                    key={item.productSlug}
+                    key={lineId}
                     className="flex gap-4 pb-6 border-b border-slate-200 last:border-0 last:pb-0"
                   >
                     <Link
@@ -125,7 +137,12 @@ export default function CartPage() {
                         >
                           {item.name}
                         </Link>
-                        <CartQuantityControls productSlug={item.productSlug} quantity={item.quantity} />
+                        <CartQuantityControls
+                          lineId={lineId}
+                          productSlug={item.productSlug}
+                          quantity={item.quantity}
+                          cjVid={item.cjVid}
+                        />
                       </div>
 
                       <div className="sm:text-right shrink-0">
@@ -171,6 +188,9 @@ export default function CartPage() {
             </div>
 
             <TrustBadges variant="compact" className="mb-4" />
+            <div className="mb-4">
+              <AssistantPromo variant="cart" />
+            </div>
 
             <EstimatedDeliveryNote variant="banner" prefix="Order today →" className="mb-5" />
 

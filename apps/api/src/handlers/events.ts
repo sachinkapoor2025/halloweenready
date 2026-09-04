@@ -188,25 +188,46 @@ async function persistEvent(
   const position = clientMeta.position;
   const source = clientMeta.source ?? clientMeta.utm_source;
   const category = clientMeta.category;
+  const fromChat = clientMeta.channel === "chat" || clientMeta.listingPage === "chat";
 
   const productFields: Record<string, number> = {};
   if (slug) {
     if (e.type === EVENT_TYPES.PRODUCT_IMPRESSION) {
-      productFields.impressions = 1;
-      if (onHome) productFields.homepageImpressions = 1;
+      if (fromChat) {
+        productFields.chatImpressions = 1;
+      } else {
+        productFields.impressions = 1;
+        if (onHome) productFields.homepageImpressions = 1;
+      }
     }
     if (e.type === EVENT_TYPES.PRODUCT_CLICK) {
-      productFields.clicks = 1;
-      if (onHome) productFields.homepageClicks = 1;
+      if (fromChat) {
+        productFields.chatClicks = 1;
+      } else {
+        productFields.clicks = 1;
+        if (onHome) productFields.homepageClicks = 1;
+      }
     }
     if (e.type === EVENT_TYPES.PRODUCT_VIEW) productFields.views = 1;
-    if (e.type === EVENT_TYPES.CART_ADD) productFields.adds = 1;
+    if (e.type === EVENT_TYPES.CART_ADD) {
+      productFields.adds = 1;
+      if (fromChat) productFields.chatAdds = 1;
+    }
     if (e.type === EVENT_TYPES.CHECKOUT_START) productFields.checkouts = 1;
     if (Object.keys(productFields).length) {
       rollups.push(incrementRollup(day, `PRODUCT#${slug}`, "product", slug, productFields));
       for (const geo of geoRollupKeys(slug, geoFields.country, geoFields.region || geoFields.regionName, geoFields.city)) {
         rollups.push(incrementRollup(day, geo.metric, geo.kind, geo.label, productFields));
       }
+    }
+    if (fromChat && (productFields.chatClicks || productFields.chatImpressions || productFields.chatAdds)) {
+      rollups.push(
+        incrementRollup(day, `CHAT_PRODUCT#${slug}`, "chat_product", slug, {
+          impressions: productFields.chatImpressions ?? 0,
+          clicks: productFields.chatClicks ?? 0,
+          adds: productFields.chatAdds ?? 0,
+        })
+      );
     }
   }
 
@@ -229,7 +250,33 @@ async function persistEvent(
           ...(e.resultCount === 0 ? { zero: 1 } : {}),
         })
       );
+      if (fromChat) {
+        rollups.push(
+          incrementRollup(day, `CHAT_SEARCH#${term}`, "chat_search", term, {
+            count: 1,
+            ...(e.resultCount === 0 ? { zero: 1 } : {}),
+          })
+        );
+        if (e.resultCount === 0) {
+          rollups.push(
+            incrementRollup(day, `CHAT_UNFULFILLED#${term}`, "chat_unfulfilled", term, {
+              count: 1,
+            })
+          );
+        }
+      }
     }
+  }
+
+  const intent = clientMeta.intent?.slice(0, 40);
+  if (fromChat && intent && e.type === EVENT_TYPES.CHAT_MESSAGE) {
+    rollups.push(incrementRollup(day, `CHAT_INTENT#${intent}`, "chat_intent", intent, { count: 1 }));
+  }
+
+  if (fromChat && geoFields.country && (e.type === EVENT_TYPES.CHAT_OPEN || e.type === EVENT_TYPES.CHAT_MESSAGE)) {
+    rollups.push(
+      incrementRollup(day, `CHAT_COUNTRY#${geoFields.country}`, "chat_country", geoFields.country, { count: 1 })
+    );
   }
 
   if (onHome && position && (e.type === EVENT_TYPES.PRODUCT_IMPRESSION || e.type === EVENT_TYPES.PRODUCT_CLICK)) {

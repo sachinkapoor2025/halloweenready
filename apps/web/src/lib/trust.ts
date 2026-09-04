@@ -4,8 +4,7 @@ import { site, whatsappChatUrl } from "@/lib/site";
 export const trustFacts = {
   seasonLabel: "Halloween 2026",
   operator: "Divit Global Ventures (DGV)",
-  fulfillment:
-    "International dropshipping partners fulfill Halloween catalog items. Check the product-page shipping quote — we do not claim a local warehouse for every destination",
+  fulfillment: "Delivering in 5–7 days",
   support: "WhatsApp & email support before, during, and after delivery",
   catalog: "99+ premium Halloween decorations, costumes, and party supplies",
   payments: "Secure checkout via Stripe (USD) and Razorpay (INR)",
@@ -41,7 +40,7 @@ export const trustHighlights = [
   {
     icon: "💬",
     title: "Real Human Support",
-    detail: `${site.whatsappDisplay} · ${site.supportEmail}`,
+    detail: `WhatsApp · ${site.supportEmail}`,
     href: whatsappChatUrl("Hi HalloweenReady, I have a question before ordering."),
   },
 ] as const;

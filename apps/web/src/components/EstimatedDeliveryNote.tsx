@@ -6,7 +6,7 @@ interface Props {
   className?: string;
 }
 
-/** Estimated US delivery window (5–7 business days). */
+/** Estimated delivery window (5–7 business days). */
 export function EstimatedDeliveryNote({
   variant = "inline",
   prefix = "Estimated delivery:",

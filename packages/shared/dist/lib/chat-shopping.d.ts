@@ -1,0 +1,25 @@
+import type { AssistantProduct, ChatBlock, ChatIntent, ChatQuickAction, ShoppingState } from "../schemas/chat";
+import type { Product } from "../schemas/product";
+export declare const CATEGORY_SLUGS: {
+    readonly costumes: "costumesandaccessories";
+    readonly decorations: "home-decoration";
+    readonly party: "partysupplier";
+    readonly toys: "toysandnovelty";
+    readonly jewelry: "jewellryandaccessories";
+    readonly wearable: "lifestyleandwearable";
+    readonly paper: "printedandpapercrafts";
+    readonly candles: "candlesandfragrance";
+};
+export declare function classifyChatIntent(text: string): ChatIntent;
+export declare function mergeShoppingState(prev: ShoppingState, text: string): ShoppingState;
+export declare function buildSearchQuery(state: ShoppingState): string;
+export declare function viewAllHref(state: ShoppingState): string;
+export declare function missingShoppingSlots(state: ShoppingState, intent: ChatIntent): string[];
+export declare function slotQuickActions(slot: string): ChatQuickAction[];
+export declare function scoreProductForState(product: Product, state: ShoppingState, country?: string): number;
+export declare function toAssistantProduct(product: Product): AssistantProduct;
+export declare function welcomeQuickActions(): ChatQuickAction[];
+export declare function invitationQuickActions(): ChatQuickAction[];
+export declare function productPageQuickActions(name: string): ChatQuickAction[];
+export declare function textBlock(text: string): ChatBlock;
+export declare function actionsBlock(actions: ChatQuickAction[]): ChatBlock;

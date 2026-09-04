@@ -135,7 +135,9 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | PUT | `/admin/homepage-ranking` | Admin: save ranking config and refresh snapshot |
 | POST | `/admin/homepage-ranking/refresh` | Admin: rebuild homepage snapshot |
 | GET | `/homepage/products` | Storefront ranked homepage pool (~500) |
-| GET | `/admin/analytics/searches` | Admin: top + zero-result searches |
+| GET | `/admin/analytics/chat` | Admin: shopping assistant sessions, intents, unfulfilled searches |
+| GET | `/config/chat` | Public assistant config (enabled flags) |
+| PUT | `/admin/config/chat` | Admin: save assistant settings |
 | GET | `/admin/sessions` | Admin: recent visitor sessions |
 | GET | `/admin/sessions/{sessionId}` | Admin: full visitor journey |
 | GET | `/admin/carts/abandoned` | Admin: abandoned carts (CSV in UI) |

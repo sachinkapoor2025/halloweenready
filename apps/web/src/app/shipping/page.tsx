@@ -21,20 +21,13 @@ export default function ShippingPage() {
       <h1 className="text-3xl font-bold text-accent mb-6">Shipping & Delivery</h1>
       <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
-          {site.name} sells Halloween costumes, decorations, and party supplies fulfilled through international
-          dropshipping partners. <strong>Availability is not universal</strong> — it depends on the product,
-          warehouse, and destination. We do not claim a local warehouse for every country.
+          {site.name} sells Halloween costumes, decorations, and party supplies.{" "}
+          <strong>Delivering in 5–7 days.</strong>
         </p>
         <h2 className="text-xl font-bold text-accent">How to check delivery</h2>
         <ul className="list-disc list-inside space-y-2">
           <li>
-            <strong>Product quote:</strong> {deliveryClaims.standard}
-          </li>
-          <li>
-            <strong>Quoted destinations:</strong> {deliveryClaims.express}
-          </li>
-          <li>
-            <strong>Dispatch:</strong> {deliveryClaims.dispatch}
+            <strong>Delivery:</strong> {deliveryClaims.standard}
           </li>
           <li>
             <strong>Checkout:</strong> {deliveryClaims.shipping}

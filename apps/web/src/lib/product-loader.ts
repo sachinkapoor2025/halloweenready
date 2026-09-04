@@ -27,9 +27,14 @@ function toListingImageUrl(url: string): string {
 function withDisplayImages(product: Product): Product {
   const cleaned = filterDisplayableProductImages(product.images);
   const resolved = cleaned.map(toListingImageUrl).filter(Boolean);
+  const cjVariants = product.cjVariants?.map((variant) => ({
+    ...variant,
+    ...(variant.image ? { image: toListingImageUrl(variant.image) || variant.image } : {}),
+  }));
   return {
     ...product,
     images: resolved,
+    ...(cjVariants ? { cjVariants } : {}),
   };
 }
 

@@ -46,9 +46,8 @@ describe("getProductIncludes", () => {
         "1 Designer Rakhi",
         "Small packet of Roli",
         "Small packet of Chawal (Rice)",
-        "Ships from our California warehouse",
-        "No delays due to global affairs",
-        "Best quality at the most competitive rates",
+        "Delivering in 5–7 days",
+        "Best quality at competitive rates",
       ]
     );
   });
@@ -66,9 +65,8 @@ describe("getProductIncludes", () => {
         "Small packet of Roli",
         "Small packet of Chawal (Rice)",
         "3 Ferrero Rocher Chocolates",
-        "Ships from our California warehouse",
-        "No delays due to global affairs",
-        "Best quality at the most competitive rates",
+        "Delivering in 5–7 days",
+        "Best quality at competitive rates",
       ]
     );
   });
@@ -114,9 +112,8 @@ describe("getProductIncludes", () => {
       "100 g almonds",
       "Small Roli box",
       "Small Chawal box",
-      "Ships from our California warehouse",
-      "No delays due to global affairs",
-      "Best quality at the most competitive rates",
+      "Delivering in 5–7 days",
+      "Best quality at competitive rates",
     ]);
   });
 
@@ -135,9 +132,8 @@ describe("getProductIncludes", () => {
       "Roli",
       "Chawal",
       "Designer tikka set",
-      "Ships from our California warehouse",
-      "No delays due to global affairs",
-      "Best quality at the most competitive rates",
+      "Delivering in 5–7 days",
+      "Best quality at competitive rates",
     ]);
   });
 
@@ -156,9 +152,8 @@ describe("getProductIncludes", () => {
       "3pc Ferrero chocolates",
       "Complimentary Roli",
       "Complimentary Chawal (Rice)",
-      "Ships from our California warehouse",
-      "No delays due to global affairs",
-      "Best quality at the most competitive rates",
+      "Delivering in 5–7 days",
+      "Best quality at competitive rates",
     ]);
   });
 });

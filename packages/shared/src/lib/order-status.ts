@@ -77,10 +77,10 @@ export function orderConfirmationSubcopy(status: string): string {
     case ORDER_STATUS.CANCELLED:
       return "This order was cancelled. You can place a new order anytime.";
     case ORDER_STATUS.PENDING_PAYMENT:
-      return "Complete payment to confirm your order and start USA delivery.";
+      return "Complete payment to confirm your order. Delivering in 5–7 days.";
     default:
       return isOrderPaymentSettled(status)
         ? "Your Halloween order is on its way. We've sent a confirmation email and our team will dispatch your order soon."
-        : "Complete payment to confirm your order and start USA delivery.";
+        : "Complete payment to confirm your order. Delivering in 5–7 days.";
   }
 }

@@ -143,7 +143,7 @@ export function AddToCartControl({
         disabled={busy || disabled}
         onClick={(e) => {
           stop(e);
-          void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload));
+          void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload, cjVid));
         }}
         className={stepBtnClass}
       >
@@ -191,7 +191,7 @@ export function AddToCartControl({
             disabled={busy || disabled}
             onClick={(e) => {
               stop(e);
-              void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload));
+              void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload, cjVid));
             }}
             className={detailPillBtnClass}
           >

@@ -249,7 +249,8 @@ export const trackSearch = (query: string, resultCount: number) =>
 export const trackCartAdd = (
   productSlug: string,
   value?: number,
-  contact?: { name?: string; email?: string; phone?: string }
+  contact?: { name?: string; email?: string; phone?: string },
+  extra?: Record<string, string>
 ) =>
   track({
     type: EVENT_TYPES.CART_ADD,
@@ -259,11 +260,62 @@ export const trackCartAdd = (
       ...(contact?.name?.trim() ? { name: contact.name.trim() } : {}),
       ...(contact?.email?.trim() ? { email: contact.email.trim() } : {}),
       ...(contact?.phone?.trim() ? { phone: contact.phone.trim() } : {}),
+      ...extra,
     },
     immediate: true,
   });
 export const trackCartRemove = (productSlug: string) =>
   track({ type: EVENT_TYPES.CART_REMOVE, productSlug });
+
+export const trackChatOpen = (path?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_OPEN,
+    path,
+    metadata: { channel: "chat" },
+    immediate: true,
+  });
+
+export const trackChatClose = (path?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_CLOSE,
+    path,
+    metadata: { channel: "chat" },
+    immediate: true,
+  });
+
+export const trackChatMessage = (intent?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_MESSAGE,
+    metadata: { channel: "chat", ...(intent ? { intent } : {}) },
+  });
+
+export const trackChatSearch = (query: string, resultCount: number, intent?: string) =>
+  track({
+    type: EVENT_TYPES.SEARCH,
+    query,
+    resultCount,
+    metadata: { channel: "chat", ...(intent ? { intent } : {}) },
+    immediate: true,
+  });
+
+export const trackChatProductImpression = (productSlug: string, position?: number) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_IMPRESSION,
+    productSlug,
+    metadata: {
+      channel: "chat",
+      listingPage: "chat",
+      ...(position != null ? { position: String(position) } : {}),
+    },
+  });
+
+export const trackChatProductClick = (productSlug: string, position?: number) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_CLICK,
+    productSlug,
+    metadata: { channel: "chat", listingPage: "chat", ...(position != null ? { position: String(position) } : {}) },
+    immediate: true,
+  });
 export const trackCheckoutStart = (value?: number, productSlugs?: string[]) =>
   track({
     type: EVENT_TYPES.CHECKOUT_START,

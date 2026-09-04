@@ -95,7 +95,7 @@ ${faqList}
 
 ## Contact
 
-Email: ${site.supportEmail} | WhatsApp: ${site.whatsappDisplay}
+Email: ${site.supportEmail} | WhatsApp: https://wa.me/${site.whatsapp}
 Press: ${siteUrl}/press
 `;
 

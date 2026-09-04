@@ -21,6 +21,8 @@ export const homepageRankingConfigSchema = z.object({
   countryPersonalizationEnabled: z.boolean().default(false),
   regionPersonalizationEnabled: z.boolean().default(false),
   cityPersonalizationEnabled: z.boolean().default(false),
+  /** Chat product clicks are stored separately and do not dominate homepage ranking. */
+  chatClickWeight: z.number().min(0).max(1).default(0),
   profitabilityWeight: z.number().min(0).max(1).default(0),
   seasonalWeight: z.number().min(0).max(1).default(0),
   maxShareSameCategory: z.number().min(0.05).max(1).default(0.28),

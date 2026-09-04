@@ -14,6 +14,9 @@ export const eventTypeEnum = z.enum([
   EVENT_TYPES.SESSION_PING,
   EVENT_TYPES.COUNTRY_CHANGED,
   EVENT_TYPES.POSTAL_CODE_ENTERED,
+  EVENT_TYPES.CHAT_OPEN,
+  EVENT_TYPES.CHAT_CLOSE,
+  EVENT_TYPES.CHAT_MESSAGE,
 ]);
 
 export const trackEventSchema = z.object({

@@ -29,6 +29,9 @@ export declare const EVENT_TYPES: {
     readonly SESSION_PING: "session_ping";
     readonly COUNTRY_CHANGED: "country_changed";
     readonly POSTAL_CODE_ENTERED: "postal_code_entered";
+    readonly CHAT_OPEN: "chat_open";
+    readonly CHAT_CLOSE: "chat_close";
+    readonly CHAT_MESSAGE: "chat_message";
 };
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */

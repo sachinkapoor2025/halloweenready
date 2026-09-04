@@ -1,9 +1,9 @@
-import { site, navItems, faqs } from "@/lib/site";
+import { site, navItems, faqs, whatsappChatUrl } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
 
 const OFF_TOPIC_REPLY = `I'm here specifically to help with HalloweenReady — Halloween costumes, decor, candy, shipping, and orders. Is there something about Halloween shopping I can help with?
 
-Browse our catalog: [All Products](${siteUrl}/products) · WhatsApp: ${site.whatsappDisplay}`;
+Browse our catalog: [All Products](${siteUrl}/products) · [Chat on WhatsApp](${whatsappChatUrl()})`;
 
 const SITE_KEYWORDS =
   /\b(halloween|costume|decor|decorations|candy|treat|party|accessories|usa|us\b|shipping|deliver|order|payment|stripe|razorpay|product|categor|california|texas|new york|florida|checkout|cart|price|track|support|halloweenready|october|trick|treat|spooky|mask|pumpkin)\b/i;
@@ -30,7 +30,7 @@ function orderWorldwideReply(): string {
 }
 
 function paymentReply(): string {
-  return `We accept secure online checkout via:\n- Stripe (USD)\n- Razorpay (INR)\n\nPrices are shown in USD or INR at checkout. We never store card details.\n\nQuestions about a specific order? WhatsApp us at ${site.whatsappDisplay} or email ${site.supportEmail}.`;
+  return `We accept secure online checkout via:\n- Stripe (USD)\n- Razorpay (INR)\n\nPrices are shown in USD or INR at checkout. We never store card details.\n\nQuestions about a specific order? [Chat on WhatsApp](${whatsappChatUrl()}) or email ${site.supportEmail}.`;
 }
 
 function greetingReply(): string {
@@ -82,7 +82,7 @@ export function fallbackChatReply(userMessage: string): string {
   }
 
   if (/contact|support|email|whatsapp|phone|call|track|order status|refund|cancel/.test(q)) {
-    return `For order-specific help (tracking, changes, refunds), our team responds fastest on WhatsApp ${site.whatsappDisplay} or email ${site.supportEmail}.\n\nGeneral info: [FAQ](${siteUrl}/faq) · [Contact Us](${siteUrl}/contact)`;
+    return `For order-specific help (tracking, changes, refunds), our team responds fastest on [WhatsApp](${whatsappChatUrl()}) or email ${site.supportEmail}.\n\nGeneral info: [FAQ](${siteUrl}/faq) · [Contact Us](${siteUrl}/contact)`;
   }
 
   if (/costume|outfit|dress up/.test(q)) {
@@ -102,5 +102,5 @@ export function fallbackChatReply(userMessage: string): string {
     return `${faqAnswer}\n\nBrowse: [All Products](${siteUrl}/products) · [FAQ](${siteUrl}/faq)`;
   }
 
-  return `Thanks for your question! HalloweenReady delivers costumes, decor, and candy to all 50 US states in 2–5 business days.\n\n- [Shop all products](${siteUrl}/products)\n- [Shipping info](${siteUrl}/shipping)\n- [FAQ](${siteUrl}/faq)\n\nFor order help: WhatsApp ${site.whatsappDisplay} or ${site.supportEmail}`;
+  return `Thanks for your question! HalloweenReady delivers costumes, decor, and candy to all 50 US states in 2–5 business days.\n\n- [Shop all products](${siteUrl}/products)\n- [Shipping info](${siteUrl}/shipping)\n- [FAQ](${siteUrl}/faq)\n\nFor order help: [WhatsApp](${whatsappChatUrl()}) or ${site.supportEmail}`;
 }

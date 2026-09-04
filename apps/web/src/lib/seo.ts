@@ -110,7 +110,6 @@ export function organizationJsonLd() {
     logo: canonical(site.logoSrc),
     description: site.description,
     email: site.supportEmail,
-    telephone: site.phone,
     sameAs: [
       "https://www.facebook.com/halloweenready/",
       "https://www.instagram.com/halloweenready/",
@@ -159,7 +158,6 @@ export function onlineStoreJsonLd() {
     description: site.description,
     image: site.logoSrc,
     email: site.supportEmail,
-    telephone: site.phone,
     areaServed: VERIFIED_COUNTRY_LINKS.map((c) => ({
       "@type": "Country",
       name: c.name,
