@@ -9,7 +9,7 @@ import {
   VENDOR_CJ_DROPSHIPPING,
 } from "@halloweenready/shared";
 import { requireAdmin } from "../lib/auth";
-import { badGateway, badRequest, forbidden, ok, serverError } from "../lib/response";
+import { accepted, badGateway, badRequest, forbidden, notFound, ok, serverError } from "../lib/response";
 import {
   CjApiError,
   cjFreightCalculate,
@@ -18,15 +18,19 @@ import {
   cjGetProduct,
   cjListMyProducts,
   cjListOrders,
-  cjListProductsV2,
   cjSetWebhook,
   cjTrackInfo,
   cjWarehouseList,
-  flattenListV2,
   getCjConnectionStatus,
   saveCjApiKey,
 } from "../lib/cj-dropshipping";
-import { catalogPreviewFromList, importCjProducts } from "../lib/cj-import";
+import { catalogPreviewFromList, listImportedCjPids } from "../lib/cj-import";
+import {
+  enqueueCjImportJob,
+  fetchCjAdminCatalogPage,
+  getCjImportJob,
+  listCjImportJobs,
+} from "../lib/cj-import-job";
 import { fulfillOrderWithCj } from "../lib/cj-fulfill";
 
 function readJsonBody(event: APIGatewayProxyEventV2): unknown {
@@ -82,20 +86,24 @@ export async function searchCjProducts(event: APIGatewayProxyEventV2) {
   const parsed = cjSearchQuerySchema.safeParse(event.queryStringParameters ?? {});
   if (!parsed.success) return badRequest(parsed.error.message);
   try {
-    const data = await cjListProductsV2({
+    const data = await fetchCjAdminCatalogPage({
       keyWord: parsed.data.keyWord || "halloween",
       page: parsed.data.page,
       size: parsed.data.size,
       categoryId: parsed.data.categoryId,
       countryCode: parsed.data.countryCode,
     });
-    const products = flattenListV2(data).map(catalogPreviewFromList);
+    const imported = await listImportedCjPids();
+    const products = data.products.map((row) => ({
+      ...catalogPreviewFromList(row),
+      alreadyImported: imported.has(row.id || ""),
+    }));
     return ok({
       products,
-      page: data.pageNumber ?? parsed.data.page ?? 1,
-      pageSize: data.pageSize ?? parsed.data.size ?? 20,
-      totalRecords: data.totalRecords ?? products.length,
-      totalPages: data.totalPages ?? 1,
+      page: data.page,
+      pageSize: data.pageSize,
+      totalRecords: data.totalRecords,
+      totalPages: data.totalPages,
     });
   } catch (err) {
     return handleCjError(err);
@@ -115,7 +123,8 @@ export async function getCjProduct(event: APIGatewayProxyEventV2) {
 }
 
 export async function importCjCatalog(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
+  const actor = requireAdmin(event);
+  if (!actor) return forbidden();
   const body = readJsonBody(event);
   if (body == null) return badRequest("Invalid JSON body");
   const parsed = cjImportProductsSchema.safeParse(body);
@@ -123,42 +132,87 @@ export async function importCjCatalog(event: APIGatewayProxyEventV2) {
     return badRequest(parsed.error.issues[0]?.message ?? "Invalid import request");
   }
   try {
-    const result = await importCjProducts(parsed.data.pids, {
+    const job = await enqueueCjImportJob({
+      pids: parsed.data.pids,
+      names: parsed.data.names,
+      createdBy: actor.email,
+      source: "selected",
       categorySlug: parsed.data.categorySlug,
       published: parsed.data.published,
-      addToMyProduct: false,
     });
-    return ok(result);
+    return accepted({
+      jobId: job.jobId,
+      status: job.status,
+      counts: job.counts,
+      queued: job.counts.pending,
+      skipped: job.counts.skipped,
+    });
   } catch (err) {
     return handleCjError(err);
   }
 }
 
 export async function importHalloweenCatalog(event: APIGatewayProxyEventV2) {
-  if (!requireAdmin(event)) return forbidden();
+  const actor = requireAdmin(event);
+  if (!actor) return forbidden();
   const parsed = cjImportHalloweenSchema.safeParse(JSON.parse(event.body ?? "{}"));
   if (!parsed.success) return badRequest(parsed.error.message);
   try {
-    const data = await cjListProductsV2({
+    const data = await fetchCjAdminCatalogPage({
       keyWord: parsed.data.keyWord || "halloween",
       page: parsed.data.page,
       size: parsed.data.size,
     });
-    const pids = flattenListV2(data)
-      .map((row) => row.id)
-      .filter((id): id is string => Boolean(id));
-    const result = await importCjProducts(pids, {
+    const names: Record<string, string> = {};
+    const pids = data.products
+      .map((row) => {
+        if (!row.id) return "";
+        if (row.nameEn) names[row.id] = row.nameEn;
+        return row.id;
+      })
+      .filter(Boolean);
+    const job = await enqueueCjImportJob({
+      pids,
+      names,
+      createdBy: actor.email,
+      source: "halloween",
+      keyword: parsed.data.keyWord || "halloween",
       categorySlug: parsed.data.categorySlug,
       published: parsed.data.published,
-      addToMyProduct: false,
     });
-    return ok({
-      ...result,
-      page: data.pageNumber ?? parsed.data.page,
-      totalPages: data.totalPages ?? 1,
-      totalRecords: data.totalRecords ?? pids.length,
+    return accepted({
+      jobId: job.jobId,
+      status: job.status,
+      counts: job.counts,
+      queued: job.counts.pending,
+      skipped: job.counts.skipped,
+      page: data.page,
+      totalPages: data.totalPages,
       searched: pids.length,
     });
+  } catch (err) {
+    return handleCjError(err);
+  }
+}
+
+export async function listCjImportJobsHandler(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+  try {
+    const jobs = await listCjImportJobs();
+    return ok({ jobs });
+  } catch (err) {
+    return handleCjError(err);
+  }
+}
+
+export async function getCjImportJobHandler(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+  const jobId = event.pathParameters?.jobId;
+  if (!jobId) return badRequest("jobId required");
+  try {
+    const job = await getCjImportJob(jobId);
+    if (!job) return notFound("Import job not found");
+    return ok({ job });
   } catch (err) {
     return handleCjError(err);
   }

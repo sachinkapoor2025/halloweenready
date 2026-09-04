@@ -9,7 +9,6 @@ import {
   orderedCountryDialCodes,
 } from "@/lib/country-codes";
 import {
-  US_STATES,
   emptyShippingAddress,
   loadSavedAddresses,
   saveShippingAddress,
@@ -17,6 +16,12 @@ import {
   formatAddressLine,
   type SavedShippingAddress,
 } from "@/lib/shipping-address";
+import {
+  CountrySelectField,
+  StateRegionField,
+  postalCodeLabel,
+  withCountry,
+} from "@/components/CountryStateFields";
 
 function splitPhone(phone: string): { iso: string; local: string } {
   const digits = phone.replace(/\D/g, "");
@@ -103,12 +108,9 @@ export function ShippingAddressForm({
       city: address.city,
       state: address.state,
       postalCode: address.postalCode,
-      country: "US",
+      country: address.country || "US",
       phone: address.phone,
       email: address.email,
-      // Keep sister/sender details across address picks
-      senderName: value.senderName || address.senderName,
-      senderMessage: value.senderMessage || address.senderMessage,
     });
   };
 
@@ -118,8 +120,6 @@ export function ShippingAddressForm({
       ...emptyShippingAddress(),
       email: value.email,
       phone: value.phone,
-      senderName: value.senderName,
-      senderMessage: value.senderMessage,
     });
   };
 
@@ -144,7 +144,7 @@ export function ShippingAddressForm({
       <div>
         <h2 className="text-lg font-bold text-slate-900">Shipping Address</h2>
         <p className="text-sm text-slate-600 mt-1">
-          Enter the US delivery address for your brother or recipient. We ship domestically within all 50 states.
+          Enter the delivery address for this order. We ship to countries worldwide.
         </p>
       </div>
 
@@ -216,35 +216,10 @@ export function ShippingAddressForm({
         )}
 
         <LeadCaptureInput
-            label="Sender name (your name)"
-            value={value.senderName ?? ""}
-            onChange={(e) => update("senderName", e.target.value)}
-            placeholder="So the recipient knows who sent this order"
-            required
-            autoComplete="nickname"
-          />
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Message for your brother
-            </label>
-            <textarea
-              value={value.senderMessage ?? ""}
-              onChange={(e) => update("senderMessage", e.target.value)}
-              required
-              rows={4}
-              maxLength={500}
-              placeholder="Write a Halloween note — it will appear on the shipping label"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent text-sm leading-relaxed"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Printed on the shipping label · {(value.senderMessage ?? "").length}/500
-            </p>
-          </div>
-          <LeadCaptureInput
-            label="Recipient name"
+            label="Your name"
             value={value.name}
             onChange={(e) => update("name", e.target.value)}
-            placeholder="Brother's full name"
+            placeholder="Full name"
             required
             autoComplete="name"
           />
@@ -277,8 +252,7 @@ export function ShippingAddressForm({
               inputClassName="border-slate-300 focus:outline-none focus:ring-2 focus:ring-accent"
             />
             <p className="text-xs text-slate-500 mt-1">
-              India (+91) is selected by default. Country code is for contact; coupons match the
-              mobile number.
+              Country code is for contact; coupons match the mobile number.
             </p>
           </div>
           <LeadCaptureInput
@@ -303,44 +277,24 @@ export function ShippingAddressForm({
               required
               autoComplete="address-level2"
             />
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
-              <select
-                value={value.state}
-                onChange={(e) => update("state", e.target.value)}
-                required
-                autoComplete="address-level1"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent bg-white"
-              >
-                <option value="">Select state</option>
-                {US_STATES.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <StateRegionField
+              country={value.country}
+              value={value.state}
+              onChange={(state) => update("state", state)}
+            />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <LeadCaptureInput
-              label="ZIP code"
+              label={postalCodeLabel(value.country)}
               value={value.postalCode}
               onChange={(e) => update("postalCode", e.target.value)}
               required
               autoComplete="postal-code"
-              inputMode="numeric"
             />
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
-              <select
-                value="US"
-                disabled
-                aria-label="Country"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-600 cursor-not-allowed"
-              >
-                <option value="US">United States</option>
-              </select>
-            </div>
+            <CountrySelectField
+              value={value.country}
+              onChange={(iso) => onChange(withCountry(value, iso))}
+            />
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-1">

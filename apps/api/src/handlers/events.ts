@@ -12,12 +12,14 @@ import {
   type TrackEventInput,
 } from "@halloweenready/shared";
 import { docClient, EVENTS_TABLE, now, ttlInDays, dayBucket } from "../lib/db";
+import { incrementRollup, geoRollupKeys } from "../lib/event-rollups";
 import { ok, badRequest } from "../lib/response";
 
 const PRESENCE_EVENT_TYPES = new Set<string>([
   EVENT_TYPES.PAGE_VIEW,
   EVENT_TYPES.SESSION_PING,
   EVENT_TYPES.PRODUCT_VIEW,
+  EVENT_TYPES.PRODUCT_CLICK,
   EVENT_TYPES.CART_ADD,
   EVENT_TYPES.CHECKOUT_START,
 ]);
@@ -93,38 +95,17 @@ async function upsertLivePresence(
   );
 }
 
-/** Atomically increment one or more counters on a daily rollup item. */
-async function incrementRollup(
-  day: string,
-  metric: string,
-  kind: string,
-  label: string,
-  fields: Record<string, number>
-) {
-  const names: Record<string, string> = { "#kind": "kind", "#lbl": "label" };
-  const values: Record<string, unknown> = { ":kind": kind, ":lbl": label, ":now": now() };
-  const addParts: string[] = [];
-  let i = 0;
-  for (const [field, delta] of Object.entries(fields)) {
-    const nameKey = `#f${i}`;
-    const valKey = `:d${i}`;
-    names[nameKey] = field;
-    values[valKey] = delta;
-    addParts.push(`${nameKey} ${valKey}`);
-    i++;
-  }
+function looksLikeBot(meta: Record<string, string | undefined>, uaHeader?: string): boolean {
+  const ua = `${meta.userAgent ?? ""} ${uaHeader ?? ""}`.toLowerCase();
+  if (!ua.trim()) return false;
+  return /\b(bot|crawler|spider|headlesschrome|preview|slurp|facebookexternalhit)\b/.test(ua);
+}
 
-  await docClient.send(
-    new UpdateCommand({
-      TableName: EVENTS_TABLE,
-      Key: { PK: eventKeys.rollupPk(day), SK: eventKeys.rollupSk(metric) },
-      UpdateExpression:
-        "SET #kind = if_not_exists(#kind, :kind), #lbl = if_not_exists(#lbl, :lbl), updatedAt = :now ADD " +
-        addParts.join(", "),
-      ExpressionAttributeNames: names,
-      ExpressionAttributeValues: values,
-    })
-  );
+function listingIsHomepage(meta: Record<string, string | undefined>, path?: string): boolean {
+  const listing = (meta.listingPage ?? meta.page ?? "").toLowerCase();
+  if (listing === "homepage" || listing === "home") return true;
+  const p = (path ?? "").split("?")[0];
+  return p === "/" || p === "";
 }
 
 function viewerGeoFromRequest(event: APIGatewayProxyEventV2) {
@@ -149,45 +130,52 @@ function geoMetadata(client: Record<string, string | undefined>, edge: ReturnTyp
   return out;
 }
 
-async function persistEvent(e: TrackEventInput, edgeGeo: ReturnType<typeof viewerGeoFromRequest>) {
+async function persistEvent(
+  e: TrackEventInput,
+  edgeGeo: ReturnType<typeof viewerGeoFromRequest>,
+  uaHeader?: string
+) {
   const timestamp = e.at ?? now();
   const day = dayBucket(new Date(timestamp));
   const eventId = uuidv4();
   const clientMeta = (e.metadata ?? {}) as Record<string, string | undefined>;
+  if (looksLikeBot(clientMeta, uaHeader)) return;
+
   const geoFields = geoMetadata(clientMeta, edgeGeo);
   const metadata = {
     ...e.metadata,
     ...geoFields,
   };
+  const skipRaw = e.type === EVENT_TYPES.PRODUCT_IMPRESSION;
 
-  await docClient.send(
-    new PutCommand({
-      TableName: EVENTS_TABLE,
-      Item: {
-        ...e,
-        metadata: Object.keys(metadata).length ? metadata : undefined,
-        eventId,
-        createdAt: timestamp,
-        PK: eventKeys.pk(e.sessionId),
-        SK: eventKeys.sk(timestamp, eventId),
-        GSI1PK: eventKeys.gsi1pk(e.type, day),
-        GSI1SK: eventKeys.gsi1sk(timestamp),
-        expiresAt: ttlInDays(EVENT_TTL_DAYS),
-      },
-    })
-  );
+  if (!skipRaw) {
+    await docClient.send(
+      new PutCommand({
+        TableName: EVENTS_TABLE,
+        Item: {
+          ...e,
+          metadata: Object.keys(metadata).length ? metadata : undefined,
+          eventId,
+          createdAt: timestamp,
+          PK: eventKeys.pk(e.sessionId),
+          SK: eventKeys.sk(timestamp, eventId),
+          GSI1PK: eventKeys.gsi1pk(e.type, day),
+          GSI1SK: eventKeys.gsi1sk(timestamp),
+          expiresAt: ttlInDays(EVENT_TTL_DAYS),
+        },
+      })
+    );
+  }
 
-  // Skip hot-key rollup writes under load tests; still persist the event row.
   const { isLoadTestMode } = await import("../lib/load-test");
   if (isLoadTestMode()) return;
 
-  // Keep a short-TTL presence row for the live visitors map (best-effort).
-  void upsertLivePresence(e, geoFields, timestamp).catch((err) => {
-    console.warn("live presence upsert failed", err);
-  });
+  if (!skipRaw) {
+    void upsertLivePresence(e, geoFields, timestamp).catch((err) => {
+      console.warn("live presence upsert failed", err);
+    });
+  }
 
-  // page_view dominates traffic — sample TYPE rollups to protect ROLLUP#day partition under spikes.
-  // Raw events remain complete for session timelines / rebuilds.
   const isPageView = e.type === EVENT_TYPES.PAGE_VIEW;
   if (isPageView && Math.random() > 0.2) return;
 
@@ -195,16 +183,64 @@ async function persistEvent(e: TrackEventInput, edgeGeo: ReturnType<typeof viewe
     incrementRollup(day, `TYPE#${e.type}`, "type", e.type, { count: 1 }),
   ];
 
-  if (e.type === EVENT_TYPES.PRODUCT_VIEW && e.productSlug) {
-    rollups.push(
-      incrementRollup(day, `PRODUCT#${e.productSlug}`, "product", e.productSlug, { views: 1 })
-    );
+  const slug = e.productSlug;
+  const onHome = listingIsHomepage(clientMeta, e.path);
+  const position = clientMeta.position;
+  const source = clientMeta.source ?? clientMeta.utm_source;
+  const category = clientMeta.category;
+  const fromChat = clientMeta.channel === "chat" || clientMeta.listingPage === "chat";
+
+  const productFields: Record<string, number> = {};
+  if (slug) {
+    if (e.type === EVENT_TYPES.PRODUCT_IMPRESSION) {
+      if (fromChat) {
+        productFields.chatImpressions = 1;
+      } else {
+        productFields.impressions = 1;
+        if (onHome) productFields.homepageImpressions = 1;
+      }
+    }
+    if (e.type === EVENT_TYPES.PRODUCT_CLICK) {
+      if (fromChat) {
+        productFields.chatClicks = 1;
+      } else {
+        productFields.clicks = 1;
+        if (onHome) productFields.homepageClicks = 1;
+      }
+    }
+    if (e.type === EVENT_TYPES.PRODUCT_VIEW) productFields.views = 1;
+    if (e.type === EVENT_TYPES.CART_ADD) {
+      productFields.adds = 1;
+      if (fromChat) productFields.chatAdds = 1;
+    }
+    if (e.type === EVENT_TYPES.CHECKOUT_START) productFields.checkouts = 1;
+    if (Object.keys(productFields).length) {
+      rollups.push(incrementRollup(day, `PRODUCT#${slug}`, "product", slug, productFields));
+      for (const geo of geoRollupKeys(slug, geoFields.country, geoFields.region || geoFields.regionName, geoFields.city)) {
+        rollups.push(incrementRollup(day, geo.metric, geo.kind, geo.label, productFields));
+      }
+    }
+    if (fromChat && (productFields.chatClicks || productFields.chatImpressions || productFields.chatAdds)) {
+      rollups.push(
+        incrementRollup(day, `CHAT_PRODUCT#${slug}`, "chat_product", slug, {
+          impressions: productFields.chatImpressions ?? 0,
+          clicks: productFields.chatClicks ?? 0,
+          adds: productFields.chatAdds ?? 0,
+        })
+      );
+    }
   }
-  if (e.type === EVENT_TYPES.CART_ADD && e.productSlug) {
-    rollups.push(
-      incrementRollup(day, `PRODUCT#${e.productSlug}`, "product", e.productSlug, { adds: 1 })
-    );
+
+  const extraSlugs = (clientMeta.productSlugs ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (e.type === EVENT_TYPES.CHECKOUT_START && extraSlugs.length) {
+    for (const extra of extraSlugs.slice(0, 40)) {
+      rollups.push(incrementRollup(day, `PRODUCT#${extra}`, "product", extra, { checkouts: 1 }));
+    }
   }
+
   if (e.type === EVENT_TYPES.SEARCH && e.query) {
     const term = e.query.trim().toLowerCase().slice(0, 80);
     if (term) {
@@ -214,7 +250,61 @@ async function persistEvent(e: TrackEventInput, edgeGeo: ReturnType<typeof viewe
           ...(e.resultCount === 0 ? { zero: 1 } : {}),
         })
       );
+      if (fromChat) {
+        rollups.push(
+          incrementRollup(day, `CHAT_SEARCH#${term}`, "chat_search", term, {
+            count: 1,
+            ...(e.resultCount === 0 ? { zero: 1 } : {}),
+          })
+        );
+        if (e.resultCount === 0) {
+          rollups.push(
+            incrementRollup(day, `CHAT_UNFULFILLED#${term}`, "chat_unfulfilled", term, {
+              count: 1,
+            })
+          );
+        }
+      }
     }
+  }
+
+  const intent = clientMeta.intent?.slice(0, 40);
+  if (fromChat && intent && e.type === EVENT_TYPES.CHAT_MESSAGE) {
+    rollups.push(incrementRollup(day, `CHAT_INTENT#${intent}`, "chat_intent", intent, { count: 1 }));
+  }
+
+  if (fromChat && geoFields.country && (e.type === EVENT_TYPES.CHAT_OPEN || e.type === EVENT_TYPES.CHAT_MESSAGE)) {
+    rollups.push(
+      incrementRollup(day, `CHAT_COUNTRY#${geoFields.country}`, "chat_country", geoFields.country, { count: 1 })
+    );
+  }
+
+  if (onHome && position && (e.type === EVENT_TYPES.PRODUCT_IMPRESSION || e.type === EVENT_TYPES.PRODUCT_CLICK)) {
+    const pos = position.replace(/[^\d]/g, "").slice(0, 4) || "0";
+    rollups.push(
+      incrementRollup(
+        day,
+        `HOMEPOS#${pos}`,
+        "home_position",
+        pos,
+        e.type === EVENT_TYPES.PRODUCT_CLICK ? { clicks: 1 } : { impressions: 1 }
+      )
+    );
+  }
+
+  if (source && (e.type === EVENT_TYPES.PRODUCT_CLICK || e.type === EVENT_TYPES.PURCHASE)) {
+    rollups.push(
+      incrementRollup(day, `SOURCE#${source.slice(0, 80)}`, "source", source.slice(0, 80), {
+        count: 1,
+        ...(e.type === EVENT_TYPES.PURCHASE ? { orders: 1, revenueUsd: e.value ?? 0 } : { clicks: 1 }),
+      })
+    );
+  }
+
+  if (category && slug) {
+    rollups.push(
+      incrementRollup(day, `CATEGORY#${category}`, "category", category, productFields)
+    );
   }
 
   await Promise.all(rollups);
@@ -231,6 +321,7 @@ export async function recordEvent(event: APIGatewayProxyEventV2) {
   if (!parsed.success) return badRequest(parsed.error.message);
 
   const edgeGeo = viewerGeoFromRequest(event);
-  await Promise.all(parsed.data.events.map((e) => persistEvent(e, edgeGeo)));
+  const ua = event.headers?.["user-agent"] ?? event.headers?.["User-Agent"];
+  await Promise.all(parsed.data.events.map((e) => persistEvent(e, edgeGeo, ua)));
   return ok({ recorded: parsed.data.events.length });
 }

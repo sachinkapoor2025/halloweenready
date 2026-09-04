@@ -28,7 +28,7 @@ const TRUST_FEATURES = [
     ),
   },
   {
-    label: "Fast USA Delivery",
+    label: "Delivering in 5–7 days",
     icon: (
       <path
         strokeLinecap="round"

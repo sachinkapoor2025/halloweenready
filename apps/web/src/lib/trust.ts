@@ -4,8 +4,7 @@ import { site, whatsappChatUrl } from "@/lib/site";
 export const trustFacts = {
   seasonLabel: "Halloween 2026",
   operator: "Divit Global Ventures (DGV)",
-  fulfillment:
-    "California-based US fulfillment team — orders ship domestically within America with fast nationwide delivery",
+  fulfillment: "Delivering in 5–7 days",
   support: "WhatsApp & email support before, during, and after delivery",
   catalog: "99+ premium Halloween decorations, costumes, and party supplies",
   payments: "Secure checkout via Stripe (USD) and Razorpay (INR)",
@@ -20,18 +19,18 @@ export const trustHighlights = [
   },
   {
     icon: "🚚",
-    title: "Fast Delivery with Same-Day Dispatch",
+    title: "Destination shipping quotes",
     detail: `${deliveryClaims.dispatch}. ${deliveryClaims.express}. ${deliveryClaims.standard}.`,
   },
   {
     icon: "📦",
     title: "Free Shipping & Reliable Service",
-    detail: "Enjoy free shipping on selected orders. Every order is handled with care for timely and safe delivery.",
+    detail: "Free shipping on orders of $49 or more. Smaller carts use a stepped shipping fee.",
   },
   {
     icon: "📍",
-    title: "Local Presence in India & USA",
-    detail: "Operations in both India and the USA help us provide better coordination and quicker deliveries worldwide.",
+    title: "Quoted destinations",
+    detail: "Storefront freight quotes are available for the US, Canada, UK, Australia, and Germany. Other countries are not assumed.",
   },
   {
     icon: "🎃",
@@ -41,14 +40,14 @@ export const trustHighlights = [
   {
     icon: "💬",
     title: "Real Human Support",
-    detail: `${site.whatsappDisplay} · ${site.supportEmail}`,
+    detail: `WhatsApp · ${site.supportEmail}`,
     href: whatsappChatUrl("Hi HalloweenReady, I have a question before ordering."),
   },
 ] as const;
 
 export const trustStripItems = [
-  "Fast USA delivery",
-  "Same-day dispatch on most orders",
+  "Shipping quotes on product pages",
+  "US, UK, Canada, Australia, Germany quotes",
   "Secure Stripe & Razorpay checkout",
   "Premium Halloween decorations",
   "WhatsApp support",

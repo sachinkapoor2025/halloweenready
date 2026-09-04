@@ -1,8 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { whatsappChatUrl, site } from "@/lib/site";
-import { useMarket } from "@/lib/market-context";
+import { whatsappChatUrl } from "@/lib/site";
 
 function WhatsAppIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
@@ -14,20 +13,16 @@ function WhatsAppIcon({ className = "w-6 h-6" }: { className?: string }) {
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
-  const { market } = useMarket();
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/ses-email")) return null;
 
-  const digits = market?.contact.whatsapp || site.whatsapp;
-  const href = digits === site.whatsapp ? whatsappChatUrl() : `https://wa.me/${digits}`;
-
   return (
     <a
-      href={href}
+      href={whatsappChatUrl()}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with HalloweenReady on WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#2fe06a] to-[#25D366] text-white shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:from-[#28d763] hover:to-[#20bd5a] hover:scale-105 active:scale-95 transition-transform"
+      className="fixed bottom-5 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#2fe06a] to-[#25D366] text-white shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:from-[#28d763] hover:to-[#20bd5a] hover:scale-105 active:scale-95 transition-transform"
     >
       <WhatsAppIcon />
     </a>

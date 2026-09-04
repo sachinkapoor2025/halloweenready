@@ -90,7 +90,7 @@ export function ProductImageGallery({ images, videos = [], alt }: ProductImageGa
   // while size filtering runs (or if remote probes fail).
   const imageUrls = displayImgs.length > 0 ? displayImgs : resolved;
   const media: GalleryMedia[] = useMemo(
-    () => [...videoItems, ...imageUrls.map((url) => ({ type: "image" as const, url }))],
+    () => [...imageUrls.map((url) => ({ type: "image" as const, url })), ...videoItems],
     [videoItems, imageUrls]
   );
   const imgs = imageUrls;

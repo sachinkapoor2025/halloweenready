@@ -31,9 +31,6 @@ function PlusIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-const stepBtnClass =
-  "flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-95 disabled:opacity-50 transition";
-
 const detailPillBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center hover:bg-white/15 rounded-full disabled:opacity-50 transition";
 
@@ -65,10 +62,12 @@ export function AddToCartControl({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [addedNote, setAddedNote] = useState("");
+  const [justAdded, setJustAdded] = useState(false);
 
   const quantity = quantityFor(productSlug, addons, cjVid);
   const lineId = lineIdFor(productSlug, addons, cjVid);
   const inCart = quantity > 0 && Boolean(lineId);
+  const showViewCart = justAdded || quantity > 0;
   const addonsPayload = addons.length ? addons : undefined;
 
   const run = async (fn: () => Promise<void>) => {
@@ -89,9 +88,12 @@ export function AddToCartControl({
   };
 
   const isDetail = variant === "detail";
-  const addLabel = disabled ? "Out of Stock" : busy ? "Adding..." : isDetail ? "Add to cart" : "Add to cart";
+  const addLabel = disabled ? "Out of Stock" : busy ? "Adding..." : "Add to cart";
+  const viewCartClass = isDetail
+    ? `block w-full rounded-md bg-nav text-white font-bold text-sm uppercase tracking-wide py-3.5 text-center hover:bg-primary transition`
+    : `btn-cart ${fullWidth ? "w-full" : ""} text-xs sm:text-sm px-3 py-2 sm:px-5 sm:py-2.5 text-center`;
 
-  if (!inCart || !lineId) {
+  if (!showViewCart) {
     return (
       <div className={className}>
         {error && <p className="text-xs text-red-600 mb-1">{error}</p>}
@@ -103,6 +105,7 @@ export function AddToCartControl({
             void run(async () => {
               const contact = getContact?.();
               await addItem(productSlug, 1, contact, addonsPayload, cjVid);
+              setJustAdded(true);
               setAddedNote(`Added! Est. delivery ${estimatedDeliveryShort()}`);
               window.setTimeout(() => setAddedNote(""), 5000);
             });
@@ -120,100 +123,78 @@ export function AddToCartControl({
     );
   }
 
-  const quantityControls = (
-    <>
-      <button
-        type="button"
-        aria-label="Decrease quantity"
-        disabled={busy}
-        onClick={(e) => {
-          stop(e);
-          void run(() => (quantity <= 1 ? removeItem(lineId) : updateItem(lineId, quantity - 1)));
-        }}
-        className={stepBtnClass}
-      >
-        <MinusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-      </button>
-      <span className="min-w-[1.25rem] sm:min-w-[1.5rem] text-center text-sm sm:text-base font-bold tabular-nums px-0.5">
-        {quantity}
-      </span>
-      <button
-        type="button"
-        aria-label="Increase quantity"
-        disabled={busy || disabled}
-        onClick={(e) => {
-          stop(e);
-          void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload));
-        }}
-        className={stepBtnClass}
-      >
-        <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-      </button>
-    </>
-  );
-
-  const removeButton = (
+  const removeButton = lineId ? (
     <button
       type="button"
       aria-label="Remove from cart"
       disabled={busy}
       onClick={(e) => {
         stop(e);
-        void run(() => removeItem(lineId));
+        void run(async () => {
+          await removeItem(lineId);
+          setJustAdded(false);
+          setAddedNote("");
+        });
       }}
       className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full hover:bg-white/10 active:scale-95 disabled:opacity-50 transition"
     >
       <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
     </button>
-  );
+  ) : null;
 
   return (
     <div className={className} onClick={stop}>
       {error && <p className="text-xs text-red-600 mb-1">{error}</p>}
-      {isDetail ? (
-        <div className="flex items-center justify-between gap-3 rounded-full bg-nav text-white font-semibold text-sm px-4 py-2.5 w-full">
-          <button
-            type="button"
-            aria-label="Decrease quantity"
-            disabled={busy}
-            onClick={(e) => {
-              stop(e);
-              void run(() => (quantity <= 1 ? removeItem(lineId) : updateItem(lineId, quantity - 1)));
-            }}
-            className={detailPillBtnClass}
+      {addedNote && <p className="text-xs text-green-700 mb-1">{addedNote}</p>}
+      {isDetail && inCart && lineId ? (
+        <>
+          <div className="flex items-center justify-between gap-3 rounded-full bg-nav text-white font-semibold text-sm px-4 py-2.5 w-full">
+            <button
+              type="button"
+              aria-label="Decrease quantity"
+              disabled={busy}
+              onClick={(e) => {
+                stop(e);
+                void run(async () => {
+                  if (quantity <= 1) {
+                    await removeItem(lineId);
+                    setJustAdded(false);
+                    setAddedNote("");
+                    return;
+                  }
+                  await updateItem(lineId, quantity - 1);
+                });
+              }}
+              className={detailPillBtnClass}
+            >
+              <MinusIcon className="w-4 h-4" />
+            </button>
+            <span className="min-w-[1.5rem] text-center text-base font-bold tabular-nums">{quantity}</span>
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              disabled={busy || disabled}
+              onClick={(e) => {
+                stop(e);
+                void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload, cjVid));
+              }}
+              className={detailPillBtnClass}
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+            {removeButton}
+          </div>
+          <Link
+            href="/cart"
+            onClick={(e) => e.stopPropagation()}
+            className="block text-center text-nav text-sm font-semibold mt-2 hover:underline"
           >
-            <MinusIcon className="w-4 h-4" />
-          </button>
-          <span className="min-w-[1.5rem] text-center text-base font-bold tabular-nums">{quantity}</span>
-          <button
-            type="button"
-            aria-label="Increase quantity"
-            disabled={busy || disabled}
-            onClick={(e) => {
-              stop(e);
-              void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload));
-            }}
-            className={detailPillBtnClass}
-          >
-            <PlusIcon className="w-4 h-4" />
-          </button>
-          {removeButton}
-        </div>
+            View cart
+          </Link>
+        </>
       ) : (
-        <div
-          className={`flex items-center justify-between gap-1 rounded-full bg-nav text-white font-semibold text-sm px-1.5 py-1.5 sm:px-3 sm:py-2 ${fullWidth ? "w-full" : "min-w-[10rem] sm:min-w-[12rem]"}`}
-        >
-          {quantityControls}
-          {removeButton}
-        </div>
-      )}
-      {!isDetail && (
-        <Link
-          href="/cart"
-          onClick={(e) => e.stopPropagation()}
-          className="block text-center text-nav text-sm font-semibold mt-2 hover:underline"
-        >
-          View Cart
+        <Link href="/cart" onClick={(e) => e.stopPropagation()} className={viewCartClass}>
+          {isDetail ? "VIEW CART" : "View cart"}
         </Link>
       )}
     </div>

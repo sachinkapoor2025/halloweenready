@@ -17,7 +17,8 @@ interface CartContextValue {
     quantity?: number,
     contact?: { name?: string; email?: string; phone?: string },
     addons?: ProductAddonSelection[],
-    cjVid?: string
+    cjVid?: string,
+    listingPage?: string
   ) => Promise<void>;
   updateItem: (lineId: string, quantity: number) => Promise<void>;
   removeItem: (lineId: string) => Promise<void>;
@@ -69,7 +70,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     quantity = 1,
     contact?: { name?: string; email?: string; phone?: string },
     addons?: ProductAddonSelection[],
-    cjVid?: string
+    cjVid?: string,
+    listingPage?: string
   ) => {
     const sid = resolveSessionId();
     if (!sid) throw new Error("Session not ready — please try again");
@@ -103,7 +105,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             (added.addons?.reduce((s, a) => s + a.price * a.quantity, 0) ?? 0)) *
           added.quantity
         : undefined,
-      contact
+      contact,
+      listingPage === "chat" ? { channel: "chat", listingPage: "chat" } : undefined
     );
   };
 

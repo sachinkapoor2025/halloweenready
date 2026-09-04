@@ -1,18 +1,36 @@
 export const site = {
   name: "HalloweenReady",
   domain: "halloweenready.com",
-  tagline: "Halloween Decorations & Party Supplies — Fast USA Delivery",
+  tagline: "Halloween Decorations, Costumes & Party Supplies",
   description:
-    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery across the USA. Premium-quality products for haunted houses, yard displays, and Halloween parties.",
+    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
   supportEmail: "support@halloweenready.com",
   phone: "+1 (669) 260-3819",
-  whatsapp: "16692603819",
-  whatsappDisplay: "+1 (669) 260-3819",
+  /** Customer WhatsApp — India store number (do not display the digits on the storefront). */
+  whatsapp: "919266467887",
+  whatsappDisplay: "+91 9266467887",
   logoSrc: "/logo.png",
   primaryColor: "#1a0a2e",
   navBlue: "#ff6b00",
   accentColor: "#e11d48",
 } as const;
+
+export const STORE_LOCATIONS = [
+  {
+    id: "uk",
+    flag: "🇬🇧",
+    country: "United Kingdom",
+    lines: ["5 Exeter Road", "Southampton, Hampshire", "SO18 2ED", "United Kingdom"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=5+Exeter+Road%2C+Southampton+SO18+2ED",
+  },
+  {
+    id: "in",
+    flag: "🇮🇳",
+    country: "India",
+    lines: ["House No. 392", "Mohalla Sodian Wala", "Ferozepur City, Punjab 152002", "India"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=House+No.+392%2C+Mohalla+Sodian+Wala%2C+Ferozepur+City%2C+Punjab+152002",
+  },
+] as const;
 
 export const navItems = [
   { label: "Home", href: "/" },
@@ -71,9 +89,9 @@ export const homeBanners = [
     title: "Celebrate Halloween in",
     titleAccent: "Style",
     description:
-      "Premium Halloween decorations, costumes, and party supplies with fast shipping across all 50 states.",
+      "Premium Halloween decorations, costumes, and party supplies. Confirm shipping on each product page.",
     cta: "Shop Halloween",
-    pill: "Decorations · Costumes · Party Supplies · Fast USA delivery",
+    pill: "Decorations · Costumes · Party Supplies",
   },
   {
     src: "/banners/bannerpage2.png",
@@ -85,7 +103,7 @@ export const homeBanners = [
     description:
       "Inflatable ghosts, LED pumpkins, skeletons, and yard decor — everything for the ultimate Halloween display.",
     cta: "Shop Decorations",
-    pill: "Indoor & outdoor decor · Same-day dispatch on most orders",
+    pill: "Indoor & outdoor decor",
   },
 ] as const;
 
@@ -156,7 +174,7 @@ export const testimonials = [
 export const faqs = [
   {
     q: "How quickly do you ship Halloween decorations?",
-    a: "Most orders are packed shortly after they are placed and then ship with standard carriers. Typical delivery is about 2–5 business days inside the USA, depending on your address and the method selected at checkout.",
+    a: "Transit time depends on the product and destination. Open the product page and request a shipping quote — we do not advertise a blanket 2–5 day nationwide SLA.",
   },
   {
     q: "Do you offer outdoor Halloween decorations?",
@@ -180,7 +198,7 @@ export const faqs = [
   },
   {
     q: "Does HalloweenReady ship across the USA?",
-    a: "Yes. We deliver to all 50 US states with domestic fulfillment, so orders do not go through international customs.",
+    a: "Many items can be quoted for US delivery on the product page. Availability is not universal — confirm the destination before checkout.",
   },
   {
     q: "What payment methods do you accept?",

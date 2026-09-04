@@ -22,9 +22,9 @@ export declare const accountAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     isDefault: boolean;
     label?: string | undefined;
     line2?: string | undefined;
@@ -37,9 +37,9 @@ export declare const accountAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     label?: string | undefined;
     line2?: string | undefined;
     senderName?: string | undefined;
@@ -99,9 +99,9 @@ export declare const accountAddressInputSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     label?: string | undefined;
     line2?: string | undefined;
     senderName?: string | undefined;
@@ -113,9 +113,9 @@ export declare const accountAddressInputSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     label?: string | undefined;
     line2?: string | undefined;
     senderName?: string | undefined;
@@ -144,10 +144,10 @@ export declare const accountAddressUpdateSchema: z.ZodObject<{
     country?: string | undefined;
     city?: string | undefined;
     label?: string | undefined;
+    postalCode?: string | undefined;
     line1?: string | undefined;
     line2?: string | undefined;
     state?: string | undefined;
-    postalCode?: string | undefined;
     senderName?: string | undefined;
     senderMessage?: string | undefined;
     isDefault?: boolean | undefined;
@@ -158,10 +158,10 @@ export declare const accountAddressUpdateSchema: z.ZodObject<{
     country?: string | undefined;
     city?: string | undefined;
     label?: string | undefined;
+    postalCode?: string | undefined;
     line1?: string | undefined;
     line2?: string | undefined;
     state?: string | undefined;
-    postalCode?: string | undefined;
     senderName?: string | undefined;
     senderMessage?: string | undefined;
     isDefault?: boolean | undefined;

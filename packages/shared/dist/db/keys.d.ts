@@ -92,6 +92,30 @@ export declare const configKeys: {
         pk: string;
         sk: "META";
     };
+    homepageRanking: {
+        pk: string;
+        sk: "META";
+    };
+    homepageSnapshot: {
+        pk: string;
+        sk: "META";
+    };
+    chat: {
+        pk: string;
+        sk: "META";
+    };
+};
+/** Admin CJ catalog import jobs (config table). */
+export declare const cjImportJobKeys: {
+    pk: (jobId: string) => string;
+    sk: () => "META";
+    listPk: () => "ENTITY#CJ_IMPORT";
+    listSk: (createdAt: string, jobId: string) => string;
+};
+/** Lookup so we skip a CJ pid that is already on the store. */
+export declare const cjPidKeys: {
+    pk: (pid: string) => string;
+    sk: () => "META";
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 export declare const warehouseKeys: {

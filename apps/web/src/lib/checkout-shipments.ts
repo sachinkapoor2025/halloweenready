@@ -53,17 +53,12 @@ export function expandCartToDeliveryUnits(
   return units;
 }
 
-function withSender(
-  address: ShippingAddress,
-  primary: ShippingAddress
+function withCountryFallback(
+  address: ShippingAddress
 ): CheckoutShipment["shippingAddress"] {
   return {
     ...address,
-    country: "US",
-    senderName: (primary.senderName ?? "").trim() || "Sender",
-    senderMessage:
-      (primary.senderMessage ?? "").trim() ||
-      "Happy Halloween! Enjoy your spooky surprises.",
+    country: address.country || "US",
   };
 }
 
@@ -74,7 +69,7 @@ export function validateDeliveryUnits(
   for (const unit of units) {
     if (unit.useSameAddress) continue;
     const a = unit.address;
-    if (!a.name.trim()) return `Enter a recipient name for ${unit.name}`;
+    if (!a.name.trim()) return `Enter a name for ${unit.name}`;
     if (!a.email.trim()) return `Enter an email for ${unit.name}`;
     if (!isValidShippingPhone(a.phone ?? "")) {
       return `Enter a valid phone for ${unit.name}`;
@@ -100,8 +95,8 @@ export function buildCheckoutShipmentsFromUnits(
 
   for (const unit of units) {
     const address = unit.useSameAddress
-      ? withSender(primary, primary)
-      : withSender(unit.address, primary);
+      ? withCountryFallback(primary)
+      : withCountryFallback(unit.address);
     const fp = unit.useSameAddress ? "__primary__" : addressFingerprint(address);
     let group = groups.get(fp);
     if (!group) {
@@ -135,8 +130,8 @@ export function shipmentSubtotalsFromUnits(
 
   for (const unit of units) {
     const address = unit.useSameAddress
-      ? withSender(primary, primary)
-      : withSender(unit.address, primary);
+      ? withCountryFallback(primary)
+      : withCountryFallback(unit.address);
     const addressKey = unit.useSameAddress ? "__primary__" : addressFingerprint(address);
     const vendorKey = shippingVendorKey(unit);
     const groupKey = `${addressKey}::${vendorKey}`;
@@ -162,8 +157,8 @@ export function quoteShippingFromDeliveryUnits(
 
   for (const unit of units) {
     const address = unit.useSameAddress
-      ? withSender(primary, primary)
-      : withSender(unit.address, primary);
+      ? withCountryFallback(primary)
+      : withCountryFallback(unit.address);
     const addressKey = unit.useSameAddress ? "__primary__" : addressFingerprint(address);
     const vendorKey = shippingVendorKey(unit);
     const groupKey = `${addressKey}::${vendorKey}`;

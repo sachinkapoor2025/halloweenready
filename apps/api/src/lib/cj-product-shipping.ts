@@ -1,7 +1,6 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import {
   CJ_STOREFRONT_SHIP_COUNTRY_NAMES,
-  FREE_SHIPPING_MIN_SUBTOTAL_USD,
   isCjDropshippingProduct,
   normalizeCjFreightQuotes,
   productKeys,
@@ -28,17 +27,11 @@ function customerCharge(product: Product): { chargeUsd: number; label: string } 
     usdInrRate: 83,
   });
   if (quote.qualifiesForFreeShipping) {
-    return { chargeUsd: 0, label: `Free on this item ($10.99+)` };
-  }
-  if (quote.tier === "mid") {
-    return {
-      chargeUsd: quote.charge,
-      label: `$${quote.charge.toFixed(2)} for this item (free at $${FREE_SHIPPING_MIN_SUBTOTAL_USD.toFixed(2)}+)`,
-    };
+    return { chargeUsd: 0, label: `Free on this item ($49+)` };
   }
   return {
     chargeUsd: quote.charge,
-    label: `$${quote.charge.toFixed(2)} for this item (free at $${FREE_SHIPPING_MIN_SUBTOTAL_USD.toFixed(2)}+)`,
+    label: `$${quote.charge.toFixed(2)} for this item (free at $49+)`,
   };
 }
 

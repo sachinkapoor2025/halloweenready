@@ -8,6 +8,8 @@ import { blogPostInlineLinks } from "@/lib/content/page-inline-links";
 import { listAllBlogPosts, resolveBlogPost } from "@/lib/content/seo-blog";
 import { applyInlineLinks } from "@/lib/inline-links";
 import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -98,6 +100,16 @@ export default async function BlogPostPage({ params }: Props) {
           </Link>
         </div>
       )}
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({
+          type: "blog",
+          blogSlug: post.slug,
+          relatedCategory: post.relatedCategory,
+        })}
+        title="Keep reading and shopping"
+        intro="Related guides, categories, and Halloween destination pages."
+      />
 
       <div className="mt-8 pt-6 border-t">
         <Link href="/blog" className="text-nav hover:underline text-sm">

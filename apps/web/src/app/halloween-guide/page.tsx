@@ -5,15 +5,17 @@ import { JsonLd } from "@/components/JsonLd";
 import { halloweenGuideInlineLinks } from "@/lib/content/page-inline-links";
 import { applyInlineLinks } from "@/lib/inline-links";
 import { faqJsonLd, pageMetadata } from "@/lib/seo";
-import { site, categoryOrder, homeBanners, cityLinks, faqs } from "@/lib/site";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { site, categoryOrder, homeBanners, faqs } from "@/lib/site";
+import { getInternalLinkGroups, PRIORITY_CITY_LINKS } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Guide 2026 — Costumes, Decor & Party Tips | USA",
+  title: "Halloween Guide 2026 — Costumes, Decor & Party Tips",
   description:
-    "Your complete Halloween 2026 guide — costume ideas, home decor tips, trick-or-treat planning, and party essentials. Shop HalloweenReady for fast USA delivery before October 31.",
+    "Your complete Halloween 2026 guide — costume ideas, home decor tips, trick-or-treat planning, and party essentials. Check product pages for destination shipping quotes.",
   path: "/halloween-guide",
   keywords:
-    "halloween guide 2026, halloween costumes USA, halloween decorations, trick or treat tips, halloween party supplies, halloweenready",
+    "halloween guide 2026, halloween costumes, halloween decorations, trick or treat tips, halloween party supplies, halloweenready",
 });
 
 const guideSteps = [
@@ -64,12 +66,12 @@ export default function HalloweenGuidePage() {
           </h1>
           <p className="text-lg text-white/90 max-w-2xl mx-auto mb-6 leading-relaxed">
             Costumes, decor, candy, and party planning — everything you need for a spooktacular October 31.
-            {site.name} delivers across all 50 states.
+            {site.name} helps you plan costumes, decor, and parties — then shop items with a shipping quote on each product page.
           </p>
           <div className="inline-block px-6 py-3 bg-white/15 backdrop-blur rounded-xl border border-nav/40 mb-8">
             <p className="text-sm text-white/80">Halloween 2026</p>
             <p className="text-2xl font-bold">Saturday, October 31, 2026</p>
-            <p className="text-sm text-white/70 mt-1">Order by October 25 for guaranteed USA delivery</p>
+            <p className="text-sm text-white/70 mt-1">Halloween is Saturday, October 31, 2026 — plan shipping from product quotes</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/products" className="btn-spooky">
@@ -99,7 +101,7 @@ export default function HalloweenGuidePage() {
           </p>
           <p>
             {applyInlineLinks(
-              `${site.name} ships from within the United States — typically 2–5 business days to California, New York, Texas, Florida, and all 50 states. Add Halloween party supplies to the same order so tableware and treats arrive with the rest of your celebration.`,
+              `${site.name} fulfills Halloween catalog items through international dropshipping partners. Check the product-page shipping quote for California, New York, Texas, Florida, and other destinations. Add Halloween party supplies to the same order so tableware matches the rest of your celebration.`,
               halloweenGuideInlineLinks
             )}
           </p>
@@ -149,19 +151,18 @@ export default function HalloweenGuidePage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-4 py-10 border-t border-nav/20">
-        <h2 className="text-2xl font-bold text-accent mb-4">Halloween Delivery by City</h2>
+        <h2 className="text-2xl font-bold text-accent mb-4">Halloween shopping by city</h2>
         <p className="text-slate-600 leading-relaxed mb-6">
-          We deliver Halloween costumes, decor, and candy to major US metros and nationwide.
-          Select your city for local delivery details:
+          Start with a city page for local shopping context, then confirm delivery on the product page.
         </p>
         <div className="flex flex-wrap gap-2">
-          {cityLinks.map((c) => (
+          {PRIORITY_CITY_LINKS.map((c) => (
             <Link
-              key={c.slug}
-              href={`/cities/${c.slug}`}
+              key={c.href}
+              href={c.href}
               className="px-3 py-1.5 rounded-full border border-nav/40 text-sm text-accent hover:border-nav hover:text-nav"
             >
-              {c.label}
+              {c.label.replace("Halloween in ", "")}
             </Link>
           ))}
         </div>
@@ -183,6 +184,14 @@ export default function HalloweenGuidePage() {
         </div>
       </section>
 
+      <section className="max-w-5xl mx-auto px-4">
+        <InternalLinksSection
+          groups={getInternalLinkGroups({ type: "guide" })}
+          title="Related Halloween pages"
+          intro="Shop collections, destination pages, and featured articles from this guide."
+        />
+      </section>
+
       <section className="max-w-3xl mx-auto px-4 py-12 border-t border-nav/20">
         <h2 className="text-2xl font-bold text-accent text-center mb-8">Halloween FAQ</h2>
         <div className="space-y-3">
@@ -201,7 +210,7 @@ export default function HalloweenGuidePage() {
       <section className="bg-gradient-to-r from-primary via-spooky to-nav text-white py-14 text-center px-4">
         <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready for Halloween 2026?</h2>
         <p className="text-white/85 max-w-xl mx-auto mb-8 leading-relaxed">
-          Shop costumes, decor, candy, and party supplies with fast USA delivery. Order before October 25.
+          Shop costumes, decor, and party supplies. Confirm shipping on each product before you check out.
         </p>
         <Link href="/products" className="btn-spooky inline-block">
           Shop Halloween Now

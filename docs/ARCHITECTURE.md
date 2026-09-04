@@ -82,7 +82,7 @@ leads/sessions; products re-seed via `import:usarakhi`).
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
-| `ReviewEmailsCronFunction` | Every hour | Email customers 1 day after order is marked **Delivered** or **Complete**, linking to `/reviews` |
+| `ReviewEmailsCronFunction` | Every 15 min + hourly Razorpay reconcile + hourly homepage ranking | Review emails, abandoned carts, pending-payment reminders; Razorpay safety net; homepage ranking snapshot |
 
 When admin sets order status to **Delivered** or **Complete**, the API sets `reviewEmailDueAt` (delivery + 1 day). The cron sends one email per order (tracked via `reviewEmailSentAt`).
 
@@ -111,9 +111,11 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | POST | `/webhooks/cj` | CJ Dropshipping product/stock/order/logistics webhook |
 | GET | `/admin/cj/status` | Admin: CJ API connection status |
 | PUT | `/admin/cj/api-key` | Admin: save CJ API key |
-| GET | `/admin/cj/products` | Admin: search CJ catalog (`?keyWord=halloween`) |
-| POST | `/admin/cj/products/import` | Admin: import selected CJ pids into the store catalog |
-| POST | `/admin/cj/products/import-halloween` | Admin: import one page of Halloween products from CJ |
+| GET | `/admin/cj/products` | Admin: search CJ catalog (500 per page; already-imported flagged) |
+| POST | `/admin/cj/products/import` | Admin: queue selected CJ pids (returns 202 + jobId; worker imports in background) |
+| POST | `/admin/cj/products/import-halloween` | Admin: queue one Halloween catalog page |
+| GET | `/admin/cj/imports` | Admin: list CJ import jobs |
+| GET | `/admin/cj/imports/{jobId}` | Admin: one CJ import job with per-product status |
 | GET | `/admin/cj/orders` | Admin: list CJ shopping orders |
 | POST | `/admin/cj/orders/{orderId}/fulfill` | Admin: create a CJ fulfillment order from a HalloweenReady order |
 | POST | `/leads` | Save partial customer info |
@@ -125,8 +127,17 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | PATCH | `/admin/orders/{orderId}` | Admin: update status + tracking (schedules review email 1 day after delivered) |
 | GET | `/admin/analytics/sales` | Admin: day/week/month payments received (excludes refunds) |
 | GET | `/admin/analytics/overview` | Admin: traffic + funnel (`?days=`) |
-| GET | `/admin/analytics/products` | Admin: most-viewed products |
-| GET | `/admin/analytics/searches` | Admin: top + zero-result searches |
+| GET | `/admin/analytics/products` | Admin: most-viewed products (legacy rollup) |
+| GET | `/admin/analytics/performance` | Admin: product performance scores + funnel (`?days=`) |
+| GET | `/admin/analytics/performance/{slug}` | Admin: one product + geo drill-down |
+| GET | `/admin/analytics/merchandising` | Admin: quadrants, countries, SEO opportunities |
+| GET | `/admin/homepage-ranking` | Admin: ranking weights / slot config |
+| PUT | `/admin/homepage-ranking` | Admin: save ranking config and refresh snapshot |
+| POST | `/admin/homepage-ranking/refresh` | Admin: rebuild homepage snapshot |
+| GET | `/homepage/products` | Storefront ranked homepage pool (~500) |
+| GET | `/admin/analytics/chat` | Admin: shopping assistant sessions, intents, unfulfilled searches |
+| GET | `/config/chat` | Public assistant config (enabled flags) |
+| PUT | `/admin/config/chat` | Admin: save assistant settings |
 | GET | `/admin/sessions` | Admin: recent visitor sessions |
 | GET | `/admin/sessions/{sessionId}` | Admin: full visitor journey |
 | GET | `/admin/carts/abandoned` | Admin: abandoned carts (CSV in UI) |

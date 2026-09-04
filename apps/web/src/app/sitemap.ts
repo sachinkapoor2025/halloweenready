@@ -1,11 +1,17 @@
 import type { MetadataRoute } from "next";
-import { api } from "@/lib/api";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { siteUrl } from "@/lib/env";
 import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 import { allCountrySeoSlugs } from "@/lib/content/country-pages";
+import { indexableGeoPaths } from "@/lib/content/geo";
+
+function sitemapDate(value?: string): Date {
+  if (!value) return new Date();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
 
 /** Handwritten + SEO blog posts, deduped by slug. */
 function mergedBlogRoutes(): MetadataRoute.Sitemap {
@@ -17,7 +23,7 @@ function mergedBlogRoutes(): MetadataRoute.Sitemap {
     seen.add(p.slug);
     routes.push({
       url: `${siteUrl}/blog/${p.slug}`,
-      lastModified: new Date(p.updatedAt),
+      lastModified: sitemapDate(p.updatedAt),
       changeFrequency: "monthly",
       priority: 0.7,
     });
@@ -46,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/shipping`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/halloween`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/halloween-guide`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     {
       url: `${siteUrl}${seoEventsHub.hubPath}`,
@@ -85,19 +92,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
+  const halloweenRoutes = indexableGeoPaths().map((path) => ({
+    url: `${siteUrl}${path}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: path.split("/").length <= 3 ? 0.8 : 0.7,
+  }));
+
   const blogRoutes = mergedBlogRoutes();
 
-  try {
-    const productsData = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-    const productRoutes = productsData.products.map((p) => ({
-      url: `${siteUrl}/products/${p.slug}`,
-      lastModified: new Date(p.updatedAt),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const products = await loadStorefrontProducts();
+  const productRoutes = products.map((p) => ({
+    url: `${siteUrl}/products/${p.slug}`,
+    lastModified: sitemapDate(p.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes, ...productRoutes];
-  } catch {
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...blogRoutes];
-  }
+  return [
+    ...staticRoutes,
+    ...categoryRoutes,
+    ...countryRoutes,
+    ...cityRoutes,
+    ...halloweenRoutes,
+    ...blogRoutes,
+    ...productRoutes,
+  ];
 }

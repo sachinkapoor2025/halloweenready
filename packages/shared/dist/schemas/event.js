@@ -6,6 +6,8 @@ const constants_1 = require("../constants");
 exports.eventTypeEnum = zod_1.z.enum([
     constants_1.EVENT_TYPES.PAGE_VIEW,
     constants_1.EVENT_TYPES.PRODUCT_VIEW,
+    constants_1.EVENT_TYPES.PRODUCT_IMPRESSION,
+    constants_1.EVENT_TYPES.PRODUCT_CLICK,
     constants_1.EVENT_TYPES.SEARCH,
     constants_1.EVENT_TYPES.CART_ADD,
     constants_1.EVENT_TYPES.CART_REMOVE,
@@ -14,6 +16,9 @@ exports.eventTypeEnum = zod_1.z.enum([
     constants_1.EVENT_TYPES.SESSION_PING,
     constants_1.EVENT_TYPES.COUNTRY_CHANGED,
     constants_1.EVENT_TYPES.POSTAL_CODE_ENTERED,
+    constants_1.EVENT_TYPES.CHAT_OPEN,
+    constants_1.EVENT_TYPES.CHAT_CLOSE,
+    constants_1.EVENT_TYPES.CHAT_MESSAGE,
 ]);
 exports.trackEventSchema = zod_1.z.object({
     type: exports.eventTypeEnum,

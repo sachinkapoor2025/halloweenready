@@ -21,9 +21,9 @@ export declare const shippingAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     line2?: string | undefined;
     senderName?: string | undefined;
     senderMessage?: string | undefined;
@@ -33,9 +33,9 @@ export declare const shippingAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     line2?: string | undefined;
     senderName?: string | undefined;
     senderMessage?: string | undefined;
@@ -60,9 +60,9 @@ export declare const checkoutShippingAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     senderName: string;
     senderMessage: string;
     line2?: string | undefined;
@@ -72,9 +72,9 @@ export declare const checkoutShippingAddressSchema: z.ZodObject<{
     phone: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     senderName: string;
     senderMessage: string;
     line2?: string | undefined;
@@ -110,9 +110,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -122,9 +122,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -150,9 +150,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -168,9 +168,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -196,9 +196,9 @@ export declare const checkoutSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -208,9 +208,9 @@ export declare const checkoutSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -239,9 +239,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -251,9 +251,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -279,9 +279,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -297,9 +297,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -333,19 +333,19 @@ export declare const checkoutSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -355,12 +355,12 @@ export declare const checkoutSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -379,19 +379,19 @@ export declare const checkoutSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -401,12 +401,12 @@ export declare const checkoutSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -425,19 +425,19 @@ export declare const checkoutSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -447,12 +447,12 @@ export declare const checkoutSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -471,19 +471,19 @@ export declare const checkoutSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -493,12 +493,12 @@ export declare const checkoutSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -525,19 +525,21 @@ export declare const checkoutSchema: z.ZodObject<{
         version: z.ZodOptional<z.ZodLiteral<1>>;
     }, "strip", z.ZodTypeAny, {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -548,12 +550,12 @@ export declare const checkoutSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -564,12 +566,12 @@ export declare const checkoutSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -580,12 +582,12 @@ export declare const checkoutSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -598,8 +600,6 @@ export declare const checkoutSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -608,19 +608,21 @@ export declare const checkoutSchema: z.ZodObject<{
         timeToPurchaseMs?: number | undefined;
     }, {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -631,12 +633,12 @@ export declare const checkoutSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -647,12 +649,12 @@ export declare const checkoutSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -663,12 +665,12 @@ export declare const checkoutSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -681,8 +683,6 @@ export declare const checkoutSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -697,9 +697,9 @@ export declare const checkoutSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -716,9 +716,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -732,19 +732,21 @@ export declare const checkoutSchema: z.ZodObject<{
     shippingRateId?: string | undefined;
     attribution?: {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -755,12 +757,12 @@ export declare const checkoutSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -771,12 +773,12 @@ export declare const checkoutSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -787,12 +789,12 @@ export declare const checkoutSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -805,8 +807,6 @@ export declare const checkoutSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -821,9 +821,9 @@ export declare const checkoutSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         senderName: string;
         senderMessage: string;
         line2?: string | undefined;
@@ -840,9 +840,9 @@ export declare const checkoutSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             senderName: string;
             senderMessage: string;
             line2?: string | undefined;
@@ -856,19 +856,21 @@ export declare const checkoutSchema: z.ZodObject<{
     shippingRateId?: string | undefined;
     attribution?: {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -879,12 +881,12 @@ export declare const checkoutSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -895,12 +897,12 @@ export declare const checkoutSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -911,12 +913,12 @@ export declare const checkoutSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -929,8 +931,6 @@ export declare const checkoutSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -962,9 +962,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
@@ -974,9 +974,9 @@ export declare const orderShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
@@ -1094,22 +1094,22 @@ export declare const orderShipmentSchema: z.ZodObject<{
             quantity: number;
         }[] | undefined;
     }[];
+    shipping: number;
     shippingAddress: {
         name: string;
         email: string;
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
     };
     shipmentId: string;
     subtotal: number;
-    shipping: number;
     shippingServiceCode?: string | undefined;
     shippingRateId?: string | undefined;
     trackingNumber?: string | undefined;
@@ -1118,7 +1118,7 @@ export declare const orderShipmentSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
 }, {
     items: {
@@ -1150,25 +1150,25 @@ export declare const orderShipmentSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
     };
     shipmentId: string;
     subtotal: number;
+    shipping?: number | undefined;
     shippingServiceCode?: string | undefined;
     shippingRateId?: string | undefined;
-    shipping?: number | undefined;
     trackingNumber?: string | undefined;
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
 }>;
 export declare const orderStatusHistoryEntrySchema: z.ZodObject<{
@@ -1315,9 +1315,9 @@ export declare const orderSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
@@ -1327,9 +1327,9 @@ export declare const orderSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
@@ -1357,9 +1357,9 @@ export declare const orderSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
@@ -1369,9 +1369,9 @@ export declare const orderSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
@@ -1489,22 +1489,22 @@ export declare const orderSchema: z.ZodObject<{
                 quantity: number;
             }[] | undefined;
         }[];
+        shipping: number;
         shippingAddress: {
             name: string;
             email: string;
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
         };
         shipmentId: string;
         subtotal: number;
-        shipping: number;
         shippingServiceCode?: string | undefined;
         shippingRateId?: string | undefined;
         trackingNumber?: string | undefined;
@@ -1513,7 +1513,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }, {
         items: {
@@ -1545,25 +1545,25 @@ export declare const orderSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
         };
         shipmentId: string;
         subtotal: number;
+        shipping?: number | undefined;
         shippingServiceCode?: string | undefined;
         shippingRateId?: string | undefined;
-        shipping?: number | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
         shippingServiceName?: string | undefined;
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }>, "many">>;
     paymentProvider: z.ZodOptional<z.ZodEnum<["stripe", "razorpay"]>>;
@@ -1677,19 +1677,19 @@ export declare const orderSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1699,12 +1699,12 @@ export declare const orderSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1723,19 +1723,19 @@ export declare const orderSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1745,12 +1745,12 @@ export declare const orderSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1769,19 +1769,19 @@ export declare const orderSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1791,12 +1791,12 @@ export declare const orderSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1815,19 +1815,19 @@ export declare const orderSchema: z.ZodObject<{
             landingPage: z.ZodOptional<z.ZodString>;
             entryUrl: z.ZodOptional<z.ZodString>;
             clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+            channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
             confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
             confidenceReason: z.ZodOptional<z.ZodString>;
             at: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1837,12 +1837,12 @@ export declare const orderSchema: z.ZodObject<{
         }, {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1867,19 +1867,21 @@ export declare const orderSchema: z.ZodObject<{
         timeToPurchaseMs: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1890,12 +1892,12 @@ export declare const orderSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1906,12 +1908,12 @@ export declare const orderSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1922,12 +1924,12 @@ export declare const orderSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1940,8 +1942,6 @@ export declare const orderSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -1950,19 +1950,21 @@ export declare const orderSchema: z.ZodObject<{
         timeToPurchaseMs?: number | undefined;
     }, {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1973,12 +1975,12 @@ export declare const orderSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -1989,12 +1991,12 @@ export declare const orderSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2005,12 +2007,12 @@ export declare const orderSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2023,8 +2025,6 @@ export declare const orderSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -2058,25 +2058,25 @@ export declare const orderSchema: z.ZodObject<{
             quantity: number;
         }[] | undefined;
     }[];
+    total: number;
     orderId: string;
+    shipping: number;
     shippingAddress: {
         name: string;
         email: string;
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
     };
     subtotal: number;
-    shipping: number;
     discount: number;
     tax: number;
-    total: number;
     sessionId?: string | undefined;
     shipments?: {
         items: {
@@ -2102,22 +2102,22 @@ export declare const orderSchema: z.ZodObject<{
                 quantity: number;
             }[] | undefined;
         }[];
+        shipping: number;
         shippingAddress: {
             name: string;
             email: string;
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
         };
         shipmentId: string;
         subtotal: number;
-        shipping: number;
         shippingServiceCode?: string | undefined;
         shippingRateId?: string | undefined;
         trackingNumber?: string | undefined;
@@ -2126,7 +2126,7 @@ export declare const orderSchema: z.ZodObject<{
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }[] | undefined;
     couponCode?: string | undefined;
@@ -2134,19 +2134,21 @@ export declare const orderSchema: z.ZodObject<{
     shippingRateId?: string | undefined;
     attribution?: {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2157,12 +2159,12 @@ export declare const orderSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2173,12 +2175,12 @@ export declare const orderSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2189,12 +2191,12 @@ export declare const orderSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2207,8 +2209,6 @@ export declare const orderSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -2222,7 +2222,7 @@ export declare const orderSchema: z.ZodObject<{
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     orderNumber?: string | undefined;
     userId?: string | undefined;
@@ -2295,6 +2295,7 @@ export declare const orderSchema: z.ZodObject<{
             quantity?: number | undefined;
         }[] | undefined;
     }[];
+    total: number;
     orderId: string;
     shippingAddress: {
         name: string;
@@ -2302,15 +2303,15 @@ export declare const orderSchema: z.ZodObject<{
         phone: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         line2?: string | undefined;
         senderName?: string | undefined;
         senderMessage?: string | undefined;
     };
     subtotal: number;
-    total: number;
+    shipping?: number | undefined;
     sessionId?: string | undefined;
     shipments?: {
         items: {
@@ -2342,25 +2343,25 @@ export declare const orderSchema: z.ZodObject<{
             phone: string;
             country: string;
             city: string;
+            postalCode: string;
             line1: string;
             state: string;
-            postalCode: string;
             line2?: string | undefined;
             senderName?: string | undefined;
             senderMessage?: string | undefined;
         };
         shipmentId: string;
         subtotal: number;
+        shipping?: number | undefined;
         shippingServiceCode?: string | undefined;
         shippingRateId?: string | undefined;
-        shipping?: number | undefined;
         trackingNumber?: string | undefined;
         carrier?: string | undefined;
         shippingServiceName?: string | undefined;
         estimatedLabelCost?: number | undefined;
         labelCost?: number | undefined;
         labelPdfUrl?: string | undefined;
-        labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+        labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
         labelError?: string | undefined;
     }[] | undefined;
     couponCode?: string | undefined;
@@ -2368,19 +2369,21 @@ export declare const orderSchema: z.ZodObject<{
     shippingRateId?: string | undefined;
     attribution?: {
         country?: string | undefined;
+        city?: string | undefined;
+        region?: string | undefined;
+        sessionId?: string | undefined;
         landingPage?: string | undefined;
         version?: 1 | undefined;
         visitorId?: string | undefined;
-        sessionId?: string | undefined;
         firstTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2391,12 +2394,12 @@ export declare const orderSchema: z.ZodObject<{
         lastTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2407,12 +2410,12 @@ export declare const orderSchema: z.ZodObject<{
         conversionTouch?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2423,12 +2426,12 @@ export declare const orderSchema: z.ZodObject<{
         assistedTouches?: {
             source: string;
             medium: string;
-            confidence: "unknown" | "high" | "medium" | "low";
+            confidence: "unknown" | "low" | "medium" | "high";
             at?: string | undefined;
-            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+            channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+            content?: string | undefined;
             campaign?: string | undefined;
             term?: string | undefined;
-            content?: string | undefined;
             referrer?: string | undefined;
             referrerDomain?: string | undefined;
             landingPage?: string | undefined;
@@ -2441,8 +2444,6 @@ export declare const orderSchema: z.ZodObject<{
         deviceType?: string | undefined;
         browser?: string | undefined;
         os?: string | undefined;
-        region?: string | undefined;
-        city?: string | undefined;
         isNewCustomer?: boolean | undefined;
         sessionsBeforePurchase?: number | undefined;
         pagesViewed?: number | undefined;
@@ -2450,14 +2451,13 @@ export declare const orderSchema: z.ZodObject<{
         lastVisitAt?: string | undefined;
         timeToPurchaseMs?: number | undefined;
     } | undefined;
-    shipping?: number | undefined;
     trackingNumber?: string | undefined;
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
     labelCost?: number | undefined;
     labelPdfUrl?: string | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     orderNumber?: string | undefined;
     userId?: string | undefined;
@@ -2549,7 +2549,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     note?: string | undefined;
     vendorFulfillments?: {
@@ -2569,7 +2569,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     carrier?: string | undefined;
     shippingServiceName?: string | undefined;
     estimatedLabelCost?: number | undefined;
-    labelStatus?: "none" | "queued" | "purchased" | "failed" | undefined;
+    labelStatus?: "failed" | "none" | "queued" | "purchased" | undefined;
     labelError?: string | undefined;
     note?: string | undefined;
     vendorFulfillments?: {

@@ -16,6 +16,10 @@ export declare const ORDER_STATUS_TRANSITIONS: Record<string, string[]>;
 export declare const EVENT_TYPES: {
     readonly PAGE_VIEW: "page_view";
     readonly PRODUCT_VIEW: "product_view";
+    /** Listing card entered the viewport (prefer rollup-only writes). */
+    readonly PRODUCT_IMPRESSION: "product_impression";
+    /** Listing card click through to PDP. */
+    readonly PRODUCT_CLICK: "product_click";
     readonly SEARCH: "search";
     readonly CART_ADD: "cart_add";
     readonly CART_REMOVE: "cart_remove";
@@ -25,6 +29,9 @@ export declare const EVENT_TYPES: {
     readonly SESSION_PING: "session_ping";
     readonly COUNTRY_CHANGED: "country_changed";
     readonly POSTAL_CODE_ENTERED: "postal_code_entered";
+    readonly CHAT_OPEN: "chat_open";
+    readonly CHAT_CLOSE: "chat_close";
+    readonly CHAT_MESSAGE: "chat_message";
 };
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */

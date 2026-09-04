@@ -36,7 +36,7 @@ export default function AboutPage() {
           <li>Domestic US fulfillment — ships from within the USA</li>
           <li>2–3 day express delivery to major US cities; 3–5 days to all 50 states</li>
           <li>Same-day dispatch on most orders before our daily cut-off</li>
-          <li>Free shipping on selected orders</li>
+          <li>Free shipping on orders of $49 or more</li>
         </ul>
         <h2 className="text-xl font-bold text-accent pt-4">What we offer</h2>
         <ul className="list-disc list-inside space-y-2">
@@ -62,7 +62,7 @@ export default function AboutPage() {
             rel="noopener noreferrer"
             className="text-nav hover:underline"
           >
-            WhatsApp ({site.whatsappDisplay})
+            WhatsApp
           </a>
           , email{" "}
           <a href={`mailto:${site.supportEmail}`} className="text-nav hover:underline">

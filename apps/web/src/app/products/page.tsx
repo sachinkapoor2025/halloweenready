@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { HomeProductCard } from "@/components/HomeProductCard";
+import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
 import { SearchTracker } from "@/components/SearchTracker";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import type { Product, Category } from "@halloweenready/shared";
 import { homeCategoryOrder, orderCategories } from "@/lib/site";
 import {
@@ -15,7 +16,7 @@ import {
   getCatalogProductsByCategory,
 } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants, cjStorefrontProductsPath } from "@halloweenready/shared";
+import { categorySlugVariants, cjStorefrontProductsPath, getInternalLinkGroups } from "@halloweenready/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -47,8 +48,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   if (params.search) {
     return pageMetadata({
       title: `Search: ${params.search} — Halloween USA`,
-      description: `Search results for "${params.search}" — Halloween products with USA delivery from HalloweenReady.`,
-      path: `/products?search=${encodeURIComponent(params.search)}`,
+      description: `Search results for "${params.search}" — Halloween products from HalloweenReady.`,
+      path: "/products",
+      noIndex: true,
     });
   }
   if (params.category && CATEGORY_SEO[params.category]) {
@@ -56,13 +58,22 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     return pageMetadata({
       title: seo.title,
       description: seo.description,
-      path: `/products?category=${params.category}`,
+      path: `/categories/${params.category}`,
+      noIndex: true,
+    });
+  }
+  if (params.category) {
+    return pageMetadata({
+      title: "Shop Halloween",
+      description: "Browse Halloween decorations, costumes, party supplies, and seasonal accessories.",
+      path: "/products",
+      noIndex: true,
     });
   }
   return pageMetadata({
     title: "Shop Halloween — Shop Halloween to USA Online",
     description:
-      "Browse Halloween decorations, costumes, party supplies, and seasonal accessories. Fast delivery to all 50 US states.",
+      "Browse Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
     path: "/products",
   });
 }
@@ -137,8 +148,8 @@ export default async function ProductsPage({ searchParams }: Props) {
       </div>
       {!search && !category && (
         <p className="text-slate-600 mb-8 max-w-2xl">
-          Browse Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery
-          across all 50 US states.
+          Browse Halloween decorations, costumes, party supplies, and seasonal accessories.
+          Open a product page for a shipping quote to your destination.
         </p>
       )}
 
@@ -176,8 +187,13 @@ export default async function ProductsPage({ searchParams }: Props) {
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-                  {section.products.map((p) => (
-                    <HomeProductCard key={p.slug} product={p} />
+                  {section.products.map((p, i) => (
+                    <TrackedProductCard
+                      key={p.slug}
+                      product={p}
+                      position={i + 1}
+                      listingPage={`category:${section.slug}`}
+                    />
                   ))}
                 </div>
               </section>
@@ -189,6 +205,12 @@ export default async function ProductsPage({ searchParams }: Props) {
           <ProductGrid products={products} />
         </Suspense>
       )}
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "listing" })}
+        title="Explore Halloween"
+        intro="Shop by category, destination, or planning guide."
+      />
     </div>
   );
 }

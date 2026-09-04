@@ -1,7 +1,6 @@
-import { api } from "@/lib/api";
 import { site, navItems, faqs } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 
@@ -10,13 +9,7 @@ import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-da
  * Extends /llms.txt with per-product name, price, category, description.
  */
 export async function GET() {
-  let products: Product[] = [];
-  try {
-    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-    products = data.products;
-  } catch {
-    products = [];
-  }
+  const products = await loadStorefrontProducts();
 
   const categories = navItems
     .filter((n): n is typeof n & { category: string } => "category" in n)
@@ -102,7 +95,7 @@ ${faqList}
 
 ## Contact
 
-Email: ${site.supportEmail} | WhatsApp: ${site.whatsappDisplay}
+Email: ${site.supportEmail} | WhatsApp: https://wa.me/${site.whatsapp}
 Press: ${siteUrl}/press
 `;
 

@@ -1,9 +1,9 @@
-import { site, navItems, faqs } from "@/lib/site";
+import { site, navItems, faqs, whatsappChatUrl } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
 
 const OFF_TOPIC_REPLY = `I'm here specifically to help with HalloweenReady — Halloween costumes, decor, candy, shipping, and orders. Is there something about Halloween shopping I can help with?
 
-Browse our catalog: [All Products](${siteUrl}/products) · WhatsApp: ${site.whatsappDisplay}`;
+Browse our catalog: [All Products](${siteUrl}/products) · [Chat on WhatsApp](${whatsappChatUrl()})`;
 
 const SITE_KEYWORDS =
   /\b(halloween|costume|decor|decorations|candy|treat|party|accessories|usa|us\b|shipping|deliver|order|payment|stripe|razorpay|product|categor|california|texas|new york|florida|checkout|cart|price|track|support|halloweenready|october|trick|treat|spooky|mask|pumpkin)\b/i;
@@ -18,19 +18,19 @@ function categoriesReply(): string {
 }
 
 function deliveryReply(): string {
-  return `We deliver to all 50 US states in 2–5 business days. Orders placed before the daily cut-off are dispatched the same day.\n\nYou can order from anywhere worldwide — enter your US shipping address at checkout and we ship domestically inside America.\n\nMore details: [Shipping & Delivery](${siteUrl}/shipping)`;
+  return `Shipping depends on the product and destination. Open a product page and request a quote — storefront quotes are available for the US, Canada, UK, Australia, and Germany.\n\nWe do not claim a local warehouse or a blanket 2–5 day nationwide SLA.\n\nMore details: [Shipping & Delivery](${siteUrl}/shipping)`;
 }
 
 function halloweenReply(): string {
-  return `Halloween 2026 is on October 31, 2026.\n\nWe recommend ordering costumes by October 20 and decor or candy by October 25 for guaranteed delivery.\n\nStart browsing: [Costumes](${siteUrl}/categories/costumes) · [Decorations](${siteUrl}/categories/decorations) · [Halloween guide](${siteUrl}/halloween-guide)`;
+  return `Halloween 2026 is on October 31, 2026.\n\nOrder earlier in October if you need transit buffer, and confirm the product-page shipping quote.\n\nStart browsing: [Costumes](${siteUrl}/categories/costumesandaccessories) · [Decorations](${siteUrl}/categories/home-decoration) · [Halloween guide](${siteUrl}/halloween-guide)`;
 }
 
 function orderWorldwideReply(): string {
-  return `Yes! Customers worldwide order from us every day.\n\nEnter your USA delivery address at checkout. We fulfill domestically inside America — fast, reliable, and no customs delays.\n\nReady to shop? [Browse all Halloween products](${siteUrl}/products)`;
+  return `Yes — customers can order from many countries. Confirm shipping on the product page. Quoted destinations today are the US, Canada, UK, Australia, and Germany.\n\nReady to shop? [Browse all Halloween products](${siteUrl}/products)`;
 }
 
 function paymentReply(): string {
-  return `We accept secure online checkout via:\n- Stripe (USD)\n- Razorpay (INR)\n\nPrices are shown in USD or INR at checkout. We never store card details.\n\nQuestions about a specific order? WhatsApp us at ${site.whatsappDisplay} or email ${site.supportEmail}.`;
+  return `We accept secure online checkout via:\n- Stripe (USD)\n- Razorpay (INR)\n\nPrices are shown in USD or INR at checkout. We never store card details.\n\nQuestions about a specific order? [Chat on WhatsApp](${whatsappChatUrl()}) or email ${site.supportEmail}.`;
 }
 
 function greetingReply(): string {
@@ -82,7 +82,7 @@ export function fallbackChatReply(userMessage: string): string {
   }
 
   if (/contact|support|email|whatsapp|phone|call|track|order status|refund|cancel/.test(q)) {
-    return `For order-specific help (tracking, changes, refunds), our team responds fastest on WhatsApp ${site.whatsappDisplay} or email ${site.supportEmail}.\n\nGeneral info: [FAQ](${siteUrl}/faq) · [Contact Us](${siteUrl}/contact)`;
+    return `For order-specific help (tracking, changes, refunds), our team responds fastest on [WhatsApp](${whatsappChatUrl()}) or email ${site.supportEmail}.\n\nGeneral info: [FAQ](${siteUrl}/faq) · [Contact Us](${siteUrl}/contact)`;
   }
 
   if (/costume|outfit|dress up/.test(q)) {
@@ -102,5 +102,5 @@ export function fallbackChatReply(userMessage: string): string {
     return `${faqAnswer}\n\nBrowse: [All Products](${siteUrl}/products) · [FAQ](${siteUrl}/faq)`;
   }
 
-  return `Thanks for your question! HalloweenReady delivers costumes, decor, and candy to all 50 US states in 2–5 business days.\n\n- [Shop all products](${siteUrl}/products)\n- [Shipping info](${siteUrl}/shipping)\n- [FAQ](${siteUrl}/faq)\n\nFor order help: WhatsApp ${site.whatsappDisplay} or ${site.supportEmail}`;
+  return `Thanks for your question! HalloweenReady delivers costumes, decor, and candy to all 50 US states in 2–5 business days.\n\n- [Shop all products](${siteUrl}/products)\n- [Shipping info](${siteUrl}/shipping)\n- [FAQ](${siteUrl}/faq)\n\nFor order help: [WhatsApp](${whatsappChatUrl()}) or ${site.supportEmail}`;
 }

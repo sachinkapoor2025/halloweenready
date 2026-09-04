@@ -3,6 +3,7 @@ import { site, navItems, cityLinks } from "@/lib/site";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { MarketContactBlock } from "@/components/MarketContactBlock";
+import { VERIFIED_COUNTRY_LINKS } from "@halloweenready/shared";
 
 const FACEBOOK_URL = "https://www.facebook.com/halloweenreadyofficial/";
 const INSTAGRAM_URL = "https://www.instagram.com/halloweenreadyofficial/";
@@ -18,7 +19,7 @@ export function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <SiteLogoLink size="desktop" className="mb-5" />
             <p className="text-white/80 leading-relaxed mb-4 max-w-xs">
-              Halloween costumes, decor, candy &amp; party supplies with fast delivery across all 50 US states.
+              Halloween costumes, decor, and party supplies. Check product pages for destination shipping quotes.
             </p>
             <div className="space-y-2 text-white/90">
               <MarketContactBlock />
@@ -105,6 +106,7 @@ export function Footer() {
           <div className="min-w-0">
             <p className="font-semibold text-white mb-3 sm:mb-4">Help &amp; Info</p>
             <ul className="space-y-2 text-white/80">
+              <li><Link href="/halloween" className="hover:text-white hover:underline">Halloween by location</Link></li>
               <li><Link href="/halloween-guide" className="hover:text-white hover:underline">Halloween Guide 2026</Link></li>
               <li><Link href="/blog" className="hover:text-white hover:underline">Blog &amp; Guides</Link></li>
               <li><Link href="/shipping" className="hover:text-white hover:underline">Shipping &amp; Delivery</Link></li>
@@ -121,19 +123,10 @@ export function Footer() {
         <div className="mt-8 pt-8 border-t border-white/15 text-sm">
           <p className="font-semibold text-white mb-3 sm:mb-4">Shop by country</p>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-white/80 mb-6">
-            {[
-              ["us", "United States"],
-              ["uk", "United Kingdom"],
-              ["ca", "Canada"],
-              ["au", "Australia"],
-              ["in", "India"],
-              ["ae", "United Arab Emirates"],
-              ["de", "Germany"],
-              ["fr", "France"],
-            ].map(([slug, label]) => (
-              <li key={slug}>
-                <Link href={`/countries/${slug}`} className="hover:text-white hover:underline">
-                  Halloween costumes {label}
+            {VERIFIED_COUNTRY_LINKS.map((c) => (
+              <li key={c.slug}>
+                <Link href={c.href} className="hover:text-white hover:underline">
+                  {c.label}
                 </Link>
               </li>
             ))}
@@ -165,7 +158,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-primary/95">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-white/50">
-          <p>© {new Date().getFullYear()} {site.name}.com. All rights reserved. Haunt the season — ships to all 50 US states.</p>
+          <p>© {new Date().getFullYear()} {site.name}.com. All rights reserved.</p>
           <p className="flex flex-wrap gap-x-3 gap-y-1">
             <Link href="/terms" className="hover:text-white underline underline-offset-2">
               Terms

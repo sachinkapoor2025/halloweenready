@@ -105,6 +105,23 @@ export const configKeys = {
   blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" as const },
   shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
   cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" as const },
+  homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" as const },
+  homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" as const },
+  chat: { pk: "CONFIG#CHAT", sk: "META" as const },
+};
+
+/** Admin CJ catalog import jobs (config table). */
+export const cjImportJobKeys = {
+  pk: (jobId: string) => `CJ_IMPORT#${jobId}`,
+  sk: () => "META" as const,
+  listPk: () => "ENTITY#CJ_IMPORT" as const,
+  listSk: (createdAt: string, jobId: string) => `${createdAt}#${jobId}`,
+};
+
+/** Lookup so we skip a CJ pid that is already on the store. */
+export const cjPidKeys = {
+  pk: (pid: string) => `CJPID#${pid}`,
+  sk: () => "META" as const,
 };
 
 /** Multi-warehouse / multi-vendor registry (config table). */

@@ -260,7 +260,7 @@ export const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
   offerEyebrow: "HALLOWEEN SPECIAL",
   offerHeadline: "Shop More, Save More",
   offerSubhead: "Stock up for Halloween night",
-  offerThreshold: "Cart Value Above $10.99",
+  offerThreshold: "Free shipping on carts of $49+",
   offerBody:
     "Celebrate Halloween with decorations, costumes, and party supplies — delivered across America. Add more to your cart and unlock seasonal savings.",
   ctaText: "Shop Now",
@@ -379,7 +379,7 @@ export const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
   ] satisfies CampaignBenefit[],
   midCtaHeading: "Don't Miss This Halloween Offer",
   midCtaBody:
-    "Shop more, save more when your cart is above $10.99. Get Halloween-ready — order today.",
+    "Shop more, save more when your cart is $49 or more — free shipping. Get Halloween-ready — order today.",
   midCtaText: "Shop Now",
   midCtaHref: SITE_SHORT,
   footerTagline: "Halloween Decorations & Party Supplies",
@@ -894,7 +894,7 @@ export function buildStartingPriceEmailHtml(
   });
 }
 
-/** Template 3 HTML — Shop More, Save More (cart above $10.99 / ₹1,046). */
+/** Template 3 HTML — Shop More, Save More (free shipping at $49+). */
 export function buildShopMoreSaveMoreEmailHtml(
   cfg: typeof SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = SHOP_MORE_SAVE_MORE_EMAIL_CONFIG
 ): string {

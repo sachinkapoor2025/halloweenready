@@ -1033,3 +1033,88 @@ export async function getAnalyticsInsights(event: APIGatewayProxyEventV2) {
     ordersByDay,
   });
 }
+
+export async function getChatAnalytics(event: APIGatewayProxyEventV2) {
+  if (!requireAdmin(event)) return forbidden();
+  const days = parseDays(event);
+  const rollups = await Promise.all(rangeDays(days).map((d) => getRollup(d)));
+
+  const totals = {
+    opens: 0,
+    closes: 0,
+    messages: 0,
+    searches: 0,
+    productClicks: 0,
+    addToCarts: 0,
+    impressions: 0,
+    orders: 0,
+    revenueUsd: 0,
+  };
+  const intents = new Map<string, number>();
+  const searches = new Map<string, { term: string; count: number; zero: number }>();
+  const unfulfilled = new Map<string, { term: string; count: number }>();
+  const products = new Map<string, { slug: string; impressions: number; clicks: number; adds: number }>();
+  const countries = new Map<string, number>();
+
+  for (const items of rollups) {
+    for (const item of items) {
+      const label = String(item.label ?? "");
+      if (item.kind === "type") {
+        if (label === EVENT_TYPES.CHAT_OPEN) totals.opens += Number(item.count ?? 0);
+        if (label === EVENT_TYPES.CHAT_CLOSE) totals.closes += Number(item.count ?? 0);
+        if (label === EVENT_TYPES.CHAT_MESSAGE) totals.messages += Number(item.count ?? 0);
+      }
+      if (item.kind === "chat_intent") {
+        intents.set(label, (intents.get(label) ?? 0) + Number(item.count ?? 0));
+      }
+      if (item.kind === "chat_search") {
+        const entry = searches.get(label) ?? { term: label, count: 0, zero: 0 };
+        entry.count += Number(item.count ?? 0);
+        entry.zero += Number(item.zero ?? 0);
+        searches.set(label, entry);
+        totals.searches += Number(item.count ?? 0);
+      }
+      if (item.kind === "chat_unfulfilled") {
+        const entry = unfulfilled.get(label) ?? { term: label, count: 0 };
+        entry.count += Number(item.count ?? 0);
+        unfulfilled.set(label, entry);
+      }
+      if (item.kind === "chat_product") {
+        const entry = products.get(label) ?? { slug: label, impressions: 0, clicks: 0, adds: 0 };
+        entry.impressions += Number(item.impressions ?? 0);
+        entry.clicks += Number(item.clicks ?? 0);
+        entry.adds += Number(item.adds ?? 0);
+        products.set(label, entry);
+        totals.impressions += Number(item.impressions ?? 0);
+        totals.productClicks += Number(item.clicks ?? 0);
+        totals.addToCarts += Number(item.adds ?? 0);
+      }
+      if (item.kind === "chat_country") {
+        countries.set(label, (countries.get(label) ?? 0) + Number(item.count ?? 0));
+      }
+      if (item.kind === "source" && label === "chat_assistant") {
+        totals.orders += Number(item.orders ?? 0);
+        totals.revenueUsd += Number(item.revenueUsd ?? 0);
+      }
+    }
+  }
+
+  const intentTotal = [...intents.values()].reduce((a, b) => a + b, 0) || 1;
+  return ok({
+    days,
+    totals,
+    conversionRate: totals.opens > 0 ? totals.orders / totals.opens : 0,
+    revenuePerSession: totals.opens > 0 ? totals.revenueUsd / totals.opens : 0,
+    intents: [...intents.entries()]
+      .map(([intent, count]) => ({ intent, count, share: count / intentTotal }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20),
+    searches: [...searches.values()].sort((a, b) => b.count - a.count).slice(0, 25),
+    unfulfilled: [...unfulfilled.values()].sort((a, b) => b.count - a.count).slice(0, 25),
+    products: [...products.values()].sort((a, b) => b.clicks + b.adds - (a.clicks + a.adds)).slice(0, 25),
+    countries: [...countries.entries()]
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20),
+  });
+}

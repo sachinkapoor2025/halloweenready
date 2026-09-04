@@ -1,4 +1,4 @@
-/** US delivery estimate: 5–7 business days from today. */
+/** Delivery estimate: 5–7 business days from today. */
 export function addBusinessDays(from: Date, days: number): Date {
   const date = new Date(from);
   let added = 0;
@@ -22,7 +22,7 @@ export function estimatedDeliveryRange(from = new Date()): { start: Date; end: D
 
 export function estimatedDeliveryLabel(from = new Date()): string {
   const { start, end } = estimatedDeliveryRange(from);
-  return `Arrives ${formatDeliveryDate(start)} – ${formatDeliveryDate(end)} (USA)`;
+  return `Arrives ${formatDeliveryDate(start)} – ${formatDeliveryDate(end)}`;
 }
 
 export function estimatedDeliveryShort(from = new Date()): string {

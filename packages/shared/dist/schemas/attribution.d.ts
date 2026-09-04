@@ -1,7 +1,7 @@
 import { z } from "zod";
 export declare const ATTRIBUTION_CONFIDENCE: readonly ["high", "medium", "low", "unknown"];
 export type AttributionConfidence = (typeof ATTRIBUTION_CONFIDENCE)[number];
-export declare const ATTRIBUTION_CHANNELS: readonly ["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"];
+export declare const ATTRIBUTION_CHANNELS: readonly ["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"];
 export type AttributionChannel = (typeof ATTRIBUTION_CHANNELS)[number];
 /** Normalized marketing touch (first / last / assisted). */
 export declare const trafficTouchSchema: z.ZodObject<{
@@ -16,19 +16,19 @@ export declare const trafficTouchSchema: z.ZodObject<{
     entryUrl: z.ZodOptional<z.ZodString>;
     /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
     clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-    channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+    channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
     confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
     confidenceReason: z.ZodOptional<z.ZodString>;
     at: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     source: string;
     medium: string;
-    confidence: "unknown" | "high" | "medium" | "low";
+    confidence: "unknown" | "low" | "medium" | "high";
     at?: string | undefined;
-    channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+    channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+    content?: string | undefined;
     campaign?: string | undefined;
     term?: string | undefined;
-    content?: string | undefined;
     referrer?: string | undefined;
     referrerDomain?: string | undefined;
     landingPage?: string | undefined;
@@ -38,12 +38,12 @@ export declare const trafficTouchSchema: z.ZodObject<{
 }, {
     source: string;
     medium: string;
-    confidence: "unknown" | "high" | "medium" | "low";
+    confidence: "unknown" | "low" | "medium" | "high";
     at?: string | undefined;
-    channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+    channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+    content?: string | undefined;
     campaign?: string | undefined;
     term?: string | undefined;
-    content?: string | undefined;
     referrer?: string | undefined;
     referrerDomain?: string | undefined;
     landingPage?: string | undefined;
@@ -72,19 +72,19 @@ export declare const orderAttributionSchema: z.ZodObject<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -94,12 +94,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -119,19 +119,19 @@ export declare const orderAttributionSchema: z.ZodObject<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -141,12 +141,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -166,19 +166,19 @@ export declare const orderAttributionSchema: z.ZodObject<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -188,12 +188,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -213,19 +213,19 @@ export declare const orderAttributionSchema: z.ZodObject<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -235,12 +235,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -265,19 +265,21 @@ export declare const orderAttributionSchema: z.ZodObject<{
     timeToPurchaseMs: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     country?: string | undefined;
+    city?: string | undefined;
+    region?: string | undefined;
+    sessionId?: string | undefined;
     landingPage?: string | undefined;
     version?: 1 | undefined;
     visitorId?: string | undefined;
-    sessionId?: string | undefined;
     firstTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -288,12 +290,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     lastTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -304,12 +306,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     conversionTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -320,12 +322,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     assistedTouches?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -338,8 +340,6 @@ export declare const orderAttributionSchema: z.ZodObject<{
     deviceType?: string | undefined;
     browser?: string | undefined;
     os?: string | undefined;
-    region?: string | undefined;
-    city?: string | undefined;
     isNewCustomer?: boolean | undefined;
     sessionsBeforePurchase?: number | undefined;
     pagesViewed?: number | undefined;
@@ -348,19 +348,21 @@ export declare const orderAttributionSchema: z.ZodObject<{
     timeToPurchaseMs?: number | undefined;
 }, {
     country?: string | undefined;
+    city?: string | undefined;
+    region?: string | undefined;
+    sessionId?: string | undefined;
     landingPage?: string | undefined;
     version?: 1 | undefined;
     visitorId?: string | undefined;
-    sessionId?: string | undefined;
     firstTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -371,12 +373,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     lastTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -387,12 +389,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     conversionTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -403,12 +405,12 @@ export declare const orderAttributionSchema: z.ZodObject<{
     assistedTouches?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -421,8 +423,6 @@ export declare const orderAttributionSchema: z.ZodObject<{
     deviceType?: string | undefined;
     browser?: string | undefined;
     os?: string | undefined;
-    region?: string | undefined;
-    city?: string | undefined;
     isNewCustomer?: boolean | undefined;
     sessionsBeforePurchase?: number | undefined;
     pagesViewed?: number | undefined;
@@ -448,19 +448,19 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -470,12 +470,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -495,19 +495,19 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -517,12 +517,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -542,19 +542,19 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -564,12 +564,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -589,19 +589,19 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
         entryUrl: z.ZodOptional<z.ZodString>;
         /** Platform click ids (gclid, msclkid, fbclid, ttclid, …) — values only. */
         clickIds: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "unknown"]>>;
+        channel: z.ZodOptional<z.ZodEnum<["paid_search", "organic_search", "paid_social", "organic_social", "referral", "email", "direct", "chat", "unknown"]>>;
         confidence: z.ZodEnum<["high", "medium", "low", "unknown"]>;
         confidenceReason: z.ZodOptional<z.ZodString>;
         at: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -611,12 +611,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     }, {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -643,19 +643,21 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     version: z.ZodOptional<z.ZodLiteral<1>>;
 }, "strip", z.ZodTypeAny, {
     country?: string | undefined;
+    city?: string | undefined;
+    region?: string | undefined;
+    sessionId?: string | undefined;
     landingPage?: string | undefined;
     version?: 1 | undefined;
     visitorId?: string | undefined;
-    sessionId?: string | undefined;
     firstTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -666,12 +668,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     lastTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -682,12 +684,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     conversionTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -698,12 +700,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     assistedTouches?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -716,8 +718,6 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     deviceType?: string | undefined;
     browser?: string | undefined;
     os?: string | undefined;
-    region?: string | undefined;
-    city?: string | undefined;
     isNewCustomer?: boolean | undefined;
     sessionsBeforePurchase?: number | undefined;
     pagesViewed?: number | undefined;
@@ -726,19 +726,21 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     timeToPurchaseMs?: number | undefined;
 }, {
     country?: string | undefined;
+    city?: string | undefined;
+    region?: string | undefined;
+    sessionId?: string | undefined;
     landingPage?: string | undefined;
     version?: 1 | undefined;
     visitorId?: string | undefined;
-    sessionId?: string | undefined;
     firstTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -749,12 +751,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     lastTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -765,12 +767,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     conversionTouch?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -781,12 +783,12 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     assistedTouches?: {
         source: string;
         medium: string;
-        confidence: "unknown" | "high" | "medium" | "low";
+        confidence: "unknown" | "low" | "medium" | "high";
         at?: string | undefined;
-        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | undefined;
+        channel?: "unknown" | "email" | "paid_search" | "organic_search" | "paid_social" | "organic_social" | "referral" | "direct" | "chat" | undefined;
+        content?: string | undefined;
         campaign?: string | undefined;
         term?: string | undefined;
-        content?: string | undefined;
         referrer?: string | undefined;
         referrerDomain?: string | undefined;
         landingPage?: string | undefined;
@@ -799,8 +801,6 @@ export declare const checkoutAttributionSchema: z.ZodObject<Omit<{
     deviceType?: string | undefined;
     browser?: string | undefined;
     os?: string | undefined;
-    region?: string | undefined;
-    city?: string | undefined;
     isNewCustomer?: boolean | undefined;
     sessionsBeforePurchase?: number | undefined;
     pagesViewed?: number | undefined;
@@ -824,29 +824,29 @@ export declare const orderRouteEventSchema: z.ZodObject<{
     confidenceReason: z.ZodOptional<z.ZodString>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
+    label: string;
     eventType: string;
     timestamp: string;
-    label: string;
     productSlug?: string | undefined;
     source?: string | undefined;
     medium?: string | undefined;
     campaign?: string | undefined;
     referrer?: string | undefined;
-    confidence?: "unknown" | "high" | "medium" | "low" | undefined;
+    confidence?: "unknown" | "low" | "medium" | "high" | undefined;
     confidenceReason?: string | undefined;
     eventId?: string | undefined;
     pageUrl?: string | undefined;
     metadata?: Record<string, string> | undefined;
 }, {
+    label: string;
     eventType: string;
     timestamp: string;
-    label: string;
     productSlug?: string | undefined;
     source?: string | undefined;
     medium?: string | undefined;
     campaign?: string | undefined;
     referrer?: string | undefined;
-    confidence?: "unknown" | "high" | "medium" | "low" | undefined;
+    confidence?: "unknown" | "low" | "medium" | "high" | undefined;
     confidenceReason?: string | undefined;
     eventId?: string | undefined;
     pageUrl?: string | undefined;

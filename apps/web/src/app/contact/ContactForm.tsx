@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site, whatsappChatUrl } from "@/lib/site";
 import { useSessionId } from "@/lib/session";
 import { api } from "@/lib/api";
+import { StoreLocations } from "@/components/StoreLocations";
 import { PhoneInput, buildPhoneValue } from "@/components/PhoneInput";
 import { DEFAULT_COUNTRY_ISO } from "@/lib/country-codes";
 
@@ -90,13 +91,16 @@ export function ContactForm() {
             rel="noopener noreferrer"
             className="text-nav hover:underline"
           >
-            {site.whatsappDisplay}
+            Chat on WhatsApp
           </a>
         </div>
         <div className="border border-slate-200 rounded-xl p-6">
           <h2 className="font-bold text-primary mb-2">Delivery</h2>
-          <p className="text-slate-600 text-sm">5–7 business days across all 50 US states. Same-day dispatch on most orders.</p>
+          <p className="text-slate-600 text-sm">Delivering in 5–7 days.</p>
         </div>
+      </div>
+      <div className="mb-10">
+        <StoreLocations variant="light" />
       </div>
 
       {sent ? (

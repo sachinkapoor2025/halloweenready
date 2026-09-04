@@ -36,15 +36,25 @@ export function GoogleAnalytics() {
   );
 }
 
-/** GTM, Microsoft Clarity, Bing UET. Meta Pixel is hardcoded once in the root layout. */
+/** GTM, Microsoft Clarity, Bing UET, Meta Pixel — all after first paint. */
 export function AnalyticsScripts() {
   const { gtmId, clarityId, bingUetId } = getAnalyticsIds();
   const bingUetReady = bingUetId && !bingUetId.includes("SAMPLE") && !bingUetId.includes("XXXX");
 
-  if (!gtmId && !clarityId && !bingUetReady) return null;
-
   return (
     <>
+      <Script id="meta-pixel" strategy="lazyOnload">{`
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '28254161914269673');
+        fbq('track', 'PageView');
+      `}</Script>
       {gtmId && (
         <Script id="gtm" strategy="lazyOnload">{`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

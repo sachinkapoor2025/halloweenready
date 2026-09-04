@@ -1,6 +1,9 @@
 name: Deploy
 
-# Trigger: push to main/dev/feature/* or manual workflow_dispatch.
+# Three jobs, same as before:
+#   build       — compile/typecheck shared + API + web
+#   deploy-api  — SAM (Lambda / API Gateway)
+#   deploy-web  — Next.js production build; AWS Amplify publishes the live site
 on:
   push:
     branches:
@@ -26,7 +29,8 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run build -w @halloweenready/shared
+      - run: npm run typecheck
 
   deploy-api:
     runs-on: ubuntu-latest
@@ -94,7 +98,7 @@ jobs:
           fi
           [ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ] && EXTRA="$EXTRA RazorpayWebhookSecret=${RAZORPAY_WEBHOOK_SECRET}"
           [ -n "${CJ_API_KEY:-}" ] && EXTRA="$EXTRA CjApiKey=${CJ_API_KEY}"
-          sam build && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
+          sam build --cached --parallel --config-env prod && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
             --parameter-overrides "\
           Environment=prod \
           EnableVendorApi=false \
@@ -158,7 +162,7 @@ jobs:
           NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID }}
           NEXT_PUBLIC_GA4_ID: ${{ secrets.NEXT_PUBLIC_GA4_ID }}
 
-      - name: Deploy note
+      - name: Amplify publishes the live site
         run: |
-          echo "Connect AWS Amplify to this repo — amplify.yml is configured."
-          echo "Set Amplify env: RAZOR_KEY_ID (same as GitHub secret) for Razorpay checkout."
+          echo "Next.js production build succeeded."
+          echo "AWS Amplify (amplify.yml) publishes halloweenready.com / the dev Amplify URL from this repo."

@@ -72,7 +72,7 @@ exports.DEFAULT_WAREHOUSES = [
         vendorId: constants_1.VENDOR_HALLOWEENREADY,
         addressLine1: "5 Exeter Road",
         city: "Southampton",
-        stateOrRegion: "England",
+        stateOrRegion: "Hampshire",
         postalCode: "SO18 2ED",
         countryCode: "GB",
         phone: "7710647388",
@@ -241,7 +241,10 @@ exports.DEFAULT_MARKETS = [
         postalLabel: "PIN code",
         defaultWarehouseId: exports.WAREHOUSE_IN_ID,
         allowInternationalFallback: false,
-        contact: contactFromWarehouse(inWh),
+        contact: {
+            ...contactFromWarehouse(inWh),
+            whatsapp: "919266467887",
+        },
         hreflang: "en-IN",
     },
     {

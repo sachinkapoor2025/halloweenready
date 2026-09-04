@@ -17,22 +17,70 @@ export const cjVariantSchema = z.object({
   heightIn: z.number().positive().optional(),
 });
 
+/** Admin catalog page size (CJ listV2 is fetched in 100-row pages and stitched). */
+export const CJ_ADMIN_CATALOG_PAGE_SIZE = 500;
+export const CJ_LIST_V2_PAGE_SIZE = 100;
+
 export const cjSearchQuerySchema = z.object({
   keyWord: z.string().trim().max(200).optional(),
   page: z.coerce.number().int().min(1).max(1000).optional(),
-  size: z.coerce.number().int().min(1).max(100).optional(),
+  size: z.coerce.number().int().min(1).max(CJ_ADMIN_CATALOG_PAGE_SIZE).optional(),
   categoryId: z.string().max(200).optional(),
   countryCode: z.string().trim().length(2).optional(),
 });
 
-/** One API Gateway call stays under ~29s (CJ is 1 QPS; import also queries each pid). */
-export const CJ_IMPORT_MAX_PIDS = 6;
+/** Queue size for async import (worker Lambda, 15 min). */
+export const CJ_IMPORT_MAX_PIDS = 500;
+
+export const cjImportLineStatusSchema = z.enum([
+  "pending",
+  "in_progress",
+  "complete",
+  "skipped",
+  "failed",
+]);
+export type CjImportLineStatus = z.infer<typeof cjImportLineStatusSchema>;
+
+export const cjImportJobStatusSchema = z.enum(["pending", "in_progress", "complete", "failed"]);
+export type CjImportJobStatus = z.infer<typeof cjImportJobStatusSchema>;
+
+export const cjImportJobLineSchema = z.object({
+  pid: z.string().min(1),
+  name: z.string().optional(),
+  status: cjImportLineStatusSchema,
+  slug: z.string().optional(),
+  error: z.string().optional(),
+});
+export type CjImportJobLine = z.infer<typeof cjImportJobLineSchema>;
+
+export const cjImportJobSchema = z.object({
+  jobId: z.string().min(1),
+  status: cjImportJobStatusSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  startedAt: z.string().optional(),
+  finishedAt: z.string().optional(),
+  createdBy: z.string().optional(),
+  source: z.enum(["selected", "halloween"]).optional(),
+  keyword: z.string().optional(),
+  items: z.array(cjImportJobLineSchema),
+  counts: z.object({
+    total: z.number().int().min(0),
+    pending: z.number().int().min(0),
+    inProgress: z.number().int().min(0),
+    complete: z.number().int().min(0),
+    skipped: z.number().int().min(0),
+    failed: z.number().int().min(0),
+  }),
+});
+export type CjImportJob = z.infer<typeof cjImportJobSchema>;
 
 export const cjImportProductsSchema = z.object({
   pids: z
     .array(z.string().min(1).max(80))
     .min(1)
     .max(CJ_IMPORT_MAX_PIDS, `Import at most ${CJ_IMPORT_MAX_PIDS} products per request`),
+  names: z.record(z.string(), z.string()).optional(),
   categorySlug: z.string().min(1).max(80).optional(),
   published: z.boolean().optional(),
   addToMyProduct: z.boolean().optional(),
@@ -40,7 +88,7 @@ export const cjImportProductsSchema = z.object({
 
 export const cjImportHalloweenSchema = z.object({
   page: z.coerce.number().int().min(1).max(1000).default(1),
-  size: z.coerce.number().int().min(1).max(20).default(10),
+  size: z.coerce.number().int().min(1).max(CJ_ADMIN_CATALOG_PAGE_SIZE).default(CJ_ADMIN_CATALOG_PAGE_SIZE),
   categorySlug: z.string().min(1).max(80).optional(),
   published: z.boolean().optional(),
   addToMyProduct: z.boolean().optional(),

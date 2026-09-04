@@ -123,6 +123,7 @@ ${categoryTable}
 - **Home:** ${siteUrl}/
 - **Shop all products:** ${siteUrl}/products
 - **Halloween guide:** ${siteUrl}/halloween-guide
+- **Halloween by location:** ${siteUrl}/halloween
 - **Halloween events (informational — no tickets sold):** ${siteUrl}${seoEventsHub.hubPath}
 - **Shipping & delivery:** ${siteUrl}/shipping
 - **FAQ:** ${siteUrl}/faq
@@ -162,14 +163,17 @@ ${faqList}
 - **Dispatch:** ${deliveryClaims.dispatch}
 - **Shipping:** ${deliveryClaims.shipping}
 - **Payment:** Stripe (USD), Razorpay (INR)
-- **Support:** ${site.supportEmail} | WhatsApp ${site.whatsappDisplay}
+- **Support:** ${site.supportEmail} | [WhatsApp](https://wa.me/${site.whatsapp})
 
 ---
 
 ## Contact
 
 - Email: ${site.supportEmail}
+- WhatsApp: https://wa.me/${site.whatsapp}
 - Website: ${siteUrl}
+- UK store: 5 Exeter Road, Southampton, Hampshire SO18 2ED, United Kingdom
+- India store: House No. 392, Mohalla Sodian Wala, Ferozepur City, Punjab 152002, India
 
 ---
 

@@ -1,5 +1,5 @@
 import { cjStorefrontProductPath, cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
-import { getCdnUrl } from "./env";
+import { getCdnUrl, isNextProductionBuild } from "./env";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
 import {
@@ -27,9 +27,14 @@ function toListingImageUrl(url: string): string {
 function withDisplayImages(product: Product): Product {
   const cleaned = filterDisplayableProductImages(product.images);
   const resolved = cleaned.map(toListingImageUrl).filter(Boolean);
+  const cjVariants = product.cjVariants?.map((variant) => ({
+    ...variant,
+    ...(variant.image ? { image: toListingImageUrl(variant.image) || variant.image } : {}),
+  }));
   return {
     ...product,
     images: resolved,
+    ...(cjVariants ? { cjVariants } : {}),
   };
 }
 
@@ -73,4 +78,32 @@ export function getStaticProductSlugs(): string[] {
 /** Apply display image cleanup for listing pages that load products from the API. */
 export function withListingImages(products: Product[]): Product[] {
   return products.map(withDisplayImages);
+}
+
+let storefrontProductsPromise: Promise<Product[]> | null = null;
+
+/**
+ * Shared catalog for SSG listing pages (cities, halloween geo, sitemap).
+ * During `next build`, skip the live API — hundreds of pages fetching `/cj/products`
+ * stampede Lambda and exceed Next.js's 60s static page timeout.
+ */
+export function loadStorefrontProducts(): Promise<Product[]> {
+  if (!storefrontProductsPromise) {
+    storefrontProductsPromise = loadStorefrontProductsOnce();
+  }
+  return storefrontProductsPromise;
+}
+
+async function loadStorefrontProductsOnce(): Promise<Product[]> {
+  const fromCatalog = () => withListingImages(getCatalogProducts());
+  if (isNextProductionBuild()) {
+    return fromCatalog();
+  }
+  try {
+    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath(), { revalidate: 3600 });
+    if (data.products.length > 0) return withListingImages(data.products);
+  } catch {
+    // fall through
+  }
+  return fromCatalog();
 }

@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site, cityLinks } from "@/lib/site";
+import { site } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import { deliveryClaims, halloween2026Deadlines, HALLOWEEN_2026_DATE } from "@/lib/ai-recommendation";
+import { getInternalLinkGroups, PRIORITY_CITY_LINKS } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Shipping & Delivery — USA Domestic Shipping",
+  title: "Halloween Shipping & Delivery — Destination Quotes",
   description:
-    "HalloweenReady ships domestically within the USA. 2–3 day express to major metros, 3–5 days nationwide. Order by October 25 for Halloween 2026 delivery.",
+    "HalloweenReady product shipping depends on destination and inventory. Check the freight quote on each product page. Storefront quotes are available for the US, Canada, UK, Australia, and Germany.",
   path: "/shipping",
 });
 
@@ -19,29 +21,22 @@ export default function ShippingPage() {
       <h1 className="text-3xl font-bold text-accent mb-6">Shipping & Delivery</h1>
       <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
-          {site.name} delivers Halloween costumes, decorations, candy, and tableware to{" "}
-          <strong>all 50 United States</strong> from <strong>domestic US fulfillment</strong>. Your order ships inside
-          America, so you are not waiting on international customs.
+          {site.name} sells Halloween costumes, decorations, and party supplies.{" "}
+          <strong>Delivering in 5–7 days.</strong>
         </p>
-        <h2 className="text-xl font-bold text-accent">Delivery times</h2>
+        <h2 className="text-xl font-bold text-accent">How to check delivery</h2>
         <ul className="list-disc list-inside space-y-2">
           <li>
-            <strong>Express:</strong> {deliveryClaims.express}
+            <strong>Delivery:</strong> {deliveryClaims.standard}
           </li>
           <li>
-            <strong>Nationwide:</strong> {deliveryClaims.standard}
-          </li>
-          <li>
-            <strong>Dispatch:</strong> {deliveryClaims.dispatch}
-          </li>
-          <li>
-            <strong>Shipping:</strong> {deliveryClaims.shipping}
+            <strong>Checkout:</strong> {deliveryClaims.shipping}
           </li>
         </ul>
-        <h2 className="text-xl font-bold text-accent">Halloween 2026 order deadlines</h2>
+        <h2 className="text-xl font-bold text-accent">Halloween 2026 planning window</h2>
         <p>
-          Halloween 2026 is <strong>{HALLOWEEN_2026_DATE}</strong>. Use the dates below as a planning window, and
-          see the{" "}
+          Halloween 2026 is <strong>{HALLOWEEN_2026_DATE}</strong>. Use the dates below as a planning window, then
+          confirm transit on the product page. See the{" "}
           <Link href="/halloween-guide" className="text-nav hover:underline">
             Halloween planning guide
           </Link>{" "}
@@ -67,36 +62,63 @@ export default function ShippingPage() {
             </tbody>
           </table>
         </div>
-        <h2 className="text-xl font-bold text-accent">Ordering from outside the USA</h2>
+        <h2 className="text-xl font-bold text-accent">International destinations</h2>
         <p>
-          Customers in India, United Kingdom, Canada, Australia, and worldwide can order on {site.domain}. Enter the{" "}
-          <strong>US delivery address</strong> at checkout — we fulfill and ship domestically within America.
+          Country pages for the{" "}
+          <Link href="/countries/us" className="text-nav hover:underline">
+            USA
+          </Link>
+          ,{" "}
+          <Link href="/countries/uk" className="text-nav hover:underline">
+            UK
+          </Link>
+          ,{" "}
+          <Link href="/countries/ca" className="text-nav hover:underline">
+            Canada
+          </Link>
+          ,{" "}
+          <Link href="/countries/au" className="text-nav hover:underline">
+            Australia
+          </Link>
+          , and{" "}
+          <Link href="/countries/de" className="text-nav hover:underline">
+            Germany
+          </Link>{" "}
+          explain shopping context. A live freight quote on the product page is the source of truth — not a
+          worldwide shipping claim.
         </p>
         <h2 className="text-xl font-bold text-accent">Packaging</h2>
         <p>
-          Costumes are folded and bagged with care. Decor items are packed to limit transit damage. Candy is sealed
-          for freshness. Browse{" "}
+          Costumes are packed for transit. Decor items are packed to limit damage. Browse{" "}
           <Link href="/products" className="text-nav hover:underline">
             all Halloween products
           </Link>{" "}
-          if you want to combine categories in one shipment.
+          if you want to combine categories.
         </p>
-        <h2 className="text-xl font-bold text-accent">Cities we deliver to</h2>
-        <p>Popular delivery destinations include:</p>
+        <h2 className="text-xl font-bold text-accent">Popular city pages</h2>
+        <p>Shopping context pages (confirm shipping on the product):</p>
         <ul className="flex flex-wrap gap-2">
-          {cityLinks.map((c) => (
-            <li key={c.slug}>
-              <Link href={`/cities/${c.slug}`} className="text-nav hover:underline text-sm">
-                {c.label}
+          {PRIORITY_CITY_LINKS.map((c) => (
+            <li key={c.href}>
+              <Link href={c.href} className="text-nav hover:underline text-sm">
+                {c.label.replace("Halloween in ", "")}
               </Link>
             </li>
           ))}
         </ul>
         <p className="pt-4">
           Need help with an order?{" "}
-          <Link href="/contact" className="text-nav hover:underline">Contact us</Link>.
+          <Link href="/contact" className="text-nav hover:underline">
+            Contact us
+          </Link>
+          .
         </p>
       </div>
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "shipping" })}
+        title="Related Halloween pages"
+        intro="Continue to destination pages, categories, and the Halloween guide."
+      />
     </div>
   );
 }

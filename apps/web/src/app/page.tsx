@@ -3,16 +3,20 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { CustomerReviews } from "@/components/CustomerReviews";
+import { HomepageCatalog } from "@/components/HomepageCatalog";
 import { HomeProductCard } from "@/components/HomeProductCard";
+import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { FastSellingSection } from "@/components/FastSellingSection";
 import { HomeSeoSection } from "@/components/HomeSeoSection";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustStrip } from "@/components/TrustStrip";
 import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
 import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants, cjStorefrontProductsPath } from "@halloweenready/shared";
+import { categorySlugVariants, cjStorefrontProductsPath, getInternalLinkGroups } from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
@@ -27,6 +31,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   let products: Product[] = [];
   let categories: Category[] = [];
+  let homepage: { products: Product[]; snapshot: { generatedAt: string; poolSize: number; groups: { id: string; title: string; slugs: string[] }[]; ranked: string[] } } | null = null;
 
   try {
     const [productsData, categoriesData] = await Promise.all([
@@ -38,6 +43,23 @@ export default async function HomePage() {
   } catch {
     products = [];
     categories = [];
+  }
+
+  try {
+    homepage = await api<{
+      products: Product[];
+      snapshot: {
+        generatedAt: string;
+        poolSize: number;
+        groups: { id: string; title: string; slugs: string[] }[];
+        ranked: string[];
+      };
+    }>("/homepage/products");
+    if (homepage?.products?.length) {
+      homepage = { ...homepage, products: withListingImages(homepage.products) };
+    }
+  } catch {
+    homepage = null;
   }
 
   // Live API is the catalog. Bundled JSON is offline fallback only — overlaying it
@@ -63,9 +85,15 @@ export default async function HomePage() {
       <JsonLd data={[faqJsonLd(faqs), howToShopHalloweenJsonLd()]} />
       <BannerCarousel banners={homeBanners} />
       <TrustStrip />
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <AssistantPromo variant="home" />
+      </div>
 
       <FastSellingSection products={products} />
 
+      {homepage?.products.length ? (
+        <HomepageCatalog products={homepage.products} snapshot={homepage.snapshot} />
+      ) : products.length > 0 ? (
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-5">
           <h2 className="halloween-heading text-xl md:text-2xl">
@@ -75,19 +103,18 @@ export default async function HomePage() {
             View All →
           </Link>
         </div>
-        {products.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
             {products.slice(0, 20).map((p) => (
               <HomeProductCard key={p.slug} product={p} />
             ))}
           </div>
-        ) : (
-          <p className="text-center text-slate-500 py-12">
+      </section>
+      ) : (
+        <p className="text-center text-slate-500 py-12">
             Products could not be loaded. Confirm Amplify env var{" "}
             <code className="bg-slate-100 px-1 rounded text-slate-800">NEXT_PUBLIC_API_URL</code> is set and redeploy.
           </p>
-        )}
-      </section>
+      )}
 
       {productsByCategory.map((section) =>
         section.products.length > 0 ? (
@@ -99,8 +126,13 @@ export default async function HomePage() {
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-              {section.products.slice(0, 10).map((p) => (
-                <HomeProductCard key={p.slug} product={p} />
+              {section.products.slice(0, 10).map((p, i) => (
+                <TrackedProductCard
+                  key={p.slug}
+                  product={p}
+                  position={i + 1}
+                  listingPage={`category:${section.slug}`}
+                />
               ))}
             </div>
           </section>
@@ -112,6 +144,14 @@ export default async function HomePage() {
       <CustomerReviews />
 
       <HomeSeoSection />
+
+      <section className="max-w-7xl mx-auto px-4">
+        <InternalLinksSection
+          groups={getInternalLinkGroups({ type: "home" })}
+          title="Explore HalloweenReady"
+          intro="Shop by category and destination, or read the Halloween planning guides."
+        />
+      </section>
 
       <section className="max-w-7xl mx-auto px-4 py-12 bg-white">
         <h2 className="text-2xl font-bold text-primary text-center mb-2">FAQ</h2>
