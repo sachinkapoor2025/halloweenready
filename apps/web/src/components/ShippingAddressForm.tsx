@@ -111,9 +111,6 @@ export function ShippingAddressForm({
       country: address.country || "US",
       phone: address.phone,
       email: address.email,
-      // Keep sister/sender details across address picks
-      senderName: value.senderName || address.senderName,
-      senderMessage: value.senderMessage || address.senderMessage,
     });
   };
 
@@ -123,8 +120,6 @@ export function ShippingAddressForm({
       ...emptyShippingAddress(),
       email: value.email,
       phone: value.phone,
-      senderName: value.senderName,
-      senderMessage: value.senderMessage,
     });
   };
 
@@ -221,35 +216,10 @@ export function ShippingAddressForm({
         )}
 
         <LeadCaptureInput
-            label="Sender name (your name)"
-            value={value.senderName ?? ""}
-            onChange={(e) => update("senderName", e.target.value)}
-            placeholder="So the recipient knows who sent this order"
-            required
-            autoComplete="nickname"
-          />
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Message for your brother
-            </label>
-            <textarea
-              value={value.senderMessage ?? ""}
-              onChange={(e) => update("senderMessage", e.target.value)}
-              required
-              rows={4}
-              maxLength={500}
-              placeholder="Write a Halloween note — it will appear on the shipping label"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent text-sm leading-relaxed"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Printed on the shipping label · {(value.senderMessage ?? "").length}/500
-            </p>
-          </div>
-          <LeadCaptureInput
-            label="Recipient name"
+            label="Your name"
             value={value.name}
             onChange={(e) => update("name", e.target.value)}
-            placeholder="Brother's full name"
+            placeholder="Full name"
             required
             autoComplete="name"
           />

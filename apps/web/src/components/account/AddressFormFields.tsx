@@ -23,7 +23,7 @@ export function AddressFormFields({
   return (
     <div className="space-y-4">
       <LeadCaptureInput
-        label="Recipient name"
+        label="Your name"
         value={value.name}
         onChange={(e) => update("name", e.target.value)}
         required

@@ -37,7 +37,7 @@ type Props = {
   title?: string;
 };
 
-/** Compact recipient-only address (sender fields come from the primary form). */
+/** Compact address for a split-shipment line. */
 export function RecipientAddressFields({
   value,
   onChange,
@@ -65,10 +65,10 @@ export function RecipientAddressFields({
     <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-3">
       <p className="text-sm font-semibold text-slate-800">{title}</p>
       <LeadCaptureInput
-        label="Recipient name"
+        label="Your name"
         value={value.name}
         onChange={(e) => update("name", e.target.value)}
-        placeholder="Brother's full name"
+        placeholder="Full name"
         required
         autoComplete="name"
       />
