@@ -96,6 +96,12 @@ const routes: Route[] = [
   { method: "PUT", pattern: /^\/products\/([^/]+)$/, handler: products.updateProduct, params: ["slug"] },
   { method: "DELETE", pattern: /^\/products\/([^/]+)$/, handler: products.deleteProduct, params: ["slug"] },
   { method: "GET", pattern: /^\/admin\/products$/, handler: products.listAdminProducts },
+  {
+    method: "GET",
+    pattern: /^\/admin\/products\/([^/]+)$/,
+    handler: products.getAdminProduct,
+    params: ["slug"],
+  },
   { method: "POST", pattern: /^\/admin\/products\/purge-samples$/, handler: products.purgeSampleCatalogProducts },
   { method: "POST", pattern: /^\/products\/bulk$/, handler: products.bulkUploadProducts },
   { method: "GET", pattern: /^\/categories$/, handler: categories.listCategories },

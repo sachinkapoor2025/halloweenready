@@ -295,7 +295,7 @@ export default function AdminCjDropshippingPage() {
       const purged = await api<{ deleted: number }>("/admin/products/purge-samples", { method: "POST" }).catch(
         () => ({ deleted: 0 })
       );
-      const data = await api<{ products: Product[] }>("/admin/products");
+      const data = await api<{ products: Product[] }>("/admin/products?view=pricing");
       setCostRows(data.products.filter(isCjDropshippingProduct));
       if (purged.deleted > 0) {
         setMessage(`Removed ${purged.deleted} sample product(s). Storefront now shows CJ imports only.`);
