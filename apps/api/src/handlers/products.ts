@@ -44,14 +44,33 @@ function forStorefrontListing(product: Product): Product {
   };
 }
 
+/** Table row only — never spread the DynamoDB item (GSI keys, SEO, variants blow past API Gateway’s 6MB cap). */
 function forAdminList(product: Product): Product {
   const images = (product.images ?? []).slice(0, 2).map((url) => resolveProductImageUrl(url));
   return {
-    ...product,
+    slug: product.slug,
+    name: product.name,
     description: (product.description ?? "").slice(0, 280),
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    currency: product.currency ?? "USD",
+    categorySlug: product.categorySlug,
     images,
-    cjVariants: undefined,
-  };
+    sku: product.sku,
+    inventory: product.inventory,
+    tags: product.tags?.slice(0, 12),
+    published: product.published,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    vendorSlug: product.vendorSlug,
+    vendorCost: product.vendorCost,
+    cjPid: product.cjPid,
+    unitsSold: product.unitsSold,
+    weightOz: product.weightOz,
+    lengthIn: product.lengthIn,
+    widthIn: product.widthIn,
+    heightIn: product.heightIn,
+  } as Product;
 }
 
 function isKidsComboProduct(product: Product): boolean {
@@ -407,11 +426,10 @@ export async function listAdminProducts(event: APIGatewayProxyEventV2) {
   const actor = await resolveStaffActor(event);
   if (!actor) return forbidden();
 
+  const ts = (p: Product) => Date.parse(p.updatedAt ?? p.createdAt ?? "") || 0;
   const items = (await scanAllProducts())
     .filter((p) => productVisibleToActor(p, actor))
-    .sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
+    .sort((a, b) => ts(b) - ts(a));
   return ok({ products: items.map(forAdminList), total: items.length });
 }
 

@@ -52,24 +52,18 @@ export default function AdminProductsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    apiClient<{ deleted: number }>("/admin/products/purge-samples", { method: "POST" })
-      .then((purged) => {
-        if (purged.deleted > 0) {
-          setMessage(`Removed ${purged.deleted} sample product(s). Only CJ imports remain.`);
-        }
-      })
-      .catch(() => undefined)
-      .then(() =>
-        Promise.all([
-          apiClient<{ products: Product[] }>("/admin/products"),
-          apiClient<{ categories: { slug: string; name: string }[] }>("/categories"),
-        ])
-      )
+    Promise.all([
+      apiClient<{ products: Product[]; total?: number }>("/admin/products"),
+      apiClient<{ categories: { slug: string; name: string }[] }>("/categories"),
+    ])
       .then(([p, c]) => {
-        setProducts(p.products);
-        setCategories(c.categories);
+        setProducts(p.products ?? []);
+        setCategories(c.categories ?? []);
       })
-      .catch(() => setProducts([]))
+      .catch((err) => {
+        setProducts([]);
+        setMessage(err instanceof Error ? err.message : "Could not load products.");
+      })
       .finally(() => setLoading(false));
   }, [apiClient]);
 
