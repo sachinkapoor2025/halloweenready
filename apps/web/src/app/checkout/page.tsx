@@ -51,6 +51,7 @@ function CheckoutPageInner() {
   const { cart, loading: cartLoading, refresh } = useCart();
   const { user, token } = useAuth();
   const { format, displayCurrency, convert, usdInrRate } = useCurrency();
+  const payCurrency: "USD" | "INR" = displayCurrency === "INR" ? "INR" : "USD";
   const sessionId = useSessionId();
   const captureLeadDebounced = useDebouncedLeadCapture(sessionId);
   const captureLeadNow = useLeadCapture(sessionId);
@@ -374,8 +375,8 @@ function CheckoutPageInner() {
         token,
         body: JSON.stringify({
           paymentMethod,
-          checkoutCurrency: displayCurrency,
-          ...(displayCurrency === "INR" ? { usdInrRate } : {}),
+          checkoutCurrency: payCurrency,
+          ...(payCurrency === "INR" ? { usdInrRate } : {}),
           shippingAddress: payload,
           ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
         }),
@@ -534,7 +535,7 @@ function CheckoutPageInner() {
                   setPaymentMethod(method);
                   setStripeCheckout(null);
                 }}
-                checkoutCurrency={displayCurrency}
+                checkoutCurrency={payCurrency}
               />
             </div>
 
