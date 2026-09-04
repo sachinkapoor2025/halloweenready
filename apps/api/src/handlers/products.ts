@@ -34,6 +34,99 @@ function forStorefront(product: Product): Product {
   return { ...stripped, allowsAddons } as Product;
 }
 
+/** Listing payloads must stay under API Gateway’s 6MB cap once the catalog is thousands of SKUs. */
+function forStorefrontListing(product: Product): Product {
+  const full = forStorefront(product);
+  return {
+    ...full,
+    description: (full.description ?? "").slice(0, 280),
+    images: (full.images ?? []).slice(0, 2),
+  };
+}
+
+/** Table row only — never spread the DynamoDB item (GSI keys, SEO, variants blow past Lambda’s 6MB cap). */
+function forAdminList(product: Product): Product {
+  const images = (product.images ?? []).slice(0, 2).map((url) => resolveProductImageUrl(url));
+  return {
+    slug: product.slug,
+    name: product.name,
+    description: "",
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    currency: product.currency ?? "USD",
+    categorySlug: product.categorySlug,
+    images,
+    tags: [],
+    sku: product.sku,
+    inventory: product.inventory,
+    published: product.published,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    vendorSlug: product.vendorSlug,
+    vendorCost: product.vendorCost,
+    cjPid: product.cjPid,
+    unitsSold: product.unitsSold,
+    weightOz: product.weightOz,
+    lengthIn: product.lengthIn,
+    widthIn: product.widthIn,
+    heightIn: product.heightIn,
+  } as Product;
+}
+
+function forAdminPricing(product: Product): Product {
+  return {
+    slug: product.slug,
+    name: product.name,
+    description: "",
+    price: product.price,
+    currency: product.currency ?? "USD",
+    categorySlug: product.categorySlug,
+    images: [] as string[],
+    tags: [] as string[],
+    sku: product.sku,
+    inventory: product.inventory,
+    published: product.published,
+    vendorSlug: product.vendorSlug,
+    vendorCost: product.vendorCost,
+    cjPid: product.cjPid,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  } as Product;
+}
+
+const ADMIN_LIST_PROJECTION =
+  "slug, #n, price, compareAtPrice, currency, categorySlug, images, sku, inventory, published, createdAt, updatedAt, vendorSlug, vendorCost, cjPid, unitsSold, weightOz, lengthIn, widthIn, heightIn";
+
+const ADMIN_LIST_CACHE_TTL_MS = 60_000;
+let adminListCache: { at: number; items: Product[] } | null = null;
+
+async function scanAdminProductRows(): Promise<Product[]> {
+  const nowMs = Date.now();
+  if (adminListCache && nowMs - adminListCache.at < ADMIN_LIST_CACHE_TTL_MS) {
+    return adminListCache.items;
+  }
+
+  const items: Product[] = [];
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PRODUCTS_TABLE,
+        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+        ProjectionExpression: ADMIN_LIST_PROJECTION,
+        ExpressionAttributeNames: { "#n": "name" },
+        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+        ExclusiveStartKey,
+      })
+    );
+    if (result.Items?.length) items.push(...(result.Items as Product[]));
+    ExclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+
+  adminListCache = { at: nowMs, items };
+  return items;
+}
+
 function isKidsComboProduct(product: Product): boolean {
   return false; // halloweenready: no usarakhi kids-rakhi combos
 
@@ -119,6 +212,7 @@ export async function listCatalogProducts(): Promise<Product[]> {
 /** Call after product create/update/delete so storefront list stays fresh. */
 export function invalidateProductListCache(categorySlug?: string) {
   productListCache = null;
+  adminListCache = null;
   productGetCache.clear();
   if (categorySlug) categoryProductCache.delete(categorySlug);
   else categoryProductCache.clear();
@@ -175,8 +269,8 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   }
 
   // Short CDN TTL only — listing + PDP must not drift for minutes after price edits.
-  if (search) return ok({ products: items.map(forStorefront) });
-  return okCached({ products: items.map(forStorefront) }, 10);
+  if (search) return ok({ products: items.map(forStorefrontListing) });
+  return okCached({ products: items.map(forStorefrontListing) }, 10);
 }
 
 export async function getProduct(event: APIGatewayProxyEventV2) {
@@ -382,25 +476,60 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
   return ok({ product: updated });
 }
 
-/** Admin: list all products including unpublished. */
+/** Admin: list products including unpublished. Never return the full catalog in one payload (Lambda 6MB cap). */
 export async function listAdminProducts(event: APIGatewayProxyEventV2) {
   const actor = await resolveStaffActor(event);
   if (!actor) return forbidden();
 
+  const q = event.queryStringParameters ?? {};
+  const view = q.view === "pricing" ? "pricing" : "table";
+  const search = q.search?.trim().toLowerCase() ?? "";
+  const page = Math.max(1, Number(q.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(q.limit) || 25));
+
+  const ts = (p: Product) => Date.parse(p.updatedAt ?? p.createdAt ?? "") || 0;
+  let items = (await scanAdminProductRows()).filter((p) => productVisibleToActor(p, actor));
+  if (search) {
+    items = items.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(search) ||
+        p.slug?.toLowerCase().includes(search) ||
+        p.sku?.toLowerCase().includes(search)
+    );
+  }
+  items.sort((a, b) => ts(b) - ts(a));
+
+  if (view === "pricing") {
+    return ok({ products: items.map(forAdminPricing), total: items.length });
+  }
+
+  const total = items.length;
+  const start = (page - 1) * limit;
+  return ok({
+    products: items.slice(start, start + limit).map(forAdminList),
+    total,
+    page,
+    limit,
+  });
+}
+
+export async function getAdminProduct(event: APIGatewayProxyEventV2) {
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
+
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
   const result = await docClient.send(
-    new ScanCommand({
+    new GetCommand({
       TableName: PRODUCTS_TABLE,
-      FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
-      ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
     })
   );
-
-  const items = ((result.Items ?? []) as Product[])
-    .filter((p) => productVisibleToActor(p, actor))
-    .sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
-  return ok({ products: items.map(withResolvedProductImages) });
+  const item = result.Item as Product | undefined;
+  if (!item) return notFound("Product not found");
+  if (!productVisibleToActor(item, actor)) return forbidden();
+  return ok({ product: withResolvedProductImages(item) });
 }
 
 /** Delete bundled sample catalog SKUs; keep CJ Dropshipping imports. */

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/lib/site";
+import { site, whatsappChatUrl } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
 import { pageMetadata } from "@/lib/seo";
 import { SiteLogoLink } from "@/components/SiteLogo";
@@ -24,9 +24,8 @@ export default function PressPage() {
         <section>
           <h2 className="text-xl font-bold text-primary mb-3">About {site.name}</h2>
           <p>
-            {site.name} ({siteUrl}) is a dedicated online Halloween store operated by Divit Global Ventures, shipping
-            Halloween decorations, costumes, and party supplies across all 50 US states. Domestic US fulfillment
-            delivers in 5–7 business days — shoppers order from the USA and worldwide.
+            {site.name} ({siteUrl}) is a dedicated online Halloween store operated by Divit Global Ventures, selling
+            Halloween decorations, costumes, and party supplies. Delivering in 5–7 days.
           </p>
         </section>
 
@@ -34,10 +33,9 @@ export default function PressPage() {
           <h2 className="text-xl font-bold text-primary mb-3">Key facts</h2>
           <ul className="list-disc pl-5 space-y-2 text-sm">
             <li>99+ Halloween products across decor, costumes, party supplies, and novelty</li>
-            <li>USA domestic shipping to all 50 states in 5–7 business days</li>
+            <li>Delivering in 5–7 days</li>
             <li>Halloween 2026: October 31, 2026</li>
             <li>Payments: Stripe (USD) and Razorpay (INR)</li>
-            <li>Fulfillment: California-based US domestic delivery</li>
           </ul>
         </section>
 
@@ -49,14 +47,22 @@ export default function PressPage() {
               {site.supportEmail}
             </a>
             <br />
-            WhatsApp: {site.whatsappDisplay}
+            WhatsApp:{" "}
+            <a
+              href={whatsappChatUrl("Hi HalloweenReady, media enquiry.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-nav underline"
+            >
+              Chat on WhatsApp
+            </a>
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-primary mb-3">Suggested story angles</h2>
           <ul className="list-disc pl-5 space-y-2 text-sm">
-            <li>Dedicated Halloween e-commerce with fast USA domestic shipping</li>
+            <li>Dedicated Halloween e-commerce with 5–7 day delivery</li>
             <li>How families prep haunted yards and parties with same-week delivery</li>
             <li>Premium Halloween decor and costumes for 2026 season shopping</li>
           </ul>

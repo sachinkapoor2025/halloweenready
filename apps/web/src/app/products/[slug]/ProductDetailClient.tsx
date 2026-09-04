@@ -6,12 +6,14 @@ import { AddToCartControl } from "@/components/AddToCartControl";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { api } from "@/lib/api";
 import { WishlistButton } from "@/components/WishlistButton";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustBadges } from "@/components/TrustBadges";
 import { HalloweenCountdown } from "@/components/HalloweenCountdown";
 import { ProductReviewsPreview } from "@/components/ProductReviewsPreview";
 import { StickyAddToCartBar } from "@/components/StickyAddToCartBar";
 import { useSessionId, useDebouncedLeadCapture } from "@/lib/session";
 import { trackProductView } from "@/lib/track";
+import { CurrencySelect } from "@/components/CurrencySelect";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
 import { LeadCaptureInput } from "@/components/LeadCaptureInput";
@@ -30,6 +32,42 @@ import { ProductShippingPanel } from "@/components/ProductShippingPanel";
 import { FastSellingBanner } from "@/components/FastSellingBadge";
 
 type Tab = "description" | "reviews" | "faq";
+
+function variantLabel(variant: { key?: string; name?: string; sku?: string; vid: string }): string {
+  return (variant.key || variant.name || variant.sku || variant.vid).trim();
+}
+
+function readStoredVid(slug: string, variants: Array<{ vid: string }>): string {
+  if (typeof window === "undefined") return "";
+  const fromUrl = new URLSearchParams(window.location.search).get("vid");
+  if (fromUrl && variants.some((v) => v.vid === fromUrl)) return fromUrl;
+  try {
+    const fromStore = sessionStorage.getItem(`hr-cj-vid:${slug}`);
+    if (fromStore && variants.some((v) => v.vid === fromStore)) return fromStore;
+  } catch {
+    /* private mode */
+  }
+  return "";
+}
+
+function persistVid(slug: string, vid: string) {
+  if (typeof window === "undefined" || !vid) return;
+  try {
+    sessionStorage.setItem(`hr-cj-vid:${slug}`, vid);
+  } catch {
+    /* ignore */
+  }
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("vid") === vid) return;
+  url.searchParams.set("vid", vid);
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function galleryForVariant(images: string[], variantImage?: string): string[] {
+  const featured = variantImage?.trim();
+  if (!featured) return images;
+  return [featured, ...images.filter((url) => url !== featured)];
+}
 
 function shortDescription(description: string): string {
   const first = description.split(/(?<=\.)\s+/)[0]?.trim();
@@ -89,22 +127,24 @@ export function ProductDetailClient({
   const [tab, setTab] = useState<Tab>("description");
   const [productUrl, setProductUrl] = useState("");
   const variants = product.cjVariants ?? [];
-  const [selectedVid, setSelectedVid] = useState(
-    product.cjVid || variants[0]?.vid || ""
-  );
+  const [selectedVid, setSelectedVid] = useState(product.cjVid || variants[0]?.vid || "");
   const selectedVariant = variants.find((v) => v.vid === selectedVid);
   const [videos, setVideos] = useState(product.videos ?? []);
-  const [images, setImages] = useState(product.images ?? []);
+  const [extraImages, setExtraImages] = useState<string[]>([]);
 
   useEffect(() => {
     trackProductView(product.slug);
     setProductUrl(window.location.href);
+    const stored = readStoredVid(product.slug, variants);
+    const nextVid = stored || product.cjVid || variants[0]?.vid || "";
+    setSelectedVid(nextVid);
+    if (nextVid) persistVid(product.slug, nextVid);
   }, [product.slug]);
 
   useEffect(() => {
     setVideos(product.videos ?? []);
-    setImages(product.images ?? []);
-  }, [product.slug, product.videos, product.images]);
+    setExtraImages([]);
+  }, [product.slug, product.videos]);
 
   useEffect(() => {
     if ((product.videos?.length ?? 0) > 0 || !product.cjPid) return;
@@ -116,7 +156,7 @@ export function ProductDetailClient({
       .then((data) => {
         if (cancelled) return;
         if (data.videos?.length) setVideos(data.videos);
-        if (data.images?.length) setImages(data.images);
+        if (data.images?.length) setExtraImages(data.images);
       })
       .catch(() => {
         /* gallery still shows photos */
@@ -125,6 +165,16 @@ export function ProductDetailClient({
       cancelled = true;
     };
   }, [product.slug, product.cjPid, product.videos]);
+
+  const selectVariant = (vid: string) => {
+    setSelectedVid(vid);
+    persistVid(product.slug, vid);
+  };
+
+  const galleryImages = galleryForVariant(
+    [...(product.images ?? []), ...extraImages.filter((url) => !(product.images ?? []).includes(url))],
+    selectedVariant?.image
+  );
 
   const displayPrice = selectedVariant?.price ?? product.price;
   const price = format(displayPrice, product.currency);
@@ -145,19 +195,25 @@ export function ProductDetailClient({
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-12">
       <div className="grid md:grid-cols-2 gap-8 lg:gap-10 items-start">
         <div>
-          <ProductImageGallery images={images} videos={videos} alt={product.name} />
+          <ProductImageGallery
+            key={`${product.slug}-${selectedVid}`}
+            images={galleryImages}
+            videos={videos}
+            alt={selectedVariant ? `${product.name} — ${variantLabel(selectedVariant)}` : product.name}
+          />
         </div>
 
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-3 leading-tight">{product.name}</h1>
 
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-4">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
             {comparePrice && <span className="text-lg text-slate-400 line-through">{comparePrice}</span>}
             <span className="text-2xl sm:text-3xl font-bold text-primary">{price}</span>
             {discount !== null && (
               <span className="text-sm font-semibold text-green-600">{discount}% OFF</span>
             )}
           </div>
+          <CurrencySelect variant="inline" className="mb-4" />
 
           <p className="text-slate-600 text-sm sm:text-base mb-3 leading-relaxed">{summary}</p>
 
@@ -173,28 +229,44 @@ export function ProductDetailClient({
             </p>
           )}
 
-          <ProductShippingPanel product={product} vid={selectedVid || undefined} />
+          <ProductShippingPanel price={displayPrice} currency={product.currency} />
 
           {variants.length > 1 && (
             <div className="mb-4">
-              <p className="text-sm font-semibold text-slate-700 mb-2">Options</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-sm font-semibold text-slate-700 mb-1">Options</p>
+              {selectedVariant && (
+                <p className="text-xs text-slate-600 mb-2">
+                  Selected:{" "}
+                  <span className="font-semibold text-primary">{variantLabel(selectedVariant)}</span>
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2" role="listbox" aria-label="Product options">
                 {variants.map((v) => {
                   const active = v.vid === selectedVid;
                   const oos = (v.inventory ?? 1) <= 0;
+                  const label = variantLabel(v);
                   return (
                     <button
                       key={v.vid}
                       type="button"
+                      role="option"
+                      aria-selected={active}
                       disabled={oos}
-                      onClick={() => setSelectedVid(v.vid)}
-                      className={`text-sm px-3 py-1.5 rounded-lg border transition ${
+                      onClick={() => selectVariant(v.vid)}
+                      className={`flex items-center gap-2 max-w-full text-sm px-2 py-1.5 rounded-lg border-2 transition ${
                         active
-                          ? "bg-nav text-white border-nav"
-                          : "border-slate-300 hover:bg-slate-50"
+                          ? "border-nav bg-orange-50 text-primary shadow-sm"
+                          : "border-slate-200 text-slate-700 hover:border-slate-400 bg-white"
                       } ${oos ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
-                      {v.key || v.name || v.sku || v.vid.slice(0, 8)}
+                      {v.image ? (
+                        <img
+                          src={v.image}
+                          alt=""
+                          className="h-9 w-9 rounded object-cover shrink-0 bg-slate-100"
+                        />
+                      ) : null}
+                      <span className="font-medium leading-snug text-left">{label}</span>
                     </button>
                   );
                 })}
@@ -203,6 +275,9 @@ export function ProductDetailClient({
           )}
 
           <TrustBadges variant="compact" className="mb-5" />
+          <div className="mb-5">
+            <AssistantPromo variant="product" productName={product.name} />
+          </div>
 
           {inCart ? (
             <div className="flex flex-wrap items-center gap-3 mb-3">

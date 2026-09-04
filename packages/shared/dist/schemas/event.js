@@ -16,6 +16,9 @@ exports.eventTypeEnum = zod_1.z.enum([
     constants_1.EVENT_TYPES.SESSION_PING,
     constants_1.EVENT_TYPES.COUNTRY_CHANGED,
     constants_1.EVENT_TYPES.POSTAL_CODE_ENTERED,
+    constants_1.EVENT_TYPES.CHAT_OPEN,
+    constants_1.EVENT_TYPES.CHAT_CLOSE,
+    constants_1.EVENT_TYPES.CHAT_MESSAGE,
 ]);
 exports.trackEventSchema = zod_1.z.object({
     type: exports.eventTypeEnum,

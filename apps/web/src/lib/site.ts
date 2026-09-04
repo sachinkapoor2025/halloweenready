@@ -6,13 +6,31 @@ export const site = {
     "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
   supportEmail: "support@halloweenready.com",
   phone: "+1 (669) 260-3819",
-  whatsapp: "16692603819",
-  whatsappDisplay: "+1 (669) 260-3819",
+  /** Customer WhatsApp — India store number (do not display the digits on the storefront). */
+  whatsapp: "919266467887",
+  whatsappDisplay: "+91 9266467887",
   logoSrc: "/logo.png",
   primaryColor: "#1a0a2e",
   navBlue: "#ff6b00",
   accentColor: "#e11d48",
 } as const;
+
+export const STORE_LOCATIONS = [
+  {
+    id: "uk",
+    flag: "🇬🇧",
+    country: "United Kingdom",
+    lines: ["5 Exeter Road", "Southampton, Hampshire", "SO18 2ED", "United Kingdom"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=5+Exeter+Road%2C+Southampton+SO18+2ED",
+  },
+  {
+    id: "in",
+    flag: "🇮🇳",
+    country: "India",
+    lines: ["House No. 392", "Mohalla Sodian Wala", "Ferozepur City, Punjab 152002", "India"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=House+No.+392%2C+Mohalla+Sodian+Wala%2C+Ferozepur+City%2C+Punjab+152002",
+  },
+] as const;
 
 export const navItems = [
   { label: "Home", href: "/" },

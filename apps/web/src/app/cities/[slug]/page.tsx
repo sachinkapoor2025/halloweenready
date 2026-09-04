@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { api } from "@/lib/api";
 import { HomeProductCard } from "@/components/HomeProductCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CityContentSection } from "@/components/CityContentSection";
@@ -14,10 +13,11 @@ import {
   getSeoLocation,
 } from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { halloweenPathForLegacyCitySlug } from "@/lib/content/geo";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
-import { cjStorefrontProductsPath, getInternalLinkGroups, type Product } from "@halloweenready/shared";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -46,14 +46,7 @@ export default async function CityPage({ params }: Props) {
   const content = getCityContent(slug);
   if (!loc || !content) notFound();
 
-  let products: Product[] = [];
-  try {
-    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-    products = data.products;
-  } catch {
-    products = [];
-  }
-
+  const products = await loadStorefrontProducts();
   const cityProducts = shuffleForCity(products, slug).slice(0, 20);
 
   const crumbs = [

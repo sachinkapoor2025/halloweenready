@@ -8,7 +8,12 @@ import {
   DEFAULT_COUNTRY_ISO,
   orderedCountryDialCodes,
 } from "@/lib/country-codes";
-import { US_STATES } from "@/lib/shipping-address";
+import {
+  CountrySelectField,
+  StateRegionField,
+  postalCodeLabel,
+  withCountry,
+} from "@/components/CountryStateFields";
 
 function splitPhone(phone: string): { iso: string; local: string } {
   const digits = phone.replace(/\D/g, "");
@@ -32,7 +37,7 @@ type Props = {
   title?: string;
 };
 
-/** Compact recipient-only address (sender fields come from the primary form). */
+/** Compact address for a split-shipment line. */
 export function RecipientAddressFields({
   value,
   onChange,
@@ -53,17 +58,17 @@ export function RecipientAddressFields({
   }, [value.phone]);
 
   const update = (field: keyof ShippingAddress, fieldValue: string) => {
-    onChange({ ...value, [field]: fieldValue, country: "US" });
+    onChange({ ...value, [field]: fieldValue });
   };
 
   return (
     <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-3">
       <p className="text-sm font-semibold text-slate-800">{title}</p>
       <LeadCaptureInput
-        label="Recipient name"
+        label="Your name"
         value={value.name}
         onChange={(e) => update("name", e.target.value)}
-        placeholder="Brother's full name"
+        placeholder="Full name"
         required
         autoComplete="name"
       />
@@ -117,30 +122,26 @@ export function RecipientAddressFields({
           required
           autoComplete="address-level2"
         />
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">State</span>
-          <select
-            value={value.state}
-            onChange={(e) => update("state", e.target.value)}
-            required
-            className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="">Select</option>
-            {US_STATES.map((s) => (
-              <option key={s.code} value={s.code}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <StateRegionField
+          country={value.country}
+          value={value.state}
+          onChange={(state) => update("state", state)}
+          compact
+        />
       </div>
-      <LeadCaptureInput
-        label="ZIP code"
-        value={value.postalCode}
-        onChange={(e) => update("postalCode", e.target.value)}
-        required
-        autoComplete="postal-code"
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <LeadCaptureInput
+          label={postalCodeLabel(value.country)}
+          value={value.postalCode}
+          onChange={(e) => update("postalCode", e.target.value)}
+          required
+          autoComplete="postal-code"
+        />
+        <CountrySelectField
+          value={value.country}
+          onChange={(iso) => onChange(withCountry(value, iso))}
+        />
+      </div>
     </div>
   );
 }

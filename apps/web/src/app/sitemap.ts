@@ -1,12 +1,17 @@
 import type { MetadataRoute } from "next";
-import { api } from "@/lib/api";
-import { cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { siteUrl } from "@/lib/env";
 import { categoryOrder } from "@/lib/site";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 import { allCountrySeoSlugs } from "@/lib/content/country-pages";
 import { indexableGeoPaths } from "@/lib/content/geo";
+
+function sitemapDate(value?: string): Date {
+  if (!value) return new Date();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
 
 /** Handwritten + SEO blog posts, deduped by slug. */
 function mergedBlogRoutes(): MetadataRoute.Sitemap {
@@ -18,7 +23,7 @@ function mergedBlogRoutes(): MetadataRoute.Sitemap {
     seen.add(p.slug);
     routes.push({
       url: `${siteUrl}/blog/${p.slug}`,
-      lastModified: new Date(p.updatedAt),
+      lastModified: sitemapDate(p.updatedAt),
       changeFrequency: "monthly",
       priority: 0.7,
     });
@@ -96,25 +101,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes = mergedBlogRoutes();
 
-  try {
-    const productsData = await api<{ products: Product[] }>(cjStorefrontProductsPath());
-    const productRoutes = productsData.products.map((p) => ({
-      url: `${siteUrl}/products/${p.slug}`,
-      lastModified: new Date(p.updatedAt),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const products = await loadStorefrontProducts();
+  const productRoutes = products.map((p) => ({
+    url: `${siteUrl}/products/${p.slug}`,
+    lastModified: sitemapDate(p.updatedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
-    return [
-      ...staticRoutes,
-      ...categoryRoutes,
-      ...countryRoutes,
-      ...cityRoutes,
-      ...halloweenRoutes,
-      ...blogRoutes,
-      ...productRoutes,
-    ];
-  } catch {
-    return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...cityRoutes, ...halloweenRoutes, ...blogRoutes];
-  }
+  return [
+    ...staticRoutes,
+    ...categoryRoutes,
+    ...countryRoutes,
+    ...cityRoutes,
+    ...halloweenRoutes,
+    ...blogRoutes,
+    ...productRoutes,
+  ];
 }

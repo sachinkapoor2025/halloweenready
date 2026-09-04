@@ -25,9 +25,9 @@ export declare const addressSchema: z.ZodObject<{
     name: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     email?: string | undefined;
     phone?: string | undefined;
     line2?: string | undefined;
@@ -35,9 +35,9 @@ export declare const addressSchema: z.ZodObject<{
     name: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     email?: string | undefined;
     phone?: string | undefined;
     line2?: string | undefined;
@@ -57,9 +57,9 @@ export declare const originAddressSchema: z.ZodObject<{
     name: string;
     country: string;
     city: string;
+    postalCode: string;
     line1: string;
     state: string;
-    postalCode: string;
     email?: string | undefined;
     phone?: string | undefined;
     line2?: string | undefined;
@@ -69,10 +69,10 @@ export declare const originAddressSchema: z.ZodObject<{
     phone?: string | undefined;
     country?: string | undefined;
     city?: string | undefined;
+    postalCode?: string | undefined;
     line1?: string | undefined;
     line2?: string | undefined;
     state?: string | undefined;
-    postalCode?: string | undefined;
 }>;
 export declare const packageDetailsSchema: z.ZodObject<{
     weightOz: z.ZodNumber;
@@ -192,20 +192,20 @@ export declare const addressValidationResultSchema: z.ZodObject<{
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     }, {
         name?: string | undefined;
         email?: string | undefined;
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     }>>;
     messages: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
@@ -217,10 +217,10 @@ export declare const addressValidationResultSchema: z.ZodObject<{
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     } | undefined;
 }, {
     valid: boolean;
@@ -231,10 +231,10 @@ export declare const addressValidationResultSchema: z.ZodObject<{
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     } | undefined;
 }>;
 export declare const festivalModeRangeSchema: z.ZodObject<{
@@ -303,9 +303,9 @@ export declare const shippingSettingsSchema: z.ZodObject<{
         name: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         email?: string | undefined;
         phone?: string | undefined;
         line2?: string | undefined;
@@ -315,10 +315,10 @@ export declare const shippingSettingsSchema: z.ZodObject<{
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     }>;
     autoPurchaseOnPayment: z.ZodDefault<z.ZodBoolean>;
     flatRateFallbackUsd: z.ZodDefault<z.ZodNumber>;
@@ -343,9 +343,9 @@ export declare const shippingSettingsSchema: z.ZodObject<{
         name: string;
         country: string;
         city: string;
+        postalCode: string;
         line1: string;
         state: string;
-        postalCode: string;
         email?: string | undefined;
         phone?: string | undefined;
         line2?: string | undefined;
@@ -362,10 +362,10 @@ export declare const shippingSettingsSchema: z.ZodObject<{
         phone?: string | undefined;
         country?: string | undefined;
         city?: string | undefined;
+        postalCode?: string | undefined;
         line1?: string | undefined;
         line2?: string | undefined;
         state?: string | undefined;
-        postalCode?: string | undefined;
     };
     provider?: "usps" | "shippo" | undefined;
     deliverByDate?: string | undefined;

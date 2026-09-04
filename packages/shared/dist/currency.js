@@ -6,6 +6,7 @@ exports.convertCurrencyAmount = convertCurrencyAmount;
 exports.convertCartItemsToCurrency = convertCartItemsToCurrency;
 exports.cartSubtotal = cartSubtotal;
 exports.resolveUsdInrRate = resolveUsdInrRate;
+exports.fetchLiveUsdRates = fetchLiveUsdRates;
 exports.fetchLiveUsdInrRate = fetchLiveUsdInrRate;
 const product_addons_1 = require("./lib/product-addons");
 Object.defineProperty(exports, "cartLineUnitTotal", { enumerable: true, get: function () { return product_addons_1.cartLineUnitTotal; } });
@@ -65,38 +66,54 @@ async function fetchJson(url, timeoutMs = 8000) {
         clearTimeout(timer);
     }
 }
-/** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
-async function fetchLiveUsdInrRate() {
+function positiveRates(raw) {
+    if (!raw)
+        return null;
+    const rates = { USD: 1 };
+    for (const [code, value] of Object.entries(raw)) {
+        if (typeof value === "number" && value > 0)
+            rates[code.toUpperCase()] = value;
+    }
+    return Object.keys(rates).length > 1 ? rates : null;
+}
+/** Fetch USD→all rates from public FX APIs (no API key). */
+async function fetchLiveUsdRates() {
     const asOf = new Date().toISOString();
     try {
-        const data = (await fetchJson("https://api.frankfurter.app/latest?from=USD&to=INR"));
-        const rate = data.rates?.INR;
-        if (rate && rate > 0) {
-            return { rate, source: "frankfurter", asOf };
-        }
-    }
-    catch {
-        /* try next provider */
-    }
-    try {
         const data = (await fetchJson("https://open.er-api.com/v6/latest/USD"));
-        const rate = data.rates?.INR;
-        if (rate && rate > 0) {
-            return { rate, source: "open.er-api.com", asOf };
-        }
+        const rates = positiveRates(data.rates);
+        if (rates)
+            return { rates, source: "open.er-api.com", asOf };
     }
     catch {
         /* try next provider */
     }
     try {
-        const data = (await fetchJson("https://api.exchangerate.host/latest?base=USD&symbols=INR"));
-        const rate = data.rates?.INR;
-        if (rate && rate > 0) {
-            return { rate, source: "exchangerate.host", asOf };
-        }
+        const data = (await fetchJson("https://api.frankfurter.app/latest?from=USD"));
+        const rates = positiveRates(data.rates);
+        if (rates)
+            return { rates, source: "frankfurter", asOf };
+    }
+    catch {
+        /* try next provider */
+    }
+    try {
+        const data = (await fetchJson("https://api.exchangerate.host/latest?base=USD"));
+        const rates = positiveRates(data.rates);
+        if (rates)
+            return { rates, source: "exchangerate.host", asOf };
     }
     catch {
         /* exhausted providers */
+    }
+    return null;
+}
+/** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
+async function fetchLiveUsdInrRate() {
+    const quote = await fetchLiveUsdRates();
+    const rate = quote?.rates.INR;
+    if (quote && rate && rate > 0) {
+        return { rate, source: quote.source, asOf: quote.asOf };
     }
     return null;
 }

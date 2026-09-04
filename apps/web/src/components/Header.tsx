@@ -8,6 +8,7 @@ import { site, navItems, cityLinks } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { CountrySelector } from "@/components/CountrySelector";
+import { CurrencySelect } from "@/components/CurrencySelect";
 
 function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -204,6 +205,7 @@ export function Header() {
         <div className="flex-1" />
 
         <div className="flex items-center shrink-0 gap-1">
+          <CurrencySelect variant="header" />
           <CountrySelector compact />
           <AccountLink className="text-nav hover:text-primary p-1.5" />
           <WishlistLink className="text-nav hover:text-primary p-1.5" />
@@ -220,6 +222,7 @@ export function Header() {
         </div>
 
         <div className="flex items-start justify-end shrink-0 gap-3">
+          <CurrencySelect variant="header" className="mt-1" />
           <CountrySelector />
           <DesktopHeaderAction href="/account" label="Account">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -292,7 +295,8 @@ export function Header() {
             </div>
 
             <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-              <div className="px-2 pb-2">
+              <div className="px-2 pb-2 space-y-2">
+                <CurrencySelect variant="inline" />
                 <CountrySelector />
               </div>
               {navItems.map((item) => (

@@ -8,9 +8,9 @@ import { site, testimonials } from "@/lib/site";
 import { pageMetadata, canonical } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Customer Reviews — Shop Halloween to USA",
+  title: "Customer Reviews — HalloweenReady",
   description:
-    "Read customer reviews of HalloweenReady USA Halloween delivery. Share your Halloween experience — California fulfillment, domestic US shipping, 5–7 day delivery.",
+    "Read customer reviews of HalloweenReady. Share your Halloween shopping experience — delivering in 5–7 days.",
   path: "/reviews",
 });
 
@@ -21,10 +21,10 @@ function reviewsPageJsonLd() {
     "@type": "WebPage",
     name: `Customer Reviews — ${site.name}`,
     url: canonical("/reviews"),
-    description: "Customer reviews for HalloweenReady USA Halloween delivery.",
+    description: "Customer reviews for HalloweenReady.",
     mainEntity: {
       "@type": "Product",
-      name: `${site.name} Halloween USA Delivery`,
+      name: `${site.name} Halloween store`,
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: avg.toFixed(1),

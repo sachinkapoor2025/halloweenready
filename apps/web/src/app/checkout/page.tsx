@@ -25,7 +25,11 @@ import {
   saveShippingAddress,
 } from "@/lib/shipping-address";
 import { fetchAccount, createAccountAddress } from "@/lib/account";
-import { ORDER_STATUS, type Order, type ShippingAddress } from "@halloweenready/shared";
+import { useMarket } from "@/lib/market-context";
+import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
+import { FreeShippingNotice } from "@/components/FreeShippingNotice";
+import { withCountry } from "@/components/CountryStateFields";
+import { ORDER_STATUS, type CartItem, type Order, type ShippingAddress } from "@halloweenready/shared";
 
 declare global {
   interface Window {
@@ -51,6 +55,8 @@ function CheckoutPageInner() {
   const { cart, loading: cartLoading, refresh } = useCart();
   const { user, token } = useAuth();
   const { format, displayCurrency, convert, usdInrRate } = useCurrency();
+  const { countryCode } = useMarket();
+  const payCurrency = payCurrencyForDisplay(displayCurrency);
   const sessionId = useSessionId();
   const captureLeadDebounced = useDebouncedLeadCapture(sessionId);
   const captureLeadNow = useLeadCapture(sessionId);
@@ -73,7 +79,7 @@ function CheckoutPageInner() {
 
   useEffect(() => {
     if (displayCurrency === "INR") setPaymentMethod("razorpay");
-    else if (displayCurrency === "USD") setPaymentMethod("stripe");
+    else setPaymentMethod("stripe");
     setStripeCheckout(null);
   }, [displayCurrency]);
 
@@ -194,6 +200,12 @@ function CheckoutPageInner() {
     void prefill();
   }, [user, token, sessionId]);
 
+  useEffect(() => {
+    if (address.line1) return;
+    if (!countryCode) return;
+    setAddress((a) => (a.line1 || a.country === countryCode ? a : withCountry(a, countryCode)));
+  }, [countryCode, address.line1, address.country]);
+
   const captureField = (field: string, value: string) => {
     const a = addressRef.current;
     captureLeadDebounced({
@@ -283,7 +295,7 @@ function CheckoutPageInner() {
 
     const payload = {
       ...address,
-      country: "US" as const,
+      country: (address.country || countryCode || "US").toUpperCase().slice(0, 2),
       label: address.name,
       isDefault: true,
       ...(address.phone?.trim() ? { phone: address.phone.trim() } : {}),
@@ -350,7 +362,7 @@ function CheckoutPageInner() {
 
       const payload: ShippingAddress = {
         ...address,
-        country: "US",
+        country: (address.country || countryCode || "US").toUpperCase().slice(0, 2),
         ...(address.phone?.trim() ? { phone: address.phone.trim() } : {}),
         ...(address.line2?.trim() ? { line2: address.line2.trim() } : { line2: undefined }),
       };
@@ -374,8 +386,8 @@ function CheckoutPageInner() {
         token,
         body: JSON.stringify({
           paymentMethod,
-          checkoutCurrency: displayCurrency,
-          ...(displayCurrency === "INR" ? { usdInrRate } : {}),
+          checkoutCurrency: payCurrency,
+          ...(payCurrency === "INR" ? { usdInrRate } : {}),
           shippingAddress: payload,
           ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
         }),
@@ -436,9 +448,15 @@ function CheckoutPageInner() {
         return sum + convert(item.price * item.quantity, lineCurrency);
       }, 0);
   const itemCount = checkoutItems.reduce((sum, i) => sum + i.quantity, 0);
+  const shippingQuote = isRetry
+    ? { totalCharge: retryOrder!.shipping, quote: null }
+    : quoteCartShipping(checkoutItems as CartItem[], payCurrency, usdInrRate);
+  const displayShipping = isRetry
+    ? convert(retryOrder!.shipping, (retryOrder!.currency ?? "USD") as DisplayCurrency)
+    : convert(shippingQuote.totalCharge, payCurrency);
   const orderTotal = isRetry
     ? retryOrder!.total
-    : Math.max(0, displaySubtotal - discount);
+    : Math.max(0, displaySubtotal - discount + displayShipping);
 
   return (
     <>
@@ -498,8 +516,20 @@ function CheckoutPageInner() {
               )}
               <div className="flex justify-between gap-4">
                 <span className="text-slate-700">Shipping</span>
-                <span className="font-bold text-accent">FREE</span>
+                <span className={displayShipping > 0 ? "font-semibold text-slate-900" : "font-bold text-accent"}>
+                  {displayShipping > 0 ? format(displayShipping, displayCurrency) : "FREE"}
+                </span>
               </div>
+              {shippingQuote.quote && (
+                <FreeShippingNotice
+                  quote={shippingQuote.quote}
+                  formatMoney={format}
+                  currency={payCurrency}
+                />
+              )}
+              <p className="text-xs text-slate-500">
+                Shipping is included in the total below — the payment page will charge this same amount.
+              </p>
               <div className="flex justify-between gap-4 pt-2 border-t border-slate-200">
                 <span className="font-bold text-slate-900">Total</span>
                 <span className="font-bold text-nav text-base">
@@ -534,7 +564,7 @@ function CheckoutPageInner() {
                   setPaymentMethod(method);
                   setStripeCheckout(null);
                 }}
-                checkoutCurrency={displayCurrency}
+                checkoutCurrency={payCurrency}
               />
             </div>
 

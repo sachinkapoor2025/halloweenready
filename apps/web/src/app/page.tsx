@@ -9,6 +9,7 @@ import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { FastSellingSection } from "@/components/FastSellingSection";
 import { HomeSeoSection } from "@/components/HomeSeoSection";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustStrip } from "@/components/TrustStrip";
 import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
@@ -84,6 +85,9 @@ export default async function HomePage() {
       <JsonLd data={[faqJsonLd(faqs), howToShopHalloweenJsonLd()]} />
       <BannerCarousel banners={homeBanners} />
       <TrustStrip />
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <AssistantPromo variant="home" />
+      </div>
 
       <FastSellingSection products={products} />
 

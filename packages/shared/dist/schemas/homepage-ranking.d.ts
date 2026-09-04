@@ -33,6 +33,8 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
     countryPersonalizationEnabled: z.ZodDefault<z.ZodBoolean>;
     regionPersonalizationEnabled: z.ZodDefault<z.ZodBoolean>;
     cityPersonalizationEnabled: z.ZodDefault<z.ZodBoolean>;
+    /** Chat product clicks are stored separately and do not dominate homepage ranking. */
+    chatClickWeight: z.ZodDefault<z.ZodNumber>;
     profitabilityWeight: z.ZodDefault<z.ZodNumber>;
     seasonalWeight: z.ZodDefault<z.ZodNumber>;
     maxShareSameCategory: z.ZodDefault<z.ZodNumber>;
@@ -98,6 +100,7 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
     countryPersonalizationEnabled: boolean;
     regionPersonalizationEnabled: boolean;
     cityPersonalizationEnabled: boolean;
+    chatClickWeight: number;
     profitabilityWeight: number;
     seasonalWeight: number;
     maxShareSameCategory: number;
@@ -134,6 +137,7 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
     countryPersonalizationEnabled?: boolean | undefined;
     regionPersonalizationEnabled?: boolean | undefined;
     cityPersonalizationEnabled?: boolean | undefined;
+    chatClickWeight?: number | undefined;
     profitabilityWeight?: number | undefined;
     seasonalWeight?: number | undefined;
     maxShareSameCategory?: number | undefined;

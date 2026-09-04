@@ -6,9 +6,15 @@ exports.formatViewerLocation = formatViewerLocation;
 exports.inferViewerCountryCode = inferViewerCountryCode;
 exports.viewerGeoFromMetadata = viewerGeoFromMetadata;
 const GEO_HEADER_KEYS = {
-    country: ["cloudfront-viewer-country", "cf-ipcountry", "x-country-code"],
-    city: ["cloudfront-viewer-city"],
-    region: ["cloudfront-viewer-country-region"],
+    country: [
+        "cloudfront-viewer-country",
+        "cf-ipcountry",
+        "x-vercel-ip-country",
+        "x-country-code",
+        "x-geo-country",
+    ],
+    city: ["cloudfront-viewer-city", "x-vercel-ip-city"],
+    region: ["cloudfront-viewer-country-region", "x-vercel-ip-country-region"],
     regionName: ["cloudfront-viewer-country-region-name"],
 };
 function decodeGeoHeader(value) {

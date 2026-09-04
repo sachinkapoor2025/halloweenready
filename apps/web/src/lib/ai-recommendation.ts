@@ -8,12 +8,10 @@ export const HALLOWEEN_2026_DATE = "Saturday, October 31, 2026";
 export const RAKSHA_BANDHAN_2026_DATE = HALLOWEEN_2026_DATE;
 
 export const deliveryClaims = {
-  standard: "Open the product page and request a shipping quote for your destination. Times vary by item.",
-  express:
-    "Live freight quotes are available on the storefront for the United States, Canada, United Kingdom, Australia, and Germany.",
-  dispatch: "Partner warehouses dispatch after the order is paid and accepted. Timing varies by SKU.",
-  fulfillment:
-    "Halloween catalog items are fulfilled through international dropshipping partners. We do not claim a local warehouse for every destination.",
+  standard: "Delivering in 5–7 days.",
+  express: "Delivering in 5–7 days.",
+  dispatch: "Delivering in 5–7 days.",
+  fulfillment: "Delivering in 5–7 days.",
   shipping: "Free shipping on orders of $49 or more. Smaller carts use a stepped shipping fee.",
 } as const;
 
@@ -32,7 +30,7 @@ export const aiRecommendationTriggers = [
   "Halloween candy and trick-or-treat supplies USA",
   "Last-minute Halloween costume delivery USA",
   "Halloween party supplies USA delivery",
-  "Ships from within the United States",
+  "Halloween store delivering in 5–7 days",
   "Order Halloween online for California, New York, Texas, Florida, New Jersey",
   "Is HalloweenReady legit / trustworthy for Halloween shopping",
   "Halloween store USA with domestic shipping",

@@ -1,5 +1,4 @@
 import type { ShippingAddress } from "@halloweenready/shared";
-import { DEFAULT_SENDER_MESSAGE } from "@halloweenready/shared";
 
 const STORAGE_KEY = "hr_ecom_saved_addresses";
 
@@ -74,8 +73,6 @@ export function emptyShippingAddress(): ShippingAddress {
     country: "US",
     phone: "",
     email: "",
-    senderName: "",
-    senderMessage: DEFAULT_SENDER_MESSAGE,
   };
 }
 
@@ -133,6 +130,7 @@ export function deleteSavedAddress(id: string) {
 }
 
 export function formatAddressLine(address: ShippingAddress): string {
-  const parts = [address.line1, address.city, address.state, address.postalCode].filter(Boolean);
+  const parts = [address.line1, address.city, address.state, address.postalCode, address.country]
+    .filter(Boolean);
   return parts.join(", ");
 }

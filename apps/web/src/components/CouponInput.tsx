@@ -4,14 +4,15 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { useSessionId } from "@/lib/session";
 import { formatCouponExpiry } from "@/lib/welcome-coupon";
+import type { DisplayCurrency } from "@halloweenready/shared";
 
 type Props = {
   email: string;
   phone?: string;
   /** Subtotal coupons may discount (excludes flash-sale / couponExcluded lines). */
   subtotal: number;
-  currency: "USD" | "INR";
-  formatMoney: (amount: number, currency: "USD" | "INR") => string;
+  currency: DisplayCurrency;
+  formatMoney: (amount: number, currency: DisplayCurrency) => string;
   initialCode?: string;
   /** When true, flash-sale lines are in the cart — coupons skip those lines. */
   hasCouponExcludedItems?: boolean;

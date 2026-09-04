@@ -39,18 +39,7 @@ export const shippingAddressSchema = z.object({
 export const DEFAULT_SENDER_MESSAGE =
   "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
 
-export const checkoutShippingAddressSchema = shippingAddressSchema.extend({
-  senderName: z
-    .string()
-    .trim()
-    .min(1, "Sender name is required")
-    .max(80, "Sender name is too long"),
-  senderMessage: z
-    .string()
-    .trim()
-    .min(10, "Please write a short message for your brother")
-    .max(500, "Message is too long (max 500 characters)"),
-});
+export const checkoutShippingAddressSchema = shippingAddressSchema;
 
 /** Line assignment for a checkout shipment (must partition the cart). */
 export const checkoutShipmentItemSchema = z.object({
