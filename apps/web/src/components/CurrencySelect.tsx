@@ -8,12 +8,32 @@ export function CurrencySelect({
   variant = "inline",
   className = "",
 }: {
-  variant?: "inline" | "rail";
+  variant?: "inline" | "rail" | "header";
   className?: string;
 }) {
   const { displayCurrency, setDisplayCurrency } = useCurrency();
   const labelId = useId();
   const selected = DISPLAY_CURRENCY_OPTIONS.find((o) => o.code === displayCurrency);
+
+  if (variant === "header") {
+    return (
+      <label className={`inline-flex items-center ${className}`}>
+        <span className="sr-only">Currency</span>
+        <select
+          value={displayCurrency}
+          onChange={(e) => setDisplayCurrency(e.target.value)}
+          aria-label="Currency"
+          className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] sm:text-xs font-bold text-slate-800 hover:border-nav focus:outline-none focus:ring-2 focus:ring-accent"
+        >
+          {DISPLAY_CURRENCY_OPTIONS.map((option) => (
+            <option key={option.code} value={option.code} title={option.region}>
+              {option.code}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
 
   if (variant === "inline") {
     return (
@@ -25,12 +45,12 @@ export function CurrencySelect({
           id={labelId}
           value={displayCurrency}
           onChange={(e) => setDisplayCurrency(e.target.value)}
-          className="w-full max-w-[280px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800"
+          className="w-full max-w-[160px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800"
           aria-label="Display currency"
         >
           {DISPLAY_CURRENCY_OPTIONS.map((option) => (
-            <option key={option.code} value={option.code}>
-              {option.label}
+            <option key={option.code} value={option.code} title={option.region}>
+              {option.code}
             </option>
           ))}
         </select>
@@ -56,7 +76,7 @@ function CurrencyRailSelect({ label }: { label: string }) {
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="relative z-[70]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -71,7 +91,7 @@ function CurrencyRailSelect({ label }: { label: string }) {
       {open && (
         <ul
           role="listbox"
-          className="absolute right-full top-0 mr-1 w-56 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl"
+          className="absolute right-full top-0 mr-1 w-28 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl z-[80]"
         >
           {DISPLAY_CURRENCY_OPTIONS.map((option) => (
             <li key={option.code}>
@@ -79,6 +99,7 @@ function CurrencyRailSelect({ label }: { label: string }) {
                 type="button"
                 role="option"
                 aria-selected={option.code === displayCurrency}
+                title={option.region}
                 onClick={() => {
                   setDisplayCurrency(option.code);
                   setOpen(false);
@@ -89,7 +110,7 @@ function CurrencyRailSelect({ label }: { label: string }) {
                     : "text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {option.label}
+                {option.code}
               </button>
             </li>
           ))}

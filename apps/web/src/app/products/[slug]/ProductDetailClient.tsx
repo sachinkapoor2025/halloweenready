@@ -229,7 +229,7 @@ export function ProductDetailClient({
             </p>
           )}
 
-          <ProductShippingPanel />
+          <ProductShippingPanel price={displayPrice} currency={product.currency} />
 
           {variants.length > 1 && (
             <div className="mb-4">

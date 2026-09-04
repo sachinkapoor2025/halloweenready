@@ -141,12 +141,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const init = async () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       const manual = localStorage.getItem(MANUAL_KEY) === "true";
-      if (manual && saved) {
-        setDisplayCurrencyState(normalizeDisplayCurrency(saved));
-        return;
-      }
+      if (saved) setDisplayCurrencyState(normalizeDisplayCurrency(saved));
+      if (manual && saved) return;
       try {
-        const res = await fetch("/api/geo", { cache: "no-store" });
+        const res = await fetch("/api/geo", { cache: "force-cache" });
         let country: string | undefined;
         let currency: string | undefined;
         if (res.ok) {
@@ -160,13 +158,14 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           country = await detectCountryFromClientIp();
           if (country) currency = displayCurrencyForCountry(country);
         }
+        if (localStorage.getItem(MANUAL_KEY) === "true") return;
         if (currency) {
           const code = normalizeDisplayCurrency(currency);
           setDisplayCurrencyState(code);
           localStorage.setItem(STORAGE_KEY, code);
         }
       } catch {
-        /* keep USD */
+        /* keep saved or USD */
       }
     };
 

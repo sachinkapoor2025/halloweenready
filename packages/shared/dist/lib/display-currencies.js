@@ -96,7 +96,7 @@ const REGION_LABELS = {
 exports.DISPLAY_CURRENCY_OPTIONS = exports.DISPLAY_CURRENCIES.map((code) => ({
     code,
     region: REGION_LABELS[code],
-    label: `${code} — ${REGION_LABELS[code]}`,
+    label: code,
 }));
 const DISPLAY_SET = new Set(exports.DISPLAY_CURRENCIES);
 function isDisplayCurrency(value) {

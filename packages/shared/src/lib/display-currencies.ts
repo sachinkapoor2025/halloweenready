@@ -102,7 +102,7 @@ const REGION_LABELS: Record<DisplayCurrency, string> = {
 export const DISPLAY_CURRENCY_OPTIONS: DisplayCurrencyOption[] = DISPLAY_CURRENCIES.map((code) => ({
   code,
   region: REGION_LABELS[code],
-  label: `${code} — ${REGION_LABELS[code]}`,
+  label: code,
 }));
 
 const DISPLAY_SET = new Set<string>(DISPLAY_CURRENCIES);

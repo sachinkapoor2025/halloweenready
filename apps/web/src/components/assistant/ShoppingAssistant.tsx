@@ -101,14 +101,19 @@ export function ShoppingAssistant() {
   }, []);
 
   useEffect(() => {
-    api<{ config: ChatConfig }>("/config/chat", { revalidate: false, timeoutMs: 4000 })
-      .then((data) => {
-        if (data.config) setConfig(data.config);
-      })
-      .catch(() => {
-        /* keep defaults */
-      });
-  }, []);
+    if (hidden) return;
+    const load = () => {
+      api<{ config: ChatConfig }>("/config/chat", { revalidate: false, timeoutMs: 4000 })
+        .then((data) => {
+          if (data.config) setConfig(data.config);
+        })
+        .catch(() => {
+          /* keep defaults */
+        });
+    };
+    const t = window.setTimeout(load, 1500);
+    return () => window.clearTimeout(t);
+  }, [hidden]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -430,19 +435,19 @@ export function ShoppingAssistant() {
           onClick={() => (open && !minimized ? setMinimized(true) : void handleOpen())}
           aria-label={open && !minimized ? "Minimize Halloween assistant" : "Find your Halloween look"}
           aria-expanded={open && !minimized}
-          className={`fixed right-5 z-[80] flex h-11 items-center justify-center rounded-xl bg-primary text-white shadow-[0_4px_12px_rgba(24,58,104,0.45)] ring-2 ring-white/20 hover:scale-105 active:scale-95 transition-transform ${
-            onCheckout ? "bottom-[4.75rem] w-11" : "bottom-[4.75rem] min-w-11 px-0 sm:px-3"
-          }`}
+          className="fixed right-4 bottom-[4.75rem] z-[80] flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-3.5 text-white shadow-[0_4px_12px_rgba(24,58,104,0.45)] ring-2 ring-white/20 hover:scale-105 active:scale-95 transition-transform whitespace-nowrap"
         >
           {open && !minimized ? (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14" />
             </svg>
           ) : (
-            <span className="flex items-center gap-1.5 px-2 text-sm font-semibold">
-              <span aria-hidden>🎃</span>
-              <span className="hidden sm:inline">Find your look</span>
-            </span>
+            <>
+              <span aria-hidden className="shrink-0 text-base leading-none">
+                🎃
+              </span>
+              <span className="text-sm font-semibold leading-none">Find your look</span>
+            </>
           )}
         </button>
       )}

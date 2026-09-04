@@ -23,8 +23,8 @@ export function AssistantPromo({
           : { title: "Need a matching item?", body: "Ask our assistant.", prompt: "Suggest something that matches my cart" };
 
   return (
-    <div className="rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 to-violet-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-sm text-slate-700">
+    <div className="rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 to-violet-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <p className="text-sm text-slate-700 min-w-0">
         <span className="mr-1" aria-hidden>
           🎃
         </span>
@@ -33,7 +33,7 @@ export function AssistantPromo({
       <button
         type="button"
         onClick={() => openShoppingAssistant(copy.prompt)}
-        className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+        className="shrink-0 self-start sm:self-auto rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 whitespace-nowrap"
       >
         Help me find something
       </button>

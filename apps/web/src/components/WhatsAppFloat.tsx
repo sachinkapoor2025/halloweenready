@@ -22,7 +22,7 @@ export function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with HalloweenReady on WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#2fe06a] to-[#25D366] text-white shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:from-[#28d763] hover:to-[#20bd5a] hover:scale-105 active:scale-95 transition-transform"
+      className="fixed bottom-5 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#2fe06a] to-[#25D366] text-white shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:from-[#28d763] hover:to-[#20bd5a] hover:scale-105 active:scale-95 transition-transform"
     >
       <WhatsAppIcon />
     </a>

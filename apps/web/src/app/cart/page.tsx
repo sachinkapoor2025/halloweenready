@@ -11,7 +11,10 @@ import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ProductImage } from "@/components/ProductImage";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
+import { FreeShippingNotice } from "@/components/FreeShippingNotice";
+import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
 import type { DisplayCurrency } from "@/lib/currency-context";
+import type { CartItem } from "@halloweenready/shared";
 
 function TrashIcon() {
   return (
@@ -85,7 +88,7 @@ function CartQuantityControls({
 
 export default function CartPage() {
   const { cart, loading } = useCart();
-  const { format } = useCurrency();
+  const { format, displayCurrency, convert, usdInrRate } = useCurrency();
 
   if (loading) return <div className="p-10 text-center text-slate-600">Loading cart...</div>;
 
@@ -93,6 +96,11 @@ export default function CartPage() {
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const currency = (items[0]?.currency ?? "USD") as DisplayCurrency;
+  const payCurrency = payCurrencyForDisplay(displayCurrency);
+  const shipping = quoteCartShipping(items as CartItem[], payCurrency, usdInrRate);
+  const displaySubtotal = convert(total, currency);
+  const displayShipping = convert(shipping.totalCharge, payCurrency);
+  const displayTotal = displaySubtotal + displayShipping;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 sm:py-10">
@@ -168,15 +176,27 @@ export default function CartPage() {
             <div className="space-y-3 text-sm border-b border-slate-200 pb-4 mb-5">
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Subtotal ({itemCount} {itemCount === 1 ? "item" : "items"})</span>
-                <span className="font-medium text-slate-900">{format(total, currency)}</span>
+                <span className="font-medium text-slate-900">{format(displaySubtotal, displayCurrency)}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Shipping fee</span>
-                <span className="font-bold text-accent">FREE</span>
+                <span className={displayShipping > 0 ? "font-semibold text-slate-900" : "font-bold text-accent"}>
+                  {displayShipping > 0 ? format(displayShipping, displayCurrency) : "FREE"}
+                </span>
               </div>
+              {shipping.quote && (
+                <FreeShippingNotice
+                  quote={shipping.quote}
+                  formatMoney={format}
+                  currency={payCurrency}
+                />
+              )}
+              <p className="text-xs text-slate-500">
+                Same shipping amount is charged at checkout and on the payment page.
+              </p>
               <div className="flex items-center justify-between gap-4 pt-2 border-t border-slate-100">
                 <span className="font-bold text-slate-900">Estimated total</span>
-                <span className="font-bold text-accent text-base">{format(total, currency)}</span>
+                <span className="font-bold text-accent text-base">{format(displayTotal, displayCurrency)}</span>
               </div>
             </div>
 

@@ -133,6 +133,7 @@ export function deleteSavedAddress(id: string) {
 }
 
 export function formatAddressLine(address: ShippingAddress): string {
-  const parts = [address.line1, address.city, address.state, address.postalCode].filter(Boolean);
+  const parts = [address.line1, address.city, address.state, address.postalCode, address.country]
+    .filter(Boolean);
   return parts.join(", ");
 }
