@@ -4,6 +4,7 @@ exports.getCompetitiveDiscountPercent = getCompetitiveDiscountPercent;
 exports.applyCompetitivePriceReduction = applyCompetitivePriceReduction;
 exports.withCompetitiveStorefrontPricing = withCompetitiveStorefrontPricing;
 const currency_1 = require("../currency");
+const constants_1 = require("../constants");
 const flash_sale_1 = require("./flash-sale");
 /**
  * Competitive storefront price cuts (applied to catalog selling price before FX).
@@ -39,8 +40,11 @@ function withCompetitiveStorefrontPricing(product) {
     // Flash combo price is owned by code — never show a stale Dynamo $3.99.
     const priced = (0, flash_sale_1.withFlashComboStorefrontPricing)(product);
     // Already has intentional list vs sale pricing from the vendor catalog.
-    if (priced.vendorSlug || priced.categorySlug === "rakhi-hampers")
+    if (priced.vendorSlug ||
+        priced.categorySlug === "rakhi-hampers" ||
+        priced.categorySlug === constants_1.HALLOWEEN_HAMPERS_CATEGORY_SLUG) {
         return priced;
+    }
     // Flash / fixed-price deals must stay at the exact listed price.
     if ((0, flash_sale_1.productUsesFixedStorefrontPrice)(priced)) {
         return { ...priced, storefrontPricingApplied: true };

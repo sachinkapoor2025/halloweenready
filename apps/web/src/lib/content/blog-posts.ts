@@ -15,7 +15,7 @@ export const blogPosts: BlogPost[] = [
     slug: "halloween-costume-guide-2026",
     title: "Halloween Costume Guide 2026 — Adult & Kids Ideas",
     description:
-      "A practical Halloween costume guide for 2026: adult, teen, and kids ideas, when to order, and how to finish a look with fast USA delivery.",
+      "A practical Halloween costume guide for 2026: adult, teen, and kids ideas, when to order, and how to finish a look.",
     excerpt: "Family-friendly costume ideas for Halloween 2026, plus timing tips so outfits arrive before October 31.",
     publishedAt: "2026-09-01",
     updatedAt: "2026-09-15",
@@ -24,7 +24,7 @@ export const blogPosts: BlogPost[] = [
     sections: [
       {
         paragraphs: [
-          "Halloween 2026 is Saturday, October 31. Costume shopping is easier when you start with who will wear the outfit, where they will wear it, and how long they need to stay comfortable. HalloweenReady ships adult, teen, and kids costumes across all 50 US states, typically in 2–5 business days.",
+          "Halloween 2026 is Saturday, October 31. Costume shopping is easier when you start with who will wear the outfit, where they will wear it, and how long they need to stay comfortable. HalloweenReady ships adult, teen, and kids costumes internationally — delivering in 5–7 days.",
           "Classic horror still works year after year: vampires, witches, skeletons, and zombies photograph well and are easy to complete with a hat, fangs, or makeup. Pop-culture looks sell out faster, so it helps to order those by mid-October.",
         ],
       },
@@ -77,7 +77,7 @@ export const blogPosts: BlogPost[] = [
     slug: "trick-or-treat-candy-guide",
     title: "Trick-or-Treat Candy Guide — Bulk Buying Tips",
     description:
-      "How much Halloween candy to buy, what to mix for allergies, and when to order bulk assortments for USA delivery before October 31.",
+      "How much Halloween candy to buy, what to mix for allergies, and when to order bulk assortments before October 31.",
     excerpt: "A simple bulk-buying plan for trick-or-treat night — quantity, mix, and timing.",
     publishedAt: "2026-09-12",
     updatedAt: "2026-09-12",

@@ -65,6 +65,8 @@ export declare const VENDOR_HALLOWEENREADY: "halloweenready";
 export declare const VENDOR_CJ_DROPSHIPPING: "cj-dropshipping";
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export declare const ORANGE_COUNTY_CATEGORY_SLUG: "rakhi-hampers";
+/** Curated Halloween gift hampers (fixed-price bundles). */
+export declare const HALLOWEEN_HAMPERS_CATEGORY_SLUG: "halloween-hampers";
 /**
  * Hamper pricing from vendor cost (Excel). Uses retail margin on selling price:
  *   sale price = cost × 2.0  → 50% margin before coupons  ((P−C)/P)

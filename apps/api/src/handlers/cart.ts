@@ -6,7 +6,6 @@ import {
   cartKeys,
   productKeys,
   applyCompetitivePriceReduction,
-  cartAddonSignature,
   cartLineUnitTotal,
   productAllowsAddons,
   resolveProductAddons,
@@ -14,8 +13,13 @@ import {
   isFlashComboSaleActive,
   flashComboUnitPriceUsd,
   productUsesFixedStorefrontPrice,
+  isHalloweenHamperProduct,
+  resolveHamperCustomization,
+  hamperCustomizationSignature,
+  cartLinesMatch,
   type Cart,
   type CartItem,
+  type HamperCustomization,
   plainProductDescription,
 } from "@halloweenready/shared";
 import { docClient, CARTS_TABLE, PRODUCTS_TABLE, now, ttlInDays } from "../lib/db";
@@ -155,6 +159,8 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
       price?: number;
       vendorCost?: number;
     }>;
+    hamperContents?: Array<{ slug: string; name: string; image?: string; price?: number }>;
+    hamperAddons?: Array<{ slug: string; name: string; image?: string; price: number }>;
   };
 
   const variants = product.cjVariants ?? [];
@@ -173,18 +179,34 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
   }
 
   const requestedAddons = parsed.data.addons ?? [];
+  const hamper = isHalloweenHamperProduct(product);
   if (requestedAddons.length && !productAllowsAddons(product)) {
     return badRequest("Add-ons are not available for this product");
   }
   const resolved = resolveProductAddons(requestedAddons);
   if (!resolved.ok) return badRequest(resolved.error);
-  const addons = resolved.addons;
-  const signature = cartAddonSignature(addons);
+  let addons = resolved.addons;
+  let hamperCustomization: HamperCustomization | undefined;
+  if (hamper) {
+    const hamperResolved = resolveHamperCustomization(
+      {
+        hamperContents: product.hamperContents,
+        hamperAddons: product.hamperAddons,
+        price: product.price,
+      },
+      parsed.data.hamperCustomization
+    );
+    if (!hamperResolved.ok) return badRequest(hamperResolved.error);
+    hamperCustomization = hamperResolved.custom;
+    addons = [...addons, ...hamperResolved.extras];
+  }
+  const hamperSig = hamperCustomizationSignature(hamperCustomization);
 
   // Vendor / hamper / flash fixed-price deals — do not stack competitive cuts.
   const skipCompetitive =
     Boolean(product.vendorSlug) ||
     product.categorySlug === "rakhi-hampers" ||
+    product.categorySlug === "halloween-hampers" ||
     productUsesFixedStorefrontPrice(product);
   const basePrice = variant?.price ?? product.price;
   const unitPrice = isFlashComboProduct(product.slug)
@@ -203,8 +225,11 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
   const existingIdx = cart.items.findIndex(
     (i) =>
       i.productSlug === parsed.data.productSlug &&
-      cartAddonSignature(i.addons) === signature &&
-      (i.cjVid || "") === (requestedVid || "")
+      cartLinesMatch(i, {
+        addons,
+        hamperCustomization,
+        cjVid: requestedVid,
+      })
   );
 
   const description = plainProductDescription(product.description);
@@ -226,6 +251,7 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     ...(variant?.key ? { variantKey: variant.key } : {}),
     ...(couponExcluded ? { couponExcluded: true } : {}),
     ...(addons.length ? { addons } : {}),
+    ...(hamperCustomization && hamperSig ? { hamperCustomization } : {}),
     ...(description ? { description } : {}),
   };
 
@@ -236,6 +262,8 @@ export async function addToCart(event: APIGatewayProxyEventV2) {
     cart.items[existingIdx].price = item.price;
     if (addons.length) cart.items[existingIdx].addons = addons;
     else delete cart.items[existingIdx].addons;
+    if (hamperCustomization && hamperSig) cart.items[existingIdx].hamperCustomization = hamperCustomization;
+    else delete cart.items[existingIdx].hamperCustomization;
     if (!cart.items[existingIdx].lineId) cart.items[existingIdx].lineId = uuidv4();
     if (description && !cart.items[existingIdx].description) {
       cart.items[existingIdx].description = description;

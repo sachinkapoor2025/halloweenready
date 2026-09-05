@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "anthropic-ai", allow: "/" },
       { userAgent: "Google-Extended", allow: "/" },
       { userAgent: "Googlebot", allow: "/" },
+      { userAgent: "Bingbot", allow: "/" },
       { userAgent: "PerplexityBot", allow: "/" },
       { userAgent: "Applebot-Extended", allow: "/" },
       { userAgent: "Bytespider", allow: "/" },

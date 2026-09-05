@@ -7,7 +7,7 @@ import { faqJsonLd, pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
     title: "FAQ — Halloween Shipping, Costumes & Decor",
   description:
-    "Frequently asked questions about Halloween costumes, decor, candy delivery in the USA: shipping times, ordering, and Halloween 2026 planning.",
+    "Frequently asked questions about Halloween costumes, decorations, shipping, and Halloween 2026 planning at HalloweenReady.",
   path: "/faq",
 });
 

@@ -15,6 +15,7 @@ import { FreeShippingNotice } from "@/components/FreeShippingNotice";
 import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
 import type { DisplayCurrency } from "@/lib/currency-context";
 import type { CartItem } from "@halloweenready/shared";
+import { cartLineUnitTotal } from "@halloweenready/shared";
 
 function TrashIcon() {
   return (
@@ -36,7 +37,7 @@ function CartQuantityControls({
   quantity: number;
   cjVid?: string;
 }) {
-  const { addItem, updateItem, removeItem } = useCart();
+  const { updateItem, removeItem } = useCart();
   const [busy, setBusy] = useState(false);
 
   const run = async (fn: () => Promise<void>) => {
@@ -67,7 +68,7 @@ function CartQuantityControls({
           type="button"
           disabled={busy}
           aria-label="Increase quantity"
-          onClick={() => void run(() => addItem(productSlug, 1, undefined, undefined, cjVid))}
+          onClick={() => void run(() => updateItem(lineId, quantity + 1))}
           className="px-3 py-2 text-primary font-bold hover:bg-violet-200/60 disabled:opacity-50 transition"
         >
           +
@@ -94,7 +95,7 @@ export default function CartPage() {
 
   const items = cart?.items ?? [];
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + cartLineUnitTotal(i) * i.quantity, 0);
   const currency = (items[0]?.currency ?? "USD") as DisplayCurrency;
   const payCurrency = payCurrencyForDisplay(displayCurrency);
   const shipping = quoteCartShipping(items as CartItem[], payCurrency, usdInrRate);
@@ -122,7 +123,7 @@ export default function CartPage() {
             <ul className="space-y-6">
               {items.map((item) => {
                 const lineCurrency = (item.currency ?? currency) as DisplayCurrency;
-                const lineTotal = item.price * item.quantity;
+                const lineTotal = cartLineUnitTotal(item) * item.quantity;
                 const lineId = item.lineId ?? item.productSlug;
 
                 return (
@@ -145,6 +146,29 @@ export default function CartPage() {
                         >
                           {item.name}
                         </Link>
+                        {item.hamperCustomization && (
+                          <ul className="text-xs text-slate-600 space-y-0.5">
+                            {item.hamperCustomization.replacements.map((r) => (
+                              <li key={`${r.fromSlug}-${r.toSlug}`}>
+                                Swapped {r.fromSlug.replace(/-/g, " ")} → {r.toSlug.replace(/-/g, " ")}
+                              </li>
+                            ))}
+                            {item.hamperCustomization.extraSlugs.map((slug) => (
+                              <li key={slug}>Extra: {slug.replace(/-/g, " ")}</li>
+                            ))}
+                          </ul>
+                        )}
+                        {item.addons?.some((a) => a.id.startsWith("hamper-extra:")) && (
+                          <ul className="text-xs text-slate-600">
+                            {item.addons
+                              .filter((a) => a.id.startsWith("hamper-extra:"))
+                              .map((a) => (
+                                <li key={a.id}>
+                                  {a.name} +{format(a.price * a.quantity, lineCurrency)}
+                                </li>
+                              ))}
+                          </ul>
+                        )}
                         <CartQuantityControls
                           lineId={lineId}
                           productSlug={item.productSlug}

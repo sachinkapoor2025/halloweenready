@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AddToCartControl } from "@/components/AddToCartControl";
+import { HamperCustomizer } from "@/components/HamperCustomizer";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { api } from "@/lib/api";
 import { WishlistButton } from "@/components/WishlistButton";
@@ -21,11 +22,14 @@ import { HomeProductCard } from "@/components/HomeProductCard";
 import { useCart } from "@/lib/cart-context";
 import { productPageFaqs } from "@/lib/content/product-faqs";
 import { testimonials } from "@/lib/site";
+import { looksLikeHtml, stripHtml, shortPlainDescription } from "@/lib/html-text";
 import {
   LOW_STOCK_THRESHOLD,
   cjStorefrontProductVideosPath,
   getUnitsSold,
   isFastSelling,
+  isHalloweenHamperProduct,
+  type HamperCustomization,
   type Product,
 } from "@halloweenready/shared";
 import { ProductShippingPanel } from "@/components/ProductShippingPanel";
@@ -67,11 +71,6 @@ function galleryForVariant(images: string[], variantImage?: string): string[] {
   const featured = variantImage?.trim();
   if (!featured) return images;
   return [featured, ...images.filter((url) => url !== featured)];
-}
-
-function shortDescription(description: string): string {
-  const first = description.split(/(?<=\.)\s+/)[0]?.trim();
-  return first && first.length < description.length ? first : description.slice(0, 140).trim();
 }
 
 function ShareButton({ title, url }: { title: string; url: string }) {
@@ -131,6 +130,10 @@ export function ProductDetailClient({
   const selectedVariant = variants.find((v) => v.vid === selectedVid);
   const [videos, setVideos] = useState(product.videos ?? []);
   const [extraImages, setExtraImages] = useState<string[]>([]);
+  const [hamperCustomization, setHamperCustomization] = useState<HamperCustomization | undefined>();
+  const [hamperExtrasUsd, setHamperExtrasUsd] = useState(0);
+  const [hamperValid, setHamperValid] = useState(true);
+  const isHamper = isHalloweenHamperProduct(product);
 
   useEffect(() => {
     trackProductView(product.slug);
@@ -176,14 +179,15 @@ export function ProductDetailClient({
     selectedVariant?.image
   );
 
-  const displayPrice = selectedVariant?.price ?? product.price;
+  const displayPrice = (selectedVariant?.price ?? product.price) + (isHamper ? hamperExtrasUsd : 0);
+  const hamperBase = selectedVariant?.price ?? product.price;
   const price = format(displayPrice, product.currency);
   const comparePrice =
-    product.compareAtPrice && product.compareAtPrice > displayPrice
+    product.compareAtPrice && product.compareAtPrice > hamperBase
       ? format(product.compareAtPrice, product.currency)
       : null;
-  const discount = getDiscountPercent(displayPrice, product.compareAtPrice);
-  const summary = shortDescription(product.description);
+  const discount = getDiscountPercent(hamperBase, product.compareAtPrice);
+  const summary = shortPlainDescription(product.description);
   const cartQuantity = cart?.items.find((i) => i.productSlug === product.slug)?.quantity ?? 0;
   const inCart = cartQuantity > 0;
   const lowStock = product.inventory > 0 && product.inventory <= LOW_STOCK_THRESHOLD;
@@ -229,7 +233,18 @@ export function ProductDetailClient({
             </p>
           )}
 
-          <ProductShippingPanel price={displayPrice} currency={product.currency} />
+          <ProductShippingPanel price={hamperBase} currency={product.currency} />
+
+          {isHamper && (product.hamperContents?.length ?? 0) > 0 && (
+            <HamperCustomizer
+              product={product}
+              onChange={(custom, extrasUsd, valid) => {
+                setHamperCustomization(custom);
+                setHamperExtrasUsd(extrasUsd);
+                setHamperValid(valid);
+              }}
+            />
+          )}
 
           {variants.length > 1 && (
             <div className="mb-4">
@@ -298,10 +313,11 @@ export function ProductDetailClient({
               <div className="flex-1 min-w-[13rem] max-w-[18rem]">
                 <AddToCartControl
                   productSlug={product.slug}
-                  disabled={product.inventory <= 0}
+                  disabled={product.inventory <= 0 || (isHamper && !hamperValid)}
                   fullWidth
                   variant="detail"
                   cjVid={selectedVid || undefined}
+                  hamperCustomization={hamperCustomization}
                 />
               </div>
 
@@ -315,10 +331,11 @@ export function ProductDetailClient({
               <div className="flex-1 min-w-0">
                 <AddToCartControl
                   productSlug={product.slug}
-                  disabled={product.inventory <= 0}
+                  disabled={product.inventory <= 0 || (isHamper && !hamperValid)}
                   fullWidth
                   variant="detail"
                   cjVid={selectedVid || undefined}
+                  hamperCustomization={hamperCustomization}
                 />
               </div>
               <WishlistButton product={product} variant="toolbar" />
@@ -369,9 +386,11 @@ export function ProductDetailClient({
         {tab === "description" ? (
           <div className="space-y-8">
             <article className="text-slate-700 leading-relaxed space-y-4 max-w-4xl">
-              {product.description.split(/(?<=\.)\s+/).map((para, i) => (
-                <p key={i}>{para}</p>
-              ))}
+              {(looksLikeHtml(product.description) ? stripHtml(product.description) : product.description)
+                .split(/(?<=\.)\s+/)
+                .map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
             </article>
 
             {product.tags && product.tags.length > 0 && (
@@ -477,7 +496,13 @@ export function ProductDetailClient({
         )}
       </section>
     </div>
-    <StickyAddToCartBar product={product} cjVid={selectedVid || undefined} />
+    <StickyAddToCartBar
+      product={product}
+      cjVid={selectedVid || undefined}
+      hamperCustomization={hamperCustomization}
+      extraUsd={isHamper ? hamperExtrasUsd : 0}
+      disabled={isHamper && !hamperValid}
+    />
     </>
   );
 }

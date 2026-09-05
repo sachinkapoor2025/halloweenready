@@ -58,6 +58,28 @@ export const productSchema = z.object({
    * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
    */
   allowsAddons: z.boolean().optional(),
+  /** Snapshot of products inside a hamper (name/image/price for PDP + cart). */
+  hamperContents: z
+    .array(
+      z.object({
+        slug: z.string().min(1),
+        name: z.string().min(1),
+        image: z.string().optional(),
+        price: z.number().positive().optional(),
+      })
+    )
+    .optional(),
+  /** Snapshot of products that can replace an included item or be added extra. */
+  hamperAddons: z
+    .array(
+      z.object({
+        slug: z.string().min(1),
+        name: z.string().min(1),
+        image: z.string().optional(),
+        price: z.number().nonnegative(),
+      })
+    )
+    .optional(),
   /**
    * When true, coupons cannot discount this product (flash / fixed-price deals).
    * Also skips competitive storefront price cuts so the listed price stays exact.

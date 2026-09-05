@@ -13,6 +13,7 @@ exports.SEO_CATEGORY_LINKS = [
     { href: "/categories/jewellryandaccessories", label: "Halloween jewelry" },
     { href: "/categories/lifestyleandwearable", label: "Halloween apparel" },
     { href: "/categories/printedandpapercrafts", label: "Halloween paper crafts" },
+    { href: "/categories/halloween-hampers", label: "Halloween hampers" },
 ];
 /** Countries we can quote CJ freight for — never market unquoted destinations as shippable. */
 exports.VERIFIED_COUNTRY_LINKS = [
@@ -57,6 +58,7 @@ const RELATED_CATEGORIES = {
     jewellryandaccessories: ["costumesandaccessories", "lifestyleandwearable"],
     lifestyleandwearable: ["jewellryandaccessories", "costumesandaccessories"],
     printedandpapercrafts: ["partysupplier", "home-decoration"],
+    "halloween-hampers": ["home-decoration", "partysupplier"],
 };
 const MAX_PER_GROUP = 8;
 function pathFor(page) {

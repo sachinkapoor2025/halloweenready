@@ -60,7 +60,7 @@ export default function HalloweenGuidePage() {
           <Image src={hero.src} alt={hero.alt} fill className="object-cover" priority sizes="100vw" unoptimized />
         </div>
         <div className="relative max-w-5xl mx-auto px-4 py-16 md:py-24 text-center">
-          <p className="text-sm uppercase tracking-widest text-accent mb-3">HALLOWEEN 2026 · USA GUIDE</p>
+          <p className="text-sm uppercase tracking-widest text-accent mb-3">HALLOWEEN 2026 · PLANNING GUIDE</p>
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
             Your Complete Halloween Guide
           </h1>
@@ -101,7 +101,7 @@ export default function HalloweenGuidePage() {
           </p>
           <p>
             {applyInlineLinks(
-              `${site.name} fulfills Halloween catalog items through international dropshipping partners. Check the product-page shipping quote for California, New York, Texas, Florida, and other destinations. Add Halloween party supplies to the same order so tableware matches the rest of your celebration.`,
+              `${site.name} ships internationally through dropshipping partners. Delivering in 5–7 days — confirm shipping on each product page. Add Halloween party supplies to the same order so tableware matches the rest of your celebration.`,
               halloweenGuideInlineLinks
             )}
           </p>

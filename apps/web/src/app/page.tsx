@@ -5,6 +5,7 @@ import { BannerCarousel } from "@/components/BannerCarousel";
 import { CustomerReviews } from "@/components/CustomerReviews";
 import { HomepageCatalog } from "@/components/HomepageCatalog";
 import { HomepageCategorySections } from "@/components/HomepageCategorySections";
+import { HomepageHampers } from "@/components/HomepageHampers";
 import { HomeProductCard } from "@/components/HomeProductCard";
 import { FastSellingSection } from "@/components/FastSellingSection";
 import { HomeSeoSection } from "@/components/HomeSeoSection";
@@ -46,6 +47,61 @@ type HomepageFeed = {
   total: number;
   hasMore: boolean;
 };
+
+type CategoryPreview = { slug: string; name: string };
+
+function HomeCatalogBlock({
+  homepage,
+  products,
+  categoryPreviews,
+}: {
+  homepage: HomepageFeed | null;
+  products: Product[];
+  categoryPreviews: CategoryPreview[];
+}) {
+  if (homepage?.products.length && homepage.snapshot) {
+    return (
+      <HomepageCatalog
+        products={homepage.products}
+        snapshot={homepage.snapshot}
+        total={homepage.total ?? homepage.products.length}
+        hasMore={Boolean(homepage.hasMore) || homepage.products.length < (homepage.total ?? 0)}
+      >
+        <HomepageCategorySections categories={categoryPreviews} />
+      </HomepageCatalog>
+    );
+  }
+
+  if (products.length > 0) {
+    return (
+      <>
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="halloween-heading text-xl md:text-2xl">
+              Celebrate Halloween in Style 🎃👻
+            </h2>
+            <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
+              View All →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+            {products.slice(0, 20).map((p) => (
+              <HomeProductCard key={p.slug} product={p} />
+            ))}
+          </div>
+        </section>
+        <HomepageCategorySections categories={categoryPreviews} />
+      </>
+    );
+  }
+
+  return (
+    <p className="text-center text-slate-500 py-12">
+      Products could not be loaded. Confirm Amplify env var{" "}
+      <code className="bg-slate-100 px-1 rounded text-slate-800">NEXT_PUBLIC_API_URL</code> is set and redeploy.
+    </p>
+  );
+}
 
 export default async function HomePage() {
   let products: Product[] = [];
@@ -104,38 +160,9 @@ export default async function HomePage() {
 
       <FastSellingSection products={products} limit={HOMEPAGE_FAST_SELLING_LIMIT} />
 
-      {homepage?.products.length && homepage.snapshot ? (
-        <HomepageCatalog
-          products={homepage.products}
-          snapshot={homepage.snapshot}
-          total={homepage.total ?? homepage.products.length}
-          hasMore={Boolean(homepage.hasMore) || homepage.products.length < (homepage.total ?? 0)}
-        >
-          <HomepageCategorySections categories={categoryPreviews} />
-        </HomepageCatalog>
-      ) : products.length > 0 ? (
-      <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="halloween-heading text-xl md:text-2xl">
-            Celebrate Halloween in Style 🎃👻
-          </h2>
-          <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
-            View All →
-          </Link>
-        </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-            {products.slice(0, 20).map((p) => (
-              <HomeProductCard key={p.slug} product={p} />
-            ))}
-          </div>
-      </section>
-      <HomepageCategorySections categories={categoryPreviews} />
-      ) : (
-        <p className="text-center text-slate-500 py-12">
-            Products could not be loaded. Confirm Amplify env var{" "}
-            <code className="bg-slate-100 px-1 rounded text-slate-800">NEXT_PUBLIC_API_URL</code> is set and redeploy.
-          </p>
-      )}
+      <HomepageHampers />
+
+      <HomeCatalogBlock homepage={homepage} products={products} categoryPreviews={categoryPreviews} />
 
       <WhyTrustUsSection />
 

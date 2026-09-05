@@ -25,6 +25,7 @@ exports.CATEGORY_SLUGS = {
     wearable: "lifestyleandwearable",
     paper: "printedandpapercrafts",
     candles: "candlesandfragrance",
+    hampers: "halloween-hampers",
 };
 const CATEGORY_KEYWORDS = [
     { slug: exports.CATEGORY_SLUGS.costumes, label: "costumes", pattern: /\b(costume|cosplay|outfit|dress up|witch|vampire|zombie|skeleton|superhero|princess)\b/i },
@@ -33,6 +34,7 @@ const CATEGORY_KEYWORDS = [
     { slug: exports.CATEGORY_SLUGS.toys, label: "toys", pattern: /\b(toy|novelty|prank|gag)\b/i },
     { slug: exports.CATEGORY_SLUGS.jewelry, label: "accessories", pattern: /\b(wig|mask|makeup|gloves|jewelry|accessory|accessories|hat)\b/i },
     { slug: exports.CATEGORY_SLUGS.candles, label: "candles", pattern: /\b(candle|fragrance|scent)\b/i },
+    { slug: exports.CATEGORY_SLUGS.hampers, label: "hampers", pattern: /\b(hamper|gift basket|boo basket|gift kit)\b/i },
 ];
 const THEME_PATTERNS = [
     { value: "witch", pattern: /\bwitch(es)?\b/i },

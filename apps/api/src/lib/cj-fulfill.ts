@@ -2,10 +2,14 @@ import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import {
   VENDOR_CJ_DROPSHIPPING,
   orderKeys,
+  productKeys,
   upsertVendorFulfillment,
+  getHalloweenHamperDef,
+  resolvedHamperContentSlugs,
   type Order,
+  type CartItem,
 } from "@halloweenready/shared";
-import { docClient, ORDERS_TABLE, now } from "./db";
+import { docClient, ORDERS_TABLE, PRODUCTS_TABLE, now } from "./db";
 import { cjAddToMyProduct, cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
 
 type StoredOrder = Order & Record<string, unknown>;
@@ -14,6 +18,49 @@ function cjLines(order: Order) {
   return (order.items ?? []).filter(
     (item) => item.vendorSlug === VENDOR_CJ_DROPSHIPPING && (item.cjVid || item.sku)
   );
+}
+
+async function expandHamperItemsToCjLines(order: Order): Promise<CartItem[]> {
+  const extra: CartItem[] = [];
+  for (const item of order.items ?? []) {
+    const def = getHalloweenHamperDef(item.productSlug);
+    if (!def) continue;
+    const slugs = resolvedHamperContentSlugs(def.contents, item.hamperCustomization);
+    for (const slug of slugs) {
+      const result = await docClient.send(
+        new GetCommand({
+          TableName: PRODUCTS_TABLE,
+          Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+        })
+      );
+      const product = result.Item as
+        | {
+            vendorSlug?: string;
+            cjPid?: string;
+            cjVid?: string;
+            sku?: string;
+            name?: string;
+          }
+        | undefined;
+      if (!product) continue;
+      const vid = product.cjVid;
+      const sku = product.sku;
+      if (!vid && !sku) continue;
+      extra.push({
+        productSlug: slug,
+        name: product.name || slug,
+        price: 0,
+        currency: item.currency,
+        quantity: item.quantity,
+        vendorSlug: VENDOR_CJ_DROPSHIPPING,
+        ...(product.cjPid ? { cjPid: product.cjPid } : {}),
+        ...(vid ? { cjVid: vid } : {}),
+        ...(sku ? { sku } : {}),
+        lineId: `${item.lineId || item.productSlug}:${slug}`,
+      });
+    }
+  }
+  return extra;
 }
 
 function cheapestLogistic(data: unknown): string | undefined {
@@ -74,7 +121,8 @@ export async function fulfillOrderWithCj(
     };
   }
 
-  const lines = cjLines(order);
+  const hamperLines = await expandHamperItemsToCjLines(order);
+  const lines = [...cjLines(order), ...hamperLines.filter((l) => l.cjVid || l.sku)];
   if (!lines.length) {
     return { ok: true, skipped: true, message: "No CJ Dropshipping lines on this order" };
   }

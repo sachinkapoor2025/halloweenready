@@ -110,7 +110,7 @@ export function HomeSeoSection() {
             <section className="bg-nav text-white rounded-xl p-6">
               <h3 className="text-lg font-semibold mb-2">Ready for Halloween 2026?</h3>
               <p className="text-sm text-white/90 mb-4">
-                Browse costumes, decor, and candy above — we help shoppers worldwide place Halloween orders for USA delivery.
+                Browse costumes, decor, and candy above. HalloweenReady ships internationally — delivering in 5–7 days.
               </p>
               <div className="flex flex-wrap gap-3 text-sm">
                 <Link
@@ -120,7 +120,7 @@ export function HomeSeoSection() {
                   Shop all Halloween items
                 </Link>
                 <a
-                  href={whatsappChatUrl("Hi HalloweenReady, I need help with Halloween delivery to the USA.")}
+                  href={whatsappChatUrl("Hi HalloweenReady, I need help with a Halloween order.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border border-white/60 px-4 py-2 rounded-lg hover:bg-white/10"

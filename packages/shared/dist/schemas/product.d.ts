@@ -77,6 +77,40 @@ export declare const productSchema: z.ZodObject<{
      * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
      */
     allowsAddons: z.ZodOptional<z.ZodBoolean>;
+    /** Snapshot of products inside a hamper (name/image/price for PDP + cart). */
+    hamperContents: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }>, "many">>;
+    /** Snapshot of products that can replace an included item or be added extra. */
+    hamperAddons: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }>, "many">>;
     /**
      * When true, coupons cannot discount this product (flash / fixed-price deals).
      * Also skips competitive storefront price cuts so the listed price stays exact.
@@ -169,6 +203,18 @@ export declare const productSchema: z.ZodObject<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;
@@ -224,6 +270,18 @@ export declare const productSchema: z.ZodObject<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;
@@ -304,6 +362,38 @@ export declare const createProductSchema: z.ZodObject<{
         heightIn?: number | undefined;
     }>, "many">>;
     allowsAddons: z.ZodOptional<z.ZodBoolean>;
+    hamperContents: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }>, "many">>;
+    hamperAddons: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }>, "many">>;
     seoTitle: z.ZodOptional<z.ZodString>;
     seoDescription: z.ZodOptional<z.ZodString>;
     lowStockAlertSentAt: z.ZodOptional<z.ZodString>;
@@ -378,6 +468,18 @@ export declare const createProductSchema: z.ZodObject<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;
@@ -432,6 +534,18 @@ export declare const createProductSchema: z.ZodObject<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;
@@ -508,6 +622,38 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         heightIn?: number | undefined;
     }>, "many">>>;
     allowsAddons: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
+    hamperContents: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }, {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }>, "many">>>;
+    hamperAddons: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+        slug: z.ZodString;
+        name: z.ZodString;
+        image: z.ZodOptional<z.ZodString>;
+        price: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }, {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }>, "many">>>;
     couponExcluded: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
     seoTitle: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     seoDescription: z.ZodOptional<z.ZodOptional<z.ZodString>>;
@@ -586,6 +732,18 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;
@@ -640,6 +798,18 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
         heightIn?: number | undefined;
     }[] | undefined;
     allowsAddons?: boolean | undefined;
+    hamperContents?: {
+        name: string;
+        slug: string;
+        price?: number | undefined;
+        image?: string | undefined;
+    }[] | undefined;
+    hamperAddons?: {
+        name: string;
+        price: number;
+        slug: string;
+        image?: string | undefined;
+    }[] | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     lowStockAlertSentAt?: string | undefined;

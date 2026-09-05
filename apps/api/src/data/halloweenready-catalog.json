@@ -1,6 +1,12 @@
 {
   "categories": [
     {
+      "name": "HALLOWEEN HAMPERS",
+      "slug": "halloween-hampers",
+      "description": "Ready-to-gift Halloween hampers — curated décor, costume, and party kits with free shipping. Swap included items for add-ons at the same hamper price, or add extras.",
+      "sortOrder": 0
+    },
+    {
       "name": "CANDLES & FRAGRANCE",
       "slug": "candlesandfragrance",
       "description": "Create a cozy Halloween vibe with scented candles and fragrances inspired by pumpkin spice, cinnamon, vanilla, and autumn aromas. Perfect for adding warmth and spooky seasonal charm to your home.",

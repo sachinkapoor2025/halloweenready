@@ -69,6 +69,7 @@ export * from "./lib/order-confirmed-email";
 export * from "./lib/order-status";
 export * from "./lib/order-vendors";
 export * from "./lib/product-addons";
+export * from "./lib/halloween-hampers";
 export * from "./lib/flash-sale";
 export * from "./db/keys";
 export * from "./constants";

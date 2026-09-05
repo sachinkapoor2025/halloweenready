@@ -85,6 +85,7 @@ __exportStar(require("./lib/order-confirmed-email"), exports);
 __exportStar(require("./lib/order-status"), exports);
 __exportStar(require("./lib/order-vendors"), exports);
 __exportStar(require("./lib/product-addons"), exports);
+__exportStar(require("./lib/halloween-hampers"), exports);
 __exportStar(require("./lib/flash-sale"), exports);
 __exportStar(require("./db/keys"), exports);
 __exportStar(require("./constants"), exports);
