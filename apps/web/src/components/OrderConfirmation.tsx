@@ -68,7 +68,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
       <div className="bg-primary text-white">
         <div className="max-w-2xl mx-auto px-4 pt-8 pb-20 text-center">
           <div className="flex justify-center mb-6">
-            <SiteLogoLink className="brightness-0 invert" priority />
+            <SiteLogoLink priority />
           </div>
 
           <div

@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HALLOWEEN_HAMPERS_CATEGORY = exports.HALLOWEEN_HAMPER_DEFS = exports.HAMPER_ADDON_POOL = exports.HAMPER_CONTENTS_VALUE_HEADROOM = exports.HAMPER_TAG = void 0;
+exports.isPromotionalHamperImage = isPromotionalHamperImage;
+exports.firstProductPhoto = firstProductPhoto;
+exports.galleryImagesForHamper = galleryImagesForHamper;
+exports.withHamperProductPhotos = withHamperProductPhotos;
 exports.isHalloweenHamperProduct = isHalloweenHamperProduct;
 exports.isStorefrontVisibleProduct = isStorefrontVisibleProduct;
 exports.hamperContentsValue = hamperContentsValue;
@@ -17,6 +21,48 @@ const product_addons_1 = require("./product-addons");
 exports.HAMPER_TAG = "halloween-hamper";
 /** Individual product value inside a hamper may exceed the bundle price by this ratio. */
 exports.HAMPER_CONTENTS_VALUE_HEADROOM = 0.07;
+/** Site banners / logos — never use these as hamper gallery photos. */
+function isPromotionalHamperImage(url) {
+    if (!url?.trim())
+        return true;
+    const u = url.trim().toLowerCase();
+    return (u.includes("/banners/") ||
+        u.includes("bannerpage") ||
+        u.includes("product-fallback") ||
+        u.endsWith("/logo.png") ||
+        u.includes("/logo-options/"));
+}
+function firstProductPhoto(images) {
+    return (images ?? []).find((url) => url && !isPromotionalHamperImage(url));
+}
+/** Main photo is the first included product; remaining unique product photos follow. */
+function galleryImagesForHamper(contents, fallback = []) {
+    const unique = [];
+    for (const url of [
+        ...(contents ?? []).map((c) => c.image?.trim()),
+        ...fallback.map((u) => u.trim()),
+    ]) {
+        if (!url || isPromotionalHamperImage(url) || unique.includes(url))
+            continue;
+        unique.push(url);
+    }
+    return unique.slice(0, 8);
+}
+function withHamperProductPhotos(product, photoBySlug) {
+    const patch = (line) => {
+        const fromCatalog = photoBySlug.get(line.slug);
+        const image = fromCatalog || (!isPromotionalHamperImage(line.image) ? line.image : undefined);
+        return { ...line, image };
+    };
+    const hamperContents = (product.hamperContents ?? []).map(patch);
+    const hamperAddons = (product.hamperAddons ?? []).map(patch);
+    return {
+        ...product,
+        hamperContents,
+        hamperAddons,
+        images: galleryImagesForHamper(hamperContents, product.images),
+    };
+}
 const PUMPKIN_LAMP = "https://cf.cjdropshipping.com/0ceac233-1580-45f5-b2b2-f9c660947db1.jpg";
 const BALLOON = "https://cf.cjdropshipping.com/5f6274b8-f967-45c4-84e9-c0e1303fc01e.jpg";
 const ZOMBIE = "https://cf.cjdropshipping.com/7cb98850-7bdb-4d21-9222-3b97d6658578.jpg";
@@ -44,8 +90,15 @@ exports.HAMPER_ADDON_POOL = [
     line("halloween-pumpkin-lamp-rgbww-color-remote-control-candle-light-2507220", "RGB pumpkin lamp", 21.56, PUMPKIN_LAMP),
 ];
 function hamper(slug, name, price, tagline, description, contents, extraImages = []) {
-    const images = [...contents.map((c) => c.image).filter(Boolean), ...extraImages];
-    return { slug, name, price, tagline, description, contents, images: [...new Set(images)].slice(0, 6) };
+    return {
+        slug,
+        name,
+        price,
+        tagline,
+        description,
+        contents,
+        images: galleryImagesForHamper(contents, extraImages),
+    };
 }
 exports.HALLOWEEN_HAMPER_DEFS = [
     hamper("youve-been-bood-hamper", "You've Been Boo'd Hamper", 49, "Doorstep gift — wreath, lantern, socks, bucket, and party extras.", "A ready-to-give Halloween boo basket: wreath, glow bucket, lantern, socks, candle, balloons, and cozy extras. Free shipping. Swap any included piece for an add-on at the same hamper price, or add extras.", [
@@ -332,7 +385,7 @@ function buildHalloweenHamperCatalogProducts() {
             compareAtPrice: compareAt > def.price ? compareAt : undefined,
             currency: "USD",
             categorySlug: constants_1.HALLOWEEN_HAMPERS_CATEGORY_SLUG,
-            images: def.images.length ? def.images : [BANNER],
+            images: galleryImagesForHamper(def.contents, def.images),
             sku: `HR-HAMPER-${def.price}`,
             inventory: constants_1.DEFAULT_PRODUCT_INVENTORY,
             tags: [exports.HAMPER_TAG, "halloween", "hamper"],

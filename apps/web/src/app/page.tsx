@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { BannerCarousel } from "@/components/BannerCarousel";
@@ -54,10 +55,12 @@ function HomeCatalogBlock({
   homepage,
   products,
   categoryPreviews,
+  hampers,
 }: {
   homepage: HomepageFeed | null;
   products: Product[];
   categoryPreviews: CategoryPreview[];
+  hampers: ReactNode;
 }) {
   if (homepage?.products.length && homepage.snapshot) {
     return (
@@ -66,6 +69,7 @@ function HomeCatalogBlock({
         snapshot={homepage.snapshot}
         total={homepage.total ?? homepage.products.length}
         hasMore={Boolean(homepage.hasMore) || homepage.products.length < (homepage.total ?? 0)}
+        midSection={hampers}
       >
         <HomepageCategorySections categories={categoryPreviews} />
       </HomepageCatalog>
@@ -90,6 +94,7 @@ function HomeCatalogBlock({
             ))}
           </div>
         </section>
+        {hampers}
         <HomepageCategorySections categories={categoryPreviews} />
       </>
     );
@@ -160,9 +165,12 @@ export default async function HomePage() {
 
       <FastSellingSection products={products} limit={HOMEPAGE_FAST_SELLING_LIMIT} />
 
-      <HomepageHampers />
-
-      <HomeCatalogBlock homepage={homepage} products={products} categoryPreviews={categoryPreviews} />
+      <HomeCatalogBlock
+        homepage={homepage}
+        products={products}
+        categoryPreviews={categoryPreviews}
+        hampers={<HomepageHampers />}
+      />
 
       <WhyTrustUsSection />
 

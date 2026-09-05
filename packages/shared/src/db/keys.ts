@@ -45,8 +45,9 @@ export const orderKeys = {
   // GSI3: filter by status, sorted by date
   gsi3pk: (status: string) => `STATUS#${status}`,
   gsi3sk: (createdAt: string) => createdAt,
-  /** Atomic counters for human order numbers (OC / US). */
-  counterPk: (prefix: "OC" | "US") => `COUNTER#ORDER#${prefix}`,
+  /** Atomic counters for human order numbers (OC / US). HW allocations reuse the US counter. */
+  counterPk: (prefix: "OC" | "US" | "HW") =>
+    `COUNTER#ORDER#${prefix === "HW" ? "US" : prefix}`,
   counterSk: () => "META" as const,
   /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
   numberPk: (orderNumber: string) => `ORDERNUM#${orderNumber.trim().toUpperCase()}`,

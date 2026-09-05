@@ -165,6 +165,61 @@ export const createAdminCouponSchema = z
 
 export type CreateAdminCouponInput = z.infer<typeof createAdminCouponSchema>;
 
+/** Admin end-to-end test coupon: forces items + shipping to $1 USD. */
+export const TEST_ORDER_COUPON_MINUTES = 20;
+export const TEST_ORDER_FORCE_TOTAL_USD = 1;
+export const TEST_ORDER_COUPON_KIND = "test_order" as const;
+
+export const couponKindSchema = z.enum(["percent", "test_order"]);
+export type CouponKind = z.infer<typeof couponKindSchema>;
+
+const adminCouponContactFields = {
+  email: z.string().trim().max(254).optional().or(z.literal("")),
+  /** Local mobile digits only — used for coupon binding / checkout match (no country code). */
+  phone: z.string().trim().max(22).optional().or(z.literal("")),
+};
+
+function refineAdminCouponContact(
+  v: { email?: string; phone?: string },
+  ctx: z.RefinementCtx
+) {
+  const email = v.email?.trim() ?? "";
+  const phoneDigits = (v.phone ?? "").replace(/\D/g, "");
+  const hasEmail = Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  const hasPhone = phoneDigits.length >= 7 && phoneDigits.length <= 12;
+  if (!hasEmail && !hasPhone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Enter a customer email or mobile number",
+      path: ["email"],
+    });
+  }
+  if (email && !hasEmail) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Enter a valid email address",
+      path: ["email"],
+    });
+  }
+  if ((v.phone ?? "").trim() && !hasPhone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Enter a valid mobile number",
+      path: ["phone"],
+    });
+  }
+}
+
+export const createTestOrderCouponSchema = z
+  .object(adminCouponContactFields)
+  .superRefine(refineAdminCouponContact);
+
+export type CreateTestOrderCouponInput = z.infer<typeof createTestOrderCouponSchema>;
+
+export function isTestOrderCoupon(coupon: { kind?: string } | null | undefined): boolean {
+  return coupon?.kind === TEST_ORDER_COUPON_KIND;
+}
+
 export const couponSchema = z.object({
   code: z.string(),
   /** Optional when coupon is bound to phone (spin-the-wheel). */
@@ -186,6 +241,9 @@ export const couponSchema = z.object({
    * Longer expiry so the code is less likely to expire unused.
    */
   confirmedSale: z.boolean().optional(),
+  /** `test_order` forces checkout total (items + shipping) to $1 USD. */
+  kind: couponKindSchema.optional(),
+  forceTotalUsd: z.number().positive().optional(),
 });
 
 export type StoreCoupon = z.infer<typeof couponSchema>;
@@ -213,4 +271,6 @@ export type CouponValidationResult = {
   discountPercent?: number;
   expiresAt?: string;
   error?: string;
+  kind?: CouponKind;
+  forceTotalUsd?: number;
 };

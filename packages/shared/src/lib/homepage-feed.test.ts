@@ -4,6 +4,7 @@ import {
   HOMEPAGE_FEED_CHUNK_SIZE,
   HOMEPAGE_FEED_INITIAL_LIMIT,
   HOMEPAGE_FIRST_PAINT_GROUPS,
+  HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS,
   buildHomepageFeedSlugs,
   homepageProductsPath,
   paginateHomepageFeed,
@@ -62,5 +63,9 @@ describe("homepage feed", () => {
     });
     assert.equal(parseHomepageFeedQuery({ limit: "999" }).limit, 48);
     assert.equal(homepageProductsPath({ offset: 40, limit: 24 }), "/homepage/products?limit=24&offset=40");
+  });
+
+  it("places hampers after two featured groups (4th homepage block after the banner)", () => {
+    assert.equal(HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS, 2);
   });
 });

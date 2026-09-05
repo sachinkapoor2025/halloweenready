@@ -15,7 +15,7 @@ import { ShippingAddressForm } from "@/components/ShippingAddressForm";
 import { SecureCheckoutBadge } from "@/components/SecureCheckoutBadge";
 import { CheckoutLegalNotice } from "@/components/CheckoutLegalNotice";
 import { TrustBadges } from "@/components/TrustBadges";
-import { CouponInput } from "@/components/CouponInput";
+import { CouponInput, type AppliedCouponMeta } from "@/components/CouponInput";
 import { StripePaymentForm } from "@/components/StripePaymentForm";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
 import { loadWelcomeCoupon } from "@/lib/welcome-coupon";
@@ -29,7 +29,7 @@ import { useMarket } from "@/lib/market-context";
 import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
 import { FreeShippingNotice } from "@/components/FreeShippingNotice";
 import { withCountry } from "@/components/CountryStateFields";
-import { ORDER_STATUS, type CartItem, type Order, type ShippingAddress } from "@halloweenready/shared";
+import { ORDER_STATUS, applyCouponToOrderTotals, cartSubtotal, convertCartItemsToCurrency, type CartItem, type Order, type ShippingAddress } from "@halloweenready/shared";
 
 declare global {
   interface Window {
@@ -63,8 +63,7 @@ function CheckoutPageInner() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [appliedCouponCode, setAppliedCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCouponMeta | null>(null);
   const [savedCouponCode, setSavedCouponCode] = useState("");
   const [stripeCheckout, setStripeCheckout] = useState<{ clientSecret: string; orderId: string } | null>(
     null
@@ -104,10 +103,6 @@ function CheckoutPageInner() {
         if (data.order.shippingAddress) setAddress(data.order.shippingAddress);
         if (data.order.paymentProvider === "razorpay") setPaymentMethod("razorpay");
         else if (data.order.paymentProvider === "stripe") setPaymentMethod("stripe");
-        if (data.order.discount > 0) {
-          setDiscount(data.order.discount);
-          if (data.order.couponCode) setAppliedCouponCode(data.order.couponCode);
-        }
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load order for retry"))
       .finally(() => setRetryLoading(false));
@@ -389,7 +384,7 @@ function CheckoutPageInner() {
           checkoutCurrency: payCurrency,
           ...(payCurrency === "INR" ? { usdInrRate } : {}),
           shippingAddress: payload,
-          ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
+          ...(appliedCoupon?.code ? { couponCode: appliedCoupon.code } : {}),
         }),
       });
 
@@ -454,9 +449,35 @@ function CheckoutPageInner() {
   const displayShipping = isRetry
     ? convert(retryOrder!.shipping, (retryOrder!.currency ?? "USD") as DisplayCurrency)
     : convert(shippingQuote.totalCharge, payCurrency);
+  const paySubtotal = isRetry
+    ? retryOrder!.subtotal
+    : cartSubtotal(convertCartItemsToCurrency(checkoutItems as CartItem[], payCurrency, usdInrRate));
+  const payShipping = isRetry ? retryOrder!.shipping : shippingQuote.totalCharge;
+  const couponPriced =
+    appliedCoupon && !isRetry
+      ? applyCouponToOrderTotals({
+          kind: appliedCoupon.kind,
+          discountPercent: appliedCoupon.discountPercent,
+          eligibleSubtotal: paySubtotal,
+          subtotal: paySubtotal,
+          shipping: payShipping,
+          currency: payCurrency,
+          usdInrRate,
+        })
+      : null;
+  const discount = isRetry
+    ? retryOrder!.discount
+    : couponPriced
+      ? convert(couponPriced.discount, payCurrency)
+      : 0;
+  const appliedCouponCode = isRetry
+    ? (retryOrder!.couponCode ?? "")
+    : (appliedCoupon?.code ?? "");
   const orderTotal = isRetry
     ? retryOrder!.total
-    : Math.max(0, displaySubtotal - discount + displayShipping);
+    : couponPriced
+      ? convert(couponPriced.total, payCurrency)
+      : Math.max(0, displaySubtotal + displayShipping);
 
   return (
     <>
@@ -508,10 +529,10 @@ function CheckoutPageInner() {
                 <span className="text-slate-700">Items ({itemCount})</span>
                 <span className="font-medium">{format(displaySubtotal, displayCurrency)}</span>
               </div>
-              {discount > 0 && (
+              {appliedCouponCode && discount !== 0 && (
                 <div className="flex justify-between gap-4 text-green-700">
                   <span>Coupon ({appliedCouponCode})</span>
-                  <span>−{format(discount, displayCurrency)}</span>
+                  <span>−{format(Math.abs(discount), displayCurrency)}</span>
                 </div>
               )}
               <div className="flex justify-between gap-4">
@@ -541,18 +562,18 @@ function CheckoutPageInner() {
             {!isRetry && (
               <CouponInput
                 email={address.email}
-                subtotal={displaySubtotal}
+                phone={address.phone}
+                subtotal={paySubtotal}
+                shipping={payShipping}
                 currency={displayCurrency}
+                payCurrency={payCurrency}
+                usdInrRate={usdInrRate}
                 formatMoney={format}
                 initialCode={savedCouponCode}
-                onApplied={(amount, code) => {
-                  setDiscount(amount);
-                  setAppliedCouponCode(code);
+                onApplied={(_amount, _code, meta) => {
+                  if (meta) setAppliedCoupon(meta);
                 }}
-                onCleared={() => {
-                  setDiscount(0);
-                  setAppliedCouponCode("");
-                }}
+                onCleared={() => setAppliedCoupon(null)}
               />
             )}
 

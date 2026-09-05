@@ -9,6 +9,28 @@ export type HamperLine = {
     image?: string;
     price: number;
 };
+/** Site banners / logos — never use these as hamper gallery photos. */
+export declare function isPromotionalHamperImage(url?: string | null): boolean;
+export declare function firstProductPhoto(images?: Array<string | undefined> | null): string | undefined;
+/** Main photo is the first included product; remaining unique product photos follow. */
+export declare function galleryImagesForHamper(contents: Array<{
+    image?: string | null;
+}> | null | undefined, fallback?: string[]): string[];
+export declare function withHamperProductPhotos<T extends {
+    hamperContents?: Array<{
+        slug: string;
+        name: string;
+        image?: string;
+        price?: number;
+    }> | null;
+    hamperAddons?: Array<{
+        slug: string;
+        name: string;
+        image?: string;
+        price?: number;
+    }> | null;
+    images?: string[];
+}>(product: T, photoBySlug: Map<string, string>): T;
 export type HamperCustomization = {
     excludedSlugs: string[];
     replacements: Array<{

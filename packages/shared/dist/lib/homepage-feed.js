@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HOMEPAGE_FIRST_PAINT_GROUPS = exports.HOMEPAGE_FAST_SELLING_LIMIT = exports.HOMEPAGE_CATEGORY_PREVIEW_LIMIT = exports.HOMEPAGE_FEED_MAX_LIMIT = exports.HOMEPAGE_FEED_CHUNK_SIZE = exports.HOMEPAGE_FEED_INITIAL_LIMIT = void 0;
+exports.HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS = exports.HOMEPAGE_FIRST_PAINT_GROUPS = exports.HOMEPAGE_FAST_SELLING_LIMIT = exports.HOMEPAGE_CATEGORY_PREVIEW_LIMIT = exports.HOMEPAGE_FEED_MAX_LIMIT = exports.HOMEPAGE_FEED_CHUNK_SIZE = exports.HOMEPAGE_FEED_INITIAL_LIMIT = void 0;
 exports.buildHomepageFeedSlugs = buildHomepageFeedSlugs;
 exports.paginateHomepageFeed = paginateHomepageFeed;
 exports.homepageProductsPath = homepageProductsPath;
@@ -19,6 +19,8 @@ exports.HOMEPAGE_FIRST_PAINT_GROUPS = [
     { id: "best_sellers", limit: 10 },
     { id: "new", limit: 8 },
 ];
+/** Insert Halloween Hampers after this many featured catalog groups (4th homepage block after the banner). */
+exports.HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS = 2;
 /**
  * Featured first-paint slugs, then the rest of the ranked pool.
  * Pagination walks this list so the first page is merchandising, not 500 SKUs.

@@ -301,6 +301,7 @@ const routes: Route[] = [
   { method: "GET", pattern: /^\/admin\/welcome-coupons$/, handler: coupons.listWelcomeCoupons },
   { method: "POST", pattern: /^\/admin\/coupons\/abandoned$/, handler: coupons.createAdminAbandonedCoupon },
   { method: "GET", pattern: /^\/admin\/coupons\/abandoned$/, handler: coupons.listAdminCoupons },
+  { method: "POST", pattern: /^\/admin\/coupons\/test-order$/, handler: coupons.createAdminTestOrderCoupon },
   { method: "POST", pattern: /^\/leads$/, handler: orders.captureLead },
   {
     method: "POST",

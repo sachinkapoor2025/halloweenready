@@ -51,9 +51,10 @@ export declare const checkoutShippingAddressSchema: z.ZodObject<{
     country: z.ZodString;
     phone: z.ZodEffects<z.ZodString, string, string>;
     email: z.ZodString;
-} & {
-    senderName: z.ZodString;
-    senderMessage: z.ZodString;
+    /** Buyer / sender name — shown on the shipping label. */
+    senderName: z.ZodOptional<z.ZodString>;
+    /** Personal note from sister — printed on the shipping label. */
+    senderMessage: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     email: string;
@@ -63,9 +64,9 @@ export declare const checkoutShippingAddressSchema: z.ZodObject<{
     postalCode: string;
     line1: string;
     state: string;
-    senderName: string;
-    senderMessage: string;
     line2?: string | undefined;
+    senderName?: string | undefined;
+    senderMessage?: string | undefined;
 }, {
     name: string;
     email: string;
@@ -75,9 +76,9 @@ export declare const checkoutShippingAddressSchema: z.ZodObject<{
     postalCode: string;
     line1: string;
     state: string;
-    senderName: string;
-    senderMessage: string;
     line2?: string | undefined;
+    senderName?: string | undefined;
+    senderMessage?: string | undefined;
 }>;
 /** Line assignment for a checkout shipment (must partition the cart). */
 export declare const checkoutShipmentItemSchema: z.ZodObject<{
@@ -101,9 +102,10 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         country: z.ZodString;
         phone: z.ZodEffects<z.ZodString, string, string>;
         email: z.ZodString;
-    } & {
-        senderName: z.ZodString;
-        senderMessage: z.ZodString;
+        /** Buyer / sender name — shown on the shipping label. */
+        senderName: z.ZodOptional<z.ZodString>;
+        /** Personal note from sister — printed on the shipping label. */
+        senderMessage: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         email: string;
@@ -113,9 +115,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     }, {
         name: string;
         email: string;
@@ -125,9 +127,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     }>;
     items: z.ZodArray<z.ZodObject<{
         productSlug: z.ZodString;
@@ -153,9 +155,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     };
 }, {
     items: {
@@ -171,9 +173,9 @@ export declare const checkoutShipmentSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     };
 }>;
 export declare const checkoutSchema: z.ZodObject<{
@@ -187,9 +189,10 @@ export declare const checkoutSchema: z.ZodObject<{
         country: z.ZodString;
         phone: z.ZodEffects<z.ZodString, string, string>;
         email: z.ZodString;
-    } & {
-        senderName: z.ZodString;
-        senderMessage: z.ZodString;
+        /** Buyer / sender name — shown on the shipping label. */
+        senderName: z.ZodOptional<z.ZodString>;
+        /** Personal note from sister — printed on the shipping label. */
+        senderMessage: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         email: string;
@@ -199,9 +202,9 @@ export declare const checkoutSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     }, {
         name: string;
         email: string;
@@ -211,9 +214,9 @@ export declare const checkoutSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     }>;
     /**
      * Optional multi-address split. When omitted, the whole cart ships to
@@ -230,9 +233,10 @@ export declare const checkoutSchema: z.ZodObject<{
             country: z.ZodString;
             phone: z.ZodEffects<z.ZodString, string, string>;
             email: z.ZodString;
-        } & {
-            senderName: z.ZodString;
-            senderMessage: z.ZodString;
+            /** Buyer / sender name — shown on the shipping label. */
+            senderName: z.ZodOptional<z.ZodString>;
+            /** Personal note from sister — printed on the shipping label. */
+            senderMessage: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             name: string;
             email: string;
@@ -242,9 +246,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         }, {
             name: string;
             email: string;
@@ -254,9 +258,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         }>;
         items: z.ZodArray<z.ZodObject<{
             productSlug: z.ZodString;
@@ -282,9 +286,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         };
     }, {
         items: {
@@ -300,9 +304,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         };
     }>, "many">>;
     paymentMethod: z.ZodEnum<["stripe", "razorpay"]>;
@@ -700,9 +704,9 @@ export declare const checkoutSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     };
     paymentMethod: "stripe" | "razorpay";
     shipments?: {
@@ -719,9 +723,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         };
     }[] | undefined;
     checkoutCurrency?: "USD" | "INR" | undefined;
@@ -824,9 +828,9 @@ export declare const checkoutSchema: z.ZodObject<{
         postalCode: string;
         line1: string;
         state: string;
-        senderName: string;
-        senderMessage: string;
         line2?: string | undefined;
+        senderName?: string | undefined;
+        senderMessage?: string | undefined;
     };
     paymentMethod: "stripe" | "razorpay";
     shipments?: {
@@ -843,9 +847,9 @@ export declare const checkoutSchema: z.ZodObject<{
             postalCode: string;
             line1: string;
             state: string;
-            senderName: string;
-            senderMessage: string;
             line2?: string | undefined;
+            senderName?: string | undefined;
+            senderMessage?: string | undefined;
         };
     }[] | undefined;
     checkoutCurrency?: "USD" | "INR" | undefined;
@@ -1013,6 +1017,34 @@ export declare const orderShipmentSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }>, "many">>;
+        hamperCustomization: z.ZodOptional<z.ZodObject<{
+            excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+            replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                fromSlug: z.ZodString;
+                toSlug: z.ZodString;
+            }, "strip", z.ZodTypeAny, {
+                fromSlug: string;
+                toSlug: string;
+            }, {
+                fromSlug: string;
+                toSlug: string;
+            }>, "many">>;
+            extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        }, "strip", z.ZodTypeAny, {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        }, {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        }>>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         price: number;
@@ -1035,6 +1067,14 @@ export declare const orderShipmentSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }, {
         name: string;
         price: number;
@@ -1057,6 +1097,14 @@ export declare const orderShipmentSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }>, "many">;
     subtotal: z.ZodNumber;
     shipping: z.ZodDefault<z.ZodNumber>;
@@ -1093,6 +1141,14 @@ export declare const orderShipmentSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }[];
     shipping: number;
     shippingAddress: {
@@ -1143,6 +1199,14 @@ export declare const orderShipmentSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }[];
     shippingAddress: {
         name: string;
@@ -1189,7 +1253,7 @@ export declare const orderSchema: z.ZodObject<{
     /**
      * Human-readable order number for staff, customers, and vendors.
      * Orange County fulfill orders: OC10001…
-     * All other HalloweenReady orders: US10001…
+     * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
      */
     orderNumber: z.ZodOptional<z.ZodString>;
     userId: z.ZodOptional<z.ZodString>;
@@ -1226,6 +1290,34 @@ export declare const orderSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }>, "many">>;
+        hamperCustomization: z.ZodOptional<z.ZodObject<{
+            excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+            replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                fromSlug: z.ZodString;
+                toSlug: z.ZodString;
+            }, "strip", z.ZodTypeAny, {
+                fromSlug: string;
+                toSlug: string;
+            }, {
+                fromSlug: string;
+                toSlug: string;
+            }>, "many">>;
+            extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        }, "strip", z.ZodTypeAny, {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        }, {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        }>>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         price: number;
@@ -1248,6 +1340,14 @@ export declare const orderSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }, {
         name: string;
         price: number;
@@ -1270,6 +1370,14 @@ export declare const orderSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }>, "many">;
     subtotal: z.ZodNumber;
     discount: z.ZodDefault<z.ZodNumber>;
@@ -1408,6 +1516,34 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity?: number | undefined;
             }>, "many">>;
+            hamperCustomization: z.ZodOptional<z.ZodObject<{
+                excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+                replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                    fromSlug: z.ZodString;
+                    toSlug: z.ZodString;
+                }, "strip", z.ZodTypeAny, {
+                    fromSlug: string;
+                    toSlug: string;
+                }, {
+                    fromSlug: string;
+                    toSlug: string;
+                }>, "many">>;
+                extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+            }, "strip", z.ZodTypeAny, {
+                excludedSlugs: string[];
+                replacements: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[];
+                extraSlugs: string[];
+            }, {
+                excludedSlugs?: string[] | undefined;
+                replacements?: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[] | undefined;
+                extraSlugs?: string[] | undefined;
+            }>>;
         }, "strip", z.ZodTypeAny, {
             name: string;
             price: number;
@@ -1430,6 +1566,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity: number;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs: string[];
+                replacements: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[];
+                extraSlugs: string[];
+            } | undefined;
         }, {
             name: string;
             price: number;
@@ -1452,6 +1596,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity?: number | undefined;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs?: string[] | undefined;
+                replacements?: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[] | undefined;
+                extraSlugs?: string[] | undefined;
+            } | undefined;
         }>, "many">;
         subtotal: z.ZodNumber;
         shipping: z.ZodDefault<z.ZodNumber>;
@@ -1488,6 +1640,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity: number;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs: string[];
+                replacements: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[];
+                extraSlugs: string[];
+            } | undefined;
         }[];
         shipping: number;
         shippingAddress: {
@@ -1538,6 +1698,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity?: number | undefined;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs?: string[] | undefined;
+                replacements?: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[] | undefined;
+                extraSlugs?: string[] | undefined;
+            } | undefined;
         }[];
         shippingAddress: {
             name: string;
@@ -2057,6 +2225,14 @@ export declare const orderSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }[];
     total: number;
     orderId: string;
@@ -2101,6 +2277,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity: number;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs: string[];
+                replacements: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[];
+                extraSlugs: string[];
+            } | undefined;
         }[];
         shipping: number;
         shippingAddress: {
@@ -2294,6 +2478,14 @@ export declare const orderSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }[];
     total: number;
     orderId: string;
@@ -2336,6 +2528,14 @@ export declare const orderSchema: z.ZodObject<{
                 price: number;
                 quantity?: number | undefined;
             }[] | undefined;
+            hamperCustomization?: {
+                excludedSlugs?: string[] | undefined;
+                replacements?: {
+                    fromSlug: string;
+                    toSlug: string;
+                }[] | undefined;
+                extraSlugs?: string[] | undefined;
+            } | undefined;
         }[];
         shippingAddress: {
             name: string;

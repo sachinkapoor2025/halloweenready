@@ -16,6 +16,9 @@ export const HOMEPAGE_FIRST_PAINT_GROUPS = [
   { id: "new", limit: 8 },
 ] as const;
 
+/** Insert Halloween Hampers after this many featured catalog groups (4th homepage block after the banner). */
+export const HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS = 2;
+
 export type HomepageFeedPage<T> = {
   items: T[];
   offset: number;

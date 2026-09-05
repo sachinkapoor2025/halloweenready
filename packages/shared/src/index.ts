@@ -22,6 +22,7 @@ export * from "./schemas/payment";
 export * from "./schemas/chat";
 export * from "./schemas/contact";
 export * from "./schemas/coupon";
+export * from "./lib/coupon-totals";
 export * from "./schemas/ses-email";
 export * from "./schemas/reminder-email";
 export * from "./schemas/pending-payment-unsub";
