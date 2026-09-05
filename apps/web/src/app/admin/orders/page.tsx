@@ -476,11 +476,15 @@ function AdminOrdersPageInner() {
                       onChange={() => toggleSelect(o.orderId)}
                     />
                   </td>
-                  <td
-                    className="py-3 px-3 font-mono text-xs text-nav cursor-pointer"
-                    onClick={() => router.push(`/admin/orders/${o.orderId}`)}
-                  >
-                    {o.orderNumber ?? `${o.orderId.slice(0, 8)}…`}
+                  <td className="py-3 px-3 font-mono text-xs">
+                    <Link
+                      href={`/admin/orders/${o.orderId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-nav hover:underline"
+                    >
+                      {o.orderNumber ?? `${o.orderId.slice(0, 8)}…`}
+                    </Link>
                   </td>
                   <td
                     className="py-3 px-3 cursor-pointer"

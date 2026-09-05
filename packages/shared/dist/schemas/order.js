@@ -39,18 +39,7 @@ exports.shippingAddressSchema = zod_1.z.object({
     senderMessage: zod_1.z.string().trim().max(500).optional(),
 });
 exports.DEFAULT_SENDER_MESSAGE = "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
-exports.checkoutShippingAddressSchema = exports.shippingAddressSchema.extend({
-    senderName: zod_1.z
-        .string()
-        .trim()
-        .min(1, "Sender name is required")
-        .max(80, "Sender name is too long"),
-    senderMessage: zod_1.z
-        .string()
-        .trim()
-        .min(10, "Please write a short message for your brother")
-        .max(500, "Message is too long (max 500 characters)"),
-});
+exports.checkoutShippingAddressSchema = exports.shippingAddressSchema;
 /** Line assignment for a checkout shipment (must partition the cart). */
 exports.checkoutShipmentItemSchema = zod_1.z.object({
     productSlug: zod_1.z.string().min(1),
@@ -125,7 +114,7 @@ exports.orderSchema = zod_1.z.object({
     /**
      * Human-readable order number for staff, customers, and vendors.
      * Orange County fulfill orders: OC10001…
-     * All other HalloweenReady orders: US10001…
+     * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
      */
     orderNumber: zod_1.z.string().optional(),
     userId: zod_1.z.string().optional(),
