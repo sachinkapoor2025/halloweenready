@@ -61,6 +61,35 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity?: number | undefined;
     }>, "many">>;
+    /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+    hamperCustomization: z.ZodOptional<z.ZodObject<{
+        excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            fromSlug: z.ZodString;
+            toSlug: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            fromSlug: string;
+            toSlug: string;
+        }, {
+            fromSlug: string;
+            toSlug: string;
+        }>, "many">>;
+        extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+    }, "strip", z.ZodTypeAny, {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    }, {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
@@ -83,6 +112,14 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity: number;
     }[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    } | undefined;
 }, {
     name: string;
     price: number;
@@ -105,6 +142,14 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity?: number | undefined;
     }[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    } | undefined;
 }>;
 export declare const addToCartSchema: z.ZodObject<{
     productSlug: z.ZodString;
@@ -128,6 +173,34 @@ export declare const addToCartSchema: z.ZodObject<{
     }>]>, "many">>;
     /** Optional CJ variant when the product has multiple SKUs. */
     cjVid: z.ZodOptional<z.ZodString>;
+    hamperCustomization: z.ZodOptional<z.ZodObject<{
+        excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            fromSlug: z.ZodString;
+            toSlug: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            fromSlug: string;
+            toSlug: string;
+        }, {
+            fromSlug: string;
+            toSlug: string;
+        }>, "many">>;
+        extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+    }, "strip", z.ZodTypeAny, {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    }, {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     quantity: number;
     productSlug: string;
@@ -137,6 +210,14 @@ export declare const addToCartSchema: z.ZodObject<{
         id: string;
         quantity: number;
     })[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    } | undefined;
     email?: string | undefined;
     phone?: string | undefined;
 }, {
@@ -148,6 +229,14 @@ export declare const addToCartSchema: z.ZodObject<{
         id: string;
         quantity?: number | undefined;
     })[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    } | undefined;
     email?: string | undefined;
     phone?: string | undefined;
 }>;
@@ -197,6 +286,35 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }>, "many">>;
+        /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+        hamperCustomization: z.ZodOptional<z.ZodObject<{
+            excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+            replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                fromSlug: z.ZodString;
+                toSlug: z.ZodString;
+            }, "strip", z.ZodTypeAny, {
+                fromSlug: string;
+                toSlug: string;
+            }, {
+                fromSlug: string;
+                toSlug: string;
+            }>, "many">>;
+            extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        }, "strip", z.ZodTypeAny, {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        }, {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        }>>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         price: number;
@@ -219,6 +337,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }, {
         name: string;
         price: number;
@@ -241,6 +367,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }>, "many">>;
     updatedAt: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -266,6 +400,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }[];
     updatedAt: string;
 }, {
@@ -292,6 +434,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }[] | undefined;
 }>;
 export type CartItemAddon = z.infer<typeof cartItemAddonSchema>;

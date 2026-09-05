@@ -1,10 +1,19 @@
 /** Public storefront catalog for imported CJ products (not admin live-CJ search). */
 export const CJ_STOREFRONT_PRODUCTS_PATH = "/cj/products";
 
-export function cjStorefrontProductsPath(query?: { category?: string; search?: string }): string {
+export function cjStorefrontProductsPath(query?: {
+  category?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sort?: string;
+}): string {
   const qs = new URLSearchParams();
   if (query?.category) qs.set("category", query.category);
   if (query?.search) qs.set("search", query.search);
+  if (query?.limit != null) qs.set("limit", String(query.limit));
+  if (query?.offset != null) qs.set("offset", String(query.offset));
+  if (query?.sort && query.sort !== "featured") qs.set("sort", query.sort);
   const suffix = qs.toString();
   return suffix ? `${CJ_STOREFRONT_PRODUCTS_PATH}?${suffix}` : CJ_STOREFRONT_PRODUCTS_PATH;
 }

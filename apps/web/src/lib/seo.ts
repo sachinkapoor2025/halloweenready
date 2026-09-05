@@ -111,8 +111,10 @@ export function organizationJsonLd() {
     description: site.description,
     email: site.supportEmail,
     sameAs: [
-      "https://www.facebook.com/halloweenready/",
-      "https://www.instagram.com/halloweenready/",
+      "https://www.facebook.com/halloweenreadyofficial/",
+      "https://www.instagram.com/halloweenreadyofficial/",
+      "https://www.pinterest.com/halloweenready/",
+      "https://x.com/halloweenready",
       siteUrl,
     ],
     areaServed: VERIFIED_COUNTRY_LINKS.map((c) => ({
@@ -121,12 +123,13 @@ export function organizationJsonLd() {
     })),
     knowsAbout: [
       "Halloween",
-      "Halloween costumes USA",
+      "Halloween costumes",
       "Halloween decorations",
-      "Trick or treat candy",
       "Halloween party supplies",
       "Halloween accessories",
-      "USA Halloween delivery",
+      "Halloween inflatables",
+      "Kids Halloween costumes",
+      "Adult Halloween costumes",
     ],
     aggregateRating: {
       "@type": "AggregateRating",
@@ -163,7 +166,7 @@ export function onlineStoreJsonLd() {
       name: c.name,
     })),
     priceRange: "$$",
-    currenciesAccepted: "USD, INR",
+    currenciesAccepted: "USD, GBP, CAD, AUD, AED, EUR, INR",
     paymentAccepted: "Credit Card, Debit Card, UPI, Razorpay, Stripe",
     shippingDetails: VERIFIED_COUNTRY_LINKS.map((c) => ({
       "@type": "OfferShippingDetails",
@@ -265,19 +268,8 @@ export function productJsonLd(product: {
       seller: { "@id": `${siteUrl}/#organization` },
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: "0",
-          currency: product.currency,
-        },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "DAY",
-          },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 5,
@@ -285,10 +277,10 @@ export function productJsonLd(product: {
             unitCode: "DAY",
           },
         },
-        shippingDestination: {
+        shippingDestination: VERIFIED_COUNTRY_LINKS.map((c) => ({
           "@type": "DefinedRegion",
-          addressCountry: "US",
-        },
+          addressCountry: c.code,
+        })),
       },
     },
   };
@@ -335,9 +327,9 @@ export function howToShopHalloweenJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: "How to shop Halloween online for USA delivery",
+    name: "How to shop Halloween online",
     description:
-      "Order Halloween costumes, decor, and candy for delivery anywhere in the United States using HalloweenReady.",
+      "Order Halloween costumes, decorations, and party supplies from HalloweenReady for international delivery in 5–7 days.",
     totalTime: "P5D",
     step: [
       {
@@ -385,13 +377,13 @@ export function halloweenEventJsonLd() {
     "@type": "Event",
     name: "Halloween 2026",
     description:
-      "Annual Halloween celebration — costumes, trick-or-treat, and spooky fun. Shop with HalloweenReady for USA delivery.",
+      "Annual Halloween celebration — costumes, trick-or-treat, and spooky fun. Shop HalloweenReady for costumes, decorations, and party supplies.",
     startDate: "2026-10-31",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     location: {
-      "@type": "Country",
-      name: "United States",
+      "@type": "VirtualLocation",
+      url: canonical("/halloween-guide"),
     },
     organizer: { "@id": `${siteUrl}/#organization` },
     url: canonical("/halloween-guide"),
@@ -416,8 +408,8 @@ export function serviceAreaJsonLd(city: { label: string; slug: string; state?: s
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `Halloween shopping for ${city.label}, USA`,
-    description: `Shop Halloween costumes and decor for ${city.label} with ${site.name}. Check each product page for a destination shipping quote.`,
+    name: `Halloween shopping for ${city.label}`,
+    description: `Shop Halloween costumes and decor for ${city.label} with ${site.name}. Delivering in 5–7 days — check each product page for shipping.`,
     url: canonical(`/cities/${city.slug}`),
     provider: { "@id": `${siteUrl}/#organization` },
     areaServed: {
@@ -432,6 +424,21 @@ export function serviceAreaJsonLd(city: { label: string; slug: string; state?: s
       availability: "https://schema.org/InStock",
       url: canonical(`/cities/${city.slug}`),
     },
+  };
+}
+
+export function collectionPageJsonLd(opts: {
+  name: string;
+  path: string;
+  description: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: opts.name,
+    description: opts.description,
+    url: canonical(opts.path),
+    isPartOf: { "@id": `${siteUrl}/#website` },
   };
 }
 

@@ -12,11 +12,13 @@ export function TrackedProductCard({
   position,
   listingPage,
   showFastSellingBadge = false,
+  priority = false,
 }: {
   product: Product;
   position: number;
   listingPage: string;
   showFastSellingBadge?: boolean;
+  priority?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -53,7 +55,7 @@ export function TrackedProductCard({
         })
       }
     >
-      <HomeProductCard product={product} showFastSellingBadge={showFastSellingBadge} />
+      <HomeProductCard product={product} showFastSellingBadge={showFastSellingBadge} priority={priority} />
     </div>
   );
 }

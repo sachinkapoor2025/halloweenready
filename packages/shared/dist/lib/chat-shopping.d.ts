@@ -9,6 +9,7 @@ export declare const CATEGORY_SLUGS: {
     readonly wearable: "lifestyleandwearable";
     readonly paper: "printedandpapercrafts";
     readonly candles: "candlesandfragrance";
+    readonly hampers: "halloween-hampers";
 };
 export declare function classifyChatIntent(text: string): ChatIntent;
 export declare function mergeShoppingState(prev: ShoppingState, text: string): ShoppingState;

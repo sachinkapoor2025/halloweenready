@@ -8,10 +8,11 @@ import {
   EMPTY_FUNNEL,
   scoreProducts,
   buildHomepageSnapshot,
+  buildHomepageFeedSlugs,
+  parseHomepageFeedQuery,
+  paginateHomepageFeed,
   recommendationCopy,
   isCjDropshippingProduct,
-  stripVendorPrivateFields,
-  withCompetitiveStorefrontPricing,
   type FunnelCounts,
   type HomepageRankingConfig,
   type HomepageSnapshot,
@@ -22,8 +23,7 @@ import {
 import { docClient, CONFIG_TABLE, EVENTS_TABLE, dayBucket, now } from "../lib/db";
 import { ok, okCached, badRequest, forbidden, notFound } from "../lib/response";
 import { requireAdmin } from "../lib/auth";
-import { listCatalogProducts } from "./products";
-import { withResolvedProductImages } from "../lib/images";
+import { forStorefrontListing, listCatalogProducts } from "./products";
 
 type RollupItem = Record<string, unknown> & { SK?: string; kind?: string; label?: string };
 
@@ -189,12 +189,6 @@ export async function refreshHomepageSnapshot(): Promise<HomepageSnapshot> {
   return snapshot;
 }
 
-function forStorefront(product: Product): Product {
-  return stripVendorPrivateFields(
-    withCompetitiveStorefrontPricing(withResolvedProductImages(product))
-  ) as Product;
-}
-
 export async function getHomepageRankingConfig(event: APIGatewayProxyEventV2) {
   if (!requireAdmin(event)) return forbidden();
   const config = await loadRankingConfig();
@@ -226,7 +220,8 @@ export async function postRefreshHomepageRanking(event: APIGatewayProxyEventV2) 
   return ok({ snapshot });
 }
 
-export async function getHomepageCatalog(_event: APIGatewayProxyEventV2) {
+export async function getHomepageCatalog(event: APIGatewayProxyEventV2) {
+  const { offset, limit } = parseHomepageFeedQuery(event.queryStringParameters ?? undefined);
   const [snapshot, products] = await Promise.all([loadSnapshot(), listCatalogProducts()]);
   const bySlug = new Map(
     products.filter((p) => p.published !== false && isCjDropshippingProduct(p)).map((p) => [p.slug, p])
@@ -244,10 +239,34 @@ export async function getHomepageCatalog(_event: APIGatewayProxyEventV2) {
     active = buildHomepageSnapshot(scoreProducts(inputs, cfg), inputs, cfg);
   }
 
-  const ordered = active.ranked
+  const feed = buildHomepageFeedSlugs(active)
     .map((slug) => bySlug.get(slug))
     .filter((p): p is Product => p != null && (p.inventory ?? 0) > 0);
-  return okCached({ snapshot: active, products: ordered.map(forStorefront) }, 30);
+  const page = paginateHomepageFeed(feed, offset, limit);
+  const compactSnapshot =
+    offset === 0
+      ? {
+          generatedAt: active.generatedAt,
+          poolSize: active.poolSize,
+          groups: active.groups.map((group) => ({
+            ...group,
+            slugs: group.slugs.slice(0, 12),
+          })),
+          ranked: page.items.map((p) => p.slug),
+        }
+      : undefined;
+
+  return okCached(
+    {
+      snapshot: compactSnapshot,
+      products: page.items.map(forStorefrontListing),
+      offset: page.offset,
+      limit: page.limit,
+      total: page.total,
+      hasMore: page.hasMore,
+    },
+    30
+  );
 }
 
 export async function getProductPerformance(event: APIGatewayProxyEventV2) {

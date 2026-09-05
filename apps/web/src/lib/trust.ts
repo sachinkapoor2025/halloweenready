@@ -13,7 +13,7 @@ export const trustFacts = {
 
 export const trustHighlights = [
   {
-    icon: "🇺🇸",
+    icon: "🌍",
     title: "Trusted & Secure Online Platform",
     detail: "Our website offers a safe and seamless shopping experience from product selection to secure payment.",
   },
@@ -29,8 +29,8 @@ export const trustHighlights = [
   },
   {
     icon: "📍",
-    title: "Quoted destinations",
-    detail: "Storefront freight quotes are available for the US, Canada, UK, Australia, and Germany. Other countries are not assumed.",
+    title: "Ships to many countries",
+    detail: "Shop from the USA, UK, Canada, Australia, India, UAE, and Europe. Delivering in 5–7 days. Confirm shipping on each product page.",
   },
   {
     icon: "🎃",
@@ -46,8 +46,8 @@ export const trustHighlights = [
 ] as const;
 
 export const trustStripItems = [
-  "Shipping quotes on product pages",
-  "US, UK, Canada, Australia, Germany quotes",
+  "Delivering in 5–7 days",
+  "USA, UK, Canada, Australia, India, UAE & more",
   "Secure Stripe & Razorpay checkout",
   "Premium Halloween decorations",
   "WhatsApp support",

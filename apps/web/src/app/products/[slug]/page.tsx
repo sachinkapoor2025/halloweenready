@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     price: p.price,
     currency: p.currency,
     ogImage: resolveImageUrl(p.images?.[0]),
-    keywords: [p.name, ...(p.tags ?? []), "halloween USA delivery", "HalloweenReady"].join(", "),
+    keywords: [p.name, ...(p.tags ?? []), "halloween costumes", "halloween decorations", "HalloweenReady"].join(", "),
   });
 }
 

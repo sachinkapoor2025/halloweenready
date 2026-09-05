@@ -13,7 +13,12 @@ import {
   productVisibleToActor,
   defaultVendorSlugForNewProduct,
   isCjDropshippingProduct,
+  isStorefrontVisibleProduct,
+  isHalloweenHamperProduct,
+  HALLOWEEN_HAMPERS_CATEGORY_SLUG,
   CJ_STOREFRONT_SHIP_COUNTRIES,
+  parseStorefrontListingQuery,
+  sortStorefrontListing,
   type Product,
   type CjStorefrontShipCountry,
 } from "@halloweenready/shared";
@@ -25,6 +30,7 @@ import { syncInventoryAlertState } from "../lib/inventory";
 import { quoteProductShipping, checkoutOnlyShipping } from "../lib/cj-product-shipping";
 import { CjApiError } from "../lib/cj-dropshipping";
 import { ensureProductInDb } from "../lib/ensure-product";
+import { ensureHalloweenHampersInDb } from "../lib/halloweenready-catalog";
 
 function forStorefront(product: Product): Product {
   const allowsAddons = productAllowsAddons(product);
@@ -35,7 +41,7 @@ function forStorefront(product: Product): Product {
 }
 
 /** Listing payloads must stay under API Gateway’s 6MB cap once the catalog is thousands of SKUs. */
-function forStorefrontListing(product: Product): Product {
+export function forStorefrontListing(product: Product): Product {
   const full = forStorefront(product);
   return {
     ...full,
@@ -240,7 +246,8 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
         if (product.additionalCategorySlugs?.includes("rakhi-combo")) bySlug.set(product.slug, product);
       }
       items = [...bySlug.values()];
-    } else if (category === "rakhi-hampers") {
+    } else if (category === HALLOWEEN_HAMPERS_CATEGORY_SLUG) {
+      await ensureHalloweenHampersInDb();
       items = await queryProductsByCategory(category);
     } else {
       const [primary, hampers] = await Promise.all([
@@ -258,7 +265,7 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   }
 
   items = items.filter((p) => p.published !== false && (p.inventory ?? 0) > 0);
-  items = items.filter(isCjDropshippingProduct);
+  items = items.filter(isStorefrontVisibleProduct);
   if (search) {
     items = items.filter(
       (p) =>
@@ -268,9 +275,22 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
     );
   }
 
+  const { offset, limit, sort } = parseStorefrontListingQuery(event.queryStringParameters ?? undefined);
+  items = sortStorefrontListing(items, sort);
+  const total = items.length;
+  if (limit != null) items = items.slice(offset, offset + limit);
+
+  const body = {
+    products: items.map(forStorefrontListing),
+    total,
+    offset,
+    limit: limit ?? total,
+    hasMore: limit != null ? offset + items.length < total : false,
+  };
+
   // Short CDN TTL only — listing + PDP must not drift for minutes after price edits.
-  if (search) return ok({ products: items.map(forStorefrontListing) });
-  return okCached({ products: items.map(forStorefrontListing) }, 10);
+  if (search) return ok(body);
+  return okCached(body, 10);
 }
 
 export async function getProduct(event: APIGatewayProxyEventV2) {
@@ -291,13 +311,13 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   );
 
   let item = result.Item as (Product & { published?: boolean }) | undefined;
-  if (item && !isCjDropshippingProduct(item)) {
+  if (item && !isStorefrontVisibleProduct(item)) {
     item = undefined;
   }
   if (!item) {
     // Storefront may list bundled catalog SKUs before DynamoDB import — upsert on first view.
     const upserted = await ensureProductInDb(slug);
-    if (upserted && isCjDropshippingProduct(upserted as Product)) {
+    if (upserted && isStorefrontVisibleProduct(upserted as Product)) {
       item = upserted as Product & { published?: boolean };
       invalidateProductListCache(item.categorySlug);
     }
@@ -550,7 +570,7 @@ export async function purgeSampleCatalogProducts(event: APIGatewayProxyEventV2) 
     );
     for (const raw of result.Items ?? []) {
       const product = raw as Product;
-      if (isCjDropshippingProduct(product)) continue;
+      if (isCjDropshippingProduct(product) || isHalloweenHamperProduct(product)) continue;
       if (!product.slug) continue;
       await docClient.send(
         new DeleteCommand({

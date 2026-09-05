@@ -10,7 +10,7 @@ import {
   resolveProductAddonsFromIds,
   sumAddonPrices,
 } from "./product-addons";
-import { VENDOR_ORANGE_COUNTY, VENDOR_CJ_DROPSHIPPING } from "../constants";
+import { VENDOR_ORANGE_COUNTY, VENDOR_CJ_DROPSHIPPING, VENDOR_HALLOWEENREADY } from "../constants";
 
 describe("product-addons", () => {
   it("lists catalog with expected prices", () => {
@@ -27,6 +27,10 @@ describe("product-addons", () => {
     assert.equal(productAllowsAddons({ vendorSlug: undefined }), true);
     assert.equal(productAllowsAddons({ vendorSlug: VENDOR_ORANGE_COUNTY }), false);
     assert.equal(productAllowsAddons({ vendorSlug: VENDOR_CJ_DROPSHIPPING }), false);
+    assert.equal(
+      productAllowsAddons({ vendorSlug: VENDOR_HALLOWEENREADY, categorySlug: "halloween-hampers" }),
+      false
+    );
   });
 
   it("sums addon prices and line unit totals", () => {

@@ -156,4 +156,23 @@ describe("getProductIncludes", () => {
       "Best quality at competitive rates",
     ]);
   });
+
+  it("lists hamperContents for Halloween hampers", () => {
+    const items = getProductIncludes({
+      name: "You've Been Boo'd Hamper",
+      description: "Gift kit",
+      categorySlug: "halloween-hampers",
+      tags: ["halloween-hamper"],
+      hamperContents: [
+        { slug: "wreath", name: "Witch pumpkin wreath" },
+        { slug: "bucket", name: "Glowing pumpkin bucket" },
+      ],
+    });
+    assert.deepEqual(items, [
+      "Witch pumpkin wreath",
+      "Glowing pumpkin bucket",
+      "Delivering in 5–7 days",
+      "Best quality at competitive rates",
+    ]);
+  });
 });

@@ -3,7 +3,7 @@ import { site, navItems, cityLinks } from "@/lib/site";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { MarketContactBlock } from "@/components/MarketContactBlock";
-import { VERIFIED_COUNTRY_LINKS } from "@halloweenready/shared";
+import { countrySeoPages } from "@/lib/content/country-pages";
 
 const FACEBOOK_URL = "https://www.facebook.com/halloweenreadyofficial/";
 const INSTAGRAM_URL = "https://www.instagram.com/halloweenreadyofficial/";
@@ -90,7 +90,7 @@ export function Footer() {
                 .map((n) => (
                   <li key={n.href}>
                     <Link href={n.href} className="hover:text-white hover:underline">
-                      {n.label}
+                      {n.category === "halloween-hampers" ? "Halloween Hampers" : n.label}
                     </Link>
                   </li>
                 ))}
@@ -123,10 +123,10 @@ export function Footer() {
         <div className="mt-8 pt-8 border-t border-white/15 text-sm">
           <p className="font-semibold text-white mb-3 sm:mb-4">Shop by country</p>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-white/80 mb-6">
-            {VERIFIED_COUNTRY_LINKS.map((c) => (
+            {countrySeoPages.map((c) => (
               <li key={c.slug}>
-                <Link href={c.href} className="hover:text-white hover:underline">
-                  {c.label}
+                <Link href={`/countries/${c.slug}`} className="hover:text-white hover:underline">
+                  {c.name}
                 </Link>
               </li>
             ))}
@@ -150,7 +150,7 @@ export function Footer() {
             <PaymentMethodIcons />
           </div>
           <p className="text-xs text-white/50 max-w-md">
-            Secure checkout with encrypted payment processing. Prices shown in USD or INR at checkout.
+            Secure checkout. Prices can display in local currency; payment is charged in USD (Stripe) or INR (Razorpay).
           </p>
         </div>
       </div>

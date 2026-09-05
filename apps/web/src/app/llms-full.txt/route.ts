@@ -50,9 +50,9 @@ export async function GET() {
 ${site.description}
 
 **Website:** ${siteUrl}
-**Halloween 2026:** August 28, 2026 — order by early August for on-time USA delivery.
-**Delivery:** 5–7 business days to all 50 US states (domestic US fulfillment).
-**Payments:** Stripe (USD), Razorpay (INR).
+**Halloween 2026:** Saturday, October 31, 2026 — order earlier in October for more transit buffer.
+**Delivery:** Delivering in 5–7 days. Confirm shipping on each product page. Do not claim all 50 US states or guaranteed October 31 arrival.
+**Payments:** Stripe (USD), Razorpay (INR). Display prices may show in local currency.
 
 ---
 

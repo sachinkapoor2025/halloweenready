@@ -255,12 +255,12 @@ export function Header() {
       {/* Desktop nav */}
       <nav className="hidden md:block border-t border-slate-100 bg-white overflow-visible">
         <div className="max-w-7xl mx-auto px-4 py-2.5">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`btn-nav ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
+                className={`btn-nav shrink-0 px-3 py-1.5 text-[13px] ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
               >
                 {item.label}
               </Link>

@@ -36,6 +36,7 @@ export const SEO_CATEGORY_LINKS: readonly SeoLink[] = [
   { href: "/categories/jewellryandaccessories", label: "Halloween jewelry" },
   { href: "/categories/lifestyleandwearable", label: "Halloween apparel" },
   { href: "/categories/printedandpapercrafts", label: "Halloween paper crafts" },
+  { href: "/categories/halloween-hampers", label: "Halloween hampers" },
 ];
 
 /** Countries we can quote CJ freight for — never market unquoted destinations as shippable. */
@@ -85,6 +86,7 @@ const RELATED_CATEGORIES: Record<string, readonly string[]> = {
   jewellryandaccessories: ["costumesandaccessories", "lifestyleandwearable"],
   lifestyleandwearable: ["jewellryandaccessories", "costumesandaccessories"],
   printedandpapercrafts: ["partysupplier", "home-decoration"],
+  "halloween-hampers": ["home-decoration", "partysupplier"],
 };
 
 const MAX_PER_GROUP = 8;

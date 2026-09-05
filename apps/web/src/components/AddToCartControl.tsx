@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { estimatedDeliveryShort } from "@halloweenready/shared";
-import type { ProductAddonSelection } from "@halloweenready/shared";
+import type { HamperCustomization, ProductAddonSelection } from "@halloweenready/shared";
 import { useCart } from "@/lib/cart-context";
 
 function TrashIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -46,6 +46,7 @@ interface AddToCartControlProps {
   addons?: ProductAddonSelection[];
   /** CJ Dropshipping variant id. */
   cjVid?: string;
+  hamperCustomization?: HamperCustomization;
 }
 
 export function AddToCartControl({
@@ -57,6 +58,7 @@ export function AddToCartControl({
   getContact,
   addons = [],
   cjVid,
+  hamperCustomization,
 }: AddToCartControlProps) {
   const { sessionReady, addItem, updateItem, removeItem, quantityFor, lineIdFor } = useCart();
   const [busy, setBusy] = useState(false);
@@ -64,8 +66,8 @@ export function AddToCartControl({
   const [addedNote, setAddedNote] = useState("");
   const [justAdded, setJustAdded] = useState(false);
 
-  const quantity = quantityFor(productSlug, addons, cjVid);
-  const lineId = lineIdFor(productSlug, addons, cjVid);
+  const quantity = quantityFor(productSlug, addons, cjVid, hamperCustomization);
+  const lineId = lineIdFor(productSlug, addons, cjVid, hamperCustomization);
   const inCart = quantity > 0 && Boolean(lineId);
   const showViewCart = justAdded || quantity > 0;
   const addonsPayload = addons.length ? addons : undefined;
@@ -104,7 +106,7 @@ export function AddToCartControl({
             stop(e);
             void run(async () => {
               const contact = getContact?.();
-              await addItem(productSlug, 1, contact, addonsPayload, cjVid);
+              await addItem(productSlug, 1, contact, addonsPayload, cjVid, undefined, hamperCustomization);
               setJustAdded(true);
               setAddedNote(`Added! Est. delivery ${estimatedDeliveryShort()}`);
               window.setTimeout(() => setAddedNote(""), 5000);
@@ -176,7 +178,7 @@ export function AddToCartControl({
               disabled={busy || disabled}
               onClick={(e) => {
                 stop(e);
-                void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload, cjVid));
+                void run(() => addItem(productSlug, 1, getContact?.(), addonsPayload, cjVid, undefined, hamperCustomization));
               }}
               className={detailPillBtnClass}
             >

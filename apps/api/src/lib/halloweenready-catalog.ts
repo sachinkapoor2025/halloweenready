@@ -6,6 +6,11 @@
  */
 import { PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { productKeys, categoryKeys, DEFAULT_PRODUCT_INVENTORY } from "@halloweenready/shared";
+import {
+  HALLOWEEN_HAMPERS_CATEGORY,
+  buildHalloweenHamperCatalogProducts,
+  isHalloweenHamperProduct,
+} from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now } from "./db";
 import catalogJson from "../data/halloweenready-catalog.json";
 
@@ -37,10 +42,21 @@ type CatalogProduct = {
   vendorCost?: number;
   cjPid?: string;
   cjVid?: string;
+  hamperContents?: Array<{ slug: string; name: string; image?: string; price?: number }>;
+  hamperAddons?: Array<{ slug: string; name: string; image?: string; price: number }>;
 };
 
-const categories = (catalogJson as { categories?: CatalogCategory[] }).categories ?? [];
-const products = (catalogJson as { products: CatalogProduct[] }).products ?? [];
+const jsonCategories = (catalogJson as { categories?: CatalogCategory[] }).categories ?? [];
+const jsonProducts = (catalogJson as { products: CatalogProduct[] }).products ?? [];
+const hamperProducts = buildHalloweenHamperCatalogProducts() as CatalogProduct[];
+const categories = [
+  HALLOWEEN_HAMPERS_CATEGORY,
+  ...jsonCategories.filter((c) => c.slug !== HALLOWEEN_HAMPERS_CATEGORY.slug),
+];
+const products = [
+  ...hamperProducts,
+  ...jsonProducts.filter((p) => !hamperProducts.some((h) => h.slug === p.slug)),
+];
 const bySlug = new Map(products.map((p) => [p.slug, p]));
 
 export function getBundledHalloweenReadyProduct(slug: string): CatalogProduct | undefined {
@@ -114,32 +130,13 @@ export async function ensureHalloweenreadyCategoriesInDb(): Promise<number> {
   if (created > 0) {
     console.log(`ensured ${created} halloweenready catalog categories`);
   }
+  await ensureHalloweenHampersInDb();
   return created;
 }
 
-/**
- * If the slug exists in the bundled catalog but not in DynamoDB, create it.
- * Does not overwrite existing products (prices/inventory stay admin-controlled).
- */
-export async function ensureHalloweenreadyCatalogProductInDb(
-  slug: string
-): Promise<Record<string, unknown> | null> {
-  const bundled = bySlug.get(slug);
-  if (!bundled) return null;
-  if (bundled.vendorSlug !== "cj-dropshipping" && !bundled.cjPid) return null;
-
-  const key = { PK: productKeys.pk(slug), SK: productKeys.sk() };
-  const existing = await docClient.send(
-    new GetCommand({
-      TableName: PRODUCTS_TABLE,
-      Key: key,
-    })
-  );
-  if (existing.Item) return existing.Item as Record<string, unknown>;
-
-  const ts = now();
+function catalogItemFromBundled(bundled: CatalogProduct, ts: string) {
   const categorySlug = bundled.categorySlug;
-  const item = {
+  return {
     name: bundled.name,
     slug: bundled.slug,
     description: bundled.description,
@@ -157,17 +154,62 @@ export async function ensureHalloweenreadyCatalogProductInDb(
     ...(typeof bundled.vendorCost === "number" ? { vendorCost: bundled.vendorCost } : {}),
     ...(bundled.cjPid ? { cjPid: bundled.cjPid } : {}),
     ...(bundled.cjVid ? { cjVid: bundled.cjVid } : {}),
+    ...(bundled.hamperContents ? { hamperContents: bundled.hamperContents } : {}),
+    ...(bundled.hamperAddons ? { hamperAddons: bundled.hamperAddons } : {}),
     seoTitle: bundled.seoTitle,
     seoDescription: bundled.seoDescription,
     published: bundled.published !== false,
-    PK: productKeys.pk(slug),
+    PK: productKeys.pk(bundled.slug),
     SK: productKeys.sk(),
     GSI1PK: productKeys.gsi1pk(categorySlug),
-    GSI1SK: productKeys.gsi1sk(slug),
+    GSI1SK: productKeys.gsi1sk(bundled.slug),
     createdAt: ts,
     updatedAt: ts,
   };
+}
 
+/** Upsert all curated hampers if they are missing from DynamoDB. */
+export async function ensureHalloweenHampersInDb(): Promise<number> {
+  const results = await Promise.all(hamperProducts.map((p) => ensureHalloweenreadyCatalogProductInDb(p.slug)));
+  return results.filter(Boolean).length;
+}
+
+/**
+ * If the slug exists in the bundled catalog but not in DynamoDB, create it.
+ * Does not overwrite existing products (prices/inventory stay admin-controlled).
+ */
+export async function ensureHalloweenreadyCatalogProductInDb(
+  slug: string
+): Promise<Record<string, unknown> | null> {
+  const bundled = bySlug.get(slug);
+  if (!bundled) return null;
+  const hamper = isHalloweenHamperProduct(bundled);
+  if (!hamper && bundled.vendorSlug !== "cj-dropshipping" && !bundled.cjPid) return null;
+
+  const key = { PK: productKeys.pk(slug), SK: productKeys.sk() };
+  const existing = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: key,
+    })
+  );
+  if (existing.Item) {
+    if (hamper && !Array.isArray(existing.Item.hamperContents)) {
+      const patched = {
+        ...existing.Item,
+        hamperContents: bundled.hamperContents,
+        hamperAddons: bundled.hamperAddons,
+        tags: bundled.tags ?? existing.Item.tags,
+        couponExcluded: true,
+        updatedAt: now(),
+      };
+      await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: patched }));
+      return patched as Record<string, unknown>;
+    }
+    return existing.Item as Record<string, unknown>;
+  }
+
+  const item = catalogItemFromBundled(bundled, now());
   await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
   console.log(`upserted halloweenready catalog product ${slug}`);
   return item;

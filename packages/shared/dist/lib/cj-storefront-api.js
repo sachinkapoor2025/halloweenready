@@ -13,6 +13,12 @@ function cjStorefrontProductsPath(query) {
         qs.set("category", query.category);
     if (query?.search)
         qs.set("search", query.search);
+    if (query?.limit != null)
+        qs.set("limit", String(query.limit));
+    if (query?.offset != null)
+        qs.set("offset", String(query.offset));
+    if (query?.sort && query.sort !== "featured")
+        qs.set("sort", query.sort);
     const suffix = qs.toString();
     return suffix ? `${exports.CJ_STOREFRONT_PRODUCTS_PATH}?${suffix}` : exports.CJ_STOREFRONT_PRODUCTS_PATH;
 }

@@ -12,8 +12,8 @@ export function WhyTrustUsSection() {
             Why Choose HalloweenReady.com?
           </h2>
           <p className="text-slate-600 text-sm md:text-base leading-relaxed">
-            HalloweenReady.com has become a trusted destination for high-quality Halloween decorations and party
-            supplies throughout the USA. {trustFacts.fulfillment}.
+            HalloweenReady.com is a trusted destination for Halloween decorations, costumes, and party
+            supplies worldwide. {trustFacts.fulfillment}.
           </p>
         </div>
 

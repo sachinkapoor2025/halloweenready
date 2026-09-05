@@ -8,7 +8,7 @@ export const categoryContent: Record<string, CategoryContent> = {
   costumes: {
     extraParagraphs: [
       "Our Halloween costume collection includes adult, teen, and kids sizes across classic horror, pop culture, funny, and group themes. Each costume is selected for quality materials and comfortable all-night wear.",
-      "Order from anywhere worldwide — enter your US address at checkout and we deliver domestically within America in 2–5 business days to all 50 states.",
+      "Choose your country at checkout. Delivering in 5–7 days. Free shipping on orders of $49 or more; smaller carts show a stepped shipping fee before payment.",
     ],
     sections: [
       {
@@ -25,7 +25,7 @@ export const categoryContent: Record<string, CategoryContent> = {
   decorations: {
     extraParagraphs: [
       "Transform your home and yard with inflatable ghosts, LED pumpkins, skeleton graveyard sets, fog machines, and window clings. Our decor works indoors and outdoors for maximum spooky impact.",
-      "HalloweenReady ships decor across all 50 US states with fast domestic delivery — order by October 25 for guaranteed pre-Halloween arrival.",
+      "Delivering in 5–7 days. Order earlier in October if you need setup time before trick-or-treat — we do not guarantee arrival before October 31.",
     ],
     sections: [
       {
@@ -42,7 +42,7 @@ export const categoryContent: Record<string, CategoryContent> = {
   "candy-treats": {
     extraParagraphs: [
       "Stock up for trick-or-treat night with bulk candy assortments, chocolate variety packs, gummy mixes, and pre-filled treat bags. Fresh, well-packed, and ready to hand out on October 31.",
-      "Perfect for home trick-or-treat bowls, office parties, and school events — delivered across the USA in 2–5 business days.",
+      "Perfect for home trick-or-treat bowls, office parties, and school events. Delivering in 5–7 days.",
     ],
     sections: [
       {
@@ -59,7 +59,7 @@ export const categoryContent: Record<string, CategoryContent> = {
   accessories: {
     extraParagraphs: [
       "Complete any Halloween look with masks, wigs, face paint palettes, capes, glow sticks, and finishing touches. Accessories are the fastest way to elevate a basic costume into something unforgettable.",
-      "Shop accessories alongside costumes for one convenient order with domestic USA shipping.",
+      "Shop accessories alongside costumes for one convenient order. Delivering in 5–7 days.",
     ],
     sections: [
       {
@@ -76,7 +76,7 @@ export const categoryContent: Record<string, CategoryContent> = {
   "party-supplies": {
     extraParagraphs: [
       "Host a haunted gathering with themed plates, cups, balloons, table runners, photo booth props, and treat buckets. Our party supplies make setup easy so you can focus on the fun.",
-      "Order party packs for groups of 16 or mix individual items — all with fast Halloween delivery across America.",
+      "Order party packs for groups of 16 or mix individual items. Delivering in 5–7 days.",
     ],
     sections: [
       {
@@ -92,6 +92,19 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
 };
 
+/** Map live category slugs onto the copy keys above. */
+const CATEGORY_CONTENT_ALIASES: Record<string, string> = {
+  costumesandaccessories: "costumes",
+  costumes: "costumes",
+  "home-decoration": "decorations",
+  decorations: "decorations",
+  partysupplier: "party-supplies",
+  "party-supplies": "party-supplies",
+  jewellryandaccessories: "accessories",
+  accessories: "accessories",
+  "candy-treats": "candy-treats",
+};
+
 export function getCategoryContent(slug: string): CategoryContent | undefined {
-  return categoryContent[slug];
+  return categoryContent[slug] ?? categoryContent[CATEGORY_CONTENT_ALIASES[slug]];
 }

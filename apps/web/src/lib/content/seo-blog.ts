@@ -476,7 +476,7 @@ const seoPostBodies: Record<
       {
         heading: "A simple countdown",
         paragraphs: [
-          "Early September: theme and costume shortlist. Mid-October: final order. October 25: preferred last ship-by for guaranteed pre-Halloween arrival on typical timelines. After that, prioritize in-stock accessories and express options.",
+          "Early September: theme and costume shortlist. Mid-October: final order. October 25: last practical order window for 5–7 day delivery before Halloween — still not a guarantee. After that, prioritize in-stock accessories.",
           "Shop costumes and accessories at HalloweenReady with the Halloween 2026 date in mind — early carts beat sold-out carts every year. Add Halloween party supplies in the same order if you are hosting the same weekend.",
         ],
       },

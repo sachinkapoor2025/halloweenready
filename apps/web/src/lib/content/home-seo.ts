@@ -1,10 +1,10 @@
-/** SEO-rich homepage copy — Halloween / USA delivery keywords, internal link targets. */
+/** SEO-rich homepage copy — Halloween shopping keywords and internal link targets. */
 export const homeSeoContent = {
   intro: {
     heading: "Shop Halloween costumes, decorations, and party supplies",
     paragraphs: [
       "Halloween is the season for gatherings, trick-or-treat, and home displays that feel festive without being hard to plan. Halloween decorations set the mood at the door, while the rest of the evening comes together with costumes, treats, and a few well-chosen extras.",
-      "HalloweenReady ships internationally through dropshipping partners. Check a product page for a shipping quote to California, New York, Texas, Florida, and other destinations. We do not assume every SKU ships everywhere.",
+      "HalloweenReady is a global Halloween store. Delivering in 5–7 days. Check a product page for shipping to your country. We do not assume every SKU ships everywhere.",
       "If you are hosting, shop Halloween party supplies alongside your display pieces so plates, balloons, and tableware match the same theme. Browse costumes, decorations, and treats in one place for a simpler October 31.",
     ],
   },
@@ -40,10 +40,10 @@ export const homeSeoContent = {
     ],
   },
   delivery: {
-    heading: "Halloween shopping across the USA",
+    heading: "Halloween shopping worldwide",
     paragraphs: [
-      "Use city pages for California, New York, Texas, Florida, and other metros as shopping context. Confirm whether an item can be quoted to your address on the product page.",
-      "Halloween 2026 falls on Saturday, October 31. Order earlier in October if you need buffer for international transit — we do not guarantee pre-Halloween arrival without a quote.",
+      "Shop from the USA, UK, Canada, Australia, India, UAE, and other markets. US city pages (California, New York, Texas, Florida, and more) stay live for local shopping context. Confirm whether an item can ship to your address on the product page.",
+      "Halloween 2026 falls on Saturday, October 31. Delivering in 5–7 days. Order earlier in October if you need buffer — we do not guarantee pre-Halloween arrival.",
     ],
   },
   howItWorks: {
@@ -66,18 +66,18 @@ export const homeSeoContent = {
   whyUs: {
     heading: "Why Shoppers Choose HalloweenReady",
     bullets: [
-      "Destination shipping quotes on product pages",
+      "International checkout — choose your country",
       "Costumes, decor, accessories, and party supplies in one store",
-      "Quoted storefront destinations include the US, Canada, UK, Australia, and Germany",
-      "Pay in USD (Stripe) or INR (Razorpay)",
-      "Plan early — transit varies, so we do not guarantee October 31 arrival",
+      "Country shopping pages for the USA, UK, Canada, Australia, India, UAE, and Europe",
+      "Pay in USD (Stripe) or INR (Razorpay); display prices can use local currency",
+      "Delivering in 5–7 days — we do not guarantee October 31 arrival",
       "WhatsApp and email support for sizing and order help",
     ],
   },
   faqs: [
     {
-      q: "How long does Halloween delivery take in the USA?",
-      a: "Transit time depends on the product and destination. Open the product page and request a shipping quote rather than relying on a blanket nationwide SLA.",
+      q: "How long does Halloween delivery take?",
+      a: "Delivering in 5–7 days. Confirm shipping on the product page. We do not guarantee arrival before October 31.",
     },
     {
       q: "When should I order for Halloween 2026?",
