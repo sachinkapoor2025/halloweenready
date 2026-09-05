@@ -113,7 +113,6 @@ export function organizationJsonLd() {
     sameAs: [
       "https://www.facebook.com/halloweenreadyofficial/",
       "https://www.instagram.com/halloweenreadyofficial/",
-      "https://www.youtube.com/@halloweenreadyofficial",
       "https://www.pinterest.com/halloweenready/",
       "https://x.com/halloweenready",
       siteUrl,

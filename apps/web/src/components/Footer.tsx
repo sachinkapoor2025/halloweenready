@@ -7,7 +7,6 @@ import { countrySeoPages } from "@/lib/content/country-pages";
 
 const FACEBOOK_URL = "https://www.facebook.com/halloweenreadyofficial/";
 const INSTAGRAM_URL = "https://www.instagram.com/halloweenreadyofficial/";
-const YOUTUBE_URL = "https://www.youtube.com/@halloweenreadyofficial";
 const PINTEREST_URL = "https://www.pinterest.com/halloweenready/";
 const TWITTER_URL = "https://x.com/halloweenready";
 
@@ -54,18 +53,6 @@ export function Footer() {
                     <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="#fff" strokeWidth="2" />
                     <circle cx="12" cy="12" r="4.2" stroke="#fff" strokeWidth="2" />
                     <circle cx="17.4" cy="6.6" r="1.2" fill="#fff" />
-                  </svg>
-                </a>
-                <a
-                  href={YOUTUBE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="HalloweenReady on YouTube"
-                  className="flex h-10 w-10 items-center justify-center hover:scale-105 transition-transform"
-                >
-                  <svg className="h-10 w-10" viewBox="0 0 24 24" aria-hidden>
-                    <rect width="24" height="24" rx="6.5" fill="#FF0000" />
-                    <path d="M9.6 7.8v8.4L17.1 12 9.6 7.8z" fill="#fff" />
                   </svg>
                 </a>
                 <a
