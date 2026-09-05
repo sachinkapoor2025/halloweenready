@@ -386,11 +386,7 @@ export function cartLinesMatch(
 }
 
 export function resolveHamperCustomization(
-  product: {
-    hamperContents?: HamperLine[] | null;
-    hamperAddons?: HamperLine[] | null;
-    price: number;
-  },
+  product: Pick<Product, "hamperContents" | "hamperAddons" | "price">,
   custom?: HamperCustomization | null
 ): { ok: true; extras: CartItemAddon[]; custom: HamperCustomization } | { ok: false; error: string } {
   const contents = product.hamperContents ?? [];

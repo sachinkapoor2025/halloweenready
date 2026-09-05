@@ -68,11 +68,7 @@ export declare function cartLinesMatch(a: {
     hamperCustomization?: HamperCustomization | null;
     cjVid?: string | null;
 }): boolean;
-export declare function resolveHamperCustomization(product: {
-    hamperContents?: HamperLine[] | null;
-    hamperAddons?: HamperLine[] | null;
-    price: number;
-}, custom?: HamperCustomization | null): {
+export declare function resolveHamperCustomization(product: Pick<Product, "hamperContents" | "hamperAddons" | "price">, custom?: HamperCustomization | null): {
     ok: true;
     extras: CartItemAddon[];
     custom: HamperCustomization;
