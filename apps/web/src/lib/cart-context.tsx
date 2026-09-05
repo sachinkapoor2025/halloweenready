@@ -5,7 +5,7 @@ import { api } from "./api";
 import { getOrCreateSessionId, useSessionId } from "./session";
 import { useAuth } from "./auth-context";
 import { trackCartAdd, trackCartRemove } from "./track";
-import { cartAddonSignature, type Cart, type ProductAddonSelection } from "@halloweenready/shared";
+import { cartLinesMatch, hamperCustomizationSignature, type Cart, type HamperCustomization, type ProductAddonSelection } from "@halloweenready/shared";
 
 interface CartContextValue {
   cart: Cart | null;
@@ -18,15 +18,26 @@ interface CartContextValue {
     contact?: { name?: string; email?: string; phone?: string },
     addons?: ProductAddonSelection[],
     cjVid?: string,
-    listingPage?: string
+    listingPage?: string,
+    hamperCustomization?: HamperCustomization
   ) => Promise<void>;
   updateItem: (lineId: string, quantity: number) => Promise<void>;
   removeItem: (lineId: string) => Promise<void>;
   itemCount: number;
   /** Quantity for a product line matching the given add-on selections. */
-  quantityFor: (productSlug: string, addons?: ProductAddonSelection[], cjVid?: string) => number;
+  quantityFor: (
+    productSlug: string,
+    addons?: ProductAddonSelection[],
+    cjVid?: string,
+    hamperCustomization?: HamperCustomization
+  ) => number;
   /** lineId for product + addon signature, if present. */
-  lineIdFor: (productSlug: string, addons?: ProductAddonSelection[], cjVid?: string) => string | undefined;
+  lineIdFor: (
+    productSlug: string,
+    addons?: ProductAddonSelection[],
+    cjVid?: string,
+    hamperCustomization?: HamperCustomization
+  ) => string | undefined;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -71,7 +82,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     contact?: { name?: string; email?: string; phone?: string },
     addons?: ProductAddonSelection[],
     cjVid?: string,
-    listingPage?: string
+    listingPage?: string,
+    hamperCustomization?: HamperCustomization
   ) => {
     const sid = resolveSessionId();
     if (!sid) throw new Error("Session not ready — please try again");
@@ -88,15 +100,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ...(contact?.phone ? { phone: contact.phone } : {}),
         ...(addons?.length ? { addons } : {}),
         ...(cjVid ? { cjVid } : {}),
+        ...(hamperCustomization ? { hamperCustomization } : {}),
       }),
     });
     setCart(normalizeCart(data.cart));
-    const sig = cartAddonSignature(addons);
     const added = data.cart.items.find(
       (i) =>
         i.productSlug === productSlug &&
-        cartAddonSignature(i.addons) === sig &&
-        (i.cjVid || "") === (cjVid || "")
+        cartLinesMatch(i, { addons, hamperCustomization, cjVid })
     );
     trackCartAdd(
       productSlug,
@@ -136,27 +147,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart(normalizeCart(data.cart));
   };
 
-  const quantityFor = (productSlug: string, addons?: ProductAddonSelection[], cjVid?: string) => {
-    const sig = cartAddonSignature(addons);
+  const quantityFor = (
+    productSlug: string,
+    addons?: ProductAddonSelection[],
+    cjVid?: string,
+    hamperCustomization?: HamperCustomization
+  ) => {
     return (
       cart?.items.find(
         (i) =>
           i.productSlug === productSlug &&
-          cartAddonSignature(i.addons) === sig &&
-          (i.cjVid || "") === (cjVid || "")
+          cartLinesMatch(i, { addons, hamperCustomization, cjVid })
       )?.quantity ?? 0
     );
   };
 
-  const lineIdFor = (productSlug: string, addons?: ProductAddonSelection[], cjVid?: string) => {
-    const sig = cartAddonSignature(addons);
+  const lineIdFor = (
+    productSlug: string,
+    addons?: ProductAddonSelection[],
+    cjVid?: string,
+    hamperCustomization?: HamperCustomization
+  ) => {
     const item = cart?.items.find(
       (i) =>
         i.productSlug === productSlug &&
-        cartAddonSignature(i.addons) === sig &&
-        (i.cjVid || "") === (cjVid || "")
+        cartLinesMatch(i, { addons, hamperCustomization, cjVid })
     );
-    return item?.lineId ?? (sig === "" && !cjVid ? item?.productSlug : undefined);
+    const empty =
+      !(addons?.length) &&
+      !cjVid &&
+      !hamperCustomizationSignature(hamperCustomization);
+    return item?.lineId ?? (empty ? item?.productSlug : undefined);
   };
 
   const itemCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;

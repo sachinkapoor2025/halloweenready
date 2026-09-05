@@ -3,6 +3,9 @@ export declare const CJ_STOREFRONT_PRODUCTS_PATH = "/cj/products";
 export declare function cjStorefrontProductsPath(query?: {
     category?: string;
     search?: string;
+    limit?: number;
+    offset?: number;
+    sort?: string;
 }): string;
 export declare function cjStorefrontProductPath(slug: string): string;
 export declare function cjStorefrontProductVideosPath(slug: string): string;

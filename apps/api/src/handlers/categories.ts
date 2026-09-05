@@ -5,6 +5,7 @@ import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
 import { ok, okCached, created, badRequest, notFound, forbidden } from "../lib/response";
 import { getAuth } from "../lib/auth";
 import { ensureHalloweenreadyCategoriesInDb } from "../lib/halloweenready-catalog";
+import { HALLOWEEN_HAMPERS_CATEGORY_SLUG } from "@halloweenready/shared";
 
 const CATEGORY_CACHE_TTL_MS = 60_000;
 let categoryCache: { at: number; items: Category[] } | null = null;
@@ -166,7 +167,19 @@ export async function getCategory(event: APIGatewayProxyEventV2) {
     })
   );
 
-  if (!result.Item) return notFound("Category not found");
+  if (!result.Item) {
+    if (slug === HALLOWEEN_HAMPERS_CATEGORY_SLUG) {
+      await ensureHalloweenreadyCategoriesInDb();
+      const retry = await docClient.send(
+        new GetCommand({
+          TableName: PRODUCTS_TABLE,
+          Key: { PK: categoryKeys.pk(slug), SK: categoryKeys.sk() },
+        })
+      );
+      if (retry.Item) return okCached({ category: retry.Item }, 30);
+    }
+    return notFound("Category not found");
+  }
   return okCached({ category: result.Item }, 30);
 }
 

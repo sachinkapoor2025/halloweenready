@@ -11,18 +11,25 @@ import { CategoryProductLinks } from "@/components/CategoryProductLinks";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
 import { JsonLd } from "@/components/JsonLd";
 import { getCategoryContent } from "@/lib/content/category-content";
+import { countrySeoPages } from "@/lib/content/country-pages";
 import { getCategoryPageSeo } from "@/lib/content/category-seo";
 import { getCategoryRichContent } from "@/lib/content/category-rich-content";
 import { seoLocations } from "@/lib/content/seo-data";
-import { getCatalogCategory, getCatalogProductsByCategory } from "@/lib/catalog-fallback";
+import { getCatalogCategory } from "@/lib/catalog-fallback";
 import { resolveImageUrl } from "@/lib/images";
-import { withListingImages } from "@/lib/product-loader";
+import { loadStorefrontListing } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
-import { breadcrumbJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
-import { cjStorefrontProductsPath, getInternalLinkGroups, type Product, type Category } from "@halloweenready/shared";
+import { breadcrumbJsonLd, collectionPageJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
+import {
+  parseStorefrontListingSort,
+  getInternalLinkGroups,
+  type Product,
+  type Category,
+} from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ sort?: string }>;
 }
 
 /** Always fetch live product images — Amplify ISR was serving stale pumpkin placeholders. */
@@ -73,28 +80,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const data = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: false });
     const c = data.category;
     return pageMetadata({
-      title: `${c.name} — Halloween Decor & Supplies | USA Shipping`,
+      title: `${c.name} | HalloweenReady`,
       description:
         c.seoDescription ??
         c.description?.slice(0, 160) ??
-        `Shop ${c.name} with fast USA delivery from HalloweenReady.`,
+        `Shop ${c.name} at HalloweenReady. Delivering in 5–7 days — confirm shipping on each product page.`,
       path,
     });
   } catch {
     const name = fallback?.name ?? slug.replace(/-/g, " ");
     return pageMetadata({
-      title: `${name} — Halloween USA`,
-      description: `Shop ${name} with USA delivery from HalloweenReady.`,
+      title: `${name} | HalloweenReady`,
+      description: `Shop ${name} at HalloweenReady. Delivering in 5–7 days.`,
       path,
     });
   }
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { sort: sortParam } = await searchParams;
+  const sort = parseStorefrontListingSort(sortParam);
 
   let category: Category | null = null;
   let products: Product[] = [];
+  let total = 0;
+  let hasMore = false;
 
   try {
     const catData = await api<{ category: Category }>(`/categories/${slug}`, { revalidate: false });
@@ -103,18 +114,14 @@ export default async function CategoryPage({ params }: Props) {
     category = getCatalogCategory(slug) ?? null;
   }
 
-  try {
-    const prodData = await api<{ products: Product[] }>(cjStorefrontProductsPath({ category: slug }), {
-      revalidate: false,
-    });
-    products = withListingImages(prodData.products);
-  } catch {
-    products = [];
-  }
-
-  if (products.length === 0) {
-    products = withListingImages(getCatalogProductsByCategory(slug));
-  }
+  const listing = await loadStorefrontListing({
+    category: slug,
+    sort,
+    revalidate: false,
+  });
+  products = listing.products;
+  total = listing.total;
+  hasMore = listing.hasMore;
 
   if (!category) {
     category = getCatalogCategory(slug) ?? null;
@@ -126,7 +133,7 @@ export default async function CategoryPage({ params }: Props) {
 
   const name = category?.name ?? slug.replace(/-/g, " ");
   const pageSeo = getCategoryPageSeo(slug);
-  const h1 = pageSeo?.h1 ?? `${name} — Halloween USA`;
+  const h1 = pageSeo?.h1 ?? name;
   const baseDescription =
     category?.description?.trim() ||
     `Browse our ${name} collection — Halloween products with destination shipping quotes on each product page.`;
@@ -147,8 +154,13 @@ export default async function CategoryPage({ params }: Props) {
       <JsonLd
         data={[
           breadcrumbJsonLd(crumbs.map((c) => ({ name: c.label, path: c.href ?? `/categories/${slug}` }))),
+          collectionPageJsonLd({
+            name: h1,
+            path: `/categories/${slug}`,
+            description: pageSeo?.description ?? baseDescription,
+          }),
           itemListJsonLd(
-            `${name} — HalloweenReady USA`,
+            `${name} — HalloweenReady`,
             products.map((p) => ({ name: p.name, path: `/products/${p.slug}` }))
           ),
           ...(rich ? [faqJsonLd(rich.faqs)] : []),
@@ -165,7 +177,14 @@ export default async function CategoryPage({ params }: Props) {
 
       {products.length > 0 ? (
         <Suspense fallback={<p className="text-slate-500">Loading products…</p>}>
-          <ProductGrid products={products} listingPage={`category:${slug}`} />
+          <ProductGrid
+            products={products}
+            total={total}
+            hasMore={hasMore}
+            listingPage={`category:${slug}`}
+            category={slug}
+            sort={sort}
+          />
         </Suspense>
       ) : (
         <p className="text-slate-500">
@@ -176,11 +195,21 @@ export default async function CategoryPage({ params }: Props) {
         </p>
       )}
 
-      <CategoryProductLinks products={products} categoryName={name} />
+      <CategoryProductLinks products={products} categoryName={name} total={total} />
 
       {shipsTo.length > 0 && (
         <section className="mt-8 text-sm text-slate-600">
           <h2 className="font-semibold text-primary mb-2">Halloween shopping by location</h2>
+          <p className="flex flex-wrap gap-x-1 gap-y-1 mb-2">
+            {countrySeoPages.map((c, i) => (
+              <span key={c.slug}>
+                <Link href={`/countries/${c.slug}`} className="text-nav hover:underline">
+                  {c.name}
+                </Link>
+                {i < countrySeoPages.length - 1 ? <span className="text-slate-400"> · </span> : null}
+              </span>
+            ))}
+          </p>
           <p className="flex flex-wrap gap-x-1 gap-y-1">
             {shipsTo.map((city, i) => (
               <span key={city.slug}>

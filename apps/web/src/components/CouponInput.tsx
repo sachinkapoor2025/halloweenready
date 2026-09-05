@@ -1,22 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { useSessionId } from "@/lib/session";
 import { formatCouponExpiry } from "@/lib/welcome-coupon";
-import type { DisplayCurrency } from "@halloweenready/shared";
+import {
+  applyCouponToOrderTotals,
+  isTestOrderCoupon,
+  TEST_ORDER_FORCE_TOTAL_USD,
+  type DisplayCurrency,
+  type ShopCurrency,
+} from "@halloweenready/shared";
+
+export type AppliedCouponMeta = {
+  code: string;
+  kind?: string;
+  discountPercent?: number;
+};
 
 type Props = {
   email: string;
   phone?: string;
   /** Subtotal coupons may discount (excludes flash-sale / couponExcluded lines). */
   subtotal: number;
+  shipping?: number;
   currency: DisplayCurrency;
+  payCurrency?: ShopCurrency;
+  usdInrRate?: number;
   formatMoney: (amount: number, currency: DisplayCurrency) => string;
   initialCode?: string;
   /** When true, flash-sale lines are in the cart — coupons skip those lines. */
   hasCouponExcludedItems?: boolean;
-  onApplied: (discount: number, code: string) => void;
+  onApplied: (discount: number, code: string, meta?: AppliedCouponMeta) => void;
   onCleared: () => void;
 };
 
@@ -24,7 +39,10 @@ export function CouponInput({
   email,
   phone = "",
   subtotal,
+  shipping = 0,
   currency,
+  payCurrency,
+  usdInrRate = 0,
   formatMoney,
   initialCode = "",
   hasCouponExcludedItems = false,
@@ -37,18 +55,28 @@ export function CouponInput({
   const [error, setError] = useState("");
   const [applied, setApplied] = useState<{
     code: string;
-    discountPercent: number;
+    kind?: string;
+    discountPercent?: number;
     expiresAt: string;
-    discountAmount: number;
   } | null>(null);
+
+  const checkoutCurrency: ShopCurrency = payCurrency ?? (currency === "INR" ? "INR" : "USD");
+  const priced = useMemo(() => {
+    if (!applied) return null;
+    return applyCouponToOrderTotals({
+      kind: applied.kind,
+      discountPercent: applied.discountPercent,
+      eligibleSubtotal: subtotal,
+      subtotal,
+      shipping,
+      currency: checkoutCurrency,
+      usdInrRate,
+    });
+  }, [applied, subtotal, shipping, checkoutCurrency, usdInrRate]);
 
   const apply = async () => {
     const trimmed = code.trim().toUpperCase();
     if (!trimmed) return;
-    if (subtotal <= 0) {
-      setError("Coupons cannot be applied to flash sale items");
-      return;
-    }
     const hasEmail = Boolean(email.trim() && email.includes("@"));
     const hasPhone = phone.replace(/\D/g, "").length >= 7;
     if (!hasEmail && !hasPhone) {
@@ -64,6 +92,8 @@ export function CouponInput({
         discountPercent?: number;
         expiresAt?: string;
         error?: string;
+        kind?: string;
+        forceTotalUsd?: number;
       }>("/coupons/validate", {
         method: "POST",
         sessionId: sessionId ?? undefined,
@@ -74,18 +104,38 @@ export function CouponInput({
         }),
       });
 
-      if (!result.valid || !result.discountPercent || !result.code) {
+      if (!result.valid || !result.code) {
         throw new Error(result.error ?? "Invalid coupon");
       }
 
-      const discountAmount = Math.round(subtotal * (result.discountPercent / 100) * 100) / 100;
-      setApplied({
+      const testOrder = isTestOrderCoupon(result);
+      if (!testOrder && (!result.discountPercent || subtotal <= 0)) {
+        throw new Error(
+          subtotal <= 0 ? "Coupons cannot be applied to flash sale items" : (result.error ?? "Invalid coupon")
+        );
+      }
+
+      const next = {
         code: result.code,
+        kind: result.kind,
         discountPercent: result.discountPercent,
         expiresAt: result.expiresAt ?? "",
-        discountAmount,
+      };
+      const amounts = applyCouponToOrderTotals({
+        kind: next.kind,
+        discountPercent: next.discountPercent,
+        eligibleSubtotal: subtotal,
+        subtotal,
+        shipping,
+        currency: checkoutCurrency,
+        usdInrRate,
       });
-      onApplied(discountAmount, result.code);
+      setApplied(next);
+      onApplied(amounts.discount, result.code, {
+        code: result.code,
+        kind: result.kind,
+        discountPercent: result.discountPercent,
+      });
     } catch (err) {
       setApplied(null);
       onCleared();
@@ -101,6 +151,8 @@ export function CouponInput({
     onCleared();
   };
 
+  const testApplied = isTestOrderCoupon(applied);
+
   return (
     <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3">
       <p className="text-sm font-semibold text-slate-900">Coupon code</p>
@@ -110,13 +162,20 @@ export function CouponInput({
           ? " Flash sale items are excluded from coupon discounts."
           : ""}
       </p>
-      {applied ? (
+      {applied && priced ? (
         <div className="text-sm space-y-1">
           <p className="text-green-700 font-medium">
-            {applied.code} applied — {applied.discountPercent}% off (−{formatMoney(applied.discountAmount, currency)})
+            {testApplied
+              ? `${applied.code} applied — test order total ${formatMoney(priced.total, checkoutCurrency)} (includes shipping)`
+              : `${applied.code} applied — ${applied.discountPercent}% off (−${formatMoney(priced.discount, checkoutCurrency)})`}
           </p>
           {applied.expiresAt && (
             <p className="text-xs text-slate-500">Expires {formatCouponExpiry(applied.expiresAt)}</p>
+          )}
+          {testApplied && (
+            <p className="text-xs text-amber-800">
+              Admin test coupon: pay ${TEST_ORDER_FORCE_TOTAL_USD} regardless of cart and shipping.
+            </p>
           )}
           <button type="button" onClick={remove} className="text-xs text-nav hover:underline">
             Remove coupon

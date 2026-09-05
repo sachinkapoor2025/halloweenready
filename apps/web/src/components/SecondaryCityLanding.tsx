@@ -24,11 +24,11 @@ export function buildSecondaryCityFaqs(city: SecondaryCity) {
     },
     {
       q: `How long does Halloween delivery take to ${place}?`,
-      a: `Most orders to ${place} arrive in 2–5 business days after dispatch. Order early before October 31 for the best selection.`,
+      a: `Most orders to ${place} arrive in 5–7 days. Order earlier in October for more buffer — we do not guarantee arrival before October 31.`,
     },
     {
       q: `When should I order for Halloween 2026?`,
-      a: "Halloween 2026 is October 31, 2026. Order costumes by October 20 and decor by October 25 for guaranteed pre-Halloween delivery.",
+      a: "Halloween 2026 is October 31, 2026. Delivering in 5–7 days. Order earlier in October for more buffer — we do not guarantee arrival before October 31.",
     },
   ] as const;
 }
@@ -45,7 +45,7 @@ export function SecondaryCityLanding({ city }: { city: SecondaryCity }) {
         </h2>
         <p className="mb-4">
           Shop HalloweenReady for decorations, costumes, party supplies, and seasonal accessories
-          with fast domestic shipping to {place}.
+          with shipping to {place}. Delivering in 5–7 days — confirm the quote on each product page.
         </p>
         <p>
           Browse home décor, costumes, party supplies, toys, candles, and more. Checkout with Stripe

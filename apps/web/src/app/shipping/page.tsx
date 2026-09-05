@@ -10,7 +10,7 @@ import { getInternalLinkGroups, PRIORITY_CITY_LINKS } from "@halloweenready/shar
 export const metadata: Metadata = pageMetadata({
   title: "Halloween Shipping & Delivery — Destination Quotes",
   description:
-    "HalloweenReady product shipping depends on destination and inventory. Check the freight quote on each product page. Storefront quotes are available for the US, Canada, UK, Australia, and Germany.",
+    "HalloweenReady delivers in 5–7 days. Free shipping on orders of $49 or more. Confirm shipping on each product page. Country shopping pages cover the USA, UK, Canada, Australia, India, UAE, and Europe.",
   path: "/shipping",
 });
 
@@ -80,12 +80,24 @@ export default function ShippingPage() {
           <Link href="/countries/au" className="text-nav hover:underline">
             Australia
           </Link>
-          , and{" "}
+          ,{" "}
+          <Link href="/countries/in" className="text-nav hover:underline">
+            India
+          </Link>
+          ,{" "}
+          <Link href="/countries/ae" className="text-nav hover:underline">
+            UAE
+          </Link>
+          ,{" "}
           <Link href="/countries/de" className="text-nav hover:underline">
             Germany
+          </Link>
+          , and other{" "}
+          <Link href="/halloween" className="text-nav hover:underline">
+            European markets
           </Link>{" "}
-          explain shopping context. A live freight quote on the product page is the source of truth — not a
-          worldwide shipping claim.
+          explain shopping context. Delivering in 5–7 days. Confirm shipping on the product page — we do not
+          invent delivery promises by country.
         </p>
         <h2 className="text-xl font-bold text-accent">Packaging</h2>
         <p>

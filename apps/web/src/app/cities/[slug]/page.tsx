@@ -13,7 +13,7 @@ import {
   getSeoLocation,
 } from "@/lib/content/seo-data";
 import { shuffleForCity } from "@/lib/city-products";
-import { loadStorefrontProducts } from "@/lib/product-loader";
+import { loadStorefrontProductPreview } from "@/lib/product-loader";
 import { halloweenPathForLegacyCitySlug } from "@/lib/content/geo";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, serviceAreaJsonLd } from "@/lib/seo";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
@@ -46,7 +46,7 @@ export default async function CityPage({ params }: Props) {
   const content = getCityContent(slug);
   if (!loc || !content) notFound();
 
-  const products = await loadStorefrontProducts();
+  const products = await loadStorefrontProductPreview();
   const cityProducts = shuffleForCity(products, slug).slice(0, 20);
 
   const crumbs = [

@@ -18,6 +18,7 @@ export const CATEGORY_SLUGS = {
   wearable: "lifestyleandwearable",
   paper: "printedandpapercrafts",
   candles: "candlesandfragrance",
+  hampers: "halloween-hampers",
 } as const;
 
 const CATEGORY_KEYWORDS: Array<{ slug: string; label: string; pattern: RegExp }> = [
@@ -27,6 +28,7 @@ const CATEGORY_KEYWORDS: Array<{ slug: string; label: string; pattern: RegExp }>
   { slug: CATEGORY_SLUGS.toys, label: "toys", pattern: /\b(toy|novelty|prank|gag)\b/i },
   { slug: CATEGORY_SLUGS.jewelry, label: "accessories", pattern: /\b(wig|mask|makeup|gloves|jewelry|accessory|accessories|hat)\b/i },
   { slug: CATEGORY_SLUGS.candles, label: "candles", pattern: /\b(candle|fragrance|scent)\b/i },
+  { slug: CATEGORY_SLUGS.hampers, label: "hampers", pattern: /\b(hamper|gift basket|boo basket|gift kit)\b/i },
 ];
 
 const THEME_PATTERNS: Array<{ value: string; pattern: RegExp }> = [

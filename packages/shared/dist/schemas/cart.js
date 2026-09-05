@@ -38,6 +38,20 @@ exports.cartItemSchema = zod_1.z.object({
     couponExcluded: zod_1.z.boolean().optional(),
     /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
     addons: zod_1.z.array(exports.cartItemAddonSchema).max(20).optional(),
+    /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+    hamperCustomization: zod_1.z
+        .object({
+        excludedSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(40).default([]),
+        replacements: zod_1.z
+            .array(zod_1.z.object({
+            fromSlug: zod_1.z.string().min(1),
+            toSlug: zod_1.z.string().min(1),
+        }))
+            .max(40)
+            .default([]),
+        extraSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(20).default([]),
+    })
+        .optional(),
 });
 const addToCartAddonSchema = zod_1.z.union([
     zod_1.z.string().min(1).max(80),
@@ -59,6 +73,19 @@ exports.addToCartSchema = zod_1.z.object({
     addons: zod_1.z.array(addToCartAddonSchema).max(20).optional(),
     /** Optional CJ variant when the product has multiple SKUs. */
     cjVid: zod_1.z.string().min(1).max(80).optional(),
+    hamperCustomization: zod_1.z
+        .object({
+        excludedSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(40).default([]),
+        replacements: zod_1.z
+            .array(zod_1.z.object({
+            fromSlug: zod_1.z.string().min(1),
+            toSlug: zod_1.z.string().min(1),
+        }))
+            .max(40)
+            .default([]),
+        extraSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(20).default([]),
+    })
+        .optional(),
 });
 exports.cartSchema = zod_1.z.object({
     items: zod_1.z.array(exports.cartItemSchema).default([]),

@@ -3,6 +3,7 @@ import { looksLikeHtml, stripHtml } from "./html-text";
 
 type ProductLike = Pick<Product, "name" | "description" | "categorySlug" | "tags"> & {
   slug?: string;
+  hamperContents?: Product["hamperContents"];
 };
 
 function hasChocolateSignal(text: string): boolean {
@@ -120,7 +121,11 @@ export function normalizeHamperIncludeLine(line: string): string[] {
  * Customer-facing "What's included" lines for HalloweenReady product detail pages.
  */
 export function getProductIncludes(product: ProductLike): string[] {
-  const { description, name, categorySlug, tags } = product;
+  const { description, name, categorySlug, tags, hamperContents } = product;
+
+  if (hamperContents?.length) {
+    return [...hamperContents.map((c) => c.name), ...shippingIncludeLines()];
+  }
 
   if (looksLikeHtml(description) && /<li[\s>]/i.test(description)) {
     const fromHtml = fromHtmlList(description).flatMap(normalizeHamperIncludeLine);

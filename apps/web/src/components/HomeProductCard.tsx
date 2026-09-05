@@ -13,9 +13,11 @@ import { ProductImageRotator } from "@/components/ProductImageRotator";
 export function HomeProductCard({
   product,
   showFastSellingBadge = false,
+  priority = false,
 }: {
   product: Product;
   showFastSellingBadge?: boolean;
+  priority?: boolean;
 }) {
   const { format } = useCurrency();
   const discount = getDiscountPercent(product.price, product.compareAtPrice);
@@ -41,6 +43,7 @@ export function HomeProductCard({
             alt={product.name}
             staggerKey={product.slug}
             className="absolute inset-0 h-full w-full"
+            priority={priority}
           />
         </Link>
       </div>

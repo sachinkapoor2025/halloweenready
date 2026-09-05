@@ -34,12 +34,12 @@ export const STORE_LOCATIONS = [
 
 export const navItems = [
   { label: "Home", href: "/" },
+  { label: "Hampers", href: "/categories/halloween-hampers", category: "halloween-hampers" },
   { label: "Home Decorations", href: "/categories/home-decoration", category: "home-decoration" },
   { label: "Costumes", href: "/categories/costumesandaccessories", category: "costumesandaccessories" },
   { label: "Party Supplies", href: "/categories/partysupplier", category: "partysupplier" },
   { label: "Toys & Novelty", href: "/categories/toysandnovelty", category: "toysandnovelty" },
   { label: "Halloween Guide", href: "/halloween-guide" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -83,13 +83,13 @@ export const cityLinks: CityLink[] = [
 export const homeBanners = [
   {
     src: "/banners/bannerpage1.png",
-    alt: "Halloween decorations costumes and party supplies for USA shipping — HalloweenReady",
+    alt: "Halloween decorations costumes and party supplies — HalloweenReady",
     href: "/products",
-    eyebrow: "HALLOWEEN 2026 · USA SHIPPING",
+    eyebrow: "HALLOWEEN 2026 · SHOP WORLDWIDE",
     title: "Celebrate Halloween in",
     titleAccent: "Style",
     description:
-      "Premium Halloween decorations, costumes, and party supplies. Confirm shipping on each product page.",
+      "Premium Halloween decorations, costumes, and party supplies. Delivering in 5–7 days — confirm shipping on each product page.",
     cta: "Shop Halloween",
     pill: "Decorations · Costumes · Party Supplies",
   },
@@ -129,7 +129,7 @@ export const homeCategoryOrder = [
   "printedandpapercrafts",
 ] as const;
 
-export const categoryOrder = homeCategoryOrder;
+export const categoryOrder = ["halloween-hampers", ...homeCategoryOrder] as const;
 
 export function orderCategories<T extends { slug: string }>(categories: readonly T[]): T[] {
   const rank = new Map<string, number>(homeCategoryOrder.map((slug, index) => [slug, index]));
@@ -174,7 +174,7 @@ export const testimonials = [
 export const faqs = [
   {
     q: "How quickly do you ship Halloween decorations?",
-    a: "Transit time depends on the product and destination. Open the product page and request a shipping quote — we do not advertise a blanket 2–5 day nationwide SLA.",
+    a: "Delivering in 5–7 days. Carts under $49 pay a stepped shipping fee; $49+ ships free. The checkout total matches the payment page.",
   },
   {
     q: "Do you offer outdoor Halloween decorations?",
@@ -197,19 +197,19 @@ export const faqs = [
     a: "Shoppers often start with hanging decorations, inflatables, skeletons, lighting, yard pieces, party supplies, and trick-or-treat accessories, then add costumes if they need outfits too.",
   },
   {
-    q: "Does HalloweenReady ship across the USA?",
-    a: "Many items can be quoted for US delivery on the product page. Availability is not universal — confirm the destination before checkout.",
+    q: "Does HalloweenReady ship internationally?",
+    a: "Yes. Choose your country at checkout. We have shopping pages for the USA, UK, Canada, Australia, India, UAE, and several European countries. Delivering in 5–7 days.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "You can pay with Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking) at secure checkout.",
+    a: "You can pay with Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking) at secure checkout. Prices can display in other currencies.",
   },
   {
     q: "Can I trust HalloweenReady for Halloween shopping?",
-    a: "Checkout is encrypted, and you can reach the team on WhatsApp or email for sizing and delivery questions. Orders ship from within the USA, and we stand behind the purchase if something arrives damaged.",
+    a: "Checkout is encrypted. You can reach the team on WhatsApp or email for sizing and delivery questions. We stand behind the purchase if something arrives damaged.",
   },
   {
     q: "When should I order for Halloween 2026?",
-    a: "Halloween 2026 is Saturday, October 31. Aim to order costumes by about October 20 and decorations or party supplies by October 25 so there is time for delivery and setup.",
+    a: "Halloween 2026 is Saturday, October 31. Delivering in 5–7 days, so order with that window in mind. Earlier in October gives more buffer — we do not guarantee arrival before October 31.",
   },
 ] as const;

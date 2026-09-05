@@ -83,6 +83,10 @@ function getProductAddon(id) {
     return ADDON_BY_ID.get(id);
 }
 function productAllowsAddons(product) {
+    if (product.categorySlug === constants_1.HALLOWEEN_HAMPERS_CATEGORY_SLUG)
+        return false;
+    if (product.tags?.includes("halloween-hamper"))
+        return false;
     const v = product.vendorSlug?.trim();
     if (!v || v === constants_1.VENDOR_HALLOWEENREADY)
         return true;

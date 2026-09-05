@@ -90,7 +90,7 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/cj/products` | Storefront CJ catalog (list/search) |
+| GET | `/cj/products` | Storefront CJ catalog (list/search; `?limit=&offset=&sort=` — shop/category first page ~24, later chunks of 24) |
 | GET | `/cj/products/{slug}` | Storefront CJ product detail |
 | GET | `/cj/products/{slug}/videos` | CJ videos for the PDP gallery (copies to CDN; hydrates Dynamo if import skipped them) |
 | GET | `/cj/products/{slug}/shipping` | CJ freight methods, USD cost, and transit time (cached) |
@@ -106,6 +106,10 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | POST | `/cart/items` | Add to cart |
 | DELETE | `/cart/items/{id}` | Remove item |
 | POST | `/checkout` | Create order + payment intent |
+| POST | `/coupons/validate` | Validate coupon at checkout (email or phone) |
+| POST | `/admin/coupons/abandoned` | Admin: outreach / confirmed-sale coupon |
+| GET | `/admin/coupons/abandoned` | Admin: list admin coupons |
+| POST | `/admin/coupons/test-order` | Admin: 20-minute $1 test-order coupon (items + shipping) |
 | POST | `/webhooks/stripe` | Stripe webhook |
 | POST | `/webhooks/razorpay` | Razorpay webhook |
 | POST | `/webhooks/cj` | CJ Dropshipping product/stock/order/logistics webhook |
@@ -134,7 +138,7 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | GET | `/admin/homepage-ranking` | Admin: ranking weights / slot config |
 | PUT | `/admin/homepage-ranking` | Admin: save ranking config and refresh snapshot |
 | POST | `/admin/homepage-ranking/refresh` | Admin: rebuild homepage snapshot |
-| GET | `/homepage/products` | Storefront ranked homepage pool (~500) |
+| GET | `/homepage/products` | Storefront ranked homepage feed (`?limit=&offset=`; first page ~40 products, later chunks of 24). Snapshot is included on `offset=0` only. |
 | GET | `/admin/analytics/chat` | Admin: shopping assistant sessions, intents, unfulfilled searches |
 | GET | `/config/chat` | Public assistant config (enabled flags) |
 | PUT | `/admin/config/chat` | Admin: save assistant settings |

@@ -5,9 +5,9 @@ import { site, categoryOrder, whatsappChatUrl } from "@/lib/site";
 import { aboutPageJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "About HalloweenReady — Premium Halloween Store | USA Shipping",
+  title: "About HalloweenReady — Global Halloween Store",
   description:
-    "HalloweenReady.com — your trusted online Halloween store for USA delivery. Costumes, decor, candy, accessories, and party supplies with domestic US shipping.",
+    "HalloweenReady is an online Halloween store for costumes, decorations, and party supplies. We ship internationally, delivering in 5–7 days. Free shipping on orders of $49 or more.",
   path: "/about",
 });
 
@@ -18,14 +18,36 @@ export default function AboutPage() {
       <h1 className="text-3xl font-bold text-accent mb-6">About {site.name}</h1>
       <div className="space-y-6 text-slate-600 leading-relaxed">
         <p>
-          <strong>{site.name}</strong> ({site.domain}) is an online Halloween store for families and hosts in the
-          United States. We focus on costumes, decor, treats, and tableware that can arrive in time for October 31 —
-          without turning shopping into a scavenger hunt across several sites.
+          <strong>{site.name}</strong> ({site.domain}) is a global online Halloween store. We sell costumes,
+          decorations, party supplies, accessories, and seasonal extras for October 31 — without sending shoppers
+          across several sites.
         </p>
         <p>
-          Whether you are planning trick-or-treat, a porch display, or an office party, you can order from anywhere
-          and ship to a <strong>US address</strong>. Most orders travel 2–3 business days to major metros and 3–5 days
-          nationwide. For seasonal timing, see the{" "}
+          Choose your country at checkout. We serve shoppers in the{" "}
+          <Link href="/countries/us" className="text-nav hover:underline">
+            United States
+          </Link>
+          ,{" "}
+          <Link href="/countries/uk" className="text-nav hover:underline">
+            United Kingdom
+          </Link>
+          ,{" "}
+          <Link href="/countries/ca" className="text-nav hover:underline">
+            Canada
+          </Link>
+          ,{" "}
+          <Link href="/countries/au" className="text-nav hover:underline">
+            Australia
+          </Link>
+          ,{" "}
+          <Link href="/countries/in" className="text-nav hover:underline">
+            India
+          </Link>
+          , the{" "}
+          <Link href="/countries/ae" className="text-nav hover:underline">
+            UAE
+          </Link>
+          , and other markets. <strong>Delivering in 5–7 days.</strong> For seasonal timing, see the{" "}
           <Link href="/halloween-guide" className="text-nav hover:underline">
             Halloween planning guide
           </Link>
@@ -33,22 +55,21 @@ export default function AboutPage() {
         </p>
         <h2 className="text-xl font-bold text-accent pt-4">Why shoppers choose HalloweenReady</h2>
         <ul className="list-disc list-inside space-y-2">
-          <li>Domestic US fulfillment — ships from within the USA</li>
-          <li>2–3 day express delivery to major US cities; 3–5 days to all 50 states</li>
-          <li>Same-day dispatch on most orders before our daily cut-off</li>
-          <li>Free shipping on orders of $49 or more</li>
+          <li>International checkout — pick any country, not a US-only form</li>
+          <li>Delivering in 5–7 days</li>
+          <li>Free shipping on orders of $49 or more; smaller carts show a stepped shipping fee before payment</li>
+          <li>Prices can display in local currency; checkout is Stripe (USD) or Razorpay (INR)</li>
         </ul>
         <h2 className="text-xl font-bold text-accent pt-4">What we offer</h2>
         <ul className="list-disc list-inside space-y-2">
-          <li>99+ Halloween products across eight categories</li>
-          <li>Costumes, Decorations, Candy & Treats, Accessories, and Party Supplies</li>
+          <li>Halloween costumes, decorations, party supplies, toys, candles, jewelry, apparel, and paper crafts</li>
           <li>Adult, teen, and kids sizes</li>
-          <li>Secure payments via Razorpay and Stripe</li>
+          <li>Secure payments via Stripe and Razorpay</li>
         </ul>
         <h2 className="text-xl font-bold text-accent pt-4">Our promise</h2>
         <p>
-          Every order is packed with Halloween timing in mind. Order by October 25 when you can, so there is room for
-          delivery and setup. Read more on our{" "}
+          Shipping is shown on the product, cart, and checkout pages — the same amount charged at payment. Read more
+          on our{" "}
           <Link href="/shipping" className="text-nav hover:underline">
             shipping and delivery page
           </Link>

@@ -6,7 +6,7 @@ import {
   findGeoLocation,
   halloweenRegionParams,
 } from "@/lib/content/geo";
-import { loadStorefrontProducts } from "@/lib/product-loader";
+import { loadStorefrontProductPreview } from "@/lib/product-loader";
 import { pageMetadata } from "@/lib/seo";
 import type { Product } from "@halloweenready/shared";
 
@@ -42,7 +42,7 @@ export default async function HalloweenRegionPage({ params }: Props) {
 
   let products: Product[] = [];
   if (buildLocationContent(loc).quoteable) {
-    products = await loadStorefrontProducts();
+    products = await loadStorefrontProductPreview();
   }
 
   return <HalloweenLocationView location={loc} products={products} />;

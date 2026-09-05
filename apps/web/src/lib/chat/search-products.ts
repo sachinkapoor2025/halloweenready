@@ -2,6 +2,7 @@ import {
   buildSearchQuery,
   cjStorefrontProductPath,
   cjStorefrontProductsPath,
+  STOREFRONT_ASSISTANT_SEARCH_LIMIT,
   isProductAvailableForCountry,
   scoreProductForState,
   toAssistantProduct,
@@ -87,6 +88,7 @@ async function searchLiveApi(state: ShoppingState): Promise<Product[]> {
     cjStorefrontProductsPath({
       ...(state.categorySlug ? { category: state.categorySlug } : {}),
       ...(token ? { search: token } : {}),
+      limit: STOREFRONT_ASSISTANT_SEARCH_LIMIT,
     })
   );
 }
@@ -127,7 +129,9 @@ export async function searchAssistantProducts(
   let ranked = rankProducts([...bySlug.values()], state, opts.country, exclude);
 
   if (ranked.length === 0 && state.categorySlug) {
-    const broaderLive = await fetchProductsOnce(cjStorefrontProductsPath({ category: state.categorySlug }));
+    const broaderLive = await fetchProductsOnce(
+      cjStorefrontProductsPath({ category: state.categorySlug, limit: STOREFRONT_ASSISTANT_SEARCH_LIMIT })
+    );
     ranked = rankProducts(broaderLive, { ...state, budgetMax: undefined, style: undefined }, opts.country, exclude);
   }
 

@@ -92,9 +92,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
 <channel>
-<title>HalloweenReady — Halloween Decorations & Party Supplies USA</title>
+<title>HalloweenReady — Halloween Decorations, Costumes & Party Supplies</title>
 <link>${escapeXml(site)}</link>
-<description>Halloween decorations, costumes, and party supplies delivered to all 50 US states</description>
+<description>Halloween decorations, costumes, and party supplies. International shipping — delivering in 5–7 days.</description>
 ${items}
 </channel>
 </rss>`;

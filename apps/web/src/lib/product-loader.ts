@@ -1,4 +1,15 @@
-import { cjStorefrontProductPath, cjStorefrontProductsPath, type Product } from "@halloweenready/shared";
+import {
+  STOREFRONT_GEO_PREVIEW_LIMIT,
+  STOREFRONT_LISTING_INITIAL_LIMIT,
+  STOREFRONT_RELATED_LIMIT,
+  cjStorefrontProductPath,
+  cjStorefrontProductsPath,
+  paginateStorefrontListing,
+  parseStorefrontListingSort,
+  sortStorefrontListing,
+  type Product,
+  type StorefrontListingSort,
+} from "@halloweenready/shared";
 import { getCdnUrl, isNextProductionBuild } from "./env";
 import { resolveImageUrls } from "./images";
 import { api } from "./api";
@@ -54,10 +65,11 @@ export async function loadProduct(slug: string): Promise<Product | null> {
 
 export async function loadRelatedProducts(categorySlug: string, excludeSlug: string): Promise<Product[]> {
   try {
-    const data = await api<{ products: Product[] }>(cjStorefrontProductsPath({ category: categorySlug }), {
-      revalidate: false,
-    });
-    const related = data.products.filter((p) => p.slug !== excludeSlug).slice(0, 5);
+    const data = await api<{ products: Product[] }>(
+      cjStorefrontProductsPath({ category: categorySlug, limit: STOREFRONT_RELATED_LIMIT }),
+      { revalidate: false }
+    );
+    const related = (data.products ?? []).filter((p) => p.slug !== excludeSlug).slice(0, 5);
     if (related.length > 0) return related.map(withDisplayImages);
   } catch {
     // fall through to catalog
@@ -66,6 +78,92 @@ export async function loadRelatedProducts(categorySlug: string, excludeSlug: str
     .filter((p) => p.slug !== excludeSlug)
     .slice(0, 5)
     .map(withDisplayImages);
+}
+
+export type StorefrontListingResult = {
+  products: Product[];
+  total: number;
+  hasMore: boolean;
+};
+
+function listingFromCatalog(
+  all: Product[],
+  opts: { limit: number; offset?: number; sort?: StorefrontListingSort; search?: string }
+): StorefrontListingResult {
+  let items = all;
+  const search = opts.search?.trim().toLowerCase();
+  if (search) {
+    items = items.filter(
+      (p) =>
+        p.name.toLowerCase().includes(search) ||
+        p.description.toLowerCase().includes(search) ||
+        p.tags?.some((t) => t.toLowerCase().includes(search))
+    );
+  }
+  const sorted = sortStorefrontListing(items, opts.sort ?? "featured");
+  const page = paginateStorefrontListing(sorted, opts.offset ?? 0, opts.limit);
+  return {
+    products: withListingImages(page.items),
+    total: page.total,
+    hasMore: page.hasMore,
+  };
+}
+
+/** First page of a shop/category/search grid. Later chunks load in the client. */
+export async function loadStorefrontListing(query: {
+  category?: string;
+  search?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+  revalidate?: number | false;
+}): Promise<StorefrontListingResult> {
+  const limit = query.limit ?? STOREFRONT_LISTING_INITIAL_LIMIT;
+  const offset = query.offset ?? 0;
+  const sort = parseStorefrontListingSort(query.sort);
+  try {
+    const data = await api<{
+      products: Product[];
+      total?: number;
+      hasMore?: boolean;
+    }>(
+      cjStorefrontProductsPath({
+        ...(query.category ? { category: query.category } : {}),
+        ...(query.search ? { search: query.search } : {}),
+        ...(sort !== "featured" ? { sort } : {}),
+        limit,
+        offset,
+      }),
+      { revalidate: query.revalidate }
+    );
+    const incoming = withListingImages(data.products ?? []);
+    const products = incoming.slice(0, limit);
+    const total = data.total ?? incoming.length;
+    if (products.length === 0) {
+      const all = query.category ? getCatalogProductsByCategory(query.category) : getCatalogProducts();
+      const fallback = listingFromCatalog(all, { limit, offset, sort, search: query.search });
+      if (fallback.products.length > 0) return fallback;
+    }
+    return {
+      products,
+      total,
+      hasMore:
+        Boolean(data.hasMore) ||
+        incoming.length > limit ||
+        offset + products.length < total,
+    };
+  } catch {
+    const all = query.category ? getCatalogProductsByCategory(query.category) : getCatalogProducts();
+    return listingFromCatalog(all, { limit, offset, sort, search: query.search });
+  }
+}
+
+/** Small merchandising set for city / geo pages — not the full catalog. */
+export async function loadStorefrontProductPreview(
+  limit = STOREFRONT_GEO_PREVIEW_LIMIT
+): Promise<Product[]> {
+  const page = await loadStorefrontListing({ limit, revalidate: 3600 });
+  return page.products;
 }
 
 /** Prefer catalog slugs at build time — avoids CI/API rate-limit prerender failures. */

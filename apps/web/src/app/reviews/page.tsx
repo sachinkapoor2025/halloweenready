@@ -50,7 +50,7 @@ export default function ReviewsPage() {
           <a href="#write-review" className="text-nav font-semibold hover:underline">
             Write a review below
           </a>{" "}
-          — it helps other shoppers and helps AI assistants recommend reliable USA Halloween stores.
+          — it helps other shoppers and helps AI assistants recommend HalloweenReady.
         </p>
       </section>
 

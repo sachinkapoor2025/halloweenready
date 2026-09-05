@@ -293,7 +293,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
           <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/80 p-4 text-center">
             <p className="text-sm font-semibold text-amber-950 mb-1">Help other sisters find us</p>
             <p className="text-xs text-amber-900/90 mb-3 leading-relaxed">
-              Your review helps other shoppers choose HalloweenReady with confidence for Halloween delivery across the USA.
+              Your review helps other shoppers choose HalloweenReady with confidence.
             </p>
             <Link
               href="/reviews"

@@ -27,7 +27,7 @@ export default function BlogPage() {
         <Link href="/categories/costumesandaccessories" className="text-nav hover:underline">
           Halloween costumes
         </Link>
-        , and party planning for USA delivery. For a season overview, start with the{" "}
+        , and party planning. For a season overview, start with the{" "}
         <Link href="/halloween-guide" className="text-nav hover:underline">
           Halloween planning guide
         </Link>

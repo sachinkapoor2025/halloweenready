@@ -1,6 +1,13 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { categorySlugVariants, isCjDropshippingProduct, type Category, type Product } from "@halloweenready/shared";
+import { categorySlugVariants, isStorefrontVisibleProduct, type Category, type Product } from "@halloweenready/shared";
+import {
+  HALLOWEEN_HAMPERS_CATEGORY,
+  buildHalloweenHamperCatalogProducts,
+  firstProductPhoto,
+  isHalloweenHamperProduct,
+  withHamperProductPhotos,
+} from "@halloweenready/shared";
 
 interface CatalogFile {
   categories: Category[];
@@ -25,16 +32,47 @@ function loadCatalogFile(): CatalogFile {
   return JSON.parse(readFileSync(path, "utf-8")) as CatalogFile;
 }
 
+function withHampers(file: CatalogFile): CatalogFile {
+  const ts = "2026-01-01T00:00:00.000Z";
+  const hamperProducts = buildHalloweenHamperCatalogProducts().map((p) => ({
+    ...p,
+    createdAt: ts,
+    updatedAt: ts,
+  })) as Product[];
+  const categories: Category[] = [
+    {
+      ...HALLOWEEN_HAMPERS_CATEGORY,
+      published: true,
+      createdAt: ts,
+      updatedAt: ts,
+    },
+    ...(file.categories ?? []).filter((c) => c.slug !== HALLOWEEN_HAMPERS_CATEGORY.slug),
+  ];
+  const products = [
+    ...hamperProducts,
+    ...(file.products ?? []).filter((p) => !hamperProducts.some((h) => h.slug === p.slug)),
+  ];
+  const photoBySlug = new Map<string, string>();
+  for (const product of products) {
+    const photo = firstProductPhoto(product.images);
+    if (product.slug && photo) photoBySlug.set(product.slug, photo);
+  }
+  return {
+    categories,
+    products: products.map((p) => (isHalloweenHamperProduct(p) ? withHamperProductPhotos(p, photoBySlug) : p)),
+  };
+}
+
 /** Read bundled catalog JSON — reliable when API is empty or category metadata is missing. */
 export function getCatalogProducts(): Product[] {
   if (cachedProducts) return cachedProducts;
-  cachedProducts = (loadCatalogFile().products ?? []).filter(isCjDropshippingProduct);
+  cachedProducts = (withHampers(loadCatalogFile()).products ?? []).filter(isStorefrontVisibleProduct);
   return cachedProducts;
 }
 
 export function getCatalogCategories(): Category[] {
   if (cachedCategories) return cachedCategories;
-  cachedCategories = loadCatalogFile().categories ?? [];
+  cachedCategories = withHampers(loadCatalogFile()).categories ?? [];
   return cachedCategories;
 }
 

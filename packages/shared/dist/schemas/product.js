@@ -58,6 +58,24 @@ exports.productSchema = zod_1.z.object({
      * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
      */
     allowsAddons: zod_1.z.boolean().optional(),
+    /** Snapshot of products inside a hamper (name/image/price for PDP + cart). */
+    hamperContents: zod_1.z
+        .array(zod_1.z.object({
+        slug: zod_1.z.string().min(1),
+        name: zod_1.z.string().min(1),
+        image: zod_1.z.string().optional(),
+        price: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
+    /** Snapshot of products that can replace an included item or be added extra. */
+    hamperAddons: zod_1.z
+        .array(zod_1.z.object({
+        slug: zod_1.z.string().min(1),
+        name: zod_1.z.string().min(1),
+        image: zod_1.z.string().optional(),
+        price: zod_1.z.number().nonnegative(),
+    }))
+        .optional(),
     /**
      * When true, coupons cannot discount this product (flash / fixed-price deals).
      * Also skips competitive storefront price cuts so the listed price stays exact.

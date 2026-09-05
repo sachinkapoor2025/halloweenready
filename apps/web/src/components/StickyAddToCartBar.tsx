@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AddToCartControl } from "@/components/AddToCartControl";
 import { useCurrency } from "@/lib/currency-context";
-import { getProductAddon, sumAddonPrices, type Product, type ProductAddonSelection } from "@halloweenready/shared";
+import { getProductAddon, sumAddonPrices, type HamperCustomization, type Product, type ProductAddonSelection } from "@halloweenready/shared";
 
 /** Fixed bottom bar on mobile so Add to Cart stays visible while scrolling. */
 export function StickyAddToCartBar({
@@ -11,11 +11,17 @@ export function StickyAddToCartBar({
   getContact,
   addons = [],
   cjVid,
+  hamperCustomization,
+  extraUsd = 0,
+  disabled = false,
 }: {
   product: Product;
   getContact?: () => { name?: string; email?: string; phone?: string };
   addons?: ProductAddonSelection[];
   cjVid?: string;
+  hamperCustomization?: HamperCustomization;
+  extraUsd?: number;
+  disabled?: boolean;
 }) {
   const { format } = useCurrency();
   const [visible, setVisible] = useState(false);
@@ -42,8 +48,8 @@ export function StickyAddToCartBar({
       };
     })
   );
-  const showCombined = addonsUsdTotal > 0 && product.currency === "USD";
-  const displayPrice = showCombined ? product.price + addonsUsdTotal : product.price;
+  const showCombined = addonsUsdTotal + extraUsd > 0 && product.currency === "USD";
+  const displayPrice = showCombined ? product.price + addonsUsdTotal + extraUsd : product.price;
 
   return (
     <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
@@ -55,12 +61,13 @@ export function StickyAddToCartBar({
         <div className="w-[9.5rem] shrink-0">
           <AddToCartControl
             productSlug={product.slug}
-            disabled={false}
+            disabled={disabled}
             fullWidth
             variant="detail"
             getContact={getContact}
             addons={addons}
             cjVid={cjVid}
+            hamperCustomization={hamperCustomization}
           />
         </div>
       </div>
