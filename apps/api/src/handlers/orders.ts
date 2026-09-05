@@ -13,6 +13,8 @@ import {
   convertCartItemsToCurrency,
   cartSubtotal,
   couponEligibleSubtotal,
+  applyCouponToOrderTotals,
+  isTestOrderCoupon,
   buildOrderShipments,
   singleCheckoutShipment,
   isValidScheduleDeliveryDate,
@@ -56,7 +58,6 @@ import {
   resolveOrderByIdOrNumber,
 } from "../lib/order-numbers";
 import {
-  applyPercentDiscount,
   issueWelcomeCoupon,
   markCouponUsed,
   validateCouponRecord,
@@ -284,9 +285,11 @@ export async function checkout(event: APIGatewayProxyEventV2) {
   const shipping = built.shippingTotal;
   const orderShipments = built.shipments;
   const tax = 0;
+  const currency: "USD" | "INR" = checkoutCurrency === "INR" ? "INR" : "USD";
 
   let discount = 0;
   let couponCode: string | undefined;
+  let total = Math.max(0, subtotal + shipping + tax);
   const checkoutEmail = normalizeEmail(parsed.data.shippingAddress.email);
   const checkoutPhone = parsed.data.shippingAddress.phone?.trim();
 
@@ -294,21 +297,29 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     if (!checkoutEmail && !checkoutPhone) {
       return badRequest("Phone or email is required to apply a coupon");
     }
-    const eligibleSubtotal = couponEligibleSubtotal(orderItems as CartItem[]);
-    if (eligibleSubtotal <= 0) {
-      return badRequest("Coupons cannot be applied to flash sale items");
-    }
     const coupon = await validateCouponRecord(parsed.data.couponCode, {
       email: checkoutEmail,
       phone: checkoutPhone,
     });
     if (!coupon.valid) return badRequest(coupon.error ?? "Invalid coupon code");
-    discount = applyPercentDiscount(eligibleSubtotal, coupon.discountPercent!);
+    const eligibleSubtotal = couponEligibleSubtotal(orderItems as CartItem[]);
+    if (!isTestOrderCoupon(coupon) && eligibleSubtotal <= 0) {
+      return badRequest("Coupons cannot be applied to flash sale items");
+    }
+    const priced = applyCouponToOrderTotals({
+      kind: coupon.kind,
+      discountPercent: coupon.discountPercent,
+      eligibleSubtotal,
+      subtotal,
+      shipping,
+      tax,
+      currency,
+      usdInrRate,
+    });
+    discount = priced.discount;
+    total = priced.total;
     couponCode = coupon.code;
   }
-
-  const total = Math.max(0, subtotal - discount + shipping + tax);
-  const currency = checkoutCurrency;
 
   const orderId = uuidv4();
   const timestamp = now();

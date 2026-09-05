@@ -22,6 +22,8 @@ export declare const HOMEPAGE_FIRST_PAINT_GROUPS: readonly [{
     readonly id: "new";
     readonly limit: 8;
 }];
+/** Insert Halloween Hampers after this many featured catalog groups (4th homepage block after the banner). */
+export declare const HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS = 2;
 export type HomepageFeedPage<T> = {
     items: T[];
     offset: number;

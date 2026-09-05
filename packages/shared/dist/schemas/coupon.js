@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.welcomeCouponSchema = exports.couponValidateSchema = exports.couponSchema = exports.createAdminCouponSchema = exports.ADMIN_COUPON_DISCOUNT_OPTIONS = exports.ADMIN_OUTREACH_DISCOUNT_OPTIONS = exports.ADMIN_EXTREME_DISCOUNT_MAX = exports.ADMIN_EXTREME_DISCOUNT_MIN = exports.ADMIN_CONFIRMED_SALE_COUPON_HOURS = exports.ADMIN_CONFIRMED_SALE_DISCOUNT_PERCENT = exports.ADMIN_MANUAL_COUPON_HOURS = exports.couponSourceSchema = exports.DAILY_DEAL_WEIGHTS = exports.DAILY_DEAL_MAX_PERCENT = exports.DAILY_DEAL_WHEEL_LABELS = exports.DAILY_DEAL_SEGMENTS = exports.WELCOME_DISCOUNT_PERCENT = exports.WELCOME_COUPON_HOURS = exports.isEarlyBirdPromoActive = exports.EARLY_BIRD_ENDS_DATE = exports.EARLY_BIRD_DISCOUNT_PERCENT = void 0;
+exports.welcomeCouponSchema = exports.couponValidateSchema = exports.couponSchema = exports.createTestOrderCouponSchema = exports.couponKindSchema = exports.TEST_ORDER_COUPON_KIND = exports.TEST_ORDER_FORCE_TOTAL_USD = exports.TEST_ORDER_COUPON_MINUTES = exports.createAdminCouponSchema = exports.ADMIN_COUPON_DISCOUNT_OPTIONS = exports.ADMIN_OUTREACH_DISCOUNT_OPTIONS = exports.ADMIN_EXTREME_DISCOUNT_MAX = exports.ADMIN_EXTREME_DISCOUNT_MIN = exports.ADMIN_CONFIRMED_SALE_COUPON_HOURS = exports.ADMIN_CONFIRMED_SALE_DISCOUNT_PERCENT = exports.ADMIN_MANUAL_COUPON_HOURS = exports.couponSourceSchema = exports.DAILY_DEAL_WEIGHTS = exports.DAILY_DEAL_MAX_PERCENT = exports.DAILY_DEAL_WHEEL_LABELS = exports.DAILY_DEAL_SEGMENTS = exports.WELCOME_DISCOUNT_PERCENT = exports.WELCOME_COUPON_HOURS = exports.isEarlyBirdPromoActive = exports.EARLY_BIRD_ENDS_DATE = exports.EARLY_BIRD_DISCOUNT_PERCENT = void 0;
 exports.isValidDailyDealPercent = isValidDailyDealPercent;
 exports.pickDailyDealDiscount = pickDailyDealDiscount;
 exports.dailyDealDayKey = dailyDealDayKey;
@@ -9,6 +9,7 @@ exports.isAdminConfirmedSaleDiscount = isAdminConfirmedSaleDiscount;
 exports.isAdminExtremeDiscount = isAdminExtremeDiscount;
 exports.isAllowedAdminCouponDiscount = isAllowedAdminCouponDiscount;
 exports.adminCouponHoursForDiscount = adminCouponHoursForDiscount;
+exports.isTestOrderCoupon = isTestOrderCoupon;
 const zod_1 = require("zod");
 const early_bird_1 = require("../lib/early-bird");
 /** Early Bird promo helpers (schedule-delivery lives in `lib/schedule-delivery`). */
@@ -146,6 +147,49 @@ exports.createAdminCouponSchema = zod_1.z
         });
     }
 });
+/** Admin end-to-end test coupon: forces items + shipping to $1 USD. */
+exports.TEST_ORDER_COUPON_MINUTES = 20;
+exports.TEST_ORDER_FORCE_TOTAL_USD = 1;
+exports.TEST_ORDER_COUPON_KIND = "test_order";
+exports.couponKindSchema = zod_1.z.enum(["percent", "test_order"]);
+const adminCouponContactFields = {
+    email: zod_1.z.string().trim().max(254).optional().or(zod_1.z.literal("")),
+    /** Local mobile digits only — used for coupon binding / checkout match (no country code). */
+    phone: zod_1.z.string().trim().max(22).optional().or(zod_1.z.literal("")),
+};
+function refineAdminCouponContact(v, ctx) {
+    const email = v.email?.trim() ?? "";
+    const phoneDigits = (v.phone ?? "").replace(/\D/g, "");
+    const hasEmail = Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    const hasPhone = phoneDigits.length >= 7 && phoneDigits.length <= 12;
+    if (!hasEmail && !hasPhone) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            message: "Enter a customer email or mobile number",
+            path: ["email"],
+        });
+    }
+    if (email && !hasEmail) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            message: "Enter a valid email address",
+            path: ["email"],
+        });
+    }
+    if ((v.phone ?? "").trim() && !hasPhone) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            message: "Enter a valid mobile number",
+            path: ["phone"],
+        });
+    }
+}
+exports.createTestOrderCouponSchema = zod_1.z
+    .object(adminCouponContactFields)
+    .superRefine(refineAdminCouponContact);
+function isTestOrderCoupon(coupon) {
+    return coupon?.kind === exports.TEST_ORDER_COUPON_KIND;
+}
 exports.couponSchema = zod_1.z.object({
     code: zod_1.z.string(),
     /** Optional when coupon is bound to phone (spin-the-wheel). */
@@ -167,6 +211,9 @@ exports.couponSchema = zod_1.z.object({
      * Longer expiry so the code is less likely to expire unused.
      */
     confirmedSale: zod_1.z.boolean().optional(),
+    /** `test_order` forces checkout total (items + shipping) to $1 USD. */
+    kind: exports.couponKindSchema.optional(),
+    forceTotalUsd: zod_1.z.number().positive().optional(),
 });
 exports.couponValidateSchema = zod_1.z
     .object({

@@ -6,6 +6,7 @@ import type { Product } from "@halloweenready/shared";
 import {
   HOMEPAGE_FEED_CHUNK_SIZE,
   HOMEPAGE_FIRST_PAINT_GROUPS,
+  HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS,
   homepageProductsPath,
 } from "@halloweenready/shared";
 import { TrackedProductCard } from "@/components/TrackedProductCard";
@@ -41,12 +42,15 @@ export function HomepageCatalog({
   snapshot,
   total,
   hasMore: initialHasMore,
+  midSection,
   children,
 }: {
   products: Product[];
   snapshot: Snapshot;
   total: number;
   hasMore: boolean;
+  /** Rendered after the first two featured groups so Hampers sits 4th on the homepage. */
+  midSection?: ReactNode;
   children?: ReactNode;
 }) {
   const [loaded, setLoaded] = useState(products);
@@ -109,31 +113,36 @@ export function HomepageCatalog({
   }).filter((g): g is SnapshotGroup & { items: Product[] } => g != null);
 
   const remainder = loaded.filter((p) => !shown.has(p.slug));
+  const hamperAt = Math.min(HOMEPAGE_HAMPERS_AFTER_FEATURED_GROUPS, featuredBlocks.length);
+
+  const renderGroup = (group: SnapshotGroup & { items: Product[] }, groupIndex: number) => (
+    <section key={group.id} className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="halloween-heading text-xl md:text-2xl">{group.title}</h2>
+        <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
+          View All →
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+        {group.items.map((p, i) => (
+          <TrackedProductCard
+            key={`${group.id}-${p.slug}`}
+            product={p}
+            position={i + 1}
+            listingPage="homepage"
+            priority={groupIndex === 0 && i < 4}
+            showFastSellingBadge={group.id === "trending" || group.id === "best_sellers"}
+          />
+        ))}
+      </div>
+    </section>
+  );
 
   return (
     <>
-      {featuredBlocks.map((group, groupIndex) => (
-        <section key={group.id} className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="halloween-heading text-xl md:text-2xl">{group.title}</h2>
-            <Link href="/products" className="text-nav font-semibold text-sm hover:underline">
-              View All →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-            {group.items.map((p, i) => (
-              <TrackedProductCard
-                key={`${group.id}-${p.slug}`}
-                product={p}
-                position={i + 1}
-                listingPage="homepage"
-                priority={groupIndex === 0 && i < 4}
-                showFastSellingBadge={group.id === "trending" || group.id === "best_sellers"}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {featuredBlocks.slice(0, hamperAt).map((group, groupIndex) => renderGroup(group, groupIndex))}
+      {midSection}
+      {featuredBlocks.slice(hamperAt).map((group, i) => renderGroup(group, hamperAt + i))}
 
       {children}
 

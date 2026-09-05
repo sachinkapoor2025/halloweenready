@@ -38,6 +38,7 @@ __exportStar(require("./schemas/payment"), exports);
 __exportStar(require("./schemas/chat"), exports);
 __exportStar(require("./schemas/contact"), exports);
 __exportStar(require("./schemas/coupon"), exports);
+__exportStar(require("./lib/coupon-totals"), exports);
 __exportStar(require("./schemas/ses-email"), exports);
 __exportStar(require("./schemas/reminder-email"), exports);
 __exportStar(require("./schemas/pending-payment-unsub"), exports);

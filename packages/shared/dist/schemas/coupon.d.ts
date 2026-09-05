@@ -88,6 +88,33 @@ export declare const createAdminCouponSchema: z.ZodEffects<z.ZodObject<{
     confirmedSale?: boolean | undefined;
 }>;
 export type CreateAdminCouponInput = z.infer<typeof createAdminCouponSchema>;
+/** Admin end-to-end test coupon: forces items + shipping to $1 USD. */
+export declare const TEST_ORDER_COUPON_MINUTES = 20;
+export declare const TEST_ORDER_FORCE_TOTAL_USD = 1;
+export declare const TEST_ORDER_COUPON_KIND: "test_order";
+export declare const couponKindSchema: z.ZodEnum<["percent", "test_order"]>;
+export type CouponKind = z.infer<typeof couponKindSchema>;
+export declare const createTestOrderCouponSchema: z.ZodEffects<z.ZodObject<{
+    email: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
+    /** Local mobile digits only — used for coupon binding / checkout match (no country code). */
+    phone: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
+}, "strip", z.ZodTypeAny, {
+    email?: string | undefined;
+    phone?: string | undefined;
+}, {
+    email?: string | undefined;
+    phone?: string | undefined;
+}>, {
+    email?: string | undefined;
+    phone?: string | undefined;
+}, {
+    email?: string | undefined;
+    phone?: string | undefined;
+}>;
+export type CreateTestOrderCouponInput = z.infer<typeof createTestOrderCouponSchema>;
+export declare function isTestOrderCoupon(coupon: {
+    kind?: string;
+} | null | undefined): boolean;
 export declare const couponSchema: z.ZodObject<{
     code: z.ZodString;
     /** Optional when coupon is bound to phone (spin-the-wheel). */
@@ -109,6 +136,9 @@ export declare const couponSchema: z.ZodObject<{
      * Longer expiry so the code is less likely to expire unused.
      */
     confirmedSale: z.ZodOptional<z.ZodBoolean>;
+    /** `test_order` forces checkout total (items + shipping) to $1 USD. */
+    kind: z.ZodOptional<z.ZodEnum<["percent", "test_order"]>>;
+    forceTotalUsd: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     code: string;
     source: "admin" | "welcome" | "abandoned";
@@ -123,6 +153,8 @@ export declare const couponSchema: z.ZodObject<{
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
+    kind?: "test_order" | "percent" | undefined;
+    forceTotalUsd?: number | undefined;
 }, {
     code: string;
     source: "admin" | "welcome" | "abandoned";
@@ -137,6 +169,8 @@ export declare const couponSchema: z.ZodObject<{
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
+    kind?: "test_order" | "percent" | undefined;
+    forceTotalUsd?: number | undefined;
 }>;
 export type StoreCoupon = z.infer<typeof couponSchema>;
 export declare const couponValidateSchema: z.ZodEffects<z.ZodObject<{
@@ -173,6 +207,8 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     phone: z.ZodOptional<z.ZodString>;
     createdBy: z.ZodOptional<z.ZodString>;
     confirmedSale: z.ZodOptional<z.ZodBoolean>;
+    kind: z.ZodOptional<z.ZodEnum<["percent", "test_order"]>>;
+    forceTotalUsd: z.ZodOptional<z.ZodNumber>;
 } & {
     source: z.ZodLiteral<"welcome">;
 }, "strip", z.ZodTypeAny, {
@@ -189,6 +225,8 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
+    kind?: "test_order" | "percent" | undefined;
+    forceTotalUsd?: number | undefined;
 }, {
     code: string;
     source: "welcome";
@@ -203,6 +241,8 @@ export declare const welcomeCouponSchema: z.ZodObject<{
     confirmedSale?: boolean | undefined;
     usedAt?: string | undefined;
     dayKey?: string | undefined;
+    kind?: "test_order" | "percent" | undefined;
+    forceTotalUsd?: number | undefined;
 }>;
 export type CouponValidateInput = z.infer<typeof couponValidateSchema>;
 export type WelcomeCoupon = z.infer<typeof welcomeCouponSchema>;
@@ -212,4 +252,6 @@ export type CouponValidationResult = {
     discountPercent?: number;
     expiresAt?: string;
     error?: string;
+    kind?: CouponKind;
+    forceTotalUsd?: number;
 };

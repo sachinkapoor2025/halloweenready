@@ -106,6 +106,10 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | POST | `/cart/items` | Add to cart |
 | DELETE | `/cart/items/{id}` | Remove item |
 | POST | `/checkout` | Create order + payment intent |
+| POST | `/coupons/validate` | Validate coupon at checkout (email or phone) |
+| POST | `/admin/coupons/abandoned` | Admin: outreach / confirmed-sale coupon |
+| GET | `/admin/coupons/abandoned` | Admin: list admin coupons |
+| POST | `/admin/coupons/test-order` | Admin: 20-minute $1 test-order coupon (items + shipping) |
 | POST | `/webhooks/stripe` | Stripe webhook |
 | POST | `/webhooks/razorpay` | Razorpay webhook |
 | POST | `/webhooks/cj` | CJ Dropshipping product/stock/order/logistics webhook |
