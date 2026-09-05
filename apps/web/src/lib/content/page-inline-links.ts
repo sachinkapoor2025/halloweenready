@@ -303,4 +303,29 @@ export const blogPostInlineLinks: Record<string, readonly InlineLink[]> = {
     { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
     { phrase: "Halloween planning guide", href: "/halloween-guide" },
   ],
+  "trick-or-treating-uk-guide": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "best-halloween-decorations-uk-2026": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-2026-uk-date": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-decorations-near-me-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-party-supplies-liverpool": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
 };
