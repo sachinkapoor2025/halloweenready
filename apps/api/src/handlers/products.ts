@@ -14,6 +14,8 @@ import {
   defaultVendorSlugForNewProduct,
   isCjDropshippingProduct,
   CJ_STOREFRONT_SHIP_COUNTRIES,
+  parseStorefrontListingQuery,
+  sortStorefrontListing,
   type Product,
   type CjStorefrontShipCountry,
 } from "@halloweenready/shared";
@@ -35,7 +37,7 @@ function forStorefront(product: Product): Product {
 }
 
 /** Listing payloads must stay under API Gateway’s 6MB cap once the catalog is thousands of SKUs. */
-function forStorefrontListing(product: Product): Product {
+export function forStorefrontListing(product: Product): Product {
   const full = forStorefront(product);
   return {
     ...full,
@@ -268,9 +270,22 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
     );
   }
 
+  const { offset, limit, sort } = parseStorefrontListingQuery(event.queryStringParameters ?? undefined);
+  items = sortStorefrontListing(items, sort);
+  const total = items.length;
+  if (limit != null) items = items.slice(offset, offset + limit);
+
+  const body = {
+    products: items.map(forStorefrontListing),
+    total,
+    offset,
+    limit: limit ?? total,
+    hasMore: limit != null ? offset + items.length < total : false,
+  };
+
   // Short CDN TTL only — listing + PDP must not drift for minutes after price edits.
-  if (search) return ok({ products: items.map(forStorefrontListing) });
-  return okCached({ products: items.map(forStorefrontListing) }, 10);
+  if (search) return ok(body);
+  return okCached(body, 10);
 }
 
 export async function getProduct(event: APIGatewayProxyEventV2) {

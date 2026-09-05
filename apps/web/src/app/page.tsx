@@ -4,8 +4,8 @@ import { api } from "@/lib/api";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { CustomerReviews } from "@/components/CustomerReviews";
 import { HomepageCatalog } from "@/components/HomepageCatalog";
+import { HomepageCategorySections } from "@/components/HomepageCategorySections";
 import { HomeProductCard } from "@/components/HomeProductCard";
-import { TrackedProductCard } from "@/components/TrackedProductCard";
 import { FastSellingSection } from "@/components/FastSellingSection";
 import { HomeSeoSection } from "@/components/HomeSeoSection";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
@@ -13,72 +13,85 @@ import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustStrip } from "@/components/TrustStrip";
 import { WhyTrustUsSection } from "@/components/WhyTrustUsSection";
 import { JsonLd } from "@/components/JsonLd";
-import { site, homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
+import { homeBanners, homeCategoryOrder, faqs } from "@/lib/site";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants, cjStorefrontProductsPath, getInternalLinkGroups } from "@halloweenready/shared";
+import {
+  HOMEPAGE_FAST_SELLING_LIMIT,
+  HOMEPAGE_FEED_INITIAL_LIMIT,
+  cjStorefrontProductsPath,
+  getInternalLinkGroups,
+  homepageProductsPath,
+} from "@halloweenready/shared";
 import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Decorations & Party Supplies Online | USA Shipping",
-  description: site.description,
+  title: "Halloween Costumes, Decorations & Party Supplies Online",
+  description:
+    "Shop Halloween costumes, decorations, and party supplies at HalloweenReady. We ship internationally — delivering in 5–7 days. Check shipping on each product. Pay in USD or INR at checkout.",
   path: "/",
 });
 
 export const dynamic = "force-dynamic";
 
+type HomepageFeed = {
+  products: Product[];
+  snapshot?: {
+    generatedAt: string;
+    poolSize: number;
+    groups: { id: string; title: string; slugs: string[] }[];
+    ranked: string[];
+  };
+  total: number;
+  hasMore: boolean;
+};
+
 export default async function HomePage() {
   let products: Product[] = [];
   let categories: Category[] = [];
-  let homepage: { products: Product[]; snapshot: { generatedAt: string; poolSize: number; groups: { id: string; title: string; slugs: string[] }[]; ranked: string[] } } | null = null;
+  let homepage: HomepageFeed | null = null;
 
   try {
-    const [productsData, categoriesData] = await Promise.all([
-      api<{ products: Product[] }>(cjStorefrontProductsPath()),
+    const [homepageData, categoriesData] = await Promise.all([
+      api<HomepageFeed>(homepageProductsPath({ limit: HOMEPAGE_FEED_INITIAL_LIMIT, offset: 0 })),
       api<{ categories: Category[] }>("/categories"),
     ]);
-    products = productsData.products;
+    homepage = homepageData?.products?.length && homepageData.snapshot
+      ? {
+          ...homepageData,
+          products: withListingImages(homepageData.products).slice(0, HOMEPAGE_FEED_INITIAL_LIMIT),
+          total: homepageData.total ?? homepageData.products.length,
+          hasMore:
+            Boolean(homepageData.hasMore) ||
+            homepageData.products.length > HOMEPAGE_FEED_INITIAL_LIMIT ||
+            (homepageData.total ?? homepageData.products.length) > HOMEPAGE_FEED_INITIAL_LIMIT,
+        }
+      : null;
     categories = categoriesData.categories;
   } catch {
-    products = [];
+    homepage = null;
     categories = [];
   }
 
-  try {
-    homepage = await api<{
-      products: Product[];
-      snapshot: {
-        generatedAt: string;
-        poolSize: number;
-        groups: { id: string; title: string; slugs: string[] }[];
-        ranked: string[];
-      };
-    }>("/homepage/products");
-    if (homepage?.products?.length) {
-      homepage = { ...homepage, products: withListingImages(homepage.products) };
+  if (!homepage?.products.length) {
+    try {
+      const productsData = await api<{ products: Product[] }>(
+        cjStorefrontProductsPath({ limit: HOMEPAGE_FEED_INITIAL_LIMIT })
+      );
+      products = withListingImages(productsData.products ?? []);
+    } catch {
+      products = withListingImages(getCatalogProducts().slice(0, HOMEPAGE_FEED_INITIAL_LIMIT));
     }
-  } catch {
-    homepage = null;
-  }
-
-  // Live API is the catalog. Bundled JSON is offline fallback only — overlaying it
-  // resurrected deleted sample SKUs on the storefront after Dynamo cleanup.
-  if (products.length === 0) {
-    products = withListingImages(getCatalogProducts());
   } else {
-    products = withListingImages(products);
+    products = homepage.products;
   }
 
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
-  const productsByCategory = homeCategoryOrder.map((slug) => {
-    const variants = new Set(categorySlugVariants(slug));
-    return {
-      slug,
-      name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
-      products: products.filter((p) => variants.has(p.categorySlug)),
-    };
-  });
+  const categoryPreviews = homeCategoryOrder.map((slug) => ({
+    slug,
+    name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
+  }));
 
   return (
     <div className="bg-white spooky-panel">
@@ -89,10 +102,17 @@ export default async function HomePage() {
         <AssistantPromo variant="home" />
       </div>
 
-      <FastSellingSection products={products} />
+      <FastSellingSection products={products} limit={HOMEPAGE_FAST_SELLING_LIMIT} />
 
-      {homepage?.products.length ? (
-        <HomepageCatalog products={homepage.products} snapshot={homepage.snapshot} />
+      {homepage?.products.length && homepage.snapshot ? (
+        <HomepageCatalog
+          products={homepage.products}
+          snapshot={homepage.snapshot}
+          total={homepage.total ?? homepage.products.length}
+          hasMore={Boolean(homepage.hasMore) || homepage.products.length < (homepage.total ?? 0)}
+        >
+          <HomepageCategorySections categories={categoryPreviews} />
+        </HomepageCatalog>
       ) : products.length > 0 ? (
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-5">
@@ -109,34 +129,12 @@ export default async function HomePage() {
             ))}
           </div>
       </section>
+      <HomepageCategorySections categories={categoryPreviews} />
       ) : (
         <p className="text-center text-slate-500 py-12">
             Products could not be loaded. Confirm Amplify env var{" "}
             <code className="bg-slate-100 px-1 rounded text-slate-800">NEXT_PUBLIC_API_URL</code> is set and redeploy.
           </p>
-      )}
-
-      {productsByCategory.map((section) =>
-        section.products.length > 0 ? (
-          <section key={section.slug} className="max-w-7xl mx-auto px-4 py-8 section-spooky-divider">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="halloween-heading text-xl md:text-2xl capitalize">{section.name}</h2>
-              <Link href={`/categories/${section.slug}`} className="text-nav font-semibold text-sm hover:underline">
-                View All →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-              {section.products.slice(0, 10).map((p, i) => (
-                <TrackedProductCard
-                  key={p.slug}
-                  product={p}
-                  position={i + 1}
-                  listingPage={`category:${section.slug}`}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null
       )}
 
       <WhyTrustUsSection />

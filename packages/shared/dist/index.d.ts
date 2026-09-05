@@ -7,6 +7,8 @@ export * from "./lib/shipping-availability";
 export * from "./lib/seo-internal-links";
 export * from "./schemas/homepage-ranking";
 export * from "./lib/homepage-ranking";
+export * from "./lib/homepage-feed";
+export * from "./lib/storefront-listing";
 export * from "./lib/chat-shopping";
 export * from "./schemas/review";
 export * from "./schemas/category";
