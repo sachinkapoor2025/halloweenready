@@ -121,7 +121,7 @@ export const orderSchema = z.object({
   /**
    * Human-readable order number for staff, customers, and vendors.
    * Orange County fulfill orders: OC10001…
-   * All other HalloweenReady orders: US10001…
+   * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
    */
   orderNumber: z.string().optional(),
   userId: z.string().optional(),

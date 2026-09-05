@@ -35,8 +35,8 @@ export declare const orderKeys: {
     gsi2sk: (createdAt: string) => string;
     gsi3pk: (status: string) => string;
     gsi3sk: (createdAt: string) => string;
-    /** Atomic counters for human order numbers (OC / US). */
-    counterPk: (prefix: "OC" | "US") => string;
+    /** Atomic counters for human order numbers (OC / US). HW allocations reuse the US counter. */
+    counterPk: (prefix: "OC" | "US" | "HW") => string;
     counterSk: () => "META";
     /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
     numberPk: (orderNumber: string) => string;

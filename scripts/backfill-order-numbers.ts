@@ -1,6 +1,6 @@
 /**
- * Backfill human-readable order numbers (OC10001… / US10001…) on existing orders
- * and create ORDERNUM# lookup pointers.
+ * Backfill human-readable order numbers (OC10001… / HW10001…) on existing orders
+ * and create ORDERNUM# lookup pointers. Legacy US10001… numbers are kept.
  *
  *   ENVIRONMENT=prod npx tsx scripts/backfill-order-numbers.ts
  *   DRY_RUN=1 npx tsx scripts/backfill-order-numbers.ts
@@ -18,7 +18,6 @@ import {
   formatOrderNumber,
   orderNumberPrefixForItems,
   type Order,
-  type OrderNumberPrefix,
 } from "@halloweenready/shared";
 
 const ENV = process.env.ENVIRONMENT ?? "prod";
@@ -30,7 +29,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
 
 type StoredOrder = Order & { PK: string; SK: string };
 
-async function setCounter(prefix: OrderNumberPrefix, nextVal: number) {
+async function setCounter(prefix: "OC" | "US" | "HW", nextVal: number) {
   if (DRY_RUN) {
     console.log(`[dry-run] counter ${prefix} → ${nextVal}`);
     return;
@@ -79,8 +78,8 @@ async function main() {
   let skipped = 0;
 
   for (const order of orders) {
-    if (order.orderNumber && /^OC\d+|US\d+/i.test(order.orderNumber)) {
-      const m = order.orderNumber.match(/^(OC|US)(\d+)$/i);
+    if (order.orderNumber && /^(OC|US|HW)\d+/i.test(order.orderNumber)) {
+      const m = order.orderNumber.match(/^(OC|US|HW)(\d+)$/i);
       if (m) {
         const seq = Number(m[2]);
         if (m[1]!.toUpperCase() === "OC") ocSeq = Math.max(ocSeq, seq);
