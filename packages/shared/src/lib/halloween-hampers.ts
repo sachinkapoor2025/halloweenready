@@ -19,6 +19,61 @@ export type HamperLine = {
   price: number;
 };
 
+/** Site banners / logos — never use these as hamper gallery photos. */
+export function isPromotionalHamperImage(url?: string | null): boolean {
+  if (!url?.trim()) return true;
+  const u = url.trim().toLowerCase();
+  return (
+    u.includes("/banners/") ||
+    u.includes("bannerpage") ||
+    u.includes("product-fallback") ||
+    u.endsWith("/logo.png") ||
+    u.includes("/logo-options/")
+  );
+}
+
+export function firstProductPhoto(images?: Array<string | undefined> | null): string | undefined {
+  return (images ?? []).find((url) => url && !isPromotionalHamperImage(url));
+}
+
+/** Main photo is the first included product; remaining unique product photos follow. */
+export function galleryImagesForHamper(
+  contents: Array<{ image?: string | null }> | null | undefined,
+  fallback: string[] = []
+): string[] {
+  const unique: string[] = [];
+  for (const url of [
+    ...(contents ?? []).map((c) => c.image?.trim()),
+    ...fallback.map((u) => u.trim()),
+  ]) {
+    if (!url || isPromotionalHamperImage(url) || unique.includes(url)) continue;
+    unique.push(url);
+  }
+  return unique.slice(0, 8);
+}
+
+export function withHamperProductPhotos<
+  T extends {
+    hamperContents?: Array<{ slug: string; name: string; image?: string; price?: number }> | null;
+    hamperAddons?: Array<{ slug: string; name: string; image?: string; price?: number }> | null;
+    images?: string[];
+  },
+>(product: T, photoBySlug: Map<string, string>): T {
+  const patch = <L extends { slug: string; image?: string }>(line: L): L => {
+    const fromCatalog = photoBySlug.get(line.slug);
+    const image = fromCatalog || (!isPromotionalHamperImage(line.image) ? line.image : undefined);
+    return { ...line, image };
+  };
+  const hamperContents = (product.hamperContents ?? []).map(patch);
+  const hamperAddons = (product.hamperAddons ?? []).map(patch);
+  return {
+    ...product,
+    hamperContents,
+    hamperAddons,
+    images: galleryImagesForHamper(hamperContents, product.images),
+  };
+}
+
 export type HamperCustomization = {
   excludedSlugs: string[];
   replacements: Array<{ fromSlug: string; toSlug: string }>;
@@ -79,8 +134,15 @@ function hamper(
   contents: HamperLine[],
   extraImages: string[] = []
 ): HamperDef {
-  const images = [...contents.map((c) => c.image).filter(Boolean), ...extraImages] as string[];
-  return { slug, name, price, tagline, description, contents, images: [...new Set(images)].slice(0, 6) };
+  return {
+    slug,
+    name,
+    price,
+    tagline,
+    description,
+    contents,
+    images: galleryImagesForHamper(contents, extraImages),
+  };
 }
 
 export const HALLOWEEN_HAMPER_DEFS: HamperDef[] = [
@@ -467,7 +529,7 @@ export function buildHalloweenHamperCatalogProducts(): Array<
       compareAtPrice: compareAt > def.price ? compareAt : undefined,
       currency: "USD" as const,
       categorySlug: HALLOWEEN_HAMPERS_CATEGORY_SLUG,
-      images: def.images.length ? def.images : [BANNER],
+      images: galleryImagesForHamper(def.contents, def.images),
       sku: `HR-HAMPER-${def.price}`,
       inventory: DEFAULT_PRODUCT_INVENTORY,
       tags: [HAMPER_TAG, "halloween", "hamper"],

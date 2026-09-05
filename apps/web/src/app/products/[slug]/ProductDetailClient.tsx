@@ -29,6 +29,7 @@ import {
   getUnitsSold,
   isFastSelling,
   isHalloweenHamperProduct,
+  galleryImagesForHamper,
   type HamperCustomization,
   type Product,
 } from "@halloweenready/shared";
@@ -174,10 +175,12 @@ export function ProductDetailClient({
     persistVid(product.slug, vid);
   };
 
-  const galleryImages = galleryForVariant(
-    [...(product.images ?? []), ...extraImages.filter((url) => !(product.images ?? []).includes(url))],
-    selectedVariant?.image
-  );
+  const galleryImages = isHamper
+    ? galleryImagesForHamper(product.hamperContents, product.images)
+    : galleryForVariant(
+        [...(product.images ?? []), ...extraImages.filter((url) => !(product.images ?? []).includes(url))],
+        selectedVariant?.image
+      );
 
   const displayPrice = (selectedVariant?.price ?? product.price) + (isHamper ? hamperExtrasUsd : 0);
   const hamperBase = selectedVariant?.price ?? product.price;

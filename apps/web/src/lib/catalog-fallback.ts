@@ -4,6 +4,9 @@ import { categorySlugVariants, isStorefrontVisibleProduct, type Category, type P
 import {
   HALLOWEEN_HAMPERS_CATEGORY,
   buildHalloweenHamperCatalogProducts,
+  firstProductPhoto,
+  isHalloweenHamperProduct,
+  withHamperProductPhotos,
 } from "@halloweenready/shared";
 
 interface CatalogFile {
@@ -49,7 +52,15 @@ function withHampers(file: CatalogFile): CatalogFile {
     ...hamperProducts,
     ...(file.products ?? []).filter((p) => !hamperProducts.some((h) => h.slug === p.slug)),
   ];
-  return { categories, products };
+  const photoBySlug = new Map<string, string>();
+  for (const product of products) {
+    const photo = firstProductPhoto(product.images);
+    if (product.slug && photo) photoBySlug.set(product.slug, photo);
+  }
+  return {
+    categories,
+    products: products.map((p) => (isHalloweenHamperProduct(p) ? withHamperProductPhotos(p, photoBySlug) : p)),
+  };
 }
 
 /** Read bundled catalog JSON — reliable when API is empty or category metadata is missing. */

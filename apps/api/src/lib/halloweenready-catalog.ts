@@ -4,12 +4,14 @@
  *
  * Same pattern as orange-county-catalog.ts for hampers.
  */
-import { PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
 import { productKeys, categoryKeys, DEFAULT_PRODUCT_INVENTORY } from "@halloweenready/shared";
 import {
   HALLOWEEN_HAMPERS_CATEGORY,
   buildHalloweenHamperCatalogProducts,
   isHalloweenHamperProduct,
+  withHamperProductPhotos,
+  firstProductPhoto,
 } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, now } from "./db";
 import catalogJson from "../data/halloweenready-catalog.json";
@@ -168,15 +170,50 @@ function catalogItemFromBundled(bundled: CatalogProduct, ts: string) {
   };
 }
 
-/** Upsert all curated hampers if they are missing from DynamoDB. */
+let hamperPhotoCache: Map<string, string> | null = null;
+
+async function loadHamperContentPhotos(): Promise<Map<string, string>> {
+  if (hamperPhotoCache) return hamperPhotoCache;
+  const slugs = new Set<string>();
+  for (const product of hamperProducts) {
+    for (const line of [...(product.hamperContents ?? []), ...(product.hamperAddons ?? [])]) {
+      slugs.add(line.slug);
+    }
+  }
+  const keys = [...slugs].map((slug) => ({ PK: productKeys.pk(slug), SK: productKeys.sk() }));
+  const photos = new Map<string, string>();
+  for (let i = 0; i < keys.length; i += 100) {
+    const result = await docClient.send(
+      new BatchGetCommand({
+        RequestItems: {
+          [PRODUCTS_TABLE]: {
+            Keys: keys.slice(i, i + 100),
+            ProjectionExpression: "slug, images",
+          },
+        },
+      })
+    );
+    for (const item of result.Responses?.[PRODUCTS_TABLE] ?? []) {
+      const itemSlug = typeof item.slug === "string" ? item.slug : "";
+      const photo = firstProductPhoto(item.images as string[] | undefined);
+      if (itemSlug && photo) photos.set(itemSlug, photo);
+    }
+  }
+  hamperPhotoCache = photos;
+  return photos;
+}
+
+/** Upsert curated hampers and refresh gallery photos from included product images. */
 export async function ensureHalloweenHampersInDb(): Promise<number> {
+  hamperPhotoCache = null;
   const results = await Promise.all(hamperProducts.map((p) => ensureHalloweenreadyCatalogProductInDb(p.slug)));
   return results.filter(Boolean).length;
 }
 
 /**
  * If the slug exists in the bundled catalog but not in DynamoDB, create it.
- * Does not overwrite existing products (prices/inventory stay admin-controlled).
+ * Does not overwrite existing products (prices/inventory stay admin-controlled),
+ * except hampers — their photos are always taken from included products.
  */
 export async function ensureHalloweenreadyCatalogProductInDb(
   slug: string
@@ -186,6 +223,8 @@ export async function ensureHalloweenreadyCatalogProductInDb(
   const hamper = isHalloweenHamperProduct(bundled);
   if (!hamper && bundled.vendorSlug !== "cj-dropshipping" && !bundled.cjPid) return null;
 
+  const source = hamper ? withHamperProductPhotos(bundled, await loadHamperContentPhotos()) : bundled;
+
   const key = { PK: productKeys.pk(slug), SK: productKeys.sk() };
   const existing = await docClient.send(
     new GetCommand({
@@ -194,11 +233,12 @@ export async function ensureHalloweenreadyCatalogProductInDb(
     })
   );
   if (existing.Item) {
-    if (hamper && !Array.isArray(existing.Item.hamperContents)) {
+    if (hamper) {
       const patched = {
         ...existing.Item,
-        hamperContents: bundled.hamperContents,
-        hamperAddons: bundled.hamperAddons,
+        hamperContents: source.hamperContents,
+        hamperAddons: source.hamperAddons,
+        images: source.images,
         tags: bundled.tags ?? existing.Item.tags,
         couponExcluded: true,
         updatedAt: now(),
@@ -209,7 +249,7 @@ export async function ensureHalloweenreadyCatalogProductInDb(
     return existing.Item as Record<string, unknown>;
   }
 
-  const item = catalogItemFromBundled(bundled, now());
+  const item = catalogItemFromBundled(source, now());
   await docClient.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: item }));
   console.log(`upserted halloweenready catalog product ${slug}`);
   return item;

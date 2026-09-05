@@ -9,6 +9,7 @@ import {
   hamperCustomizationSignature,
   resolveHamperCustomization,
   resolvedHamperContentSlugs,
+  withHamperProductPhotos,
 } from "./halloween-hampers";
 
 describe("halloween hampers", () => {
@@ -93,5 +94,29 @@ describe("halloween hampers", () => {
         extraSlugs: ["c"],
       })
     );
+  });
+
+  it("uses included product photos for the gallery and skips site banners", () => {
+    const photos = new Map([
+      ["wreath", "https://cf.cjdropshipping.com/wreath.jpg"],
+      ["lamp", "https://cf.cjdropshipping.com/lamp.jpg"],
+    ]);
+    const product = withHamperProductPhotos(
+      {
+        images: ["https://www.halloweenready.com/banners/bannerpage1.png"],
+        hamperContents: [
+          { slug: "wreath", name: "Wreath", price: 10, image: "https://www.halloweenready.com/banners/bannerpage2.png" },
+          { slug: "lamp", name: "Lamp", price: 8 },
+        ],
+        hamperAddons: [],
+      },
+      photos
+    );
+    assert.equal(product.images[0], "https://cf.cjdropshipping.com/wreath.jpg");
+    assert.deepEqual(product.images, [
+      "https://cf.cjdropshipping.com/wreath.jpg",
+      "https://cf.cjdropshipping.com/lamp.jpg",
+    ]);
+    assert.equal(product.hamperContents?.[0]?.image, "https://cf.cjdropshipping.com/wreath.jpg");
   });
 });

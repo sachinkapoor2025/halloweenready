@@ -311,6 +311,10 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   );
 
   let item = result.Item as (Product & { published?: boolean }) | undefined;
+  if (item && isHalloweenHamperProduct(item)) {
+    const refreshed = await ensureProductInDb(slug);
+    if (refreshed) item = refreshed as Product & { published?: boolean };
+  }
   if (item && !isStorefrontVisibleProduct(item)) {
     item = undefined;
   }
