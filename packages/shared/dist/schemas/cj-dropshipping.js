@@ -136,7 +136,7 @@ exports.productShippingResponseSchema = zod_1.z.object({
 });
 exports.cjFulfillOrderSchema = zod_1.z.object({
     orderId: zod_1.z.string().min(1),
-    /** 1=page pay URL, 2=CJ wallet, 3=create only (default). */
+    /** 1=page pay URL (order appears in CJ), 2=CJ wallet (auto-process), 3=draft only (avoid for auto-push). */
     payType: zod_1.z.union([zod_1.z.literal(1), zod_1.z.literal(2), zod_1.z.literal(3)]).optional(),
     logisticName: zod_1.z.string().min(1).max(80).optional(),
     fromCountryCode: zod_1.z.string().trim().length(2).optional(),

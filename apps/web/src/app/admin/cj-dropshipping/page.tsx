@@ -279,7 +279,7 @@ export default function AdminCjDropshippingPage() {
     try {
       const data = await api<{ ok: boolean; message: string; cjPayUrl?: string }>(
         `/admin/cj/orders/${encodeURIComponent(fulfillOrderId.trim())}/fulfill`,
-        { method: "POST", body: JSON.stringify({ payType: 3 }) }
+        { method: "POST", body: JSON.stringify({}) }
       );
       setMessage(data.message + (data.cjPayUrl ? ` Pay URL: ${data.cjPayUrl}` : ""));
     } catch (err) {

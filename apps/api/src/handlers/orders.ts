@@ -776,6 +776,36 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
   return ok({ order: updated });
 }
 
+async function sendPaidOrderNotification(order: StoredOrder): Promise<StoredOrder> {
+  if (order.paidEmailSentAt) return order;
+  const emailResult = await notifyAdminOrderPaid(order);
+  if (!emailResult.ok) {
+    console.error("Order paid email failed:", emailResult.error);
+    return order;
+  }
+  const stamped: StoredOrder = {
+    ...order,
+    paidEmailSentAt: now(),
+    updatedAt: now(),
+  };
+  await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: stamped }));
+  return stamped;
+}
+
+async function pushPaidOrderToCj(orderId: string): Promise<void> {
+  try {
+    const { fulfillOrderWithCj } = await import("../lib/cj-fulfill");
+    const cjResult = await fulfillOrderWithCj(orderId);
+    if (!cjResult.ok) {
+      console.warn("CJ auto-fulfill failed:", orderId, cjResult.message);
+    } else if (!cjResult.skipped) {
+      console.info("CJ auto-fulfill ok:", orderId, cjResult.cjOrderId);
+    }
+  } catch (err) {
+    console.error("CJ auto-fulfill error:", orderId, err);
+  }
+}
+
 /** Mark an order paid (called by Stripe/Razorpay webhooks + Razorpay verify). */
 export async function markOrderPaid(
   orderId: string | undefined,
@@ -784,7 +814,12 @@ export async function markOrderPaid(
   if (!orderId) return;
   const order = await fetchOrder(orderId);
   if (!order) return;
-  if (order.status === ORDER_STATUS.PAID) return;
+  if (order.status === ORDER_STATUS.PAID) {
+    // First webhook may have timed out after marking paid but before email / CJ push.
+    await sendPaidOrderNotification(order);
+    await pushPaidOrderToCj(order.orderId);
+    return;
+  }
   // Only promote unpaid checkouts — avoid clobbering fulfilled orders via late webhooks.
   if (order.status !== ORDER_STATUS.PENDING_PAYMENT) {
     console.warn("markOrderPaid skipped — order not pending_payment", {
@@ -795,7 +830,7 @@ export async function markOrderPaid(
   }
 
   const timestamp = now();
-  const updated: StoredOrder = {
+  let updated: StoredOrder = {
     ...order,
     status: ORDER_STATUS.PAID,
     statusHistory: [...(order.statusHistory ?? []), { status: ORDER_STATUS.PAID, at: timestamp }],
@@ -822,15 +857,11 @@ export async function markOrderPaid(
   }
   await decrementInventoryForOrder(updated);
 
-  try {
-    const { fulfillOrderWithCj } = await import("../lib/cj-fulfill");
-    const cjResult = await fulfillOrderWithCj(updated.orderId, { payType: 3 });
-    if (!cjResult.ok) {
-      console.warn("CJ auto-fulfill failed:", orderId, cjResult.message);
-    }
-  } catch (err) {
-    console.error("CJ auto-fulfill error:", orderId, err);
-  }
+  // Push to CJ before SMTP so a slow mailbox cannot skip warehouse fulfillment.
+  await pushPaidOrderToCj(updated.orderId);
+  updated = (await fetchOrder(orderId)) ?? updated;
+  updated = await sendPaidOrderNotification(updated);
+  updated = (await fetchOrder(orderId)) ?? updated;
 
   const settings = await loadShippingSettings();
   if (
@@ -869,9 +900,6 @@ export async function markOrderPaid(
       await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: failed }));
     }
   }
-
-  const emailResult = await notifyAdminOrderPaid(updated);
-  if (!emailResult.ok) console.error("Order paid email failed:", emailResult.error);
 
   const { markReminderEmailConverted } = await import("./reminder-emails");
   await markReminderEmailConverted(updated.shippingAddress?.email);

@@ -292,6 +292,7 @@ export async function fulfillCjOrder(event: APIGatewayProxyEventV2) {
       logisticName: parsed.data.logisticName,
       fromCountryCode: parsed.data.fromCountryCode,
     });
+    if (!result.ok) return badGateway(result.message);
     return ok(result);
   } catch (err) {
     return handleCjError(err);
