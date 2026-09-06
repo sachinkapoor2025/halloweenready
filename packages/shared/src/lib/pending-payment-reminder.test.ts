@@ -11,14 +11,14 @@ import {
 describe("pending-payment-reminder", () => {
   it("campaign active through end date inclusive", () => {
     assert.equal(
-      isPendingPaymentReminderCampaignActive(new Date("2026-08-28T12:00:00-04:00")),
+      isPendingPaymentReminderCampaignActive(new Date("2026-10-31T12:00:00-04:00")),
       true
     );
     assert.equal(
-      isPendingPaymentReminderCampaignActive(new Date("2026-08-29T01:00:00-04:00")),
+      isPendingPaymentReminderCampaignActive(new Date("2026-11-01T01:00:00-04:00")),
       false
     );
-    assert.equal(PENDING_PAYMENT_REMINDER_END_DATE, "2026-08-28");
+    assert.equal(PENDING_PAYMENT_REMINDER_END_DATE, "2026-10-31");
   });
 
   it("sends once per NY calendar day for pending_payment orders", () => {

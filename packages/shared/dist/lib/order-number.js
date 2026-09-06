@@ -8,9 +8,9 @@ exports.orderNumberCounterPrefix = orderNumberCounterPrefix;
 exports.displayOrderRef = displayOrderRef;
 exports.orderNumberPrefixForItems = orderNumberPrefixForItems;
 const constants_1 = require("../constants");
-/** Human-readable order numbers: OC10001… (Orange County) / HW10001… (HalloweenReady). */
+/** Human-readable order numbers: OC10001… (Orange County) / OF10001… (OccasionFun). */
 exports.ORDER_NUMBER_START = 10001;
-const HUMAN_ORDER_NUMBER_RE = /^(OC|US|HW)(\d{5,})$/i;
+const HUMAN_ORDER_NUMBER_RE = /^(OC|US|HW|OF)(\d{5,})$/i;
 function isHumanOrderNumber(value) {
     return HUMAN_ORDER_NUMBER_RE.test(value.trim());
 }
@@ -27,8 +27,7 @@ function formatOrderNumber(prefix, seq) {
     return `${prefix}${String(seq).padStart(5, "0")}`;
 }
 /**
- * HW continues the existing US Dynamo counter so numbers stay sequential
- * (US10007, then HW10008…).
+ * OF continues the existing US Dynamo counter so numbers stay sequential.
  */
 function orderNumberCounterPrefix(prefix) {
     return prefix === "OC" ? "OC" : "US";
@@ -46,5 +45,5 @@ function orderNumberPrefixForItems(items, vendorSlugs) {
         return "OC";
     if (items.some((i) => i.vendorSlug === constants_1.VENDOR_ORANGE_COUNTY))
         return "OC";
-    return "HW";
+    return "OF";
 }

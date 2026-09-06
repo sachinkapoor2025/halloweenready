@@ -1,5 +1,5 @@
 /**
- * Conversion-focused marketing email templates for HalloweenReady.
+ * Conversion-focused marketing email templates for OccasionFun.
  *
  * Edit the CONFIG objects below to update images, copy, CTAs, and links —
  * then rebuild / open Admin → Email → Templates to sync starters.
@@ -24,20 +24,20 @@ export type CampaignBenefit = {
 export declare const FREE_SHIPPING_EMAIL_CONFIG: {
     readonly templateId: "free-shipping-above-7";
     readonly name: "Free Shipping Above $7";
-    readonly subject: "FREE SHIPPING on Orders Above $7 — HalloweenReady";
+    readonly subject: "FREE SHIPPING on Orders Above $7 — OccasionFun";
     readonly preheader: "Free shipping on orders above $7. Halloween decorations & costumes, ships from the USA.";
-    readonly logoUrl: "https://www.halloweenready.com/logo.png";
-    readonly logoHref: "https://www.halloweenready.com";
-    readonly heroImageUrl: "https://www.halloweenready.com/banners/bannerpage1.png";
-    readonly heroImageHref: "https://www.halloweenready.com/products";
-    readonly heroImageAlt: "HalloweenReady — Free shipping on Halloween orders above $7";
+    readonly logoUrl: "https://www.occasionfun.com/logo.png";
+    readonly logoHref: "https://www.occasionfun.com";
+    readonly heroImageUrl: "https://www.occasionfun.com/banners/bannerpage1.png";
+    readonly heroImageHref: "https://www.occasionfun.com/products";
+    readonly heroImageAlt: "OccasionFun — Free shipping on Halloween orders above $7";
     readonly offerEyebrow: "HALLOWEEN OFFER";
     readonly offerHeadline: "FREE SHIPPING";
     readonly offerSubhead: "On Orders Above $7";
     readonly offerBody: "Stock up on Halloween decorations, costumes, and party supplies — and enjoy free domestic shipping when your order is $7 or more. Ships from the USA. No customs delays.";
     readonly ctaText: "Shop Halloween";
-    readonly ctaHref: "https://www.halloweenready.com/products";
-    readonly benefitsHeading: "Why Shop HalloweenReady";
+    readonly ctaHref: "https://www.occasionfun.com/products";
+    readonly benefitsHeading: "Why Shop OccasionFun";
     readonly benefits: {
         icon: string;
         title: string;
@@ -55,16 +55,16 @@ export declare const FREE_SHIPPING_EMAIL_CONFIG: {
     readonly midCtaHeading: "Ready for Halloween?";
     readonly midCtaBody: "Orders $7+ ship free across the USA. Shop the seasonal collection today.";
     readonly midCtaText: "Shop Free Shipping Deals";
-    readonly midCtaHref: "https://www.halloweenready.com/products";
+    readonly midCtaHref: "https://www.occasionfun.com/products";
     readonly footerTagline: "Halloween Decorations & Party Supplies";
-    readonly websiteUrl: "https://www.halloweenready.com";
-    readonly websiteLabel: "www.halloweenready.com";
-    readonly orderEmail: "order@halloweenready.com";
+    readonly websiteUrl: "https://www.occasionfun.com";
+    readonly websiteLabel: "www.occasionfun.com";
+    readonly orderEmail: "order@occasionfun.com";
     readonly facebookUrl: "https://www.facebook.com/halloweenready/";
-    readonly facebookIconUrl: "https://www.halloweenready.com/email-templates/icons/facebook.png";
+    readonly facebookIconUrl: "https://www.occasionfun.com/email-templates/icons/facebook.png";
     readonly instagramUrl: "https://www.instagram.com/halloweenready/";
-    readonly instagramIconUrl: "https://www.halloweenready.com/email-templates/icons/instagram.png";
-    readonly copyrightText: "© 2026 HalloweenReady. All Rights Reserved.";
+    readonly instagramIconUrl: "https://www.occasionfun.com/email-templates/icons/instagram.png";
+    readonly copyrightText: "© 2026 OccasionFun. All Rights Reserved.";
     readonly unsubscribeLabel: "Unsubscribe";
 };
 /** ═══════════════ TEMPLATE 2 — Starting price promo ═══════════════ */
@@ -73,18 +73,18 @@ export declare const STARTING_PRICE_EMAIL_CONFIG: {
     readonly name: "Halloween Starting Deals";
     readonly subject: "Halloween Finds Starting at Great Prices — Limited Time";
     readonly preheader: "Limited time: Halloween decorations and costumes at great starting prices.";
-    readonly logoUrl: "https://www.halloweenready.com/logo.png";
-    readonly logoHref: "https://www.halloweenready.com";
-    readonly heroImageUrl: "https://www.halloweenready.com/banners/bannerpage1.png";
-    readonly heroImageHref: "https://www.halloweenready.com/products";
-    readonly heroImageAlt: "Halloween deals — HalloweenReady";
+    readonly logoUrl: "https://www.occasionfun.com/logo.png";
+    readonly logoHref: "https://www.occasionfun.com";
+    readonly heroImageUrl: "https://www.occasionfun.com/banners/bannerpage1.png";
+    readonly heroImageHref: "https://www.occasionfun.com/products";
+    readonly heroImageAlt: "Halloween deals — OccasionFun";
     readonly urgencyText: "⚡ Limited Time Offer";
     readonly offerEyebrow: "HALLOWEEN DEAL";
     readonly offerHeadline: "Spooky Season Deals";
     readonly offerSubhead: "Decorations, costumes & party supplies";
     readonly offerBody: "Get Halloween-ready without stretching your budget. Explore decorations, costumes, and party supplies with festive packaging and USA delivery.";
     readonly ctaText: "Shop Deals";
-    readonly ctaHref: "https://www.halloweenready.com/products";
+    readonly ctaHref: "https://www.occasionfun.com/products";
     readonly sections: readonly [{
         readonly heading: "Best Sellers";
         readonly subheading: "Most-loved Halloween picks.";
@@ -137,16 +137,16 @@ export declare const STARTING_PRICE_EMAIL_CONFIG: {
     readonly midCtaHeading: "Don't Miss These Halloween Deals";
     readonly midCtaBody: "Order decorations and costumes early for guaranteed pre-Halloween delivery.";
     readonly midCtaText: "Shop Halloween";
-    readonly midCtaHref: "https://www.halloweenready.com/products";
+    readonly midCtaHref: "https://www.occasionfun.com/products";
     readonly footerTagline: "Halloween Decorations & Party Supplies";
-    readonly websiteUrl: "https://www.halloweenready.com";
-    readonly websiteLabel: "www.halloweenready.com";
-    readonly orderEmail: "order@halloweenready.com";
+    readonly websiteUrl: "https://www.occasionfun.com";
+    readonly websiteLabel: "www.occasionfun.com";
+    readonly orderEmail: "order@occasionfun.com";
     readonly facebookUrl: "https://www.facebook.com/halloweenready/";
-    readonly facebookIconUrl: "https://www.halloweenready.com/email-templates/icons/facebook.png";
+    readonly facebookIconUrl: "https://www.occasionfun.com/email-templates/icons/facebook.png";
     readonly instagramUrl: "https://www.instagram.com/halloweenready/";
-    readonly instagramIconUrl: "https://www.halloweenready.com/email-templates/icons/instagram.png";
-    readonly copyrightText: "© 2026 HalloweenReady. All Rights Reserved.";
+    readonly instagramIconUrl: "https://www.occasionfun.com/email-templates/icons/instagram.png";
+    readonly copyrightText: "© 2026 OccasionFun. All Rights Reserved.";
     readonly unsubscribeLabel: "Unsubscribe";
 };
 /** ═══════════════ TEMPLATE 3 — Shop More, Save More ═══════════════ */
@@ -155,19 +155,19 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
     readonly name: "Shop More, Save More — Halloween";
     readonly subject: "Shop More, Save More on Halloween Essentials";
     readonly preheader: "Shop more, save more on Halloween decorations, costumes, and party supplies with USA delivery.";
-    readonly logoUrl: "https://www.halloweenready.com/logo.png";
-    readonly logoHref: "https://halloweenready.com";
+    readonly logoUrl: "https://www.occasionfun.com/logo.png";
+    readonly logoHref: "https://occasionfun.com";
     readonly logoTagline: "Halloween Decorations & Party Supplies";
-    readonly heroImageUrl: "https://www.halloweenready.com/banners/bannerpage1.png";
-    readonly heroImageHref: "https://halloweenready.com";
-    readonly heroImageAlt: "Shop More, Save More — HalloweenReady";
+    readonly heroImageUrl: "https://www.occasionfun.com/banners/bannerpage1.png";
+    readonly heroImageHref: "https://occasionfun.com";
+    readonly heroImageAlt: "Shop More, Save More — OccasionFun";
     readonly offerEyebrow: "HALLOWEEN SPECIAL";
     readonly offerHeadline: "Shop More, Save More";
     readonly offerSubhead: "Stock up for Halloween night";
     readonly offerThreshold: "Free shipping on carts of $49+";
     readonly offerBody: "Celebrate Halloween with decorations, costumes, and party supplies — delivered across America. Add more to your cart and unlock seasonal savings.";
     readonly ctaText: "Shop Now";
-    readonly ctaHref: "https://halloweenready.com";
+    readonly ctaHref: "https://occasionfun.com";
     readonly categoriesHeading: "Shop by Category";
     readonly categoriesSubheading: "Tap a collection to find the perfect Halloween picks.";
     readonly categories: {
@@ -188,7 +188,7 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
         priceLabel: string;
         badge: string;
     }[];
-    readonly whyHeading: "Why Choose HalloweenReady";
+    readonly whyHeading: "Why Choose OccasionFun";
     readonly whySubheading: "Trusted for Halloween decorations and party supplies with USA delivery.";
     readonly whyBenefits: {
         icon: string;
@@ -198,17 +198,17 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
     readonly midCtaHeading: "Don't Miss This Halloween Offer";
     readonly midCtaBody: "Shop more, save more when your cart is $49 or more — free shipping. Get Halloween-ready — order today.";
     readonly midCtaText: "Shop Now";
-    readonly midCtaHref: "https://halloweenready.com";
+    readonly midCtaHref: "https://occasionfun.com";
     readonly footerTagline: "Halloween Decorations & Party Supplies";
-    readonly footerLogoUrl: "https://www.halloweenready.com/logo.png";
-    readonly websiteUrl: "https://halloweenready.com";
+    readonly footerLogoUrl: "https://www.occasionfun.com/logo.png";
+    readonly websiteUrl: "https://occasionfun.com";
     readonly websiteLabel: "halloweenready.com";
-    readonly orderEmail: "order@halloweenready.com";
+    readonly orderEmail: "order@occasionfun.com";
     readonly facebookUrl: "https://www.facebook.com/halloweenready/";
-    readonly facebookIconUrl: "https://www.halloweenready.com/email-templates/icons/facebook.png";
+    readonly facebookIconUrl: "https://www.occasionfun.com/email-templates/icons/facebook.png";
     readonly instagramUrl: "https://www.instagram.com/halloweenready/";
-    readonly instagramIconUrl: "https://www.halloweenready.com/email-templates/icons/instagram.png";
-    readonly copyrightText: "© 2026 HalloweenReady. All Rights Reserved.";
+    readonly instagramIconUrl: "https://www.occasionfun.com/email-templates/icons/instagram.png";
+    readonly copyrightText: "© 2026 OccasionFun. All Rights Reserved.";
     readonly unsubscribeLabel: "Unsubscribe";
 };
 /** Template 1 HTML — Free shipping above $7. */

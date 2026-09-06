@@ -1,14 +1,14 @@
 import { VENDOR_ORANGE_COUNTY } from "../constants";
 
-/** Human-readable order numbers: OC10001… (Orange County) / HW10001… (HalloweenReady). */
+/** Human-readable order numbers: OC10001… (Orange County) / OF10001… (OccasionFun). */
 export const ORDER_NUMBER_START = 10001;
 
-export type OrderNumberPrefix = "OC" | "HW";
-/** Legacy HalloweenReady prefix still stored on older orders. */
-export type LegacyOrderNumberPrefix = "US";
+export type OrderNumberPrefix = "OC" | "OF";
+/** Legacy prefixes still stored on older orders. */
+export type LegacyOrderNumberPrefix = "US" | "HW";
 export type StoredOrderNumberPrefix = OrderNumberPrefix | LegacyOrderNumberPrefix;
 
-const HUMAN_ORDER_NUMBER_RE = /^(OC|US|HW)(\d{5,})$/i;
+const HUMAN_ORDER_NUMBER_RE = /^(OC|US|HW|OF)(\d{5,})$/i;
 
 export function isHumanOrderNumber(value: string): boolean {
   return HUMAN_ORDER_NUMBER_RE.test(value.trim());
@@ -30,12 +30,11 @@ export function formatOrderNumber(prefix: StoredOrderNumberPrefix, seq: number):
 }
 
 /**
- * HW continues the existing US Dynamo counter so numbers stay sequential
- * (US10007, then HW10008…).
+ * OF continues the existing US Dynamo counter so numbers stay sequential.
  */
 export function orderNumberCounterPrefix(
   prefix: StoredOrderNumberPrefix
-): LegacyOrderNumberPrefix | "OC" {
+): "OC" | "US" {
   return prefix === "OC" ? "OC" : "US";
 }
 
@@ -56,5 +55,5 @@ export function orderNumberPrefixForItems(
 ): OrderNumberPrefix {
   if (vendorSlugs?.includes(VENDOR_ORANGE_COUNTY)) return "OC";
   if (items.some((i) => i.vendorSlug === VENDOR_ORANGE_COUNTY)) return "OC";
-  return "HW";
+  return "OF";
 }

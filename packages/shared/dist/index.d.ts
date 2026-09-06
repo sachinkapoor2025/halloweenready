@@ -58,6 +58,8 @@ export * from "./lib/admin-analytics-tz";
 export * from "./lib/identity";
 export * from "./lib/meta-description";
 export * from "./lib/delivery";
+export * from "./lib/delivery-copy";
+export * from "./lib/brand";
 export * from "./lib/client-device";
 export * from "./lib/abandoned-cart";
 export * from "./lib/free-shipping";

@@ -42,7 +42,7 @@ function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
                   onNavigate?.();
                 }}
               >
-                Halloween to {c.label}
+                Ship to {c.label}
               </Link>
             ))}
           </div>
@@ -346,7 +346,7 @@ export function Header() {
                         onClick={closeMenu}
                         className="block rounded-lg px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-nav"
                       >
-                        Halloween to {c.label}
+                        Ship to {c.label}
                       </Link>
                     ))}
                   </div>

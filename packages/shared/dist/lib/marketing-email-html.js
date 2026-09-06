@@ -6,16 +6,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PREMIUM_MARKETING_EMAIL_LAYOUT = exports.DEFAULT_PREMIUM_MARKETING_EMAIL_CONTENT = void 0;
 exports.buildPremiumMarketingEmailHtml = buildPremiumMarketingEmailHtml;
-const SITE = "https://www.halloweenready.com";
+const SITE = "https://www.occasionfun.com";
 const CDN_FB = `${SITE}/email-templates/icons/facebook.png`;
 const CDN_IG = `${SITE}/email-templates/icons/instagram.png`;
 exports.DEFAULT_PREMIUM_MARKETING_EMAIL_CONTENT = {
-    preheader: "Shop Halloween decorations, costumes, and party supplies — fast USA delivery from HalloweenReady.",
+    preheader: "Shop Halloween decorations, costumes, and party supplies — fast USA delivery from OccasionFun.",
     logoUrl: `${SITE}/logo.png`,
     logoHref: SITE,
-    logoAlt: "HalloweenReady — Halloween Decorations & Party Supplies",
+    logoAlt: "OccasionFun — Halloween Decorations & Party Supplies",
     heroImageUrl: `${SITE}/banners/bannerpage1.png`,
-    heroImageAlt: "Halloween decorations and costumes — HalloweenReady USA delivery",
+    heroImageAlt: "Halloween decorations and costumes — OccasionFun USA delivery",
     heroImageHref: `${SITE}/products`,
     heroOverlayTitle: "Halloween 2026",
     heroOverlaySubtitle: "Decorations · Costumes · Party Supplies · Fast USA Shipping",
@@ -56,7 +56,7 @@ exports.DEFAULT_PREMIUM_MARKETING_EMAIL_CONTENT = {
         },
     ],
     promiseHeading: "Our Promise",
-    promiseSubheading: "Why shoppers trust HalloweenReady for Halloween season.",
+    promiseSubheading: "Why shoppers trust OccasionFun for Halloween season.",
     promises: [
         { icon: "🇺🇸", title: "Ships From USA", description: "Domestic fulfillment — no customs delays." },
         { icon: "🎁", title: "Seasonal Selection", description: "Decor, costumes, and party supplies." },
@@ -73,13 +73,13 @@ exports.DEFAULT_PREMIUM_MARKETING_EMAIL_CONTENT = {
     midCtaButtonHref: `${SITE}/products`,
     footerTagline: "Halloween Decorations & Party Supplies",
     websiteUrl: SITE,
-    websiteLabel: "www.halloweenready.com",
-    orderEmail: "order@halloweenready.com",
+    websiteLabel: "www.occasionfun.com",
+    orderEmail: "order@occasionfun.com",
     facebookUrl: "https://www.facebook.com/halloweenready/",
     facebookIconUrl: CDN_FB,
     instagramUrl: "https://www.instagram.com/halloweenready/",
     instagramIconUrl: CDN_IG,
-    copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
+    copyrightText: "© 2026 OccasionFun. All Rights Reserved.",
     unsubscribeLabel: "Unsubscribe",
 };
 /** Layout id for structured (form-editable) premium templates. */
@@ -156,7 +156,7 @@ function categoriesGrid(categories) {
     while (cats.length < 4) {
         cats.push({
             name: "Shop All",
-            description: "Browse the full HalloweenReady collection.",
+            description: "Browse the full OccasionFun collection.",
             imageUrl: `${SITE}/logo.png`,
             href: `${SITE}/products`,
             buttonText: "Shop Now",
@@ -232,7 +232,7 @@ function buildPremiumMarketingEmailHtml(content) {
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="x-apple-disable-message-reformatting" />
   <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
-  <title>${title} | HalloweenReady</title>
+  <title>${title} | OccasionFun</title>
   <!--[if mso]>
   <noscript>
     <xml>

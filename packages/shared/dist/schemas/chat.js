@@ -129,7 +129,7 @@ exports.chatConfigSchema = zod_1.z.object({
     launcherEnabled: zod_1.z.boolean().default(true),
     invitationEnabled: zod_1.z.boolean().default(true),
     invitationDelayMs: zod_1.z.number().int().min(3000).max(120000).default(14000),
-    welcomeMessage: zod_1.z.string().max(400).default("Hi! 🎃 I'm your HalloweenReady shopping assistant. With thousands of Halloween products, I can help you find exactly what you want."),
+    welcomeMessage: zod_1.z.string().max(400).default("Hi! I'm your OccasionFun shopping assistant. We sell gifts, home goods, fashion, toys, and party supplies for every occasion — I can help you find what you want."),
     productResultCount: zod_1.z.number().int().min(3).max(8).default(5),
     upsellLimit: zod_1.z.number().int().min(0).max(4).default(2),
     countryPersonalization: zod_1.z.boolean().default(true),

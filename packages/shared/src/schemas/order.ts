@@ -37,7 +37,7 @@ export const shippingAddressSchema = z.object({
 });
 
 export const DEFAULT_SENDER_MESSAGE =
-  "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
+  "Happy Halloween! Please accept this package of spooky surprises from OccasionFun.";
 
 export const checkoutShippingAddressSchema = shippingAddressSchema;
 
@@ -121,7 +121,7 @@ export const orderSchema = z.object({
   /**
    * Human-readable order number for staff, customers, and vendors.
    * Orange County fulfill orders: OC10001…
-   * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
+   * All other OccasionFun orders: HW10001… (legacy orders may still be US10001…).
    */
   orderNumber: z.string().optional(),
   userId: z.string().optional(),
@@ -149,7 +149,7 @@ export const orderSchema = z.object({
   trackingNumber: z.string().optional(),
   carrier: z.string().optional(),
   /**
-   * Per-vendor fulfillment (tracking) for mixed Orange County + HalloweenReady carts.
+   * Per-vendor fulfillment (tracking) for mixed Orange County + OccasionFun carts.
    * Legacy single-vendor orders may only have top-level trackingNumber/carrier.
    */
   vendorFulfillments: z
@@ -164,6 +164,12 @@ export const orderSchema = z.object({
         cjOrderId: z.string().optional(),
         cjOrderNumber: z.string().optional(),
         cjPayUrl: z.string().optional(),
+        cjPaid: z.boolean().optional(),
+        cjPaidAt: z.string().optional(),
+        cjOrderStatus: z.string().optional(),
+        cjProductAmount: z.number().optional(),
+        cjPostageAmount: z.number().optional(),
+        cjActualPayment: z.number().optional(),
       })
     )
     .optional(),
@@ -226,7 +232,7 @@ export const orderStatusUpdateSchema = z.object({
   status: orderStatusEnum.optional(),
   trackingNumber: z.string().optional(),
   carrier: z.string().optional(),
-  /** Upsert per-vendor tracking (mixed OC + HalloweenReady orders). */
+  /** Upsert per-vendor tracking (mixed OC + OccasionFun orders). */
   vendorFulfillments: z
     .array(
       z.object({

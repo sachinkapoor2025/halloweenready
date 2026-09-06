@@ -30,6 +30,7 @@ import {
   orderVisibleToActor,
   redactOrderForVendor,
   productAvailableInCountry,
+  VENDOR_CJ_DROPSHIPPING,
   type Order,
   type OrderStatusHistoryEntry,
   type CartItem,
@@ -572,9 +573,23 @@ export async function getAdminOrder(event: APIGatewayProxyEventV2) {
   const orderId = event.pathParameters?.orderId;
   if (!orderId) return badRequest("Order ID required");
 
-  const order = await fetchOrder(orderId);
+  let order = await fetchOrder(orderId);
   if (!order) return notFound("Order not found");
   if (!orderVisibleToActor(order, actor)) return forbidden();
+
+  const cjLane = (order.vendorFulfillments ?? []).find(
+    (f) => f.vendorSlug === VENDOR_CJ_DROPSHIPPING && f.cjOrderId
+  );
+  if (cjLane?.cjOrderId && (!cjLane.cjPaid || cjLane.cjProductAmount == null)) {
+    try {
+      const { syncCjOrderPayment } = await import("../lib/cj-fulfill");
+      const synced = await syncCjOrderPayment(order.orderId);
+      if (synced.order) order = synced.order as StoredOrder;
+    } catch (err) {
+      console.warn("CJ payment sync on admin get failed", err);
+    }
+  }
+
   const payload = actor.vendorSlug ? redactOrderForVendor(order, actor.vendorSlug) : order;
   return ok({ order: payload });
 }

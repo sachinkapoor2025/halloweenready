@@ -48,7 +48,7 @@ export declare const shoppingStateSchema: z.ZodObject<{
     shownSlugs?: string[] | undefined;
     selectedSlug?: string | undefined;
     partySize?: number | undefined;
-    indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+    indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
 }, {
     categorySlug?: string | undefined;
     size?: string | undefined;
@@ -72,7 +72,7 @@ export declare const shoppingStateSchema: z.ZodObject<{
     shownSlugs?: string[] | undefined;
     selectedSlug?: string | undefined;
     partySize?: number | undefined;
-    indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+    indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
 }>;
 export type ShoppingState = z.infer<typeof shoppingStateSchema>;
 export declare const chatQuickActionSchema: z.ZodObject<{
@@ -673,7 +673,7 @@ export declare const chatRequestSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     }, {
         categorySlug?: string | undefined;
         size?: string | undefined;
@@ -697,7 +697,7 @@ export declare const chatRequestSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     }>>;
     pageContext: z.ZodOptional<z.ZodObject<{
         path: z.ZodString;
@@ -774,7 +774,7 @@ export declare const chatRequestSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     } | undefined;
     pageContext?: {
         path: string;
@@ -823,7 +823,7 @@ export declare const chatRequestSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     } | undefined;
     pageContext?: {
         path: string;
@@ -1296,7 +1296,7 @@ export declare const chatResponseSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     }, {
         categorySlug?: string | undefined;
         size?: string | undefined;
@@ -1320,7 +1320,7 @@ export declare const chatResponseSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     }>>;
     intent: z.ZodEnum<["product_search", "category_search", "product_comparison", "product_information", "price_query", "shipping_query", "order_query", "return_query", "payment_query", "size_query", "styling_help", "halloween_ideas", "location_query", "general_halloween", "support", "navigation", "surprise", "party_planner", "start_over", "smalltalk"]>;
     unfulfilled: z.ZodOptional<z.ZodBoolean>;
@@ -1350,7 +1350,7 @@ export declare const chatResponseSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     };
     blocks: ({
         type: "text";
@@ -1564,7 +1564,7 @@ export declare const chatResponseSchema: z.ZodObject<{
         shownSlugs?: string[] | undefined;
         selectedSlug?: string | undefined;
         partySize?: number | undefined;
-        indoorOutdoor?: "indoor" | "outdoor" | "both" | undefined;
+        indoorOutdoor?: "outdoor" | "indoor" | "both" | undefined;
     } | undefined;
     unfulfilled?: boolean | undefined;
     resultCount?: number | undefined;

@@ -25,10 +25,10 @@ exports.SES_TIMEZONES = [
     "Australia/Sydney",
 ];
 exports.DEFAULT_SENDER_MESSAGE_FOOTER = {
-    companyName: "HalloweenReady / Divit Global Ventures",
+    companyName: "OccasionFun / Divit Global Ventures",
     companyAddress: "California, United States",
-    contactEmail: "order@halloweenready.com",
-    privacyUrl: "https://www.halloweenready.com/privacy",
+    contactEmail: "order@occasionfun.com",
+    privacyUrl: "https://www.occasionfun.com/privacy",
 };
 exports.sesRecipientSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -145,9 +145,9 @@ function resolveSesTemplateHtml(input) {
 }
 exports.sesSettingsSchema = zod_1.z.object({
     awsRegion: zod_1.z.string().min(2).max(40).default("us-east-1"),
-    defaultSenderName: zod_1.z.string().min(1).max(80).default("HalloweenReady"),
-    defaultSenderEmail: zod_1.z.string().email().default("order@halloweenready.com"),
-    defaultReplyTo: zod_1.z.string().email().default("order@halloweenready.com"),
+    defaultSenderName: zod_1.z.string().min(1).max(80).default("OccasionFun"),
+    defaultSenderEmail: zod_1.z.string().email().default("order@occasionfun.com"),
+    defaultReplyTo: zod_1.z.string().email().default("order@occasionfun.com"),
     dailyLimit: zod_1.z.number().int().min(1).max(200_000).default(50_000),
     maxSendRatePerMinute: zod_1.z.number().int().min(1).max(14_000).default(600),
     batchSize: zod_1.z.number().int().min(1).max(500).default(50),

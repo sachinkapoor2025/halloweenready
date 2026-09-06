@@ -78,7 +78,7 @@ async function loadOrderByUuid(orderId: string): Promise<StoredOrder | undefined
 }
 
 /**
- * Resolve an order by UUID or human order number (OC10001 / HW10001 / legacy US10001).
+ * Resolve an order by UUID or human order number (OC10001 / OF10001 / legacy HW/US).
  */
 export async function resolveOrderByIdOrNumber(
   idOrNumber: string

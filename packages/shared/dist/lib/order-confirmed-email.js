@@ -35,8 +35,8 @@ const order_number_1 = require("./order-number");
 const constants_1 = require("../constants");
 const image_variants_1 = require("./image-variants");
 const image_url_1 = require("./image-url");
-const SITE_NAME = "HalloweenReady";
-const DEFAULT_SITE = "https://www.halloweenready.com";
+const SITE_NAME = "OccasionFun";
+const DEFAULT_SITE = "https://www.occasionfun.com";
 const PAGE_BG = "#f3eee6";
 const HERO_BG = "#1a0a2e";
 const ORANGE = "#ff6b00";
@@ -47,13 +47,13 @@ const TEXT = "#2b1d12";
 const MUTED = "#6b5e4e";
 const LINE = "#efe6d6";
 const WHITE = "#ffffff";
-const FB_URL = "https://www.facebook.com/halloweenreadyofficial/";
-const IG_URL = "https://www.instagram.com/halloweenreadyofficial/";
-const PINTEREST_URL = "https://www.pinterest.com/halloweenready/";
-const X_URL = "https://x.com/halloweenready";
-const SUPPORT_EMAIL = "support@halloweenready.com";
+const FB_URL = "https://www.facebook.com/occasionfun";
+const IG_URL = "https://www.instagram.com/occasionfun/";
+const PINTEREST_URL = "https://www.pinterest.com/occasionfun/";
+const X_URL = "https://x.com/occasionfun";
+const SUPPORT_EMAIL = "support@occasionfun.com";
 const SUPPORT_PHONE = "+1 (669) 260-3819";
-const ORDER_EMAIL = "order@halloweenready.com";
+const ORDER_EMAIL = "order@occasionfun.com";
 const LOGO = `${DEFAULT_SITE}/logo.png`;
 const HERO_DECOR = `${DEFAULT_SITE}/banners/bannerpage1.png`;
 /** True when admin moved the order into Confirmed (stored as `accepted`). */
@@ -78,7 +78,7 @@ exports.ORDER_DELIVERED_HEADING = "Your Order Has Been Delivered!";
 exports.ORDER_COMPLETE_HEADING = "Your Order is Complete!";
 exports.ORDER_REVIEW_HEADING = "We Value Your Feedback!";
 exports.ORDER_REVIEW_CTA = "Write a Review";
-exports.ORDER_SEO_BLURB = "HalloweenReady is a USA Halloween store for decorations, costumes, and party supplies. Shoppers trust us for quality party supplies, secure checkout, and reliable shipping to all 50 states.";
+exports.ORDER_SEO_BLURB = "OccasionFun ships Gifts, party supplies, and everyday products worldwide. Shoppers trust us for quality party supplies, secure checkout, and delivery across 200 countries in 5–9 days.";
 function orderReviewUrl() {
     return `${siteBaseUrl()}/reviews`;
 }
@@ -366,7 +366,7 @@ function buildStatusEmailHtml(order, copy) {
           <tr>
             <td align="center" style="padding:0;line-height:0;font-size:0;background-color:${HERO_BG};">
               <a href="${escAttr(site)}" target="_blank" style="text-decoration:none;">
-                <img class="fluid" src="${escAttr(HERO_DECOR)}" width="600" alt="HalloweenReady Halloween decorations, costumes, and party supplies" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+                <img class="fluid" src="${escAttr(HERO_DECOR)}" width="600" alt="OccasionFun Gifts, party supplies, and everyday products" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
               </a>
             </td>
           </tr>
@@ -376,20 +376,20 @@ function buildStatusEmailHtml(order, copy) {
                 <tr>
                   <td align="center" bgcolor="${WHITE}" style="background-color:${WHITE};border-radius:10px;padding:10px 16px;">
                     <a href="${escAttr(site)}" target="_blank" style="text-decoration:none;">
-                      <img src="${escAttr(LOGO)}" width="168" alt="HalloweenReady" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
+                      <img src="${escAttr(LOGO)}" width="168" alt="OccasionFun" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
                     </a>
                   </td>
                 </tr>
               </table>
               <div style="height:16px;line-height:16px;font-size:0;">&nbsp;</div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;letter-spacing:3px;text-transform:uppercase;color:${GOLD};font-weight:bold;padding-bottom:10px;">
-                HalloweenReady
+                OccasionFun
               </div>
               <div class="hero-title" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:38px;font-weight:bold;color:${WHITE};letter-spacing:0.5px;">
                 ${escapeHtml(copy.heroTitle)}
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#f0d78c;padding-top:10px;">
-                Halloween decorations, costumes, and party supplies
+                Gifts, party supplies, and everyday products
               </div>
             </td>
           </tr>
@@ -484,14 +484,14 @@ function buildStatusEmailHtml(order, copy) {
               </table>
               <div style="height:18px;line-height:18px;font-size:0;">&nbsp;</div>
               <a href="${escAttr(site)}" target="_blank" style="text-decoration:none;">
-                <img src="${escAttr(LOGO)}" width="140" alt="HalloweenReady" style="display:block;width:140px;max-width:55%;height:auto;border:0;margin:0 auto;background-color:${WHITE};border-radius:8px;padding:8px;" />
+                <img src="${escAttr(LOGO)}" width="140" alt="OccasionFun" style="display:block;width:140px;max-width:55%;height:auto;border:0;margin:0 auto;background-color:${WHITE};border-radius:8px;padding:8px;" />
               </a>
               <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:20px;color:#f0d78c;padding:14px 0 10px 0;">
-                Halloween decorations, costumes, and party supplies
+                Gifts, party supplies, and everyday products
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:22px;color:#d7dde8;">
                 Website:
-                <a href="${escAttr(site)}" target="_blank" style="color:#f0d78c;text-decoration:underline;">www.halloweenready.com</a>
+                <a href="${escAttr(site)}" target="_blank" style="color:#f0d78c;text-decoration:underline;">www.occasionfun.com</a>
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:22px;color:#d7dde8;">
                 Support:
@@ -507,13 +507,13 @@ function buildStatusEmailHtml(order, copy) {
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
                 <tr>
                   ${trustCell("100% Secure Payment", "Stripe and Razorpay checkout")}
-                  ${trustCell("Quality Party Supplies", "Premium Halloween products")}
-                  ${trustCell("USA Shipping", "Delivery to all 50 states")}
+                  ${trustCell("Quality Party Supplies", "Premium products for every occasion")}
+                  ${trustCell("Worldwide shipping", "200 countries, 5–9 days")}
                   ${trustCell("Easy Returns & Exchanges", "Satisfaction guarantee")}
                 </tr>
               </table>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#9aa8c0;padding-top:18px;">
-                &copy; 2026 HalloweenReady. All rights reserved.
+                &copy; 2026 OccasionFun. All rights reserved.
               </div>
             </td>
           </tr>
@@ -533,7 +533,7 @@ function confirmedAfterOrderHtml(order) {
                 Thank you for shopping with us
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;">
-                We appreciate your HalloweenReady order, ${escapeHtml(customerFullName(order))}. You will receive another update when packing starts and when your package ships. If you have any questions, our support team is here to help.
+                We appreciate your OccasionFun order, ${escapeHtml(customerFullName(order))}. You will receive another update when packing starts and when your package ships. If you have any questions, our support team is here to help.
               </div>
             </td>
           </tr>`;
@@ -547,7 +547,7 @@ function deliveredAfterOrderHtml() {
                 ${escapeHtml(exports.ORDER_REVIEW_HEADING)}
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;padding-bottom:18px;">
-                Your experience helps other customers choose HalloweenReady with confidence. Please take a moment to share how your Halloween order arrived.
+                Your experience helps other customers choose OccasionFun with confidence. Please take a moment to share how your order arrived.
               </div>
               ${ctaButtonHtml(reviewHref, exports.ORDER_REVIEW_CTA)}
             </td>
@@ -555,7 +555,7 @@ function deliveredAfterOrderHtml() {
           <tr>
             <td class="mobile-pad" align="center" style="padding:22px 28px 32px 28px;background-color:${WHITE};">
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${ORANGE};font-weight:bold;padding-bottom:8px;">
-                About HalloweenReady
+                About OccasionFun
               </div>
               <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:${MUTED};max-width:460px;margin:0 auto;">
                 ${escapeHtml(exports.ORDER_SEO_BLURB)}
@@ -570,7 +570,7 @@ function buildOrderConfirmedEmailHtml(order) {
     return buildStatusEmailHtml(order, {
         heroTitle: "THANK YOU FOR YOUR ORDER!",
         heading: exports.ORDER_CONFIRMED_HEADING,
-        intro: "Thank you for shopping with HalloweenReady. We have confirmed your order and our team is preparing it for fulfillment and USA dispatch.",
+        intro: "Thank you for shopping with OccasionFun. We have confirmed your order and our team is preparing it for fulfillment and worldwide dispatch.",
         preheader: orderConfirmedPreheader(order),
         afterOrderHtml: confirmedAfterOrderHtml(order),
     });
@@ -579,14 +579,14 @@ function deliveredCopy(kind) {
     if (kind === "complete") {
         return {
             heading: exports.ORDER_COMPLETE_HEADING,
-            intro: "Thank you for celebrating Halloween with HalloweenReady. We hope your order arrived ready for the party.",
-            statusLine: "Your HalloweenReady order is complete.",
+            intro: "Thank you for shopping with OccasionFun. We hope your order arrived ready for the party.",
+            statusLine: "Your OccasionFun order is complete.",
         };
     }
     return {
         heading: exports.ORDER_DELIVERED_HEADING,
-        intro: "Your Halloween order has arrived. We hope you love your decorations, costumes, and party supplies.",
-        statusLine: "Your HalloweenReady order has been delivered.",
+        intro: "Your order has arrived. We hope you love it.",
+        statusLine: "Your OccasionFun order has been delivered.",
     };
 }
 function orderDeliveredSubject(order, kind) {
@@ -644,7 +644,7 @@ Tax: ${money(t.tax)}
 ${discountLine}Total amount: ${money(t.total)}
 
 ${exports.ORDER_REVIEW_HEADING}
-Your experience helps other customers choose HalloweenReady with confidence. Please share how your Halloween order arrived.
+Your experience helps other customers choose OccasionFun with confidence. Please share how your order arrived.
 ${exports.ORDER_REVIEW_CTA}: ${orderReviewUrl()}
 
 ${exports.ORDER_SEO_BLURB}
@@ -695,7 +695,7 @@ ${orderReviewUrl()}
 
 View order: ${site}/orders/${order.orderId}
 
-Thank you for shopping with HalloweenReady.`;
+Thank you for shopping with OccasionFun.`;
 }
 function orderStatusWhatsAppDeepLink(order) {
     const phone = order.shippingAddress?.phone;
@@ -739,7 +739,7 @@ function buildOrderConfirmedEmailText(order) {
 
 Your order is confirmed!
 
-Thank you for shopping with ${SITE_NAME}. We have confirmed order ${ref} and our team is preparing it for fulfillment and USA dispatch.
+Thank you for shopping with ${SITE_NAME}. We have confirmed order ${ref} and our team is preparing it for fulfillment and worldwide dispatch.
 
 Order ID: ${ref}
 
@@ -780,7 +780,7 @@ function buildOrderConfirmedWhatsAppMessage(order) {
         : "";
     return `Hi ${first},
 
-Your HalloweenReady order is confirmed.
+Your OccasionFun order is confirmed.
 
 Order ID: ${ref}
 
@@ -792,8 +792,8 @@ Shipping: ${money(t.shipping)}
 Tax: ${money(t.tax)}
 ${discountLine}Total: ${money(t.total)}
 
-We are preparing your order for USA dispatch.
+We are preparing your order for worldwide dispatch.
 View order: ${site}/orders/${order.orderId}
 
-Thank you for shopping with HalloweenReady.`;
+Thank you for shopping with OccasionFun.`;
 }

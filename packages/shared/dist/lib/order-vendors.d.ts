@@ -13,12 +13,24 @@ export type VendorFulfillment = {
     cjOrderId?: string;
     cjOrderNumber?: string;
     cjPayUrl?: string;
+    /** True after CJ wallet or card payment succeeds. */
+    cjPaid?: boolean;
+    cjPaidAt?: string;
+    cjOrderStatus?: string;
+    /** CJ catalog cost in USD (excludes postage). */
+    cjProductAmount?: number;
+    /** CJ postage in USD. */
+    cjPostageAmount?: number;
+    /** What CJ charged (product + shipping). */
+    cjActualPayment?: number;
 };
 export declare function lineVendorKey(item: {
     vendorSlug?: string | null;
 }): string;
 export declare function vendorDisplayLabel(slug: string): string;
-/** Distinct fulfillment vendors present on the order (HalloweenReady implied for untagged lines). */
+/** Admin label for a CJ lane — “CJ order paid” after wallet/card payment. */
+export declare function cjFulfillmentStatusLabel(f: VendorFulfillment): string;
+/** Distinct fulfillment vendors present on the order (OccasionFun implied for untagged lines). */
 export declare function orderVendorKeys(order: {
     vendorSlugs?: string[];
     items?: Array<{
@@ -69,6 +81,12 @@ export declare function upsertVendorFulfillment(fulfillments: VendorFulfillment[
     cjOrderId?: string;
     cjOrderNumber?: string;
     cjPayUrl?: string;
+    cjPaid?: boolean;
+    cjPaidAt?: string;
+    cjOrderStatus?: string;
+    cjProductAmount?: number;
+    cjPostageAmount?: number;
+    cjActualPayment?: number;
 }): VendorFulfillment[];
 export declare function allVendorsHaveTracking(fulfillments: VendorFulfillment[]): boolean;
 export declare function anyVendorHasTracking(fulfillments: VendorFulfillment[]): boolean;

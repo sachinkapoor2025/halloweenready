@@ -1,18 +1,18 @@
 export const site = {
-  name: "HalloweenReady",
-  domain: "halloweenready.com",
-  tagline: "Halloween Decorations, Costumes & Party Supplies",
+  name: "OccasionFun",
+  domain: "occasionfun.com",
+  tagline: "Gifts, party supplies, and everyday products for every occasion",
   description:
-    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
-  supportEmail: "support@halloweenready.com",
+    "OccasionFun.com — shop gifts, home goods, fashion, toys, and party supplies. We deliver across 200 countries in 5–9 days. Check each product for a shipping quote.",
+  supportEmail: "support@occasionfun.com",
   phone: "+1 (669) 260-3819",
   /** Customer WhatsApp — India store number (do not display the digits on the storefront). */
   whatsapp: "919266467887",
   whatsappDisplay: "+91 9266467887",
   logoSrc: "/logo.png",
-  primaryColor: "#1a0a2e",
-  navBlue: "#ff6b00",
-  accentColor: "#e11d48",
+  primaryColor: "#0f3d48",
+  navBlue: "#e11d48",
+  accentColor: "#f59e0b",
 } as const;
 
 export const STORE_LOCATIONS = [
@@ -34,12 +34,11 @@ export const STORE_LOCATIONS = [
 
 export const navItems = [
   { label: "Home", href: "/" },
-  { label: "Hampers", href: "/categories/halloween-hampers", category: "halloween-hampers" },
-  { label: "Home Decorations", href: "/categories/home-decoration", category: "home-decoration" },
-  { label: "Costumes", href: "/categories/costumesandaccessories", category: "costumesandaccessories" },
-  { label: "Party Supplies", href: "/categories/partysupplier", category: "partysupplier" },
-  { label: "Toys & Novelty", href: "/categories/toysandnovelty", category: "toysandnovelty" },
-  { label: "Halloween Guide", href: "/halloween-guide" },
+  { label: "Shop all", href: "/products" },
+  { label: "Home & living", href: "/categories/home-decoration", category: "home-decoration" },
+  { label: "Fashion", href: "/categories/costumesandaccessories", category: "costumesandaccessories" },
+  { label: "Party supplies", href: "/categories/partysupplier", category: "partysupplier" },
+  { label: "Toys & gifts", href: "/categories/toysandnovelty", category: "toysandnovelty" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -83,38 +82,38 @@ export const cityLinks: CityLink[] = [
 export const homeBanners = [
   {
     src: "/banners/bannerpage1.png",
-    alt: "Halloween decorations costumes and party supplies — HalloweenReady",
+    alt: "Gifts, party supplies, and home products — OccasionFun",
     href: "/products",
-    eyebrow: "HALLOWEEN 2026 · SHOP WORLDWIDE",
-    title: "Celebrate Halloween in",
-    titleAccent: "Style",
+    eyebrow: "SHIP TO 200 COUNTRIES · 5–9 DAYS",
+    title: "Make every occasion",
+    titleAccent: "Fun",
     description:
-      "Premium Halloween decorations, costumes, and party supplies. Delivering in 5–7 days — confirm shipping on each product page.",
-    cta: "Shop Halloween",
-    pill: "Decorations · Costumes · Party Supplies",
+      "Gifts, home goods, fashion, toys, and party supplies. We deliver across 200 countries in 5–9 days — confirm shipping on each product page.",
+    cta: "Shop the catalog",
+    pill: "Gifts · Home · Fashion · Party",
   },
   {
     src: "/banners/bannerpage2.png",
-    alt: "Outdoor Halloween decorations and inflatable yard decor — HalloweenReady",
-    href: "/categories/home-decoration",
-    eyebrow: "HAUNT YOUR HOME",
-    title: "Transform Your Space Into a",
-    titleAccent: "Spooky Wonderland",
+    alt: "Party supplies and celebration products — OccasionFun",
+    href: "/categories/partysupplier",
+    eyebrow: "EVERY CELEBRATION",
+    title: "Host, gift, and celebrate with",
+    titleAccent: "one store",
     description:
-      "Inflatable ghosts, LED pumpkins, skeletons, and yard decor — everything for the ultimate Halloween display.",
-    cta: "Shop Decorations",
-    pill: "Indoor & outdoor decor",
+      "Balloons, tableware, décor, and surprise-ready gifts for birthdays, holidays, and everyday moments.",
+    cta: "Shop party supplies",
+    pill: "Birthdays · Holidays · Everyday",
   },
 ] as const;
 
 export const promoBanners = [
   {
     src: "/banners/bannerpage1.png",
-    alt: "Happy Halloween customers",
+    alt: "Happy OccasionFun customers",
   },
   {
     src: "/banners/bannerpage2.png",
-    alt: "Halloween party celebration",
+    alt: "Celebration and gifts",
   },
 ] as const;
 
@@ -136,7 +135,7 @@ export function orderCategories<T extends { slug: string }>(categories: readonly
   return [...categories].sort((a, b) => (rank.get(a.slug) ?? 99) - (rank.get(b.slug) ?? 99));
 }
 
-export function whatsappChatUrl(message = "Hi HalloweenReady, I need help with my Halloween order."): string {
+export function whatsappChatUrl(message = "Hi OccasionFun, I need help with my order."): string {
   return `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
@@ -146,70 +145,54 @@ export const testimonials = [
     rating: 5,
     timeAgo: "2 weeks ago",
     image: "/testimonials/emily.jpg",
-    text: "I ordered outdoor Halloween decorations from HalloweenReady and they arrived in Texas within a week. The inflatables and yard signs looked amazing — our whole block stopped to take photos.",
+    text: "I ordered gifts from OccasionFun and they arrived in Texas quickly. Packaging was festive and the products matched the photos.",
   },
   {
     name: "Sarah",
     rating: 5,
     timeAgo: "3 weeks ago",
     image: "/testimonials/sarah.jpg",
-    text: "The hanging ghost decorations and LED pumpkins were a huge hit in our Ohio neighborhood. Great prices, fast USA shipping, and everything matched the photos online.",
+    text: "Party supplies and home décor for our Ohio gathering were a hit. Clear shipping quote and easy checkout.",
   },
   {
     name: "Jessica",
     rating: 5,
     timeAgo: "1 month ago",
     image: "/testimonials/jessica.jpg",
-    text: "HalloweenReady made decorating our California home so easy. The products were exactly as described and helped us create the perfect haunted house for trick-or-treaters.",
+    text: "OccasionFun made gifting to family overseas simple. Tracking was clear and support replied on WhatsApp the same day.",
   },
   {
     name: "Amanda",
     rating: 5,
     timeAgo: "1 month ago",
     image: "/testimonials/amanda.jpg",
-    text: "Excellent customer service and fantastic Halloween products. My family in Florida loved the party supplies and we received so many compliments from guests.",
+    text: "Great mix of everyday products and celebration pieces. My family in Florida loved the order.",
   },
 ] as const;
 
 export const faqs = [
   {
-    q: "How quickly do you ship Halloween decorations?",
-    a: "Delivering in 5–7 days. Carts under $49 pay a stepped shipping fee; $49+ ships free. The checkout total matches the payment page.",
+    q: "Where does OccasionFun ship?",
+    a: "We deliver across 200 countries with 5–9 days delivery. Choose your country at checkout and confirm the quote on each product page.",
   },
   {
-    q: "Do you offer outdoor Halloween decorations?",
-    a: "Yes. The collection includes inflatables, yard signs, tombstones, lighting, and larger display props. Choose outdoor-rated items for yards and porches, and keep walkways clear when you set them up.",
+    q: "What do you sell?",
+    a: "Gifts, home & living, fashion and accessories, toys, party supplies, and other CJ Dropshipping catalog products — not only seasonal items.",
   },
   {
-    q: "Are your Halloween products suitable for parties?",
-    a: "Yes. You can find tableware, banners, balloons, photo props, and themed accessories for small family gatherings or larger Halloween events.",
+    q: "How long does delivery take?",
+    a: "Most orders arrive in 5–9 days after dispatch. Exact timing depends on destination and the product’s shipping quote.",
   },
   {
-    q: "Can I decorate both indoor and outdoor spaces?",
-    a: "Yes. Indoor pieces work well on tables, shelves, and walls. Outdoor pieces are meant for yards and porches — check each product page if you need weather-resistant materials.",
-  },
-  {
-    q: "Do you sell inflatable Halloween decorations?",
-    a: "Yes. We carry inflatable pumpkins, ghosts, skeletons, and other popular characters. Most include stakes and a blower unless the product page says otherwise.",
-  },
-  {
-    q: "What are your most popular Halloween categories?",
-    a: "Shoppers often start with hanging decorations, inflatables, skeletons, lighting, yard pieces, party supplies, and trick-or-treat accessories, then add costumes if they need outfits too.",
-  },
-  {
-    q: "Does HalloweenReady ship internationally?",
-    a: "Yes. Choose your country at checkout. We have shopping pages for the USA, UK, Canada, Australia, India, UAE, and several European countries. Delivering in 5–7 days.",
+    q: "Do you offer free shipping?",
+    a: "Carts under $49 pay a stepped shipping fee; $49+ ships free where the quote allows. The checkout total matches the payment page.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "You can pay with Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking) at secure checkout. Prices can display in other currencies.",
+    a: "Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking). Prices can display in other currencies.",
   },
   {
-    q: "Can I trust HalloweenReady for Halloween shopping?",
-    a: "Checkout is encrypted. You can reach the team on WhatsApp or email for sizing and delivery questions. We stand behind the purchase if something arrives damaged.",
-  },
-  {
-    q: "When should I order for Halloween 2026?",
-    a: "Halloween 2026 is Saturday, October 31. Delivering in 5–7 days, so order with that window in mind. Earlier in October gives more buffer — we do not guarantee arrival before October 31.",
+    q: "Can I trust OccasionFun?",
+    a: "Checkout is encrypted. Reach the team on WhatsApp or email if something arrives damaged — we stand behind the purchase.",
   },
 ] as const;

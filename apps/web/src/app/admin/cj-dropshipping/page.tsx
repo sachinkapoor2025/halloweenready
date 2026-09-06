@@ -57,7 +57,7 @@ export default function AdminCjDropshippingPage() {
   const [tab, setTab] = useState<Tab>("catalog");
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [apiKey, setApiKey] = useState("");
-  const [keyword, setKeyword] = useState("halloween");
+  const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState<CatalogRow[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -216,7 +216,7 @@ export default function AdminCjDropshippingPage() {
         body: JSON.stringify({
           page: nextPage,
           size: CATALOG_PAGE_SIZE,
-          keyWord: keyword || "halloween",
+          keyWord: keyword || undefined,
           published: true,
           addToMyProduct: false,
         }),
@@ -226,13 +226,13 @@ export default function AdminCjDropshippingPage() {
       setExpandedJobId(data.jobId);
       setTab("jobs");
       setMessage(
-        `Halloween import started (${data.searched} on page ${data.page}). ${data.queued} queued${
+        `Catalog import started (${data.searched} on page ${data.page}). ${data.queued} queued${
           data.skipped ? `, ${data.skipped} already on site` : ""
         }. Watch Import status.`
       );
       void loadJobs();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Halloween import failed");
+      setMessage(err instanceof Error ? err.message : "Catalog import failed");
     } finally {
       setBusy("");
     }
@@ -323,7 +323,7 @@ export default function AdminCjDropshippingPage() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "catalog", label: "CJ catalog" },
-    { id: "import", label: "Import Halloween" },
+    { id: "import", label: "Import catalog" },
     { id: "jobs", label: "Import status" },
     { id: "pricing", label: "Cost & pricing" },
     { id: "orders", label: "Orders & freight" },
@@ -336,7 +336,7 @@ export default function AdminCjDropshippingPage() {
         <div>
           <h1 className="text-2xl font-bold">CJ Dropshipping</h1>
           <p className="text-sm text-slate-600 mt-1">
-            Search CJ’s catalog, import Halloween products to the storefront, and fulfill paid orders through CJ.
+            Search the full CJ catalog, import any products to the storefront, and fulfill paid orders through CJ.
           </p>
         </div>
         <span
@@ -426,7 +426,7 @@ export default function AdminCjDropshippingPage() {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm min-w-[16rem]"
-              placeholder="Search CJ (try halloween)"
+              placeholder="Search CJ (any product, not only Halloween)"
             />
             <button
               type="button"
@@ -484,7 +484,7 @@ export default function AdminCjDropshippingPage() {
           <p className="text-xs text-slate-500 mb-3">
             {totalRecords
               ? `${totalRecords} results · page ${page} of ${totalPages} · ${CATALOG_PAGE_SIZE} per page · ${selectedPids.length} selected (already-imported skipped)`
-              : "Search the CJ catalog, then import into HalloweenReady."}
+              : "Search the CJ catalog, then import into OccasionFun."}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {visibleProducts.map((p) => {
@@ -562,7 +562,7 @@ export default function AdminCjDropshippingPage() {
       {tab === "import" && (
         <section className="max-w-xl space-y-3">
           <p className="text-sm text-slate-600">
-            Imports one page of CJ Halloween products (up to {CATALOG_PAGE_SIZE}) in the background. Already-imported
+            Imports one page of CJ products (up to {CATALOG_PAGE_SIZE}) in the background. Already-imported
             SKUs are skipped. Track progress under <strong>Import status</strong>.
           </p>
           <input
@@ -576,7 +576,7 @@ export default function AdminCjDropshippingPage() {
             disabled={busy === "halloween"}
             className="btn-cart px-4 py-2 text-sm"
           >
-            {busy === "halloween" ? "Importing…" : `Import Halloween page ${page}`}
+            {busy === "halloween" ? "Importing…" : `Import catalog page ${page}`}
           </button>
           {totalPages > 1 && (
             <button
@@ -594,7 +594,7 @@ export default function AdminCjDropshippingPage() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-slate-600">
-              Each Import selected / Import Halloween click is one job. Status updates every 5 seconds while this tab
+              Each Import selected / Import catalog click is one job. Status updates every 5 seconds while this tab
               is open. Videos are copied later when a shopper opens the product page.
             </p>
             <button
@@ -617,7 +617,7 @@ export default function AdminCjDropshippingPage() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold">
-                        {job.source === "halloween" ? "Halloween page import" : "Selected catalog import"}
+                        {job.source === "halloween" ? "Catalog page import" : "Selected catalog import"}
                         {job.keyword ? ` · ${job.keyword}` : ""}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -690,7 +690,7 @@ export default function AdminCjDropshippingPage() {
       {tab === "pricing" && (
         <section className="space-y-4">
           <p className="text-sm text-slate-600">
-            What CJ charges you (wholesale) versus what customers pay on HalloweenReady. Sale price is{" "}
+            What CJ charges you (wholesale) versus what customers pay on OccasionFun. Sale price is{" "}
             {ORANGE_COUNTY_SALE_MARKUP}× CJ cost (~50% product margin). List/compare-at is {ORANGE_COUNTY_LIST_MARKUP}×.
             Shipping is extra.
           </p>
@@ -768,7 +768,7 @@ export default function AdminCjDropshippingPage() {
         <section className="space-y-4">
           <div className="flex flex-wrap gap-2 items-end">
             <label className="text-sm">
-              HalloweenReady order ID
+              OccasionFun order ID
               <input
                 value={fulfillOrderId}
                 onChange={(e) => setFulfillOrderId(e.target.value)}

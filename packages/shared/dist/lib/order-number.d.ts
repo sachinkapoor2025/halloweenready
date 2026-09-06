@@ -1,8 +1,8 @@
-/** Human-readable order numbers: OC10001… (Orange County) / HW10001… (HalloweenReady). */
+/** Human-readable order numbers: OC10001… (Orange County) / OF10001… (OccasionFun). */
 export declare const ORDER_NUMBER_START = 10001;
-export type OrderNumberPrefix = "OC" | "HW";
-/** Legacy HalloweenReady prefix still stored on older orders. */
-export type LegacyOrderNumberPrefix = "US";
+export type OrderNumberPrefix = "OC" | "OF";
+/** Legacy prefixes still stored on older orders. */
+export type LegacyOrderNumberPrefix = "US" | "HW";
 export type StoredOrderNumberPrefix = OrderNumberPrefix | LegacyOrderNumberPrefix;
 export declare function isHumanOrderNumber(value: string): boolean;
 export declare function parseHumanOrderNumber(value: string): {
@@ -11,10 +11,9 @@ export declare function parseHumanOrderNumber(value: string): {
 } | null;
 export declare function formatOrderNumber(prefix: StoredOrderNumberPrefix, seq: number): string;
 /**
- * HW continues the existing US Dynamo counter so numbers stay sequential
- * (US10007, then HW10008…).
+ * OF continues the existing US Dynamo counter so numbers stay sequential.
  */
-export declare function orderNumberCounterPrefix(prefix: StoredOrderNumberPrefix): LegacyOrderNumberPrefix | "OC";
+export declare function orderNumberCounterPrefix(prefix: StoredOrderNumberPrefix): "OC" | "US";
 /** Prefer human orderNumber when present; else short UUID for display. */
 export declare function displayOrderRef(order: {
     orderNumber?: string | null;

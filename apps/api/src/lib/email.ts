@@ -21,6 +21,8 @@ import {
   isOrderConfirmedStatus,
   orderConfirmedSubject,
   orderDeliveredSubject,
+  INTERNATIONAL_DELIVERY_COPY,
+  HALLOWEEN_2026_DATE_COPY,
 } from "@halloweenready/shared";
 import {
   abandonedCartWhatsAppMessage,
@@ -34,7 +36,7 @@ import {
 } from "./whatsapp";
 
 const DEFAULT_NOTIFY = ORDER_SMTP_USER;
-const SITE_NAME = "HalloweenReady";
+const SITE_NAME = "OccasionFun";
 
 /** order@ = order notifications; orders@ = reminders / high-volume transactional. */
 export type TransactionalMailbox = "order" | "orders";
@@ -59,7 +61,7 @@ function smtpConfigured(): boolean {
 }
 
 function smtpUser(_mailbox: TransactionalMailbox = "order"): string {
-  // Always authenticate as order@halloweenready.com unless SMTP_USER is overridden.
+  // Always authenticate as order@occasionfun.com unless SMTP_USER is overridden.
   return process.env.SMTP_USER?.trim() || DEFAULT_NOTIFY;
 }
 
@@ -77,7 +79,7 @@ function fromAddressFor(mailbox: TransactionalMailbox = "order"): string {
 
 function smtpHosts(): string[] {
   const primary = process.env.SMTP_HOST?.trim();
-  const extras = (process.env.SMTP_HOSTS ?? "mail.halloweenready.com,smtp.halloweenready.com")
+  const extras = (process.env.SMTP_HOSTS ?? "mail.occasionfun.com,smtp.occasionfun.com")
     .split(",")
     .map((h) => h.trim())
     .filter(Boolean);
@@ -193,7 +195,7 @@ export async function sendNewsletterEmails(input: {
     to: input.email,
     subject: `Your Discount of the Day: ${pct}% off — ${SITE_NAME}`,
     mailbox: "orders",
-    text: `You spun the Discount of the Day wheel at HalloweenReady!
+    text: `You spun the Discount of the Day wheel at OccasionFun!
 
 Your exclusive code:
 
@@ -201,15 +203,16 @@ Your exclusive code:
   Discount: ${pct}% off
   Valid until: ${expiryLabel} (1 hour from spin)
 
-Enter this code at checkout on https://www.halloweenready.com/checkout
+Enter this code at checkout on https://www.occasionfun.com/checkout
 
-One spin per mobile number per day. Shop premium Halloween products with delivery to all 50 US states:
-https://www.halloweenready.com/products
+One spin per mobile number per day. Shop premium Halloween products:
+https://www.occasionfun.com/products
 
-Halloween 2026 is August 28 — order early for on-time delivery.
+${INTERNATIONAL_DELIVERY_COPY}
+${HALLOWEEN_2026_DATE_COPY} — order early.
 
 — ${SITE_NAME} Team
-order@halloweenready.com`,
+order@occasionfun.com`,
   });
 
   const waPhone = input.metadata?.phone?.trim();
@@ -358,7 +361,7 @@ Thank you for contacting ${SITE_NAME}. We received your message and will reply a
 For urgent order help, WhatsApp us or email ${notifyAddress()}.
 
 — ${SITE_NAME} Team
-https://www.halloweenready.com`,
+https://www.occasionfun.com`,
   });
 
   if (input.phone) {
@@ -513,8 +516,8 @@ function adminOrderSubject(label: string, order: Order): string {
   return `[${SITE_NAME}] ${label} — ${order.orderId.slice(0, 8)} (${order.currency} ${order.total.toFixed(2)})`;
 }
 
-function buildOrderAdminBody(order: Order, headline: string): string {
-  return [
+function buildOrderAdminBody(order: Order, headline: string, extra?: string): string {
+  const parts = [
     headline,
     "",
     `Order ID: ${order.orderId}`,
@@ -529,17 +532,32 @@ function buildOrderAdminBody(order: Order, headline: string): string {
     formatAddress(order),
     "",
     `Placed: ${order.createdAt}`,
-  ].join("\n");
+    "",
+    INTERNATIONAL_DELIVERY_COPY,
+  ];
+  if (extra) {
+    parts.push("", extra);
+  }
+  return parts.join("\n");
 }
 
 export async function notifyAdminOrderPlaced(order: Order): Promise<EmailSendResult> {
+  const subject = adminOrderSubject("Order added in cart - payment pending", order);
+  const payLinks = `Complete payment:\n${siteUrl()}/orders/${order.orderId}\n${siteUrl()}/checkout`;
+  const staffBody = buildOrderAdminBody(
+    order,
+    `A customer started checkout on ${SITE_NAME}. Payment is still pending — not a confirmed order yet.`
+  );
+  const customerBody = buildOrderAdminBody(
+    order,
+    `You started checkout on ${SITE_NAME}. Payment is still pending — not a confirmed order yet.`,
+    payLinks
+  );
+
   const staff = await sendEmail({
     to: adminNotifyAddresses(),
-    subject: adminOrderSubject("Order added in cart - payment pending", order),
-    text: buildOrderAdminBody(
-      order,
-      `A customer started checkout on ${SITE_NAME}. Payment is still pending — not a confirmed order yet.`
-    ),
+    subject,
+    text: staffBody,
     replyTo: order.shippingAddress?.email,
   });
   if (!staff.ok) console.error("Checkout pending staff email failed:", staff.error);
@@ -547,27 +565,10 @@ export async function notifyAdminOrderPlaced(order: Order): Promise<EmailSendRes
   const customerEmail = order.shippingAddress?.email?.trim();
   let customer: EmailSendResult = { ok: true, skipped: true };
   if (customerEmail?.includes("@")) {
-    const name = order.shippingAddress?.name?.split(" ")[0] ?? "there";
-    const shortId = order.orderId.slice(0, 8).toUpperCase();
-    const total = `${order.currency} ${order.total.toFixed(2)}`;
     customer = await sendEmail({
       to: customerEmail,
-      subject: `Complete your HalloweenReady order — #${shortId}`,
-      text: `Hi ${name},
-
-We saved your HalloweenReady checkout. Payment is still pending.
-
-Order ID: ${shortId}
-Total: ${total}
-
-Complete payment here:
-${siteUrl()}/orders/${order.orderId}
-${siteUrl()}/checkout
-
-Questions? Reply to this email or WhatsApp us.
-
-— ${SITE_NAME} Team
-${siteUrl()}`,
+      subject,
+      text: customerBody,
       replyTo: notifyAddress(),
     });
     if (!customer.ok) console.error("Checkout pending customer email failed:", customer.error);
@@ -577,10 +578,13 @@ ${siteUrl()}`,
 }
 
 export async function notifyAdminOrderPaid(order: Order): Promise<EmailSendResult> {
+  const subject = adminOrderSubject("New order - paid", order);
+  const body = buildOrderAdminBody(order, `Payment confirmed — new paid order on ${SITE_NAME}.`);
+
   const staff = await sendEmail({
     to: adminNotifyAddresses(),
-    subject: adminOrderSubject("New order - paid", order),
-    text: buildOrderAdminBody(order, `Payment confirmed — new paid order on ${SITE_NAME}.`),
+    subject,
+    text: body,
     replyTo: order.shippingAddress?.email,
   });
   if (!staff.ok) console.error("Paid order staff email failed:", staff.error);
@@ -591,20 +595,8 @@ export async function notifyAdminOrderPaid(order: Order): Promise<EmailSendResul
   if (customerEmail?.includes("@")) {
     customer = await sendEmail({
       to: customerEmail,
-      subject: `Order confirmed — ${SITE_NAME}`,
-      text: `Hi${order.shippingAddress?.name ? ` ${order.shippingAddress.name}` : ""},
-
-Thank you for your order! Payment has been received.
-
-Order ID: ${order.orderId}
-Total: ${totalLabel}
-
-We deliver to all 50 US states in 5–7 business days after dispatch.
-
-Questions? Reply to this email or WhatsApp us.
-
-— ${SITE_NAME} Team
-${siteUrl()}`,
+      subject,
+      text: body,
       replyTo: notifyAddress(),
     });
     if (!customer.ok) console.error("Paid order customer email failed:", customer.error);
@@ -652,7 +644,7 @@ Current inventory: 0
 
 Please restock this item in the admin portal (Products → edit stock).
 
-Admin: https://www.halloweenready.com/admin/products`
+Admin: https://www.occasionfun.com/admin/products`
     : `Low stock alert on ${SITE_NAME}
 
 Product: ${product.name}
@@ -663,7 +655,7 @@ Current inventory: ${inventory} (threshold: 10 or below)
 
 Please restock this item in the admin portal.
 
-Admin: https://www.halloweenready.com/admin/products`;
+Admin: https://www.occasionfun.com/admin/products`;
 
   return sendEmail({
     to: LOW_STOCK_ALERT_EMAIL,
@@ -673,7 +665,7 @@ Admin: https://www.halloweenready.com/admin/products`;
 }
 
 function siteUrl(): string {
-  return (process.env.SITE_URL ?? "https://www.halloweenready.com").replace(/\/$/, "");
+  return (process.env.SITE_URL ?? "https://www.occasionfun.com").replace(/\/$/, "");
 }
 
 /** Customer-facing copy for each fulfillment / terminal status step. */
@@ -706,15 +698,8 @@ ${siteUrl()}`;
   switch (order.status) {
     case ORDER_STATUS.PAID:
       return {
-        subject: `Order confirmed — ${SITE_NAME}`,
-        body: `Hi ${name},
-
-Thank you for your order! Payment has been received.
-
-Order ID: ${shortId}
-Total: ${total}
-
-We deliver to all 50 US states in 5–7 business days after dispatch.${footer}`,
+        subject: adminOrderSubject("New order - paid", order),
+        body: buildOrderAdminBody(order, `Payment confirmed — new paid order on ${SITE_NAME}.`),
       };
     case ORDER_STATUS.ACCEPTED: {
       let html: string | undefined;
@@ -762,7 +747,7 @@ ${trackingLines || "Tracking details will appear on your order page shortly."}
 
 Order total: ${total}
 
-Typical USA delivery is 5–7 business days after dispatch (faster to many metros).${footer}`,
+${INTERNATIONAL_DELIVERY_COPY}${footer}`,
       };
     case ORDER_STATUS.DELIVERED: {
       let html: string | undefined;
@@ -846,11 +831,11 @@ This is a friendly reminder — your Halloween order #${shortId} is still waitin
 Order total: ${total}
 Status: Payment pending
 
-Complete payment so we can pack and ship your Halloween for Halloween 2026 (August 28):
+Complete payment so we can pack and ship your Halloween for Halloween 2026 (October 31):
 → ${orderUrl}
 → ${checkoutUrl}
 
-We'll keep reminding you once a day until payment is completed (last reminder day: August 28, 2026).
+We'll keep reminding you once a day until payment is completed (last reminder day: October 31, 2026).
 
 Questions? Reply to this email or WhatsApp us.
 
@@ -1052,7 +1037,7 @@ export async function sendReviewRequestEmail(order: Order): Promise<EmailSendRes
 
 We hope your Halloween order #${shortId} arrived safely and made Halloween special!
 
-We're HalloweenReady — dedicated to Halloween and Halloween traditions — and your feedback helps other shoppers trust us for HalloweenReady delivery.
+We're OccasionFun — dedicated to Halloween and Halloween traditions — and your feedback helps other shoppers trust us for OccasionFun delivery.
 
 Would you take 30 seconds to share your experience?
 ${reviewUrl}
@@ -1132,13 +1117,13 @@ ${cartLines}
 Complete checkout with ${ABANDONED_CART_DISCOUNT_PERCENT}% off — use code ${input.couponCode} at checkout.
 Valid until: ${expiryLabel}
 
-→ https://www.halloweenready.com/cart
-→ https://www.halloweenready.com/checkout
+→ https://www.occasionfun.com/cart
+→ https://www.occasionfun.com/checkout
 
-Halloween 2026 is August 28 — order early for on-time USA delivery.
+${HALLOWEEN_2026_DATE_COPY} — order early. ${INTERNATIONAL_DELIVERY_COPY}
 
 — ${SITE_NAME} Team
-order@halloweenready.com`;
+order@occasionfun.com`;
 
   const emailResult = await sendEmail({
     to: input.email,
@@ -1202,8 +1187,8 @@ export async function sendAdminAbandonedCouponEmails(input: {
 
 ${
   input.confirmedSale || extreme
-    ? "Thank you for confirming your HalloweenReady order. Here is your reserved discount:"
-    : "Thank you for considering HalloweenReady. We've reserved a personal discount for you:"
+    ? "Thank you for confirming your OccasionFun order. Here is your reserved discount:"
+    : "Thank you for considering OccasionFun. We've reserved a personal discount for you:"
 }
 
 Coupon code: ${input.code}
@@ -1219,14 +1204,14 @@ Questions? Reply to this email or WhatsApp us.
 — ${SITE_NAME} Team
 ${siteUrl()}`;
 
-  // Same inbox list as order/contact alerts (order@halloweenready.com + team) — not marketing SMTP.
+  // Same inbox list as order/contact alerts (order@occasionfun.com + team) — not marketing SMTP.
   // Always include the admin who generated the coupon (especially for extreme discounts).
   const notifyTo = [
     ...adminNotifyAddresses()
       .split(",")
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean),
-    "order@halloweenready.com",
+    "order@occasionfun.com",
     input.createdByAdminEmail.trim().toLowerCase(),
   ]
     .filter(Boolean)
@@ -1259,7 +1244,7 @@ ${input.customerEmail ? "Customer was emailed this coupon." : "No customer email
   const customer = input.customerEmail
     ? await sendEmail({
         to: input.customerEmail,
-        subject: `${saleTag}Your ${input.discountPercent}% HalloweenReady coupon (${input.code}) — valid ${hoursLabel}`,
+        subject: `${saleTag}Your ${input.discountPercent}% OccasionFun coupon (${input.code}) — valid ${hoursLabel}`,
         text: customerText,
         replyTo: notifyAddress(),
       })

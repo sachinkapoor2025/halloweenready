@@ -40,7 +40,7 @@ export declare const shippingAddressSchema: z.ZodObject<{
     senderName?: string | undefined;
     senderMessage?: string | undefined;
 }>;
-export declare const DEFAULT_SENDER_MESSAGE = "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
+export declare const DEFAULT_SENDER_MESSAGE = "Happy Halloween! Please accept this package of spooky surprises from OccasionFun.";
 export declare const checkoutShippingAddressSchema: z.ZodObject<{
     name: z.ZodString;
     line1: z.ZodString;
@@ -1253,7 +1253,7 @@ export declare const orderSchema: z.ZodObject<{
     /**
      * Human-readable order number for staff, customers, and vendors.
      * Orange County fulfill orders: OC10001…
-     * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
+     * All other OccasionFun orders: HW10001… (legacy orders may still be US10001…).
      */
     orderNumber: z.ZodOptional<z.ZodString>;
     userId: z.ZodOptional<z.ZodString>;
@@ -1741,7 +1741,7 @@ export declare const orderSchema: z.ZodObject<{
     trackingNumber: z.ZodOptional<z.ZodString>;
     carrier: z.ZodOptional<z.ZodString>;
     /**
-     * Per-vendor fulfillment (tracking) for mixed Orange County + HalloweenReady carts.
+     * Per-vendor fulfillment (tracking) for mixed Orange County + OccasionFun carts.
      * Legacy single-vendor orders may only have top-level trackingNumber/carrier.
      */
     vendorFulfillments: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -1754,6 +1754,12 @@ export declare const orderSchema: z.ZodObject<{
         cjOrderId: z.ZodOptional<z.ZodString>;
         cjOrderNumber: z.ZodOptional<z.ZodString>;
         cjPayUrl: z.ZodOptional<z.ZodString>;
+        cjPaid: z.ZodOptional<z.ZodBoolean>;
+        cjPaidAt: z.ZodOptional<z.ZodString>;
+        cjOrderStatus: z.ZodOptional<z.ZodString>;
+        cjProductAmount: z.ZodOptional<z.ZodNumber>;
+        cjPostageAmount: z.ZodOptional<z.ZodNumber>;
+        cjActualPayment: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
@@ -1764,6 +1770,12 @@ export declare const orderSchema: z.ZodObject<{
         cjOrderId?: string | undefined;
         cjOrderNumber?: string | undefined;
         cjPayUrl?: string | undefined;
+        cjPaid?: boolean | undefined;
+        cjPaidAt?: string | undefined;
+        cjOrderStatus?: string | undefined;
+        cjProductAmount?: number | undefined;
+        cjPostageAmount?: number | undefined;
+        cjActualPayment?: number | undefined;
     }, {
         vendorSlug: string;
         status?: "processing" | "shipped" | "delivered" | "pending" | undefined;
@@ -1774,6 +1786,12 @@ export declare const orderSchema: z.ZodObject<{
         cjOrderId?: string | undefined;
         cjOrderNumber?: string | undefined;
         cjPayUrl?: string | undefined;
+        cjPaid?: boolean | undefined;
+        cjPaidAt?: string | undefined;
+        cjOrderStatus?: string | undefined;
+        cjProductAmount?: number | undefined;
+        cjPostageAmount?: number | undefined;
+        cjActualPayment?: number | undefined;
     }>, "many">>;
     assignedVendorId: z.ZodOptional<z.ZodString>;
     assignedWarehouseId: z.ZodOptional<z.ZodString>;
@@ -2436,6 +2454,12 @@ export declare const orderSchema: z.ZodObject<{
         cjOrderId?: string | undefined;
         cjOrderNumber?: string | undefined;
         cjPayUrl?: string | undefined;
+        cjPaid?: boolean | undefined;
+        cjPaidAt?: string | undefined;
+        cjOrderStatus?: string | undefined;
+        cjProductAmount?: number | undefined;
+        cjPostageAmount?: number | undefined;
+        cjActualPayment?: number | undefined;
     }[] | undefined;
     assignedVendorId?: string | undefined;
     assignedWarehouseId?: string | undefined;
@@ -2692,6 +2716,12 @@ export declare const orderSchema: z.ZodObject<{
         cjOrderId?: string | undefined;
         cjOrderNumber?: string | undefined;
         cjPayUrl?: string | undefined;
+        cjPaid?: boolean | undefined;
+        cjPaidAt?: string | undefined;
+        cjOrderStatus?: string | undefined;
+        cjProductAmount?: number | undefined;
+        cjPostageAmount?: number | undefined;
+        cjActualPayment?: number | undefined;
     }[] | undefined;
     assignedVendorId?: string | undefined;
     assignedWarehouseId?: string | undefined;
@@ -2724,7 +2754,7 @@ export declare const orderStatusUpdateSchema: z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<["pending_payment", "paid", "accepted", "on_hold", "processing", "shipped", "delivered", "complete", "cancelled", "refunded"]>>;
     trackingNumber: z.ZodOptional<z.ZodString>;
     carrier: z.ZodOptional<z.ZodString>;
-    /** Upsert per-vendor tracking (mixed OC + HalloweenReady orders). */
+    /** Upsert per-vendor tracking (mixed OC + OccasionFun orders). */
     vendorFulfillments: z.ZodOptional<z.ZodArray<z.ZodObject<{
         vendorSlug: z.ZodString;
         warehouseId: z.ZodOptional<z.ZodString>;

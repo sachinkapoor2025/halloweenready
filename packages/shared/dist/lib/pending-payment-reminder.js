@@ -9,14 +9,14 @@ const constants_1 = require("../constants");
  * Last calendar day (America/New_York) to send pending-payment reminders.
  * Reminders send through this date inclusive; campaign stops after.
  */
-exports.PENDING_PAYMENT_REMINDER_END_DATE = "2026-08-28";
+exports.PENDING_PAYMENT_REMINDER_END_DATE = "2026-10-31";
 /** Wait before the first reminder so checkout isn't followed by an immediate nudge. */
 exports.PENDING_PAYMENT_REMINDER_MIN_AGE_MS = 2 * 60 * 60 * 1000;
 /** YYYY-MM-DD in America/New_York. */
 function calendarDateKeyNy(date = new Date()) {
     return date.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 }
-/** Inclusive: reminders run through end of Aug 28 NY time. */
+/** Inclusive: reminders run through end of Oct 31 NY time. */
 function isPendingPaymentReminderCampaignActive(now = new Date()) {
     return calendarDateKeyNy(now) <= exports.PENDING_PAYMENT_REMINDER_END_DATE;
 }

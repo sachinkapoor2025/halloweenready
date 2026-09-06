@@ -6,10 +6,10 @@ export declare const SES_RECURRENCE_TYPES: readonly ["none", "daily", "weekly", 
 export type SesRecurrenceType = (typeof SES_RECURRENCE_TYPES)[number];
 export declare const SES_TIMEZONES: readonly ["Asia/Kolkata", "UTC", "America/New_York", "Europe/London", "Australia/Sydney"];
 export declare const DEFAULT_SENDER_MESSAGE_FOOTER: {
-    readonly companyName: "HalloweenReady / Divit Global Ventures";
+    readonly companyName: "OccasionFun / Divit Global Ventures";
     readonly companyAddress: "California, United States";
-    readonly contactEmail: "order@halloweenready.com";
-    readonly privacyUrl: "https://www.halloweenready.com/privacy";
+    readonly contactEmail: "order@occasionfun.com";
+    readonly privacyUrl: "https://www.occasionfun.com/privacy";
 };
 export declare const sesRecipientSchema: z.ZodObject<{
     email: z.ZodString;

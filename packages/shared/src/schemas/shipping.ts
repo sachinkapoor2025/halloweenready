@@ -35,7 +35,7 @@ export const addressSchema = z.object({
 
 /** Origin may be incomplete until admin configures fulfillment address. */
 export const originAddressSchema = z.object({
-  name: z.string().default("HalloweenReady"),
+  name: z.string().default("OccasionFun"),
   line1: z.string().default(""),
   line2: z.string().optional(),
   city: z.string().default(""),
@@ -144,14 +144,14 @@ export const defaultShippingSettings: ShippingSettings = {
   ],
   enabledServices: { ...DEFAULT_ENABLED_SERVICES },
   originAddress: {
-    name: "HalloweenReady US Warehouse",
+    name: "OccasionFun US Warehouse",
     line1: "936 Bellhurst Ave",
     city: "San Jose",
     state: "CA",
     postalCode: "95122",
     country: "US",
     phone: "+1 (669) 236-1526",
-    email: "support@halloweenready.com",
+    email: "support@occasionfun.com",
   },
   autoPurchaseOnPayment: false,
   flatRateFallbackUsd: 5.99,

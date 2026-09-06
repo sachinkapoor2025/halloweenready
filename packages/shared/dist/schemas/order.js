@@ -38,7 +38,7 @@ exports.shippingAddressSchema = zod_1.z.object({
     /** Personal note from sister — printed on the shipping label. */
     senderMessage: zod_1.z.string().trim().max(500).optional(),
 });
-exports.DEFAULT_SENDER_MESSAGE = "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
+exports.DEFAULT_SENDER_MESSAGE = "Happy Halloween! Please accept this package of spooky surprises from OccasionFun.";
 exports.checkoutShippingAddressSchema = exports.shippingAddressSchema;
 /** Line assignment for a checkout shipment (must partition the cart). */
 exports.checkoutShipmentItemSchema = zod_1.z.object({
@@ -114,7 +114,7 @@ exports.orderSchema = zod_1.z.object({
     /**
      * Human-readable order number for staff, customers, and vendors.
      * Orange County fulfill orders: OC10001…
-     * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
+     * All other OccasionFun orders: HW10001… (legacy orders may still be US10001…).
      */
     orderNumber: zod_1.z.string().optional(),
     userId: zod_1.z.string().optional(),
@@ -142,7 +142,7 @@ exports.orderSchema = zod_1.z.object({
     trackingNumber: zod_1.z.string().optional(),
     carrier: zod_1.z.string().optional(),
     /**
-     * Per-vendor fulfillment (tracking) for mixed Orange County + HalloweenReady carts.
+     * Per-vendor fulfillment (tracking) for mixed Orange County + OccasionFun carts.
      * Legacy single-vendor orders may only have top-level trackingNumber/carrier.
      */
     vendorFulfillments: zod_1.z
@@ -156,6 +156,12 @@ exports.orderSchema = zod_1.z.object({
         cjOrderId: zod_1.z.string().optional(),
         cjOrderNumber: zod_1.z.string().optional(),
         cjPayUrl: zod_1.z.string().optional(),
+        cjPaid: zod_1.z.boolean().optional(),
+        cjPaidAt: zod_1.z.string().optional(),
+        cjOrderStatus: zod_1.z.string().optional(),
+        cjProductAmount: zod_1.z.number().optional(),
+        cjPostageAmount: zod_1.z.number().optional(),
+        cjActualPayment: zod_1.z.number().optional(),
     }))
         .optional(),
     assignedVendorId: zod_1.z.string().min(1).max(80).optional(),
@@ -214,7 +220,7 @@ exports.orderStatusUpdateSchema = zod_1.z.object({
     status: orderStatusEnum.optional(),
     trackingNumber: zod_1.z.string().optional(),
     carrier: zod_1.z.string().optional(),
-    /** Upsert per-vendor tracking (mixed OC + HalloweenReady orders). */
+    /** Upsert per-vendor tracking (mixed OC + OccasionFun orders). */
     vendorFulfillments: zod_1.z
         .array(zod_1.z.object({
         vendorSlug: zod_1.z.string().min(1).max(80),

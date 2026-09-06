@@ -1,12 +1,12 @@
 /** From-address / SMTP login for cart, payment, and order-status mail. */
-export const ORDER_SMTP_USER = "order@halloweenready.com";
+export const ORDER_SMTP_USER = "order@occasionfun.com";
 
 /**
  * Staff copies of cart/checkout, paid, and status emails.
  * Always unioned with NOTIFY_EMAIL so a stale Lambda env cannot drop inboxes.
  */
 export const DEFAULT_ORDER_NOTIFY_EMAILS = [
-  "order@halloweenready.com",
+  "order@occasionfun.com",
   "order@usarakhi.com",
   "priya.yadav@mydgv.com",
 ] as const;

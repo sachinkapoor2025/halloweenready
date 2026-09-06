@@ -49,7 +49,7 @@ export declare const sendReminderEmailsSchema: z.ZodObject<{
     subject?: string | undefined;
 }>;
 export type SendReminderEmailsInput = z.infer<typeof sendReminderEmailsSchema>;
-export declare const DEFAULT_CHECKOUT_NUDGE_SUBJECT = "Your Halloween cart is waiting \u2014 complete your HalloweenReady order";
+export declare const DEFAULT_CHECKOUT_NUDGE_SUBJECT = "Your Halloween cart is waiting \u2014 complete your OccasionFun order";
 export declare function defaultCheckoutNudgeHtml(opts: {
     name?: string;
     siteUrl: string;

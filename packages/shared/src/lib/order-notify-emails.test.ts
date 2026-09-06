@@ -9,8 +9,8 @@ import {
 describe("order notify emails", () => {
   it("parses comma-separated addresses and drops junk", () => {
     assert.deepEqual(
-      parseNotifyEmails("order@halloweenready.com, not-an-email, priya.yadav@mydgv.com"),
-      ["order@halloweenready.com", "priya.yadav@mydgv.com"]
+      parseNotifyEmails("order@occasionfun.com, not-an-email, priya.yadav@mydgv.com"),
+      ["order@occasionfun.com", "priya.yadav@mydgv.com"]
     );
   });
 
@@ -19,8 +19,8 @@ describe("order notify emails", () => {
   });
 
   it("always includes usarakhi and priya even if Lambda env is stale", () => {
-    const emails = staffOrderNotifyEmails("order@halloweenready.com");
-    assert.ok(emails.includes("order@halloweenready.com"));
+    const emails = staffOrderNotifyEmails("order@occasionfun.com");
+    assert.ok(emails.includes("order@occasionfun.com"));
     assert.ok(emails.includes("order@usarakhi.com"));
     assert.ok(emails.includes("priya.yadav@mydgv.com"));
   });

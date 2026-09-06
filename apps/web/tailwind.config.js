@@ -4,15 +4,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#1a0a2e",
-        nav: "#ff6b00",
-        accent: "#e11d48",
-        spooky: "#7c3aed",
-        pumpkin: "#ff6b00",
+        primary: "#0f3d48",
+        nav: "#e11d48",
+        accent: "#f59e0b",
+        spooky: "#0d9488",
+        pumpkin: "#e11d48",
         gold: "#d97706",
       },
       boxShadow: {
-        spooky: "0 4px 24px rgba(255, 107, 0, 0.2)",
+        spooky: "0 4px 24px rgba(225, 29, 72, 0.18)",
       },
     },
   },

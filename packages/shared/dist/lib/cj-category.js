@@ -1,5 +1,5 @@
 "use strict";
-/** Map CJ Dropshipping category names onto HalloweenReady storefront slugs. */
+/** Map CJ Dropshipping category names onto OccasionFun storefront slugs. */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CJ_HALLOWEEN_KEYWORDS = void 0;
 exports.mapCjCategoryToStoreSlug = mapCjCategoryToStoreSlug;
@@ -41,7 +41,28 @@ const RULES = [
     },
     {
         slug: "lifestyleandwearable",
-        needles: ["wearable", "watch", "bag", "backpack", "shoe", "sock"],
+        needles: [
+            "wearable",
+            "watch",
+            "bag",
+            "backpack",
+            "shoe",
+            "sock",
+            "electronic",
+            "phone",
+            "usb",
+            "beauty",
+            "cosmetic",
+            "kitchen",
+            "sport",
+            "fitness",
+            "baby",
+            "pet",
+            "outdoor",
+            "tool",
+            "auto",
+            "office",
+        ],
     },
     {
         slug: "partysupplier",

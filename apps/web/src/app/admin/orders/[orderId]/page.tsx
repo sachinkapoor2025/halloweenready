@@ -18,6 +18,7 @@ import {
   orderHasOrangeCounty,
   orderHasUsarakhi,
   vendorDisplayLabel,
+  cjFulfillmentStatusLabel,
   isManualWhatsAppStatus,
   orderStatusWhatsAppDeepLink,
 } from "@halloweenready/shared";
@@ -272,16 +273,28 @@ export default function AdminOrderDetailPage() {
     setError("");
     setMessage("");
     try {
-      const data = await apiClient<{ ok: boolean; message: string; cjOrderId?: string; cjPayUrl?: string }>(
+      const data = await apiClient<{
+        ok: boolean;
+        message: string;
+        cjOrderId?: string;
+        cjPayUrl?: string;
+        cjPaid?: boolean;
+        cjProductAmount?: number;
+        cjPostageAmount?: number;
+        cjActualPayment?: number;
+      }>(
         `/admin/cj/orders/${encodeURIComponent(orderId)}/fulfill`,
         { method: "POST", body: JSON.stringify({}) }
       );
       await load();
-      setMessage(
-        data.message +
-          (data.cjOrderId ? ` CJ order ${data.cjOrderId}.` : "") +
-          (data.cjPayUrl ? " Pay the CJ invoice in the CJ portal if the wallet is empty." : "")
-      );
+      const cost =
+        data.cjActualPayment != null
+          ? ` CJ charged $${data.cjActualPayment.toFixed(2)}` +
+            (data.cjProductAmount != null && data.cjPostageAmount != null
+              ? ` (product $${data.cjProductAmount.toFixed(2)} + shipping $${data.cjPostageAmount.toFixed(2)}).`
+              : ".")
+          : "";
+      setMessage(data.message + (data.cjOrderId ? ` CJ order ${data.cjOrderId}.` : "") + cost);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not push this order to CJ Dropshipping.");
     } finally {
@@ -764,11 +777,9 @@ export default function AdminOrderDetailPage() {
                 <div key={f.vendorSlug} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
                   <p className="text-xs font-semibold text-slate-700">
                     {vendorDisplayLabel(f.vendorSlug)}
-                    {f.status ? (
-                      <span className="ml-2 font-normal text-slate-500 capitalize">
-                        · {f.status}
-                      </span>
-                    ) : null}
+                    <span className="ml-2 font-normal text-slate-500 capitalize">
+                      · {f.vendorSlug === VENDOR_CJ_DROPSHIPPING ? cjFulfillmentStatusLabel(f) : f.status || "pending"}
+                    </span>
                   </p>
                   <p className="text-slate-600 mt-0.5 text-sm">
                     {f.trackingNumber
@@ -781,15 +792,39 @@ export default function AdminOrderDetailPage() {
                       {f.cjOrderNumber ? ` · ${f.cjOrderNumber}` : ""}
                     </p>
                   ) : null}
-                  {f.cjPayUrl ? (
-                    <a
-                      href={f.cjPayUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {f.vendorSlug === VENDOR_CJ_DROPSHIPPING &&
+                  (f.cjProductAmount != null || f.cjPostageAmount != null || f.cjActualPayment != null) ? (
+                    <p className="text-[11px] text-slate-600 mt-1">
+                      {f.cjProductAmount != null ? `Product $${f.cjProductAmount.toFixed(2)}` : null}
+                      {f.cjProductAmount != null && f.cjPostageAmount != null ? " + " : null}
+                      {f.cjPostageAmount != null ? `Shipping $${f.cjPostageAmount.toFixed(2)}` : null}
+                      {f.cjActualPayment != null
+                        ? ` = CJ total $${f.cjActualPayment.toFixed(2)}`
+                        : null}
+                    </p>
+                  ) : null}
+                  {f.vendorSlug === VENDOR_CJ_DROPSHIPPING && f.cjOrderId && !f.cjPaid ? (
+                    <button
+                      type="button"
+                      disabled={pushingCj}
+                      onClick={() => void pushToCj()}
                       className="text-[11px] text-nav hover:underline mt-1 inline-block"
                     >
-                      Pay this CJ order
-                    </a>
+                      {pushingCj ? "Paying CJ wallet…" : "Retry CJ wallet payment"}
+                    </button>
+                  ) : null}
+                  {f.cjPayUrl && !f.cjPaid ? (
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Auto-pay uses the CJ wallet. Keep it funded so this is not needed.{" "}
+                      <a
+                        href={f.cjPayUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-nav hover:underline"
+                      >
+                        Open CJ payment page
+                      </a>
+                    </p>
                   ) : null}
                 </div>
               ))}

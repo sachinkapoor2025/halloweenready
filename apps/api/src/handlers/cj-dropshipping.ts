@@ -31,7 +31,7 @@ import {
   getCjImportJob,
   listCjImportJobs,
 } from "../lib/cj-import-job";
-import { fulfillOrderWithCj } from "../lib/cj-fulfill";
+import { fulfillOrderWithCj, syncCjOrderPayment } from "../lib/cj-fulfill";
 
 function readJsonBody(event: APIGatewayProxyEventV2): unknown {
   try {
@@ -159,7 +159,7 @@ export async function importHalloweenCatalog(event: APIGatewayProxyEventV2) {
   if (!parsed.success) return badRequest(parsed.error.message);
   try {
     const data = await fetchCjAdminCatalogPage({
-      keyWord: parsed.data.keyWord || "halloween",
+      keyWord: parsed.data.keyWord?.trim() || undefined,
       page: parsed.data.page,
       size: parsed.data.size,
     });
@@ -176,7 +176,7 @@ export async function importHalloweenCatalog(event: APIGatewayProxyEventV2) {
       names,
       createdBy: actor.email,
       source: "halloween",
-      keyword: parsed.data.keyWord || "halloween",
+      keyword: parsed.data.keyWord?.trim() || "catalog",
       categorySlug: parsed.data.categorySlug,
       published: parsed.data.published,
     });
@@ -328,15 +328,30 @@ export async function enableCjWebhook(event: APIGatewayProxyEventV2) {
 
 /** Public CJ webhook — product/stock/order/logistics notifications. */
 export async function cjWebhook(event: APIGatewayProxyEventV2) {
+  let payload: Record<string, unknown>;
   try {
-    const payload = JSON.parse(event.body ?? "{}") as Record<string, unknown>;
-    console.info("CJ webhook", {
-      type: payload.type ?? payload.businessType ?? payload.msgType,
-      orderId: payload.orderId,
-      pid: payload.pid ?? payload.productId,
-    });
+    payload = JSON.parse(event.body ?? "{}") as Record<string, unknown>;
   } catch {
     console.warn("CJ webhook: invalid JSON");
+    return ok({ received: true });
+  }
+  console.info("CJ webhook", {
+    type: payload.type ?? payload.businessType ?? payload.msgType,
+    orderId: payload.orderId,
+    pid: payload.pid ?? payload.productId,
+  });
+  const ref = String(
+    payload.orderNumber ?? payload.platformOrderId ?? payload.storeOrderId ?? payload.orderNum ?? ""
+  ).trim();
+  if (ref) {
+    try {
+      const synced = await syncCjOrderPayment(ref);
+      if (synced.ok && !synced.skipped) {
+        console.info("CJ webhook synced payment", { ref, cjPaid: synced.cjPaid });
+      }
+    } catch (err) {
+      console.warn("CJ webhook payment sync failed", err);
+    }
   }
   return ok({ received: true });
 }

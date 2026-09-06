@@ -1,4 +1,4 @@
-/** Map CJ Dropshipping category names onto HalloweenReady storefront slugs. */
+/** Map CJ Dropshipping category names onto OccasionFun storefront slugs. */
 
 const RULES: Array<{ slug: string; needles: string[] }> = [
   {
@@ -35,7 +35,28 @@ const RULES: Array<{ slug: string; needles: string[] }> = [
   },
   {
     slug: "lifestyleandwearable",
-    needles: ["wearable", "watch", "bag", "backpack", "shoe", "sock"],
+    needles: [
+      "wearable",
+      "watch",
+      "bag",
+      "backpack",
+      "shoe",
+      "sock",
+      "electronic",
+      "phone",
+      "usb",
+      "beauty",
+      "cosmetic",
+      "kitchen",
+      "sport",
+      "fitness",
+      "baby",
+      "pet",
+      "outdoor",
+      "tool",
+      "auto",
+      "office",
+    ],
   },
   {
     slug: "partysupplier",

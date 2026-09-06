@@ -31,10 +31,10 @@ export const SES_TIMEZONES = [
 ] as const;
 
 export const DEFAULT_SENDER_MESSAGE_FOOTER = {
-  companyName: "HalloweenReady / Divit Global Ventures",
+  companyName: "OccasionFun / Divit Global Ventures",
   companyAddress: "California, United States",
-  contactEmail: "order@halloweenready.com",
-  privacyUrl: "https://www.halloweenready.com/privacy",
+  contactEmail: "order@occasionfun.com",
+  privacyUrl: "https://www.occasionfun.com/privacy",
 } as const;
 
 export const sesRecipientSchema = z.object({
@@ -169,9 +169,9 @@ export function resolveSesTemplateHtml(input: {
 
 export const sesSettingsSchema = z.object({
   awsRegion: z.string().min(2).max(40).default("us-east-1"),
-  defaultSenderName: z.string().min(1).max(80).default("HalloweenReady"),
-  defaultSenderEmail: z.string().email().default("order@halloweenready.com"),
-  defaultReplyTo: z.string().email().default("order@halloweenready.com"),
+  defaultSenderName: z.string().min(1).max(80).default("OccasionFun"),
+  defaultSenderEmail: z.string().email().default("order@occasionfun.com"),
+  defaultReplyTo: z.string().email().default("order@occasionfun.com"),
   dailyLimit: z.number().int().min(1).max(200_000).default(50_000),
   maxSendRatePerMinute: z.number().int().min(1).max(14_000).default(600),
   batchSize: z.number().int().min(1).max(500).default(50),

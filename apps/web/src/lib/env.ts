@@ -42,7 +42,7 @@ export function getSiteUrl(): string {
   const amplifyBranch = getAmplifyBranchUrl();
   if (amplifyBranch && process.env.NODE_ENV === "production") return amplifyBranch;
 
-  if (process.env.NODE_ENV === "production") return "https://halloweenready.com";
+  if (process.env.NODE_ENV === "production") return "https://www.occasionfun.com";
   return "http://localhost:3000";
 }
 

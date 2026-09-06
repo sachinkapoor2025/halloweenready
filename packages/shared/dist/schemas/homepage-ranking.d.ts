@@ -8,16 +8,16 @@ export declare const homepageProductOverrideSchema: z.ZodObject<{
     /** Multiplier applied after the score (0.5–2). */
     boost: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
+    featured?: boolean | undefined;
     pin?: boolean | undefined;
     exclude?: boolean | undefined;
-    featured?: boolean | undefined;
     trending?: boolean | undefined;
     seasonal?: boolean | undefined;
     boost?: number | undefined;
 }, {
+    featured?: boolean | undefined;
     pin?: boolean | undefined;
     exclude?: boolean | undefined;
-    featured?: boolean | undefined;
     trending?: boolean | undefined;
     seasonal?: boolean | undefined;
     boost?: number | undefined;
@@ -75,16 +75,16 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
         /** Multiplier applied after the score (0.5–2). */
         boost: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
+        featured?: boolean | undefined;
         pin?: boolean | undefined;
         exclude?: boolean | undefined;
-        featured?: boolean | undefined;
         trending?: boolean | undefined;
         seasonal?: boolean | undefined;
         boost?: number | undefined;
     }, {
+        featured?: boolean | undefined;
         pin?: boolean | undefined;
         exclude?: boolean | undefined;
-        featured?: boolean | undefined;
         trending?: boolean | undefined;
         seasonal?: boolean | undefined;
         boost?: number | undefined;
@@ -119,9 +119,9 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
         trend: number;
     };
     overrides: Record<string, {
+        featured?: boolean | undefined;
         pin?: boolean | undefined;
         exclude?: boolean | undefined;
-        featured?: boolean | undefined;
         trending?: boolean | undefined;
         seasonal?: boolean | undefined;
         boost?: number | undefined;
@@ -156,9 +156,9 @@ export declare const homepageRankingConfigSchema: z.ZodObject<{
         trend?: number | undefined;
     } | undefined;
     overrides?: Record<string, {
+        featured?: boolean | undefined;
         pin?: boolean | undefined;
         exclude?: boolean | undefined;
-        featured?: boolean | undefined;
         trending?: boolean | undefined;
         seasonal?: boolean | undefined;
         boost?: number | undefined;

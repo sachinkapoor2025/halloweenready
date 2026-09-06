@@ -20,6 +20,16 @@ export type VendorFulfillment = {
   cjOrderId?: string;
   cjOrderNumber?: string;
   cjPayUrl?: string;
+  /** True after CJ wallet or card payment succeeds. */
+  cjPaid?: boolean;
+  cjPaidAt?: string;
+  cjOrderStatus?: string;
+  /** CJ catalog cost in USD (excludes postage). */
+  cjProductAmount?: number;
+  /** CJ postage in USD. */
+  cjPostageAmount?: number;
+  /** What CJ charged (product + shipping). */
+  cjActualPayment?: number;
 };
 
 export function lineVendorKey(item: { vendorSlug?: string | null }): string {
@@ -29,7 +39,7 @@ export function lineVendorKey(item: { vendorSlug?: string | null }): string {
 
 export function vendorDisplayLabel(slug: string): string {
   if (slug === VENDOR_ORANGE_COUNTY) return "Orange County";
-  if (slug === VENDOR_HALLOWEENREADY) return "HalloweenReady";
+  if (slug === VENDOR_HALLOWEENREADY) return "OccasionFun";
   if (slug === VENDOR_CJ_DROPSHIPPING) return "CJ Dropshipping";
   return slug
     .split("-")
@@ -38,7 +48,15 @@ export function vendorDisplayLabel(slug: string): string {
     .join(" ");
 }
 
-/** Distinct fulfillment vendors present on the order (HalloweenReady implied for untagged lines). */
+/** Admin label for a CJ lane — “CJ order paid” after wallet/card payment. */
+export function cjFulfillmentStatusLabel(f: VendorFulfillment): string {
+  if (f.vendorSlug !== VENDOR_CJ_DROPSHIPPING) return f.status ?? "pending";
+  if (f.cjPaid) return "CJ order paid";
+  if (f.cjOrderId) return "Awaiting CJ payment";
+  return f.status ?? "pending";
+}
+
+/** Distinct fulfillment vendors present on the order (OccasionFun implied for untagged lines). */
 export function orderVendorKeys(order: {
   vendorSlugs?: string[];
   items?: Array<{ vendorSlug?: string | null }>;
@@ -154,6 +172,12 @@ export function upsertVendorFulfillment(
     cjOrderId?: string;
     cjOrderNumber?: string;
     cjPayUrl?: string;
+    cjPaid?: boolean;
+    cjPaidAt?: string;
+    cjOrderStatus?: string;
+    cjProductAmount?: number;
+    cjPostageAmount?: number;
+    cjActualPayment?: number;
   }
 ): VendorFulfillment[] {
   const slug = patch.vendorSlug.trim();
@@ -172,7 +196,18 @@ export function upsertVendorFulfillment(
   const cjOrderNumber =
     patch.cjOrderNumber !== undefined ? patch.cjOrderNumber.trim() : base.cjOrderNumber;
   const cjPayUrl = patch.cjPayUrl !== undefined ? patch.cjPayUrl.trim() : base.cjPayUrl;
+  const cjPaid = patch.cjPaid !== undefined ? patch.cjPaid : base.cjPaid;
+  const cjPaidAt = patch.cjPaidAt !== undefined ? patch.cjPaidAt : base.cjPaidAt;
+  const cjOrderStatus =
+    patch.cjOrderStatus !== undefined ? patch.cjOrderStatus : base.cjOrderStatus;
+  const cjProductAmount =
+    patch.cjProductAmount !== undefined ? patch.cjProductAmount : base.cjProductAmount;
+  const cjPostageAmount =
+    patch.cjPostageAmount !== undefined ? patch.cjPostageAmount : base.cjPostageAmount;
+  const cjActualPayment =
+    patch.cjActualPayment !== undefined ? patch.cjActualPayment : base.cjActualPayment;
   const row: VendorFulfillment = {
+    ...base,
     vendorSlug: slug,
     ...(warehouseId ? { warehouseId } : {}),
     ...(trackingNumber ? { trackingNumber } : {}),
@@ -180,9 +215,16 @@ export function upsertVendorFulfillment(
     status,
     ...(cjOrderId ? { cjOrderId } : {}),
     ...(cjOrderNumber ? { cjOrderNumber } : {}),
-    ...(cjPayUrl ? { cjPayUrl } : {}),
+    ...(cjPayUrl && !cjPaid ? { cjPayUrl } : {}),
+    ...(cjPaid ? { cjPaid: true } : {}),
+    ...(cjPaidAt ? { cjPaidAt } : {}),
+    ...(cjOrderStatus ? { cjOrderStatus } : {}),
+    ...(cjProductAmount != null ? { cjProductAmount } : {}),
+    ...(cjPostageAmount != null ? { cjPostageAmount } : {}),
+    ...(cjActualPayment != null ? { cjActualPayment } : {}),
     ...(patch.updatedAt ? { updatedAt: patch.updatedAt } : base.updatedAt ? { updatedAt: base.updatedAt } : {}),
   };
+  if (cjPaid) delete row.cjPayUrl;
   if (idx >= 0) next[idx] = row;
   else next.push(row);
   return next;

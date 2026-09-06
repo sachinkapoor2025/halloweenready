@@ -29,9 +29,9 @@ import { faqJsonLd, howToShopHalloweenJsonLd, pageMetadata } from "@/lib/seo";
 import type { Product, Category } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Costumes, Decorations & Party Supplies Online",
+  title: "Gifts, Party Supplies & Everyday Products Online",
   description:
-    "Shop Halloween costumes, decorations, and party supplies at HalloweenReady. We ship internationally — delivering in 5–7 days. Check shipping on each product. Pay in USD or INR at checkout.",
+    "Shop gifts, home goods, fashion, toys, and party supplies at OccasionFun. We deliver across 200 countries in 5–9 days. Pay in USD or INR at checkout.",
   path: "/",
 });
 

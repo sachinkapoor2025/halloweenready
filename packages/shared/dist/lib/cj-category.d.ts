@@ -1,4 +1,4 @@
-/** Map CJ Dropshipping category names onto HalloweenReady storefront slugs. */
+/** Map CJ Dropshipping category names onto OccasionFun storefront slugs. */
 export declare const CJ_HALLOWEEN_KEYWORDS: readonly ["halloween", "halloween costume", "pumpkin", "witch", "ghost", "skeleton", "spider web", "scary mask"];
 export declare function mapCjCategoryToStoreSlug(input: {
     oneCategoryName?: string;

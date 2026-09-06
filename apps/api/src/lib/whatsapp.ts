@@ -13,8 +13,8 @@ export type WhatsAppSendResult = {
   deepLink: string;
 };
 
-const SITE = "HalloweenReady";
-const SITE_URL = () => (process.env.SITE_URL ?? "https://www.halloweenready.com").replace(/\/$/, "");
+const SITE = "OccasionFun";
+const SITE_URL = () => (process.env.SITE_URL ?? "https://www.occasionfun.com").replace(/\/$/, "");
 
 function digitsOnly(phone: string): string {
   return phone.replace(/\D/g, "");
@@ -112,7 +112,7 @@ export function orderPaidWhatsAppMessage(input: {
 Total: ${input.totalLabel}
 Track: ${SITE_URL()}/orders/${input.orderId}
 
-We deliver to all 50 US states in 5–7 business days after dispatch.`;
+We deliver across 200 countries with 5–9 days delivery.`;
 }
 
 export function orderStatusWhatsAppMessage(input: {
@@ -136,7 +136,7 @@ export function orderStatusWhatsAppMessage(input: {
         totalLabel: input.totalLabel ?? "",
       });
     case "accepted":
-      return `${hi}! Your HalloweenReady order #${shortId} is confirmed.${total}\n\nTrack: ${orderUrl}`;
+      return `${hi}! Your OccasionFun order #${shortId} is confirmed.${total}\n\nTrack: ${orderUrl}`;
     case "on_hold":
       return `${hi}! Order #${shortId} is temporarily on hold while we review it.${total}\n\nWe'll update you soon. ${orderUrl}`;
     case "processing":
@@ -148,7 +148,7 @@ export function orderStatusWhatsAppMessage(input: {
       ]
         .filter(Boolean)
         .join("\n");
-      return `${hi}! Your HalloweenReady order #${shortId} has shipped!\n${track || "Tracking will appear on your order page shortly."}${total}\n\nTrack: ${orderUrl}`;
+      return `${hi}! Your OccasionFun order #${shortId} has shipped!\n${track || "Tracking will appear on your order page shortly."}${total}\n\nTrack: ${orderUrl}`;
     }
     case "delivered":
       return `${hi}! Order #${shortId} is marked delivered. We hope you love your Halloween haul!\n\n${orderUrl}`;
@@ -195,7 +195,7 @@ export function contactAckWhatsAppMessage(input: { name?: string }): string {
   const hi = input.name ? `Hi ${input.name}` : "Hi";
   return `${hi}! Thanks for contacting ${SITE}. We received your message and will reply soon (usually within 24 hours).
 
-For urgent help, keep chatting here or email order@halloweenready.com.`;
+For urgent help, keep chatting here or email order@occasionfun.com.`;
 }
 
 async function sendViaMeta(toDigits: string, body: string): Promise<Omit<WhatsAppSendResult, "deepLink">> {

@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Conversion-focused marketing email templates for HalloweenReady.
+ * Conversion-focused marketing email templates for OccasionFun.
  *
  * Edit the CONFIG objects below to update images, copy, CTAs, and links —
  * then rebuild / open Admin → Email → Templates to sync starters.
@@ -12,8 +12,8 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = exports.STARTING_PRICE_EMAIL_CONFIG =
 exports.buildFreeShippingEmailHtml = buildFreeShippingEmailHtml;
 exports.buildStartingPriceEmailHtml = buildStartingPriceEmailHtml;
 exports.buildShopMoreSaveMoreEmailHtml = buildShopMoreSaveMoreEmailHtml;
-const SITE = "https://www.halloweenready.com";
-const SITE_SHORT = "https://halloweenready.com";
+const SITE = "https://www.occasionfun.com";
+const SITE_SHORT = "https://occasionfun.com";
 const SHOP = `${SITE}/products`;
 const LOGO = `${SITE}/logo.png`;
 const HERO = `${SITE}/banners/bannerpage1.png`;
@@ -29,20 +29,20 @@ const PAGE_BG = "#f3eee6";
 exports.FREE_SHIPPING_EMAIL_CONFIG = {
     templateId: "free-shipping-above-7",
     name: "Free Shipping Above $7",
-    subject: "FREE SHIPPING on Orders Above $7 — HalloweenReady",
+    subject: "FREE SHIPPING on Orders Above $7 — OccasionFun",
     preheader: "Free shipping on orders above $7. Halloween decorations & costumes, ships from the USA.",
     logoUrl: LOGO,
     logoHref: SITE,
     heroImageUrl: HERO,
     heroImageHref: SHOP,
-    heroImageAlt: "HalloweenReady — Free shipping on Halloween orders above $7",
+    heroImageAlt: "OccasionFun — Free shipping on Halloween orders above $7",
     offerEyebrow: "HALLOWEEN OFFER",
     offerHeadline: "FREE SHIPPING",
     offerSubhead: "On Orders Above $7",
     offerBody: "Stock up on Halloween decorations, costumes, and party supplies — and enjoy free domestic shipping when your order is $7 or more. Ships from the USA. No customs delays.",
     ctaText: "Shop Halloween",
     ctaHref: SHOP,
-    benefitsHeading: "Why Shop HalloweenReady",
+    benefitsHeading: "Why Shop OccasionFun",
     benefits: [
         { icon: "🚚", title: "Fast USA Delivery", description: "2–5 business days to all 50 states." },
         { icon: "✨", title: "Seasonal Selection", description: "Decor, costumes, and party supplies." },
@@ -87,13 +87,13 @@ exports.FREE_SHIPPING_EMAIL_CONFIG = {
     midCtaHref: SHOP,
     footerTagline: "Halloween Decorations & Party Supplies",
     websiteUrl: SITE,
-    websiteLabel: "www.halloweenready.com",
-    orderEmail: "order@halloweenready.com",
+    websiteLabel: "www.occasionfun.com",
+    orderEmail: "order@occasionfun.com",
     facebookUrl: "https://www.facebook.com/halloweenready/",
     facebookIconUrl: FB,
     instagramUrl: "https://www.instagram.com/halloweenready/",
     instagramIconUrl: IG,
-    copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
+    copyrightText: "© 2026 OccasionFun. All Rights Reserved.",
     unsubscribeLabel: "Unsubscribe",
 };
 /** ═══════════════ TEMPLATE 2 — Starting price promo ═══════════════ */
@@ -106,7 +106,7 @@ exports.STARTING_PRICE_EMAIL_CONFIG = {
     logoHref: SITE,
     heroImageUrl: HERO,
     heroImageHref: SHOP,
-    heroImageAlt: "Halloween deals — HalloweenReady",
+    heroImageAlt: "Halloween deals — OccasionFun",
     urgencyText: "⚡ Limited Time Offer",
     offerEyebrow: "HALLOWEEN DEAL",
     offerHeadline: "Spooky Season Deals",
@@ -218,13 +218,13 @@ exports.STARTING_PRICE_EMAIL_CONFIG = {
     midCtaHref: SHOP,
     footerTagline: "Halloween Decorations & Party Supplies",
     websiteUrl: SITE,
-    websiteLabel: "www.halloweenready.com",
-    orderEmail: "order@halloweenready.com",
+    websiteLabel: "www.occasionfun.com",
+    orderEmail: "order@occasionfun.com",
     facebookUrl: "https://www.facebook.com/halloweenready/",
     facebookIconUrl: FB,
     instagramUrl: "https://www.instagram.com/halloweenready/",
     instagramIconUrl: IG,
-    copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
+    copyrightText: "© 2026 OccasionFun. All Rights Reserved.",
     unsubscribeLabel: "Unsubscribe",
 };
 /** ═══════════════ TEMPLATE 3 — Shop More, Save More ═══════════════ */
@@ -238,7 +238,7 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
     logoTagline: "Halloween Decorations & Party Supplies",
     heroImageUrl: `${SITE}/banners/bannerpage1.png`,
     heroImageHref: SITE_SHORT,
-    heroImageAlt: "Shop More, Save More — HalloweenReady",
+    heroImageAlt: "Shop More, Save More — OccasionFun",
     offerEyebrow: "HALLOWEEN SPECIAL",
     offerHeadline: "Shop More, Save More",
     offerSubhead: "Stock up for Halloween night",
@@ -350,7 +350,7 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
             badge: "TIPS",
         },
     ],
-    whyHeading: "Why Choose HalloweenReady",
+    whyHeading: "Why Choose OccasionFun",
     whySubheading: "Trusted for Halloween decorations and party supplies with USA delivery.",
     whyBenefits: [
         { icon: "🚚", title: "Fast USA Delivery", description: "2–5 day domestic shipping to all 50 states." },
@@ -366,12 +366,12 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
     footerLogoUrl: LOGO,
     websiteUrl: SITE_SHORT,
     websiteLabel: "halloweenready.com",
-    orderEmail: "order@halloweenready.com",
+    orderEmail: "order@occasionfun.com",
     facebookUrl: "https://www.facebook.com/halloweenready/",
     facebookIconUrl: FB,
     instagramUrl: "https://www.instagram.com/halloweenready/",
     instagramIconUrl: IG,
-    copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
+    copyrightText: "© 2026 OccasionFun. All Rights Reserved.",
     unsubscribeLabel: "Unsubscribe",
 };
 // ─── Shared HTML helpers ───────────────────────────────────────────────────
@@ -504,7 +504,7 @@ function emailShell(opts) {
                 <tr>
                   <td align="center" style="padding:0 0 14px 0;">
                     <a href="${escAttr(f.websiteUrl)}" target="_blank" style="text-decoration:none;">
-                      <img src="${escAttr(f.logoUrl)}" width="140" alt="HalloweenReady" style="display:block;width:140px;max-width:55%;height:auto;border:0;margin:0 auto;background-color:#ffffff;border-radius:8px;padding:8px;" />
+                      <img src="${escAttr(f.logoUrl)}" width="140" alt="OccasionFun" style="display:block;width:140px;max-width:55%;height:auto;border:0;margin:0 auto;background-color:#ffffff;border-radius:8px;padding:8px;" />
                     </a>
                   </td>
                 </tr>`
@@ -557,7 +557,7 @@ function emailShell(opts) {
           <tr>
             <td align="center" bgcolor="#fffdf8" style="padding:20px 24px 14px 24px;background-color:#fffdf8;">
               <a href="${escAttr(opts.logoHref)}" target="_blank" style="text-decoration:none;">
-                <img src="${escAttr(opts.logoUrl)}" width="168" alt="HalloweenReady — Connecting Hearts Across Borders" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
+                <img src="${escAttr(opts.logoUrl)}" width="168" alt="OccasionFun — Connecting Hearts Across Borders" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
               </a>
               ${logoTagline}
             </td>
@@ -723,7 +723,7 @@ function buildFreeShippingEmailHtml(cfg = exports.FREE_SHIPPING_EMAIL_CONFIG) {
             </td>
           </tr>`;
     return emailShell({
-        title: `${cfg.offerHeadline} | HalloweenReady`,
+        title: `${cfg.offerHeadline} | OccasionFun`,
         preheader: cfg.preheader,
         logoUrl: cfg.logoUrl,
         logoHref: cfg.logoHref,
@@ -807,7 +807,7 @@ function buildStartingPriceEmailHtml(cfg = exports.STARTING_PRICE_EMAIL_CONFIG) 
             </td>
           </tr>`;
     return emailShell({
-        title: `${cfg.offerSubhead} | HalloweenReady`,
+        title: `${cfg.offerSubhead} | OccasionFun`,
         preheader: cfg.preheader,
         logoUrl: cfg.logoUrl,
         logoHref: cfg.logoHref,
@@ -915,7 +915,7 @@ function buildShopMoreSaveMoreEmailHtml(cfg = exports.SHOP_MORE_SAVE_MORE_EMAIL_
             </td>
           </tr>`;
     return emailShell({
-        title: `${cfg.offerHeadline} | HalloweenReady`,
+        title: `${cfg.offerHeadline} | OccasionFun`,
         preheader: cfg.preheader,
         logoUrl: cfg.logoUrl,
         logoHref: cfg.logoHref,

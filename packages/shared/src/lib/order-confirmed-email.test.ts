@@ -65,7 +65,7 @@ describe("order-confirmed-email", () => {
     assert.equal(formatOrderMoney(53.48, "USD"), "$53.48");
     assert.match(formatOrderMoney(100, "INR"), /100\.00/);
     assert.equal(customerFirstName(sampleOrder), "Priya");
-    assert.equal(orderConfirmedSubject(sampleOrder), "Your Order is Confirmed — US10360 | HalloweenReady");
+    assert.equal(orderConfirmedSubject(sampleOrder), "Your Order is Confirmed — US10360 | OccasionFun");
   });
 
   it("builds HTML from order data with the reference sections and no emoji", () => {
@@ -90,11 +90,11 @@ describe("order-confirmed-email", () => {
     assert.match(html, /Thank you for shopping with us/);
     assert.match(html, /100% Secure Payment/);
     assert.match(html, /Quality Party Supplies/);
-    assert.match(html, /USA Shipping/);
+    assert.match(html, /Worldwide shipping/);
     assert.match(html, /Easy Returns/);
-    assert.match(html, /support@halloweenready.com/);
-    assert.match(html, /facebook\.com\/halloweenreadyofficial/);
-    assert.match(html, /instagram\.com\/halloweenreadyofficial/);
+    assert.match(html, /support@occasionfun.com/);
+    assert.match(html, /facebook\.com\/occasionfun/);
+    assert.match(html, /instagram\.com\/occasionfun/);
     assert.match(html, /logo\.png/);
     assert.match(html, /pumpkin\.thumb\.webp|pumpkin\.jpg/);
     assert.match(html, /449cd53d-8a7e-4494-9479-b3c342380828/);
@@ -128,7 +128,7 @@ describe("order-confirmed-email", () => {
       assert.equal(EMOJI_RE.test(body), false);
     }
     assert.match(text, /THANK YOU FOR YOUR ORDER!|Your order is confirmed!/i);
-    assert.match(wa, /Your HalloweenReady order is confirmed/);
+    assert.match(wa, /Your OccasionFun order is confirmed/);
   });
 
   it("strips HTML from product descriptions", () => {
@@ -163,7 +163,7 @@ describe("order-delivered-email", () => {
     assert.match(html, /\$53\.48/);
     assert.match(html, /100% Secure Payment/);
     assert.match(html, /logo\.png/);
-    assert.match(html, /About HalloweenReady/);
+    assert.match(html, /About OccasionFun/);
     assert.doesNotMatch(html, /Your Order is Confirmed!/);
     assert.equal(EMOJI_RE.test(html), false);
   });
@@ -197,7 +197,7 @@ describe("order-delivered-email", () => {
     const href = orderStatusWhatsAppDeepLink({ ...sampleOrder, status: "accepted" });
     assert.ok(href);
     assert.match(href!, /^https:\/\/wa\.me\/14085550100\?text=/);
-    assert.match(decodeURIComponent(href!), /Your HalloweenReady order is confirmed/);
+    assert.match(decodeURIComponent(href!), /Your OccasionFun order is confirmed/);
     const deliveredHref = orderStatusWhatsAppDeepLink({ ...sampleOrder, status: "delivered" });
     assert.match(decodeURIComponent(deliveredHref!), /We Value Your Feedback!/);
     assert.equal(customerWhatsAppDeepLink("", "hello"), null);

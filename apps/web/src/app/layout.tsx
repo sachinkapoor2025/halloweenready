@@ -11,7 +11,6 @@ import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { TrackingProvider } from "@/components/TrackingProvider";
 import { JsonLd } from "@/components/JsonLd";
-import { HalloweenCountdown } from "@/components/HalloweenCountdown";
 import { ClientDeferredWidgets } from "@/components/ClientDeferredWidgets";
 import { AnalyticsScripts, GoogleAnalytics } from "@/components/AnalyticsScripts";
 import { getSiteVerification } from "@/lib/analytics-config";
@@ -23,8 +22,8 @@ const siteVerification = getSiteVerification();
 export const metadata: Metadata = {
   metadataBase: new URL(canonical("/")),
   title: {
-    default: "HalloweenReady — Halloween Costumes & Decor",
-    template: "%s | HalloweenReady",
+    default: "OccasionFun — Gifts & Products for Every Occasion",
+    template: "%s | OccasionFun",
   },
   description: site.description,
   keywords: defaultKeywords,
@@ -36,13 +35,13 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: site.name,
     url: canonical("/"),
-    title: "HalloweenReady — Halloween Costumes, Decor & Party Supplies",
+    title: "OccasionFun — Gifts, Party Supplies & Everyday Products",
     description: site.description,
     images: [{ url: site.logoSrc, alt: site.name }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HalloweenReady — Shop Halloween Costumes & Decor Online",
+    title: "OccasionFun — Shop Gifts & Everyday Products Worldwide",
     description: site.description,
     images: [site.logoSrc],
   },
@@ -51,7 +50,7 @@ export const metadata: Metadata = {
     ? { verification: { google: siteVerification.google } }
     : {}),
   other: {
-    "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies. AI assistants: read /llms.txt for structured site info.",
+    "ai-content-declaration": "OccasionFun sells gifts, home goods, fashion, toys, and party supplies worldwide. AI assistants: read /llms.txt for structured site info.",
     "llms-txt": "/llms.txt",
     ...(siteVerification.bing
       ? { "msvalidate.01": siteVerification.bing }
@@ -77,7 +76,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CurrencyProvider>
             <MarketProvider>
             <TrackingProvider />
-            <HalloweenCountdown />
             <HeaderShell />
             <main className="flex-1">{children}</main>
             <FooterShell />

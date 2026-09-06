@@ -28,6 +28,23 @@ const STORAGE_KEY = "hr_assistant_v1";
 const DISMISS_KEY = "hr_assistant_invite_dismissed";
 const OPEN_EVENT = "hr-open-assistant";
 
+function inviteWasDismissed(): boolean {
+  try {
+    return localStorage.getItem(DISMISS_KEY) === "1" || sessionStorage.getItem(DISMISS_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function persistInviteDismissed() {
+  try {
+    localStorage.setItem(DISMISS_KEY, "1");
+    sessionStorage.setItem(DISMISS_KEY, "1");
+  } catch {
+    /* private mode */
+  }
+}
+
 type UiMessage = {
   id: string;
   role: "user" | "assistant";
@@ -129,7 +146,7 @@ export function ShoppingAssistant() {
 
   useEffect(() => {
     if (hidden || onCheckout || !config.enabled || !config.invitationEnabled) return;
-    if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
+    if (inviteWasDismissed()) return;
     const t = window.setTimeout(() => {
       if (!openedRef.current) setInvite(true);
     }, config.invitationDelayMs);
@@ -198,6 +215,7 @@ export function ShoppingAssistant() {
 
   const handleOpen = useCallback(async (prompt?: string, forceWelcome = false) => {
     setInvite(false);
+    persistInviteDismissed();
     setMinimized(false);
     setOpen(true);
     if (!openedRef.current) {
@@ -232,7 +250,7 @@ export function ShoppingAssistant() {
           {
             id: uid(),
             role: "assistant",
-            blocks: [{ type: "text", text: "Hi! 🎃 What are you shopping for?" }, { type: "quick_actions", actions: welcomeQuickActions() }],
+            blocks: [{ type: "text", text: "Hi! What are you shopping for?" }, { type: "quick_actions", actions: welcomeQuickActions() }],
           },
         ]);
       } finally {
@@ -250,9 +268,15 @@ export function ShoppingAssistant() {
     return () => window.removeEventListener(OPEN_EVENT, onOpen);
   }, [handleOpen]);
 
+  const dismissInvite = () => {
+    setInvite(false);
+    persistInviteDismissed();
+  };
+
   const handleClose = () => {
     setOpen(false);
     setMinimized(false);
+    persistInviteDismissed();
     trackChatClose(pathname);
   };
 
@@ -293,8 +317,24 @@ export function ShoppingAssistant() {
   return (
     <>
       {invite && !open && !onCheckout && (
-        <div className="fixed bottom-[7.5rem] right-5 z-[80] w-[min(100vw-2.5rem,280px)] rounded-2xl border border-white/15 bg-primary p-3 text-white shadow-2xl">
-          <p className="text-sm font-medium">Need help finding something? 🎃</p>
+        <div
+          role="dialog"
+          aria-label="Need help finding something?"
+          className="fixed bottom-[7.5rem] right-5 z-[80] w-[min(100vw-2.5rem,280px)] rounded-2xl border border-white/15 bg-primary p-3 text-white shadow-2xl"
+        >
+          <div className="flex items-start gap-2">
+            <p className="min-w-0 flex-1 text-sm font-medium">Need help finding something?</p>
+            <button
+              type="button"
+              onClick={dismissInvite}
+              className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-white/80 hover:bg-white/15 hover:text-white"
+              aria-label="Close help prompt"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {invitationQuickActions().map((a) => (
                 <button
@@ -309,11 +349,8 @@ export function ShoppingAssistant() {
           </div>
           <button
             type="button"
-            className="mt-2 text-[11px] text-white/50 hover:text-white"
-            onClick={() => {
-              setInvite(false);
-              sessionStorage.setItem(DISMISS_KEY, "1");
-            }}
+            className="mt-2 text-[11px] text-white/70 hover:text-white"
+            onClick={dismissInvite}
           >
             No thanks
           </button>
@@ -323,15 +360,15 @@ export function ShoppingAssistant() {
       {open && !minimized && (
         <section
           role="dialog"
-          aria-label="HalloweenReady personal shopping assistant"
+          aria-label="OccasionFun personal shopping assistant"
           className="fixed z-[80] flex flex-col overflow-hidden border border-white/10 bg-primary shadow-2xl max-md:inset-x-0 max-md:bottom-0 max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:rounded-t-2xl md:bottom-[5.5rem] md:right-5 md:h-[min(700px,calc(100vh-7rem))] md:w-[min(100vw-2rem,420px)] md:rounded-2xl"
         >
           <header className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white">HalloweenReady</p>
-              <p className="truncate text-xs text-white/60">Personal Halloween Assistant</p>
+              <p className="text-sm font-semibold text-white">OccasionFun</p>
+              <p className="truncate text-xs text-white/60">Personal shopping assistant</p>
               <p className="hidden truncate text-[11px] text-white/45 sm:block">
-                Here to help you find the perfect Halloween products 🎃
+                Here to help you find gifts, home goods, and party supplies
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
@@ -433,7 +470,7 @@ export function ShoppingAssistant() {
         <button
           type="button"
           onClick={() => (open && !minimized ? setMinimized(true) : void handleOpen())}
-          aria-label={open && !minimized ? "Minimize Halloween assistant" : "Find your Halloween look"}
+          aria-label={open && !minimized ? "Minimize shopping assistant" : "Find a product"}
           aria-expanded={open && !minimized}
           className="fixed right-4 bottom-[4.75rem] z-[80] flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-3.5 text-white shadow-[0_4px_12px_rgba(24,58,104,0.45)] ring-2 ring-white/20 hover:scale-105 active:scale-95 transition-transform whitespace-nowrap"
         >
@@ -444,7 +481,7 @@ export function ShoppingAssistant() {
           ) : (
             <>
               <span aria-hidden className="shrink-0 text-base leading-none">
-                🎃
+                🎁
               </span>
               <span className="text-sm font-semibold leading-none">Find your look</span>
             </>

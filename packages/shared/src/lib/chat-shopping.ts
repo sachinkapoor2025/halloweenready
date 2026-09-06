@@ -322,24 +322,23 @@ export function toAssistantProduct(product: Product): AssistantProduct {
 
 export function welcomeQuickActions(): ChatQuickAction[] {
   return [
-    { id: "q-costumes", label: "🎭 Costumes", message: "I want to find a costume" },
-    { id: "q-decor", label: "👻 Decorations", message: "I need Halloween decorations" },
-    { id: "q-party", label: "🎃 Party supplies", message: "I'm planning a Halloween party" },
-    { id: "q-couples", label: "💑 Couple costumes", message: "I need couples costumes" },
-    { id: "q-family", label: "👨‍👩‍👧 Family ideas", message: "Family Halloween ideas" },
+    { id: "q-gifts", label: "🎁 Find a gift", message: "I want to find a gift" },
+    { id: "q-home", label: "🏠 Home & living", message: "I need home and living products" },
+    { id: "q-party", label: "🎉 Party supplies", message: "I'm planning a party" },
+    { id: "q-fashion", label: "👗 Fashion", message: "Show me fashion and accessories" },
+    { id: "q-toys", label: "🧸 Toys & novelty", message: "Show me toys and novelty gifts" },
     { id: "q-find", label: "🔍 Find a product", message: "Help me find a product" },
-    { id: "q-ideas", label: "💡 Halloween ideas", message: "Give me Halloween ideas" },
     { id: "q-ship", label: "📦 Shipping", message: "How does shipping work?" },
-    { id: "q-ask", label: "❓ Ask anything", message: "I have a question about Halloween" },
+    { id: "q-ask", label: "❓ Ask anything", message: "I have a question about OccasionFun" },
   ];
 }
 
 export function invitationQuickActions(): ChatQuickAction[] {
   return [
-    { id: "inv-costume", label: "Find a Costume", message: "I want to find a costume" },
-    { id: "inv-decor", label: "Find Decorations", message: "I need Halloween decorations" },
-    { id: "inv-party", label: "Plan a Party", message: "I'm planning a Halloween party" },
-    { id: "inv-ask", label: "Ask Me Anything", message: "I have a question about Halloween" },
+    { id: "inv-gift", label: "Find a Gift", message: "I want to find a gift" },
+    { id: "inv-home", label: "Home & Living", message: "I need home and living products" },
+    { id: "inv-party", label: "Plan a Party", message: "I'm planning a party" },
+    { id: "inv-ask", label: "Ask Me Anything", message: "I have a question about OccasionFun" },
   ];
 }
 

@@ -65,9 +65,9 @@ function orderConfirmationSubcopy(status) {
         case constants_1.ORDER_STATUS.SHIPPED:
             return "Your Halloween order is on the way. Use the tracking details below to follow your shipment.";
         case constants_1.ORDER_STATUS.DELIVERED:
-            return "Your gift has arrived. We hope your brother loves it — thank you for choosing HalloweenReady.";
+            return "Your gift has arrived. We hope your brother loves it — thank you for choosing OccasionFun.";
         case constants_1.ORDER_STATUS.COMPLETE:
-            return "Thank you for shopping Halloween with HalloweenReady.";
+            return "Thank you for shopping Halloween with OccasionFun.";
         case constants_1.ORDER_STATUS.ACCEPTED:
             return "We've confirmed your order and our team is preparing it for USA dispatch.";
         case constants_1.ORDER_STATUS.PROCESSING:

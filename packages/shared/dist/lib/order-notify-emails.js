@@ -4,13 +4,13 @@ exports.DEFAULT_ORDER_NOTIFY_EMAIL = exports.DEFAULT_ORDER_NOTIFY_EMAILS = expor
 exports.parseNotifyEmails = parseNotifyEmails;
 exports.staffOrderNotifyEmails = staffOrderNotifyEmails;
 /** From-address / SMTP login for cart, payment, and order-status mail. */
-exports.ORDER_SMTP_USER = "order@halloweenready.com";
+exports.ORDER_SMTP_USER = "order@occasionfun.com";
 /**
  * Staff copies of cart/checkout, paid, and status emails.
  * Always unioned with NOTIFY_EMAIL so a stale Lambda env cannot drop inboxes.
  */
 exports.DEFAULT_ORDER_NOTIFY_EMAILS = [
-    "order@halloweenready.com",
+    "order@occasionfun.com",
     "order@usarakhi.com",
     "priya.yadav@mydgv.com",
 ];

@@ -74,6 +74,8 @@ __exportStar(require("./lib/admin-analytics-tz"), exports);
 __exportStar(require("./lib/identity"), exports);
 __exportStar(require("./lib/meta-description"), exports);
 __exportStar(require("./lib/delivery"), exports);
+__exportStar(require("./lib/delivery-copy"), exports);
+__exportStar(require("./lib/brand"), exports);
 __exportStar(require("./lib/client-device"), exports);
 __exportStar(require("./lib/abandoned-cart"), exports);
 __exportStar(require("./lib/free-shipping"), exports);

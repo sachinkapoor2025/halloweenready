@@ -2,7 +2,6 @@ import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import {
   VENDOR_CJ_DROPSHIPPING,
   isCjDropshippingProduct,
-  orderKeys,
   productKeys,
   upsertVendorFulfillment,
   getHalloweenHamperDef,
@@ -11,7 +10,16 @@ import {
   type CartItem,
 } from "@halloweenready/shared";
 import { docClient, ORDERS_TABLE, PRODUCTS_TABLE, now } from "./db";
-import { CjApiError, cjAddToMyProduct, cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
+import { resolveOrderByIdOrNumber } from "./order-numbers";
+import {
+  CjApiError,
+  cjAddToMyProduct,
+  cjCreateOrderV2,
+  cjFreightCalculate,
+  cjGetOrder,
+  cjPayBalance,
+} from "./cj-dropshipping";
+import { snapshotFromCjRecord, type CjOrderSnapshot } from "./cj-order-snapshot";
 
 type StoredOrder = Order & Record<string, unknown>;
 
@@ -158,6 +166,142 @@ async function createCjShoppingOrder(
   throw lastError instanceof Error ? lastError : new Error("CJ createOrderV2 failed");
 }
 
+type CjFulfillResult = {
+  ok: boolean;
+  skipped?: boolean;
+  message: string;
+  cjOrderId?: string;
+  cjPayUrl?: string;
+  cjPaid?: boolean;
+  cjProductAmount?: number;
+  cjPostageAmount?: number;
+  cjActualPayment?: number;
+  order?: StoredOrder;
+};
+
+async function loadOrderById(orderId: string): Promise<StoredOrder | undefined> {
+  return resolveOrderByIdOrNumber(orderId) as Promise<StoredOrder | undefined>;
+}
+
+async function persistCjSnapshot(order: StoredOrder, snapshot: CjOrderSnapshot) {
+  const timestamp = now();
+  const prev = (order.vendorFulfillments ?? []).find((f) => f.vendorSlug === VENDOR_CJ_DROPSHIPPING);
+  const keepShipped = prev?.status === "shipped" || prev?.status === "delivered";
+  const fulfillments = upsertVendorFulfillment(order.vendorFulfillments ?? [], {
+    vendorSlug: VENDOR_CJ_DROPSHIPPING,
+    status: keepShipped && prev?.status ? prev.status : "processing",
+    updatedAt: timestamp,
+    cjOrderId: snapshot.cjOrderId,
+    cjOrderNumber: snapshot.cjOrderNumber,
+    cjPayUrl: snapshot.cjPaid ? "" : snapshot.cjPayUrl,
+    cjPaid: snapshot.cjPaid,
+    cjPaidAt: snapshot.cjPaidAt,
+    cjOrderStatus: snapshot.cjOrderStatus,
+    cjProductAmount: snapshot.cjProductAmount,
+    cjPostageAmount: snapshot.cjPostageAmount,
+    cjActualPayment: snapshot.cjActualPayment,
+  });
+  const next: StoredOrder = {
+    ...order,
+    vendorFulfillments: fulfillments,
+    cjFulfillAttemptedAt: timestamp,
+    cjFulfillError: undefined,
+    updatedAt: timestamp,
+  };
+  await persistOrder(order, {
+    vendorFulfillments: fulfillments,
+    cjFulfillAttemptedAt: timestamp,
+    cjFulfillError: undefined,
+  });
+  return next;
+}
+
+async function fetchCjSnapshot(cjOrderId: string, fallback?: Partial<CjOrderSnapshot>): Promise<CjOrderSnapshot> {
+  try {
+    const data = await cjGetOrder(cjOrderId);
+    const live = snapshotFromCjRecord(data, cjOrderId);
+    return {
+      ...fallback,
+      ...live,
+      cjProductAmount: live.cjProductAmount ?? fallback?.cjProductAmount,
+      cjPostageAmount: live.cjPostageAmount ?? fallback?.cjPostageAmount,
+      cjActualPayment: live.cjActualPayment ?? fallback?.cjActualPayment,
+      cjPaid: live.cjPaid || Boolean(fallback?.cjPaid),
+    };
+  } catch (err) {
+    console.warn("CJ getOrderDetail failed", err);
+    return {
+      cjOrderId,
+      cjPaid: Boolean(fallback?.cjPaid),
+      ...fallback,
+    };
+  }
+}
+
+async function tryPayCjWallet(cjOrderId: string): Promise<{ paid: boolean; error?: string }> {
+  try {
+    await cjPayBalance(cjOrderId);
+    return { paid: true };
+  } catch (err) {
+    const message = errorMessage(err);
+    const lower = message.toLowerCase();
+    if (!/unpaid|not paid|no pay/.test(lower) && /already paid|has been paid|payment complete/.test(lower)) {
+      return { paid: true };
+    }
+    console.warn("CJ payBalance failed", { cjOrderId, err: message });
+    return { paid: false, error: message };
+  }
+}
+
+function resultFromSnapshot(snapshot: CjOrderSnapshot, extra?: Partial<CjFulfillResult>): CjFulfillResult {
+  const unpaidNote =
+    "CJ order is created. Auto-pay uses the CJ wallet — keep it funded so new orders pay without a card.";
+  const { message: extraMessage, ...rest } = extra ?? {};
+  return {
+    ok: true,
+    ...rest,
+    message: snapshot.cjPaid ? "CJ order paid" : extraMessage || unpaidNote,
+    cjOrderId: snapshot.cjOrderId,
+    cjPayUrl: snapshot.cjPaid ? undefined : snapshot.cjPayUrl,
+    cjPaid: snapshot.cjPaid,
+    cjProductAmount: snapshot.cjProductAmount,
+    cjPostageAmount: snapshot.cjPostageAmount,
+    cjActualPayment: snapshot.cjActualPayment,
+  };
+}
+
+/** Pay an existing CJ shopping order from wallet, then refresh product vs shipping amounts. */
+export async function syncCjOrderPayment(orderId: string): Promise<CjFulfillResult> {
+  const order = await loadOrderById(orderId);
+  if (!order) return { ok: false, message: "Order not found" };
+
+  const existing = (order.vendorFulfillments ?? []).find(
+    (f) => f.vendorSlug === VENDOR_CJ_DROPSHIPPING && f.cjOrderId
+  );
+  if (!existing?.cjOrderId) {
+    return { ok: true, skipped: true, message: "No CJ order on this OccasionFun order", order };
+  }
+
+  if (!existing.cjPaid) {
+    await tryPayCjWallet(existing.cjOrderId);
+  }
+
+  const snapshot = await fetchCjSnapshot(existing.cjOrderId, {
+    cjOrderId: existing.cjOrderId,
+    cjOrderNumber: existing.cjOrderNumber,
+    cjPayUrl: existing.cjPayUrl,
+    cjPaid: Boolean(existing.cjPaid),
+    cjPaidAt: existing.cjPaidAt,
+    cjOrderStatus: existing.cjOrderStatus,
+    cjProductAmount: existing.cjProductAmount,
+    cjPostageAmount: existing.cjPostageAmount,
+    cjActualPayment: existing.cjActualPayment,
+  });
+
+  const next = await persistCjSnapshot(order, snapshot);
+  return { ...resultFromSnapshot(snapshot), order: next };
+}
+
 export async function fulfillOrderWithCj(
   orderId: string,
   options: {
@@ -165,33 +309,15 @@ export async function fulfillOrderWithCj(
     logisticName?: string;
     fromCountryCode?: string;
   } = {}
-): Promise<{
-  ok: boolean;
-  skipped?: boolean;
-  message: string;
-  cjOrderId?: string;
-  cjPayUrl?: string;
-}> {
-  const result = await docClient.send(
-    new GetCommand({
-      TableName: ORDERS_TABLE,
-      Key: { PK: orderKeys.pk(orderId), SK: orderKeys.sk() },
-    })
-  );
-  const order = result.Item as StoredOrder | undefined;
+): Promise<CjFulfillResult> {
+  const order = await loadOrderById(orderId);
   if (!order) return { ok: false, message: "Order not found" };
 
   const existing = (order.vendorFulfillments ?? []).find(
     (f) => f.vendorSlug === VENDOR_CJ_DROPSHIPPING && f.cjOrderId
   );
   if (existing?.cjOrderId) {
-    return {
-      ok: true,
-      skipped: true,
-      message: "CJ order already created",
-      cjOrderId: existing.cjOrderId,
-      cjPayUrl: existing.cjPayUrl,
-    };
+    return syncCjOrderPayment(orderId);
   }
 
   const lines = await resolveCjFulfillmentLines(order);
@@ -258,7 +384,7 @@ export async function fulfillOrderWithCj(
         shippingAddress: addr.line1,
         shippingAddress2: addr.line2 || "",
         email: addr.email,
-        remark: `HalloweenReady ${order.orderNumber || order.orderId}`,
+        remark: `OccasionFun ${order.orderNumber || order.orderId}`,
         logisticName,
         fromCountryCode,
         platform: "API",
@@ -275,30 +401,23 @@ export async function fulfillOrderWithCj(
       return { ok: false, message };
     }
 
-    const timestamp = now();
-    const fulfillments = upsertVendorFulfillment(order.vendorFulfillments ?? [], {
-      vendorSlug: VENDOR_CJ_DROPSHIPPING,
-      status: "processing",
-      updatedAt: timestamp,
-      cjOrderId,
-      cjOrderNumber: created?.orderNumber,
-      cjPayUrl: created?.cjPayUrl,
-    });
+    const createdSnap = snapshotFromCjRecord(created ?? {}, cjOrderId);
+    const afterCreate = await persistCjSnapshot(order, createdSnap);
 
-    await persistOrder(order, {
-      vendorFulfillments: fulfillments,
-      cjFulfillAttemptedAt: timestamp,
-      cjFulfillError: undefined,
+    const pay = await tryPayCjWallet(cjOrderId);
+    const snapshot = await fetchCjSnapshot(cjOrderId, {
+      ...createdSnap,
+      cjPaid: createdSnap.cjPaid || pay.paid,
     });
-
-    return {
-      ok: true,
-      message: created?.cjPayUrl
-        ? "CJ order created — pay it in CJ Dropshipping (wallet was empty)"
-        : "CJ order created",
-      cjOrderId,
-      cjPayUrl: created?.cjPayUrl,
-    };
+    const next = await persistCjSnapshot(afterCreate, snapshot);
+    return resultFromSnapshot(snapshot, {
+      order: next,
+      message: snapshot.cjPaid
+        ? "CJ order paid"
+        : pay.error
+          ? `CJ order created but wallet pay failed: ${pay.error}. Keep the CJ wallet funded for automatic payment.`
+          : undefined,
+    });
   } catch (err) {
     const message = errorMessage(err);
     await persistOrder(order, { cjFulfillError: message, cjFulfillAttemptedAt: now() });

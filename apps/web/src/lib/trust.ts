@@ -2,11 +2,11 @@ import { deliveryClaims } from "@/lib/ai-recommendation";
 import { site, whatsappChatUrl } from "@/lib/site";
 
 export const trustFacts = {
-  seasonLabel: "Halloween 2026",
+  seasonLabel: "Every occasion",
   operator: "Divit Global Ventures (DGV)",
-  fulfillment: "Delivering in 5–7 days",
+  fulfillment: "Delivering in 5–9 days",
   support: "WhatsApp & email support before, during, and after delivery",
-  catalog: "99+ premium Halloween decorations, costumes, and party supplies",
+  catalog: "Gifts, home goods, fashion, toys, party supplies, and more",
   payments: "Secure checkout via Stripe (USD) and Razorpay (INR)",
   guarantee: "Satisfaction guarantee — see our returns policy",
 } as const;
@@ -29,26 +29,26 @@ export const trustHighlights = [
   },
   {
     icon: "📍",
-    title: "Ships to many countries",
-    detail: "Shop from the USA, UK, Canada, Australia, India, UAE, and Europe. Delivering in 5–7 days. Confirm shipping on each product page.",
+    title: "Ships to 200 countries",
+    detail: "We deliver across 200 countries with 5–9 days delivery. Confirm shipping on each product page.",
   },
   {
-    icon: "🎃",
-    title: "Premium Halloween Collection",
+    icon: "🎁",
+    title: "Full product catalog",
     detail: trustFacts.catalog,
   },
   {
     icon: "💬",
     title: "Real Human Support",
     detail: `WhatsApp · ${site.supportEmail}`,
-    href: whatsappChatUrl("Hi HalloweenReady, I have a question before ordering."),
+    href: whatsappChatUrl("Hi OccasionFun, I have a question before ordering."),
   },
 ] as const;
 
 export const trustStripItems = [
-  "Delivering in 5–7 days",
-  "USA, UK, Canada, Australia, India, UAE & more",
+  "Delivering in 5–9 days",
+  "200 countries worldwide",
   "Secure Stripe & Razorpay checkout",
-  "Premium Halloween decorations",
+  "Gifts, home, fashion & party",
   "WhatsApp support",
 ] as const;

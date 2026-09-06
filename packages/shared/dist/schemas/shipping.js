@@ -35,7 +35,7 @@ exports.addressSchema = zod_1.z.object({
 });
 /** Origin may be incomplete until admin configures fulfillment address. */
 exports.originAddressSchema = zod_1.z.object({
-    name: zod_1.z.string().default("HalloweenReady"),
+    name: zod_1.z.string().default("OccasionFun"),
     line1: zod_1.z.string().default(""),
     line2: zod_1.z.string().optional(),
     city: zod_1.z.string().default(""),
@@ -133,14 +133,14 @@ exports.defaultShippingSettings = {
     ],
     enabledServices: { ...exports.DEFAULT_ENABLED_SERVICES },
     originAddress: {
-        name: "HalloweenReady US Warehouse",
+        name: "OccasionFun US Warehouse",
         line1: "936 Bellhurst Ave",
         city: "San Jose",
         state: "CA",
         postalCode: "95122",
         country: "US",
         phone: "+1 (669) 236-1526",
-        email: "support@halloweenready.com",
+        email: "support@occasionfun.com",
     },
     autoPurchaseOnPayment: false,
     flatRateFallbackUsd: 5.99,

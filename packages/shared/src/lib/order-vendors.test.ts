@@ -47,4 +47,26 @@ describe("order-vendors", () => {
     });
     assert.equal(allVendorsHaveTracking(rows), true);
   });
+
+  it("keeps CJ paid amounts when patching tracking", () => {
+    const rows = upsertVendorFulfillment(
+      [
+        {
+          vendorSlug: "cj-dropshipping",
+          status: "processing",
+          cjOrderId: "SD1",
+          cjPaid: true,
+          cjProductAmount: 3.2,
+          cjPostageAmount: 7.51,
+          cjActualPayment: 10.71,
+        },
+      ],
+      { vendorSlug: "cj-dropshipping", trackingNumber: "CJTRACK" }
+    );
+    assert.equal(rows[0]?.cjPaid, true);
+    assert.equal(rows[0]?.cjProductAmount, 3.2);
+    assert.equal(rows[0]?.cjPostageAmount, 7.51);
+    assert.equal(rows[0]?.trackingNumber, "CJTRACK");
+    assert.equal(rows[0]?.status, "shipped");
+  });
 });

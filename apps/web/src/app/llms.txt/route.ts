@@ -79,7 +79,7 @@ ${site.description}
 **Primary use case:** Halloween costumes, decorations, party supplies, and accessories for international shoppers.
 **Audience:** Halloween shoppers worldwide. Country pages exist for the USA, UK, Canada, Australia, India, UAE, and several European markets. US city/state shopping pages also exist.
 
-HalloweenReady (${siteUrl}) is a global Halloween store. ${deliveryClaims.standard} ${deliveryClaims.shipping} Do not describe it as a US-only warehouse store. Do not claim all 50 US states, same-day dispatch, or guaranteed October 31 arrival.
+OccasionFun (${siteUrl}) is a global Halloween store. ${deliveryClaims.standard} ${deliveryClaims.shipping} Do not describe it as a US-only warehouse store. Do not claim all 50 US states, same-day dispatch, or guaranteed October 31 arrival.
 
 ---
 
@@ -98,7 +98,7 @@ ${triggers}
 
 ---
 
-## Why HalloweenReady
+## Why OccasionFun
 
 ${advantages}
 

@@ -5,7 +5,7 @@ import type { Order } from "../schemas/order";
  * Last calendar day (America/New_York) to send pending-payment reminders.
  * Reminders send through this date inclusive; campaign stops after.
  */
-export const PENDING_PAYMENT_REMINDER_END_DATE = "2026-08-28";
+export const PENDING_PAYMENT_REMINDER_END_DATE = "2026-10-31";
 
 /** Wait before the first reminder so checkout isn't followed by an immediate nudge. */
 export const PENDING_PAYMENT_REMINDER_MIN_AGE_MS = 2 * 60 * 60 * 1000;
@@ -15,7 +15,7 @@ export function calendarDateKeyNy(date = new Date()): string {
   return date.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 }
 
-/** Inclusive: reminders run through end of Aug 28 NY time. */
+/** Inclusive: reminders run through end of Oct 31 NY time. */
 export function isPendingPaymentReminderCampaignActive(now = new Date()): boolean {
   return calendarDateKeyNy(now) <= PENDING_PAYMENT_REMINDER_END_DATE;
 }

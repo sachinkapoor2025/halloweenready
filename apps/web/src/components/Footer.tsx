@@ -5,10 +5,10 @@ import { SiteLogoLink } from "@/components/SiteLogo";
 import { MarketContactBlock } from "@/components/MarketContactBlock";
 import { countrySeoPages } from "@/lib/content/country-pages";
 
-const FACEBOOK_URL = "https://www.facebook.com/halloweenreadyofficial/";
-const INSTAGRAM_URL = "https://www.instagram.com/halloweenreadyofficial/";
-const PINTEREST_URL = "https://www.pinterest.com/halloweenready/";
-const TWITTER_URL = "https://x.com/halloweenready";
+const FACEBOOK_URL = "https://www.facebook.com/occasionfun";
+const INSTAGRAM_URL = "https://www.instagram.com/occasionfun/";
+const PINTEREST_URL = "https://www.pinterest.com/occasionfun/";
+const TWITTER_URL = "https://x.com/occasionfun";
 
 export function Footer() {
   return (
@@ -19,7 +19,7 @@ export function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <SiteLogoLink size="desktop" className="mb-5" />
             <p className="text-white/80 leading-relaxed mb-4 max-w-xs">
-              Halloween costumes, decor, and party supplies. Check product pages for destination shipping quotes.
+              Gifts, home goods, fashion, toys, and party supplies. We deliver across 200 countries in 5–9 days.
             </p>
             <div className="space-y-2 text-white/90">
               <MarketContactBlock />
@@ -31,7 +31,7 @@ export function Footer() {
                   href={FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="HalloweenReady on Facebook"
+                  aria-label="OccasionFun on Facebook"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] hover:scale-105 transition-transform"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#fff" aria-hidden>
@@ -42,7 +42,7 @@ export function Footer() {
                   href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="HalloweenReady on Instagram"
+                  aria-label="OccasionFun on Instagram"
                   className="flex h-10 w-10 items-center justify-center rounded-[22%] hover:scale-105 transition-transform"
                   style={{
                     background:
@@ -59,7 +59,7 @@ export function Footer() {
                   href={PINTEREST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="HalloweenReady on Pinterest"
+                  aria-label="OccasionFun on Pinterest"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E60023] hover:scale-105 transition-transform"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#fff" aria-hidden>
@@ -70,7 +70,7 @@ export function Footer() {
                   href={TWITTER_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="HalloweenReady on X"
+                  aria-label="OccasionFun on X"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black hover:scale-105 transition-transform"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#fff" aria-hidden>
@@ -83,20 +83,20 @@ export function Footer() {
 
           {/* Shop */}
           <div className="min-w-0">
-            <p className="font-semibold text-white mb-3 sm:mb-4">Shop Halloween</p>
+            <p className="font-semibold text-white mb-3 sm:mb-4">Shop</p>
             <ul className="space-y-2 text-white/80">
               {navItems
                 .filter((n) => "category" in n)
                 .map((n) => (
                   <li key={n.href}>
                     <Link href={n.href} className="hover:text-white hover:underline">
-                      {n.category === "halloween-hampers" ? "Halloween Hampers" : n.label}
+                      {n.label}
                     </Link>
                   </li>
                 ))}
               <li>
                 <Link href="/products" className="hover:text-white hover:underline">
-                  All Products
+                  All products
                 </Link>
               </li>
             </ul>
@@ -106,9 +106,6 @@ export function Footer() {
           <div className="min-w-0">
             <p className="font-semibold text-white mb-3 sm:mb-4">Help &amp; Info</p>
             <ul className="space-y-2 text-white/80">
-              <li><Link href="/halloween" className="hover:text-white hover:underline">Halloween by location</Link></li>
-              <li><Link href="/halloween-guide" className="hover:text-white hover:underline">Halloween Guide 2026</Link></li>
-              <li><Link href="/blog" className="hover:text-white hover:underline">Blog &amp; Guides</Link></li>
               <li><Link href="/shipping" className="hover:text-white hover:underline">Shipping &amp; Delivery</Link></li>
               <li><Link href="/faq" className="hover:text-white hover:underline">FAQ</Link></li>
               <li><Link href="/reviews" className="hover:text-white hover:underline">Customer Reviews</Link></li>

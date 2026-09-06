@@ -46,7 +46,7 @@ export declare const ORDER_DELIVERED_HEADING = "Your Order Has Been Delivered!";
 export declare const ORDER_COMPLETE_HEADING = "Your Order is Complete!";
 export declare const ORDER_REVIEW_HEADING = "We Value Your Feedback!";
 export declare const ORDER_REVIEW_CTA = "Write a Review";
-export declare const ORDER_SEO_BLURB = "HalloweenReady is a USA Halloween store for decorations, costumes, and party supplies. Shoppers trust us for quality party supplies, secure checkout, and reliable shipping to all 50 states.";
+export declare const ORDER_SEO_BLURB = "OccasionFun ships Gifts, party supplies, and everyday products worldwide. Shoppers trust us for quality party supplies, secure checkout, and delivery across 200 countries in 5\u20139 days.";
 export type DeliveredNotifyKind = "delivered" | "complete";
 export declare function orderReviewUrl(): string;
 export declare function customerPhoneDigits(phone?: string | null): string;
