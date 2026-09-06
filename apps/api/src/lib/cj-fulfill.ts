@@ -1,6 +1,7 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import {
   VENDOR_CJ_DROPSHIPPING,
+  isCjDropshippingProduct,
   orderKeys,
   productKeys,
   upsertVendorFulfillment,
@@ -10,58 +11,18 @@ import {
   type CartItem,
 } from "@halloweenready/shared";
 import { docClient, ORDERS_TABLE, PRODUCTS_TABLE, now } from "./db";
-import { cjAddToMyProduct, cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
+import { CjApiError, cjAddToMyProduct, cjCreateOrderV2, cjFreightCalculate } from "./cj-dropshipping";
 
 type StoredOrder = Order & Record<string, unknown>;
 
-function cjLines(order: Order) {
-  return (order.items ?? []).filter(
-    (item) => item.vendorSlug === VENDOR_CJ_DROPSHIPPING && (item.cjVid || item.sku)
-  );
-}
-
-async function expandHamperItemsToCjLines(order: Order): Promise<CartItem[]> {
-  const extra: CartItem[] = [];
-  for (const item of order.items ?? []) {
-    const def = getHalloweenHamperDef(item.productSlug);
-    if (!def) continue;
-    const slugs = resolvedHamperContentSlugs(def.contents, item.hamperCustomization);
-    for (const slug of slugs) {
-      const result = await docClient.send(
-        new GetCommand({
-          TableName: PRODUCTS_TABLE,
-          Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
-        })
-      );
-      const product = result.Item as
-        | {
-            vendorSlug?: string;
-            cjPid?: string;
-            cjVid?: string;
-            sku?: string;
-            name?: string;
-          }
-        | undefined;
-      if (!product) continue;
-      const vid = product.cjVid;
-      const sku = product.sku;
-      if (!vid && !sku) continue;
-      extra.push({
-        productSlug: slug,
-        name: product.name || slug,
-        price: 0,
-        currency: item.currency,
-        quantity: item.quantity,
-        vendorSlug: VENDOR_CJ_DROPSHIPPING,
-        ...(product.cjPid ? { cjPid: product.cjPid } : {}),
-        ...(vid ? { cjVid: vid } : {}),
-        ...(sku ? { sku } : {}),
-        lineId: `${item.lineId || item.productSlug}:${slug}`,
-      });
-    }
-  }
-  return extra;
-}
+type ProductRecord = {
+  vendorSlug?: string;
+  cjPid?: string;
+  cjVid?: string;
+  sku?: string;
+  name?: string;
+  cjVariants?: Array<{ vid?: string; sku?: string; name?: string; key?: string }>;
+};
 
 function cheapestLogistic(data: unknown): string | undefined {
   const rows = Array.isArray(data)
@@ -83,6 +44,118 @@ function cheapestLogistic(data: unknown): string | undefined {
     }
   }
   return best?.name;
+}
+
+function errorMessage(err: unknown): string {
+  if (err instanceof CjApiError) return err.message;
+  return err instanceof Error ? err.message : String(err);
+}
+
+async function loadProduct(slug: string): Promise<ProductRecord | undefined> {
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  return result.Item as ProductRecord | undefined;
+}
+
+async function expandHamperItemsToCjLines(order: Order): Promise<CartItem[]> {
+  const extra: CartItem[] = [];
+  for (const item of order.items ?? []) {
+    const def = getHalloweenHamperDef(item.productSlug);
+    if (!def) continue;
+    const slugs = resolvedHamperContentSlugs(def.contents, item.hamperCustomization);
+    for (const slug of slugs) {
+      extra.push({
+        productSlug: slug,
+        name: slug,
+        price: 0,
+        currency: item.currency,
+        quantity: item.quantity,
+        lineId: `${item.lineId || item.productSlug}:${slug}`,
+      });
+    }
+  }
+  return extra;
+}
+
+/**
+ * Resolve CJ shopping lines from the order + Dynamo products.
+ * Cart rows may omit vendorSlug (stripped on the storefront) or vid if the shopper
+ * did not pick a variant — look those up so paid orders still push to CJ.
+ */
+export async function resolveCjFulfillmentLines(order: Order): Promise<CartItem[]> {
+  const hamperLines = await expandHamperItemsToCjLines(order);
+  const source = [...(order.items ?? []), ...hamperLines];
+  const lines: CartItem[] = [];
+  const seen = new Set<string>();
+
+  for (const item of source) {
+    const product = await loadProduct(item.productSlug);
+    const pid = item.cjPid || product?.cjPid;
+    const vendorSlug = item.vendorSlug || product?.vendorSlug;
+    if (!isCjDropshippingProduct({ vendorSlug, cjPid: pid })) continue;
+
+    const variants = product?.cjVariants ?? [];
+    const vidFromSku = item.sku
+      ? variants.find((v) => v.sku && v.sku === item.sku)?.vid
+      : undefined;
+    const vid = item.cjVid || product?.cjVid || vidFromSku || variants[0]?.vid;
+    const sku =
+      item.sku ||
+      product?.sku ||
+      variants.find((v) => v.vid && v.vid === vid)?.sku;
+    if (!vid && !sku) continue;
+
+    const key = `${vid || sku}:${item.lineId || item.productSlug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    lines.push({
+      ...item,
+      name: item.name || product?.name || item.productSlug,
+      vendorSlug: VENDOR_CJ_DROPSHIPPING,
+      ...(pid ? { cjPid: pid } : {}),
+      ...(vid ? { cjVid: vid } : {}),
+      ...(sku ? { sku } : {}),
+    });
+  }
+  return lines;
+}
+
+async function persistOrder(order: StoredOrder, patch: Record<string, unknown>) {
+  const timestamp = now();
+  await docClient.send(
+    new PutCommand({
+      TableName: ORDERS_TABLE,
+      Item: {
+        ...order,
+        ...patch,
+        updatedAt: timestamp,
+      },
+    })
+  );
+}
+
+async function createCjShoppingOrder(
+  body: Record<string, unknown>,
+  preferredPayType?: 1 | 2 | 3
+) {
+  // 2 = wallet (auto-process). 1 = create + pay URL so the order appears in CJ even with $0 balance.
+  // Do not use 3 (draft only) — those often never show under Shopping → Orders.
+  const sequence: Array<1 | 2 | 3> = preferredPayType ? [preferredPayType] : [2, 1];
+  let lastError: unknown;
+  for (const payType of sequence) {
+    try {
+      const created = await cjCreateOrderV2({ ...body, payType });
+      return { created, payType };
+    } catch (err) {
+      lastError = err;
+      console.warn("CJ createOrderV2 failed", { payType, err: errorMessage(err) });
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("CJ createOrderV2 failed");
 }
 
 export async function fulfillOrderWithCj(
@@ -121,13 +194,18 @@ export async function fulfillOrderWithCj(
     };
   }
 
-  const hamperLines = await expandHamperItemsToCjLines(order);
-  const lines = [...cjLines(order), ...hamperLines.filter((l) => l.cjVid || l.sku)];
+  const lines = await resolveCjFulfillmentLines(order);
   if (!lines.length) {
     return { ok: true, skipped: true, message: "No CJ Dropshipping lines on this order" };
   }
 
   const addr = order.shippingAddress;
+  if (!addr?.name || !addr.line1 || !addr.city || !addr.country) {
+    const message = "Shipping address is incomplete — cannot create a CJ order";
+    await persistOrder(order, { cjFulfillError: message, cjFulfillAttemptedAt: now() });
+    return { ok: false, message };
+  }
+
   const products = lines.map((item) => ({
     vid: item.cjVid,
     sku: item.cjVid ? undefined : item.sku,
@@ -166,52 +244,64 @@ export async function fulfillOrderWithCj(
     }
   }
 
-  const created = await cjCreateOrderV2({
-    orderNumber: order.orderNumber || order.orderId,
-    shippingZip: addr.postalCode,
-    shippingCountry: dest,
-    shippingCountryCode: dest,
-    shippingProvince: addr.state,
-    shippingCity: addr.city,
-    shippingPhone: addr.phone,
-    shippingCustomerName: addr.name,
-    shippingAddress: addr.line1,
-    shippingAddress2: addr.line2 || "",
-    email: addr.email,
-    remark: `HalloweenReady ${order.orderNumber || order.orderId}`,
-    payType: options.payType ?? 3,
-    logisticName,
-    fromCountryCode,
-    platform: "api",
-    products,
-  });
-
-  const cjOrderId = created?.orderId;
-  const timestamp = now();
-  const fulfillments = upsertVendorFulfillment(order.vendorFulfillments ?? [], {
-    vendorSlug: VENDOR_CJ_DROPSHIPPING,
-    status: "processing",
-    updatedAt: timestamp,
-    cjOrderId,
-    cjOrderNumber: created?.orderNumber,
-    cjPayUrl: created?.cjPayUrl,
-  });
-
-  await docClient.send(
-    new PutCommand({
-      TableName: ORDERS_TABLE,
-      Item: {
-        ...order,
-        vendorFulfillments: fulfillments,
-        updatedAt: timestamp,
+  try {
+    const { created } = await createCjShoppingOrder(
+      {
+        orderNumber: order.orderNumber || order.orderId,
+        shippingZip: addr.postalCode,
+        shippingCountry: dest,
+        shippingCountryCode: dest,
+        shippingProvince: addr.state,
+        shippingCity: addr.city,
+        shippingPhone: addr.phone,
+        shippingCustomerName: addr.name,
+        shippingAddress: addr.line1,
+        shippingAddress2: addr.line2 || "",
+        email: addr.email,
+        remark: `HalloweenReady ${order.orderNumber || order.orderId}`,
+        logisticName,
+        fromCountryCode,
+        platform: "API",
+        shopLogisticsType: 2,
+        products,
       },
-    })
-  );
+      options.payType
+    );
 
-  return {
-    ok: true,
-    message: "CJ order created",
-    cjOrderId,
-    cjPayUrl: created?.cjPayUrl,
-  };
+    const cjOrderId = created?.orderId;
+    if (!cjOrderId) {
+      const message = "CJ created an order but did not return an order id";
+      await persistOrder(order, { cjFulfillError: message, cjFulfillAttemptedAt: now() });
+      return { ok: false, message };
+    }
+
+    const timestamp = now();
+    const fulfillments = upsertVendorFulfillment(order.vendorFulfillments ?? [], {
+      vendorSlug: VENDOR_CJ_DROPSHIPPING,
+      status: "processing",
+      updatedAt: timestamp,
+      cjOrderId,
+      cjOrderNumber: created?.orderNumber,
+      cjPayUrl: created?.cjPayUrl,
+    });
+
+    await persistOrder(order, {
+      vendorFulfillments: fulfillments,
+      cjFulfillAttemptedAt: timestamp,
+      cjFulfillError: undefined,
+    });
+
+    return {
+      ok: true,
+      message: created?.cjPayUrl
+        ? "CJ order created — pay it in CJ Dropshipping (wallet was empty)"
+        : "CJ order created",
+      cjOrderId,
+      cjPayUrl: created?.cjPayUrl,
+    };
+  } catch (err) {
+    const message = errorMessage(err);
+    await persistOrder(order, { cjFulfillError: message, cjFulfillAttemptedAt: now() });
+    return { ok: false, message };
+  }
 }

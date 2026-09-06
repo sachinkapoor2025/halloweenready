@@ -91,6 +91,11 @@ jobs:
           [ -n "${TWILIO_ACCOUNT_SID:-}" ] && EXTRA="$EXTRA TwilioAccountSid=${TWILIO_ACCOUNT_SID}"
           [ -n "${TWILIO_AUTH_TOKEN:-}" ] && EXTRA="$EXTRA TwilioAuthToken=${TWILIO_AUTH_TOKEN}"
           [ -n "${TWILIO_WHATSAPP_FROM:-}" ] && EXTRA="$EXTRA TwilioWhatsAppFrom=${TWILIO_WHATSAPP_FROM}"
+          if [ -n "${SMTP_PASSWORD:-}" ]; then
+            EXTRA="$EXTRA SmtpPassword=${SMTP_PASSWORD}"
+          else
+            echo "::warning::SMTP_PASSWORD secret is empty — keeping the previously deployed order@halloweenready.com password so cart/order emails keep sending."
+          fi
           if [ -n "${MARKETING_SMTP_PASS:-}" ]; then
             EXTRA="$EXTRA MarketingSmtpPassword=${MARKETING_SMTP_PASS}"
           else
@@ -104,7 +109,6 @@ jobs:
           EnableVendorApi=false \
           RazorpayKeyId=${RAZORPAY_KEY_ID} \
           RazorpayKeySecret=${RAZORPAY_KEY_SECRET} \
-          SmtpPassword=${SMTP_PASSWORD} \
           StripeSecretKey=${STRIPE_SECRET_KEY} \
           StripeWebhookSecret=${STRIPE_WEBHOOK_SECRET} \
           UspsClientId=${USPS_CLIENT_ID} \

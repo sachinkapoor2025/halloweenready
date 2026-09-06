@@ -360,7 +360,7 @@ export type CjStorefrontShippingMethod = z.infer<typeof cjStorefrontShippingMeth
 export type ProductShippingResponse = z.infer<typeof productShippingResponseSchema>;
 export declare const cjFulfillOrderSchema: z.ZodObject<{
     orderId: z.ZodString;
-    /** 1=page pay URL, 2=CJ wallet, 3=create only (default). */
+    /** 1=page pay URL (order appears in CJ), 2=CJ wallet (auto-process), 3=draft only (avoid for auto-push). */
     payType: z.ZodOptional<z.ZodUnion<[z.ZodLiteral<1>, z.ZodLiteral<2>, z.ZodLiteral<3>]>>;
     logisticName: z.ZodOptional<z.ZodString>;
     fromCountryCode: z.ZodOptional<z.ZodString>;

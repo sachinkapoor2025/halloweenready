@@ -158,12 +158,12 @@ Globals:
         RAZORPAY_KEY_SECRET: !Ref RazorpayKeySecret
         RAZORPAY_WEBHOOK_SECRET: !Ref RazorpayWebhookSecret
         CLOUDFRONT_DOMAIN: !GetAtt CloudFrontDistribution.DomainName
-        SMTP_HOST: smtp.halloweenready.com
+        SMTP_HOST: mail.halloweenready.com
         SMTP_PORT: "465"
         SMTP_SECURE: "true"
         SMTP_USER: order@halloweenready.com
         SMTP_FROM: order@halloweenready.com
-        NOTIFY_EMAIL: order@halloweenready.com,priya.yadav@mydgv.com
+        NOTIFY_EMAIL: order@halloweenready.com,order@usarakhi.com,priya.yadav@mydgv.com
         SMTP_PASS: !Ref SmtpPassword
         SITE_URL: https://www.halloweenready.com
         SES_AWS_REGION: us-east-1

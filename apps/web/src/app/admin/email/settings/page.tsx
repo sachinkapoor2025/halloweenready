@@ -88,8 +88,10 @@ export default function SettingsPage() {
       </p>
       <ul className="text-sm text-slate-600 list-disc pl-5 space-y-1">
         <li>
-          <strong>Website / orders / coupons</strong> — <code>order@halloweenready.com</code> via{" "}
-          <code>smtp.halloweenready.com</code> (server config; not edited here)
+          <strong>Website / orders / coupons</strong> — sent from <code>order@halloweenready.com</code> via{" "}
+          <code>mail.halloweenready.com</code>. Copies go to the customer,{" "}
+          <code>order@halloweenready.com</code>, <code>order@usarakhi.com</code>, and{" "}
+          <code>priya.yadav@mydgv.com</code> (server config; not edited here).
         </li>
         <li>
           <strong>Marketing campaigns</strong> — Mailercloud below; From ={" "}

@@ -82,6 +82,7 @@ __exportStar(require("./lib/schedule-delivery"), exports);
 __exportStar(require("./lib/marketing-email-html"), exports);
 __exportStar(require("./lib/marketing-campaign-emails"), exports);
 __exportStar(require("./lib/order-number"), exports);
+__exportStar(require("./lib/order-notify-emails"), exports);
 __exportStar(require("./lib/order-confirmed-email"), exports);
 __exportStar(require("./lib/order-status"), exports);
 __exportStar(require("./lib/order-vendors"), exports);

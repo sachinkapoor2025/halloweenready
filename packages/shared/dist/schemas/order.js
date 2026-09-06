@@ -181,6 +181,12 @@ exports.orderSchema = zod_1.z.object({
     reviewEmailDueAt: zod_1.z.string().optional(),
     /** Set after review request email is sent (idempotency). */
     reviewEmailSentAt: zod_1.z.string().optional(),
+    /** Set after paid confirmation is emailed (webhook retries if the first attempt timed out). */
+    paidEmailSentAt: zod_1.z.string().optional(),
+    /** Last CJ createOrder attempt (ISO). */
+    cjFulfillAttemptedAt: zod_1.z.string().optional(),
+    /** Set when auto-push to CJ fails so admin can retry. Empty string clears. */
+    cjFulfillError: zod_1.z.string().optional(),
     /** Last pending-payment reminder send time (ISO). */
     pendingPaymentReminderLastSentAt: zod_1.z.string().optional(),
     /** America/New_York calendar day (YYYY-MM-DD) of last pending-payment reminder. */

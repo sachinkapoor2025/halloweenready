@@ -164,7 +164,7 @@ export type ProductShippingResponse = z.infer<typeof productShippingResponseSche
 
 export const cjFulfillOrderSchema = z.object({
   orderId: z.string().min(1),
-  /** 1=page pay URL, 2=CJ wallet, 3=create only (default). */
+  /** 1=page pay URL (order appears in CJ), 2=CJ wallet (auto-process), 3=draft only (avoid for auto-push). */
   payType: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
   logisticName: z.string().min(1).max(80).optional(),
   fromCountryCode: z.string().trim().length(2).optional(),

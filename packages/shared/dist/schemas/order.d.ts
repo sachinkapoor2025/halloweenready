@@ -1810,6 +1810,12 @@ export declare const orderSchema: z.ZodObject<{
     reviewEmailDueAt: z.ZodOptional<z.ZodString>;
     /** Set after review request email is sent (idempotency). */
     reviewEmailSentAt: z.ZodOptional<z.ZodString>;
+    /** Set after paid confirmation is emailed (webhook retries if the first attempt timed out). */
+    paidEmailSentAt: z.ZodOptional<z.ZodString>;
+    /** Last CJ createOrder attempt (ISO). */
+    cjFulfillAttemptedAt: z.ZodOptional<z.ZodString>;
+    /** Set when auto-push to CJ fails so admin can retry. Empty string clears. */
+    cjFulfillError: z.ZodOptional<z.ZodString>;
     /** Last pending-payment reminder send time (ISO). */
     pendingPaymentReminderLastSentAt: z.ZodOptional<z.ZodString>;
     /** America/New_York calendar day (YYYY-MM-DD) of last pending-payment reminder. */
@@ -2449,6 +2455,9 @@ export declare const orderSchema: z.ZodObject<{
     deliveredAt?: string | undefined;
     reviewEmailDueAt?: string | undefined;
     reviewEmailSentAt?: string | undefined;
+    paidEmailSentAt?: string | undefined;
+    cjFulfillAttemptedAt?: string | undefined;
+    cjFulfillError?: string | undefined;
     pendingPaymentReminderLastSentAt?: string | undefined;
     pendingPaymentReminderLastDateKey?: string | undefined;
     pendingPaymentReminderCount?: number | undefined;
@@ -2702,6 +2711,9 @@ export declare const orderSchema: z.ZodObject<{
     deliveredAt?: string | undefined;
     reviewEmailDueAt?: string | undefined;
     reviewEmailSentAt?: string | undefined;
+    paidEmailSentAt?: string | undefined;
+    cjFulfillAttemptedAt?: string | undefined;
+    cjFulfillError?: string | undefined;
     pendingPaymentReminderLastSentAt?: string | undefined;
     pendingPaymentReminderLastDateKey?: string | undefined;
     pendingPaymentReminderCount?: number | undefined;

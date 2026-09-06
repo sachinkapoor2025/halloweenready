@@ -8,6 +8,9 @@ import {
   WELCOME_DISCOUNT_PERCENT,
   LOW_STOCK_ALERT_EMAIL,
   ABANDONED_CART_DISCOUNT_PERCENT,
+  ORDER_SMTP_USER,
+  DEFAULT_ORDER_NOTIFY_EMAIL,
+  staffOrderNotifyEmails,
   isAdminExtremeDiscount,
   buildOrderConfirmedEmailHtml,
   buildOrderConfirmedEmailText,
@@ -30,12 +33,7 @@ import {
   welcomeCouponWhatsAppMessage,
 } from "./whatsapp";
 
-const DEFAULT_NOTIFY = "order@halloweenready.com";
-/** High-volume transactional mailbox (reminders / operational). Same SMTP password as order@. */
-const DEFAULT_ORDERS_MAILBOX = "orders@halloweenready.com";
-/** Admin inbox for new orders + contact form (comma-separated). */
-const DEFAULT_ADMIN_NOTIFY =
-  "order@halloweenready.com,priya.yadav@mydgv.com";
+const DEFAULT_NOTIFY = ORDER_SMTP_USER;
 const SITE_NAME = "HalloweenReady";
 
 /** order@ = order notifications; orders@ = reminders / high-volume transactional. */
@@ -60,14 +58,8 @@ function smtpConfigured(): boolean {
   return Boolean(user && smtpPassword());
 }
 
-function smtpUser(mailbox: TransactionalMailbox = "order"): string {
-  if (mailbox === "orders") {
-    return (
-      process.env.SMTP_ORDERS_USER?.trim() ||
-      process.env.SMTP_USER_ORDERS?.trim() ||
-      DEFAULT_ORDERS_MAILBOX
-    );
-  }
+function smtpUser(_mailbox: TransactionalMailbox = "order"): string {
+  // Always authenticate as order@halloweenready.com unless SMTP_USER is overridden.
   return process.env.SMTP_USER?.trim() || DEFAULT_NOTIFY;
 }
 
@@ -76,7 +68,8 @@ function fromAddressFor(mailbox: TransactionalMailbox = "order"): string {
     return (
       process.env.SMTP_ORDERS_FROM?.trim() ||
       process.env.SMTP_FROM_ORDERS?.trim() ||
-      smtpUser("orders")
+      process.env.SMTP_FROM?.trim() ||
+      smtpUser("order")
     );
   }
   return process.env.SMTP_FROM?.trim() || smtpUser("order") || notifyAddress();
@@ -96,71 +89,48 @@ function transportConfigs(
   host: string,
   mailbox: TransactionalMailbox = "order"
 ): SMTPTransport.Options[] {
-  // Prefer mailbox-specific auth; fall back to primary SMTP_USER (same password for both).
-  const user = smtpUser(mailbox);
-  const authUser =
-    mailbox === "orders"
-      ? process.env.SMTP_ORDERS_USER?.trim() ||
-        process.env.SMTP_USER?.trim() ||
-        user
-      : process.env.SMTP_USER?.trim() || user;
+  const authUser = smtpUser(mailbox);
   const pass = smtpPassword()!;
-  const portEnv = process.env.SMTP_PORT?.trim();
+  const preferredPort = Number(process.env.SMTP_PORT?.trim() || "465");
+  const preferredSecure = process.env.SMTP_SECURE?.trim()
+    ? process.env.SMTP_SECURE === "true"
+    : preferredPort === 465;
 
-  if (portEnv) {
-    const port = Number(portEnv);
-    const secure = process.env.SMTP_SECURE?.trim()
-      ? process.env.SMTP_SECURE === "true"
-      : port === 465;
-    return [{ host, port, secure, auth: { user: authUser, pass } }];
-  }
-
-  return [
-    { host, port: 465, secure: true, auth: { user: authUser, pass } },
-    { host, port: 587, secure: false, auth: { user: authUser, pass }, requireTLS: true },
+  const configs: SMTPTransport.Options[] = [
+    { host, port: preferredPort, secure: preferredSecure, auth: { user: authUser, pass } },
   ];
+  if (preferredPort === 465) {
+    configs.push({
+      host,
+      port: 587,
+      secure: false,
+      auth: { user: authUser, pass },
+      requireTLS: true,
+    });
+  } else if (preferredPort === 587) {
+    configs.push({ host, port: 465, secure: true, auth: { user: authUser, pass } });
+  }
+  return configs;
 }
 
-async function createWorkingTransporter(mailbox: TransactionalMailbox = "order") {
-  const hosts = smtpHosts();
-  let lastError: unknown;
-
-  for (const host of hosts) {
-    for (const config of transportConfigs(host, mailbox)) {
-      const transporter = nodemailer.createTransport({
-        ...config,
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-        tls: { minVersion: "TLSv1.2", rejectUnauthorized: true },
-      });
-
-      try {
-        await transporter.verify();
-        return transporter;
-      } catch (err) {
-        lastError = err;
-        console.error("SMTP verify failed", { host, port: config.port, mailbox, err });
-      }
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("SMTP connection failed");
+function createTransporter(config: SMTPTransport.Options) {
+  return nodemailer.createTransport({
+    ...config,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+    tls: { minVersion: "TLSv1.2", rejectUnauthorized: true },
+  });
 }
 
 /** Public support address shown to customers (single inbox). */
 function notifyAddress(): string {
-  const raw = process.env.NOTIFY_EMAIL?.trim() || DEFAULT_ADMIN_NOTIFY;
-  return raw.split(",")[0]?.trim() || DEFAULT_NOTIFY;
+  return DEFAULT_NOTIFY;
 }
 
-/** All admin recipients for order/contact alerts (comma-separated OK for nodemailer). */
+/** Staff copies of cart / payment / status mail (never includes the customer). */
 function adminNotifyAddresses(): string {
-  return process.env.NOTIFY_EMAIL?.trim() || DEFAULT_ADMIN_NOTIFY;
-}
-
-function fromAddress(): string {
-  return fromAddressFor("order");
+  return staffOrderNotifyEmails(process.env.NOTIFY_EMAIL ?? DEFAULT_ORDER_NOTIFY_EMAIL).join(",");
 }
 
 export async function sendNewsletterEmails(input: {
@@ -269,7 +239,7 @@ export async function sendEmail(opts: {
   text: string;
   html?: string;
   replyTo?: string;
-  /** Default order@ for order alerts; use orders@ for reminders / high volume. */
+  /** Default order@ for order alerts; mailbox flag is kept for logging only. */
   mailbox?: TransactionalMailbox;
 }): Promise<EmailSendResult> {
   const { isLoadTestMode } = await import("./load-test");
@@ -283,31 +253,45 @@ export async function sendEmail(opts: {
   }
 
   const mailbox = opts.mailbox ?? "order";
-  try {
-    const transporter = await createWorkingTransporter(mailbox);
-    const from = fromAddressFor(mailbox);
-    await transporter.sendMail({
-      from: `"${SITE_NAME}" <${from}>`,
-      to: opts.to,
-      subject: opts.subject,
-      text: opts.text,
-      html: opts.html ?? opts.text.replace(/\n/g, "<br>"),
-      replyTo: opts.replyTo,
-      headers: {
-        "X-Entity-Ref-ID": crypto.randomUUID(),
-        "Auto-Submitted": "auto-generated",
-      },
-    });
-    console.info("sendEmail.ok", { mailbox, from, to: opts.to, subject: opts.subject });
-    return { ok: true };
-  } catch (err) {
-    const raw = err instanceof Error ? err.message : String(err);
-    const message = /Daily send limit/i.test(raw)
-      ? `${raw} — transactional mailbox (${mailbox === "orders" ? DEFAULT_ORDERS_MAILBOX : DEFAULT_NOTIFY}) hit its daily cap (shared hosting). Marketing campaigns must use Mailercloud only; ask the host to raise the limit or wait for daily reset.`
-      : raw;
-    console.error("sendEmail failed:", { mailbox, message });
-    return { ok: false, error: message };
+  const from = fromAddressFor(mailbox);
+  const mail = {
+    from: `"${SITE_NAME}" <${from}>`,
+    to: opts.to,
+    subject: opts.subject,
+    text: opts.text,
+    html: opts.html ?? opts.text.replace(/\n/g, "<br>"),
+    replyTo: opts.replyTo,
+    headers: {
+      "X-Entity-Ref-ID": crypto.randomUUID(),
+      "Auto-Submitted": "auto-generated",
+    },
+  };
+
+  let lastError: unknown;
+  for (const host of smtpHosts()) {
+    for (const config of transportConfigs(host, mailbox)) {
+      try {
+        await createTransporter(config).sendMail(mail);
+        console.info("sendEmail.ok", { mailbox, from, host, port: config.port, to: opts.to, subject: opts.subject });
+        return { ok: true };
+      } catch (err) {
+        lastError = err;
+        console.error("SMTP send failed", {
+          host,
+          port: config.port,
+          mailbox,
+          err: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
   }
+
+  const raw = lastError instanceof Error ? lastError.message : String(lastError ?? "SMTP connection failed");
+  const message = /Daily send limit/i.test(raw)
+    ? `${raw} — transactional mailbox (${DEFAULT_NOTIFY}) hit its daily cap (shared hosting). Marketing campaigns must use Mailercloud only; ask the host to raise the limit or wait for daily reset.`
+    : raw;
+  console.error("sendEmail failed:", { mailbox, message });
+  return { ok: false, error: message };
 }
 
 function formatLeadSource(source?: string): string {
@@ -549,7 +533,7 @@ function buildOrderAdminBody(order: Order, headline: string): string {
 }
 
 export async function notifyAdminOrderPlaced(order: Order): Promise<EmailSendResult> {
-  return sendEmail({
+  const staff = await sendEmail({
     to: adminNotifyAddresses(),
     subject: adminOrderSubject("Order added in cart - payment pending", order),
     text: buildOrderAdminBody(
@@ -558,22 +542,54 @@ export async function notifyAdminOrderPlaced(order: Order): Promise<EmailSendRes
     ),
     replyTo: order.shippingAddress?.email,
   });
+  if (!staff.ok) console.error("Checkout pending staff email failed:", staff.error);
+
+  const customerEmail = order.shippingAddress?.email?.trim();
+  let customer: EmailSendResult = { ok: true, skipped: true };
+  if (customerEmail?.includes("@")) {
+    const name = order.shippingAddress?.name?.split(" ")[0] ?? "there";
+    const shortId = order.orderId.slice(0, 8).toUpperCase();
+    const total = `${order.currency} ${order.total.toFixed(2)}`;
+    customer = await sendEmail({
+      to: customerEmail,
+      subject: `Complete your HalloweenReady order — #${shortId}`,
+      text: `Hi ${name},
+
+We saved your HalloweenReady checkout. Payment is still pending.
+
+Order ID: ${shortId}
+Total: ${total}
+
+Complete payment here:
+${siteUrl()}/orders/${order.orderId}
+${siteUrl()}/checkout
+
+Questions? Reply to this email or WhatsApp us.
+
+— ${SITE_NAME} Team
+${siteUrl()}`,
+      replyTo: notifyAddress(),
+    });
+    if (!customer.ok) console.error("Checkout pending customer email failed:", customer.error);
+  }
+
+  return { ok: staff.ok || customer.ok };
 }
 
 export async function notifyAdminOrderPaid(order: Order): Promise<EmailSendResult> {
-  const admin = await sendEmail({
+  const staff = await sendEmail({
     to: adminNotifyAddresses(),
     subject: adminOrderSubject("New order - paid", order),
     text: buildOrderAdminBody(order, `Payment confirmed — new paid order on ${SITE_NAME}.`),
     replyTo: order.shippingAddress?.email,
   });
-
-  if (!admin.ok) return admin;
+  if (!staff.ok) console.error("Paid order staff email failed:", staff.error);
 
   const customerEmail = order.shippingAddress?.email?.trim();
   const totalLabel = `${order.currency} ${order.total.toFixed(2)}`;
-  if (customerEmail && customerEmail.includes("@")) {
-    await sendEmail({
+  let customer: EmailSendResult = { ok: true, skipped: true };
+  if (customerEmail?.includes("@")) {
+    customer = await sendEmail({
       to: customerEmail,
       subject: `Order confirmed — ${SITE_NAME}`,
       text: `Hi${order.shippingAddress?.name ? ` ${order.shippingAddress.name}` : ""},
@@ -587,8 +603,11 @@ We deliver to all 50 US states in 5–7 business days after dispatch.
 
 Questions? Reply to this email or WhatsApp us.
 
-— ${SITE_NAME} Team`,
+— ${SITE_NAME} Team
+${siteUrl()}`,
+      replyTo: notifyAddress(),
     });
+    if (!customer.ok) console.error("Paid order customer email failed:", customer.error);
   }
 
   await notifyCustomerWhatsApp({
@@ -601,7 +620,7 @@ Questions? Reply to this email or WhatsApp us.
     }),
   });
 
-  return { ok: true };
+  return { ok: staff.ok || customer.ok };
 }
 
 export async function notifyAdminOrderPaymentFailed(order: Order): Promise<EmailSendResult> {
