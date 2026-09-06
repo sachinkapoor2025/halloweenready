@@ -1,35 +1,47 @@
 version = 0.1
 
+# OccasionFun (`dev-occ`) — never point these stack names at halloweenready-*.
+# HalloweenReady still deploys from the `dev` / `main` branches using their own samconfig.
+
 [default.build.parameters]
 cached = true
 parallel = true
 
 [default.deploy.parameters]
-stack_name = "halloweenready-dev"
+stack_name = "occasionfun-dev"
 resolve_s3 = true
-s3_prefix = "halloweenready"
+s3_prefix = "occasionfun"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=dev"
+parameter_overrides = "Environment=dev NamePrefix=occasionfun SiteUrl=https://www.occasionfun.com DomainName=occasionfun.com"
 confirm_changeset = true
 
-[staging.deploy.parameters]
-stack_name = "halloweenready-staging"
+[occ.deploy.parameters]
+stack_name = "occasionfun-prod"
 resolve_s3 = true
-s3_prefix = "halloweenready"
+s3_prefix = "occasionfun"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=staging LoadTestMode=true"
+parameter_overrides = "Environment=prod NamePrefix=occasionfun SiteUrl=https://www.occasionfun.com DomainName=occasionfun.com"
+confirm_changeset = false
+
+[staging.deploy.parameters]
+stack_name = "occasionfun-staging"
+resolve_s3 = true
+s3_prefix = "occasionfun"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=staging NamePrefix=occasionfun LoadTestMode=true"
 
 [prod.build.parameters]
 cached = true
 parallel = true
 
 [prod.deploy.parameters]
-stack_name = "halloweenready-prod"
+stack_name = "occasionfun-prod"
 resolve_s3 = true
-s3_prefix = "halloweenready"
+s3_prefix = "occasionfun"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=prod"
+parameter_overrides = "Environment=prod NamePrefix=occasionfun SiteUrl=https://www.occasionfun.com DomainName=occasionfun.com"
 confirm_changeset = true

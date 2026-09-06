@@ -19,6 +19,7 @@ import {
   reminderEmailKeys,
   sendReminderEmailsSchema,
   sesEmailKeys,
+  BRAND,
   type ReminderEmail,
 } from "@halloweenready/shared";
 import {
@@ -405,9 +406,9 @@ async function loadSesSender(): Promise<{
   );
   const settings = (res.Item?.settings ?? {}) as Record<string, string>;
   return {
-    fromName: settings.defaultSenderName || "HalloweenReady",
-    fromEmail: settings.defaultSenderEmail || process.env.SES_FROM_EMAIL || "order@halloweenready.com",
-    replyTo: settings.defaultReplyTo || process.env.SES_REPLY_TO || "order@halloweenready.com",
+    fromName: settings.defaultSenderName || BRAND.name,
+    fromEmail: settings.defaultSenderEmail || process.env.SES_FROM_EMAIL || BRAND.orderEmail,
+    replyTo: settings.defaultReplyTo || process.env.SES_REPLY_TO || BRAND.orderEmail,
   };
 }
 
@@ -475,7 +476,7 @@ export async function sendReminderEmailsHandler(event: APIGatewayProxyEventV2) {
 
     const paid = await collectPaidOrderEmails();
     const sender = await loadSesSender();
-    const siteUrl = process.env.SITE_URL || "https://www.halloweenready.com";
+    const siteUrl = process.env.SITE_URL || BRAND.siteUrl;
     const subject = parsed.data.subject?.trim() || DEFAULT_CHECKOUT_NUDGE_SUBJECT;
 
     let sent = 0;

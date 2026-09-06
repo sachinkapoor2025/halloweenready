@@ -181,8 +181,8 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4">
         <InternalLinksSection
           groups={getInternalLinkGroups({ type: "home" })}
-          title="Explore HalloweenReady"
-          intro="Shop by category and destination, or read the Halloween planning guides."
+          title="Explore OccasionFun"
+          intro="Shop by category and destination, or read our buying guides."
         />
       </section>
 

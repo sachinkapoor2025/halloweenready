@@ -1,23 +1,26 @@
-name: Deploy
+name: Deploy OccasionFun
 
-# Three jobs, same as before:
-#   build       — compile/typecheck shared + API + web
-#   deploy-api  — SAM (Lambda / API Gateway)
-#   deploy-web  — Next.js production build; AWS Amplify publishes the live site
+# Lives on branch `dev-occ` only. HalloweenReady still deploys from `dev` / `main`
+# using that branch's workflow and the halloweenready-* CloudFormation stacks.
+# This workflow creates/updates:
+#   1. SAM stack `occasionfun-prod` (DynamoDB, Lambda, API, Cognito, S3, CloudFront, SES)
+#   2. CloudFormation stack `occasionfun-amplify-prod` (separate Amplify app + domain)
+
 on:
   push:
     branches:
-      - main
-      - dev
-      - "feature/**"
+      - dev-occ
   workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-occasionfun-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   AWS_REGION: us-east-1
+  BACKEND_STACK: occasionfun-prod
+  AMPLIFY_STACK: occasionfun-amplify-prod
+  SITE_URL: https://www.occasionfun.com
 
 jobs:
   build:
@@ -53,15 +56,15 @@ jobs:
 
       - uses: aws-actions/setup-sam@v3
 
-      - name: SAM Deploy
+      - name: SAM Deploy OccasionFun backend
         working-directory: infrastructure
         env:
-          RAZORPAY_KEY_ID: ${{ secrets.RAZOR_KEY_ID }}
-          RAZORPAY_KEY_SECRET: ${{ secrets.RAZOR_KEY_SECRET }}
-          RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          RAZORPAY_KEY_ID: ${{ secrets.OCC_RAZOR_KEY_ID || secrets.RAZOR_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.OCC_RAZOR_KEY_SECRET || secrets.RAZOR_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET: ${{ secrets.OCC_RAZORPAY_WEBHOOK_SECRET || secrets.RAZORPAY_WEBHOOK_SECRET }}
+          SMTP_PASSWORD: ${{ secrets.OCC_SMTP_PASSWORD }}
+          STRIPE_SECRET_KEY: ${{ secrets.OCC_STRIPE_SECRET_KEY || secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.OCC_STRIPE_WEBHOOK_SECRET || secrets.STRIPE_WEBHOOK_SECRET }}
           USPS_CLIENT_ID: ${{ secrets.USPS_CLIENT_ID }}
           USPS_CLIENT_SECRET: ${{ secrets.USPS_CLIENT_SECRET }}
           USPS_SECRET_ARN: ${{ secrets.USPS_SECRET_ARN }}
@@ -71,17 +74,16 @@ jobs:
           USPS_EPS_ACCOUNT_NUMBER: ${{ secrets.USPS_EPS_ACCOUNT_NUMBER }}
           USPS_PAYMENT_AUTHORIZATION_TOKEN: ${{ secrets.USPS_PAYMENT_AUTHORIZATION_TOKEN }}
           ORANGE_COUNTY_VENDOR_API_KEY: ${{ secrets.ORANGE_COUNTY_VENDOR_API_KEY }}
-          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+          WHATSAPP_TOKEN: ${{ secrets.OCC_WHATSAPP_TOKEN || secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.OCC_WHATSAPP_PHONE_NUMBER_ID || secrets.WHATSAPP_PHONE_NUMBER_ID }}
           WHATSAPP_TEMPLATE_NAME: ${{ secrets.WHATSAPP_TEMPLATE_NAME }}
           WHATSAPP_TEMPLATE_LANG: ${{ secrets.WHATSAPP_TEMPLATE_LANG }}
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
-          MARKETING_SMTP_PASS: ${{ secrets.MARKETING_SMTP_PASS }}
-          CJ_API_KEY: ${{ secrets.CJ_API_KEY }}
+          MARKETING_SMTP_PASS: ${{ secrets.OCC_MARKETING_SMTP_PASS || secrets.MARKETING_SMTP_PASS }}
+          CJ_API_KEY: ${{ secrets.OCC_CJ_API_KEY || secrets.CJ_API_KEY }}
         run: |
-          # Omit empty WhatsApp/Twilio/marketing overrides so a prior SAM deploy's values are not wiped.
           BASE_URL="${USPS_BASE_URL:-https://apis.usps.com}"
           EXTRA=""
           [ -n "${WHATSAPP_TOKEN:-}" ] && EXTRA="$EXTRA WhatsAppToken=${WHATSAPP_TOKEN}"
@@ -94,18 +96,23 @@ jobs:
           if [ -n "${SMTP_PASSWORD:-}" ]; then
             EXTRA="$EXTRA SmtpPassword=${SMTP_PASSWORD}"
           else
-            echo "::warning::SMTP_PASSWORD secret is empty — keeping the previously deployed order@halloweenready.com password so cart/order emails keep sending."
+            echo "::warning::OCC_SMTP_PASSWORD is empty — set the GoDaddy mailbox password for order@occasionfun.com or order emails will not send."
           fi
           if [ -n "${MARKETING_SMTP_PASS:-}" ]; then
             EXTRA="$EXTRA MarketingSmtpPassword=${MARKETING_SMTP_PASS}"
           else
-            echo "::warning::MARKETING_SMTP_PASS secret is empty — marketing campaigns need Mailercloud credentials in Admin → Email → Settings (or set the GitHub secret)."
+            echo "::warning::OCC_MARKETING_SMTP_PASS is empty — marketing campaigns need Mailercloud (or set the GitHub secret)."
           fi
           [ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ] && EXTRA="$EXTRA RazorpayWebhookSecret=${RAZORPAY_WEBHOOK_SECRET}"
           [ -n "${CJ_API_KEY:-}" ] && EXTRA="$EXTRA CjApiKey=${CJ_API_KEY}"
-          sam build --cached --parallel --config-env prod && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
+          sam build --cached --parallel --config-env occ && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env occ \
             --parameter-overrides "\
           Environment=prod \
+          NamePrefix=occasionfun \
+          BrandName=OccasionFun \
+          SiteUrl=${SITE_URL} \
+          DomainName=occasionfun.com \
+          EmailDomain=occasionfun.com \
           EnableVendorApi=false \
           RazorpayKeyId=${RAZORPAY_KEY_ID} \
           RazorpayKeySecret=${RAZORPAY_KEY_SECRET} \
@@ -121,52 +128,114 @@ jobs:
           UspsPaymentAuthorizationToken=${USPS_PAYMENT_AUTHORIZATION_TOKEN} \
           OrangeCountyVendorApiKey=${ORANGE_COUNTY_VENDOR_API_KEY}${EXTRA}"
 
-      # Catalog import OVERWRITES product records and has wiped admin-uploaded images.
-      # Run manually only: Actions → Import HalloweenReady Catalog (workflow_dispatch).
-
-  deploy-web:
+  deploy-amplify:
     runs-on: ubuntu-latest
     needs: deploy-api
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: ".nvmrc"
-          cache: npm
-      - run: npm ci
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Export SAM outputs for web build
+
+      - name: Read OccasionFun backend outputs
+        id: backend
         run: |
           output() {
             aws cloudformation describe-stacks \
-              --stack-name halloweenready-prod \
+              --stack-name "$BACKEND_STACK" \
               --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue | [0]" \
               --output text
           }
+          API_URL="$(output ApiUrl)"
+          USER_POOL_ID="$(output UserPoolId)"
+          USER_POOL_CLIENT_ID="$(output UserPoolClientId)"
+          CDN_URL="$(output CdnUrl)"
+          if [ -z "$CDN_URL" ] || [ "$CDN_URL" = "None" ]; then
+            CDN_URL="https://$(output CloudFrontDomain)"
+          fi
+          echo "API_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "USER_POOL_ID=$USER_POOL_ID" >> "$GITHUB_ENV"
+          echo "USER_POOL_CLIENT_ID=$USER_POOL_CLIENT_ID" >> "$GITHUB_ENV"
+          echo "CDN_URL=$CDN_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_API_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$USER_POOL_ID" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$USER_POOL_CLIENT_ID" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_CDN_URL=$CDN_URL" >> "$GITHUB_ENV"
+          echo "ApiUrl=$API_URL" >> "$GITHUB_OUTPUT"
+          echo "UserPoolId=$USER_POOL_ID" >> "$GITHUB_OUTPUT"
+          echo "CdnUrl=$CDN_URL" >> "$GITHUB_OUTPUT"
 
-          echo "NEXT_PUBLIC_API_URL=$(output ApiUrl)" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_COGNITO_USER_POOL_ID=$(output UserPoolId)" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_COGNITO_CLIENT_ID=$(output UserPoolClientId)" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_CDN_URL=https://$(output CloudFrontDomain)" >> "$GITHUB_ENV"
+      - name: Deploy OccasionFun Amplify stack
+        env:
+          GITHUB_PAT: ${{ secrets.OCC_AMPLIFY_GITHUB_TOKEN || secrets.AMPLIFY_GITHUB_ACCESS_TOKEN }}
+          STRIPE_PK: ${{ secrets.OCC_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          RAZOR_PK: ${{ secrets.OCC_RAZOR_KEY_ID || secrets.RAZOR_KEY_ID }}
+        run: |
+          if [ -z "${GITHUB_PAT:-}" ]; then
+            echo "::warning::Set GitHub secret OCC_AMPLIFY_GITHUB_TOKEN (PAT with repo scope) so CloudFormation can create the Amplify app. Backend stack $BACKEND_STACK is live; Amplify was skipped."
+            echo "Create an Amplify app named 'occasionfun', connect this repo, branch dev-occ, then set:"
+            echo "  NEXT_PUBLIC_API_URL=$API_URL"
+            echo "  NEXT_PUBLIC_SITE_URL=$SITE_URL"
+            echo "  NEXT_PUBLIC_COGNITO_USER_POOL_ID=$USER_POOL_ID"
+            echo "  NEXT_PUBLIC_COGNITO_CLIENT_ID=$USER_POOL_CLIENT_ID"
+            echo "  NEXT_PUBLIC_COGNITO_REGION=$AWS_REGION"
+            echo "  NEXT_PUBLIC_CDN_URL=$CDN_URL"
+            echo "  NEXT_PUBLIC_IMAGE_MODE=cdn"
+            exit 0
+          fi
+          PARAMS=(
+            "NamePrefix=occasionfun"
+            "Environment=prod"
+            "Repository=https://github.com/${GITHUB_REPOSITORY}"
+            "GithubAccessToken=${GITHUB_PAT}"
+            "BranchName=dev-occ"
+            "DomainName=occasionfun.com"
+            "EnableCustomDomain=false"
+            "ApiUrl=${API_URL}"
+            "UserPoolId=${USER_POOL_ID}"
+            "UserPoolClientId=${USER_POOL_CLIENT_ID}"
+            "CdnUrl=${CDN_URL}"
+            "SiteUrl=${SITE_URL}"
+            "CognitoRegion=${AWS_REGION}"
+            "StripePublishableKey=${STRIPE_PK}"
+            "RazorpayKeyId=${RAZOR_PK}"
+          )
+          aws cloudformation deploy \
+            --stack-name "$AMPLIFY_STACK" \
+            --template-file infrastructure/amplify.yaml \
+            --parameter-overrides "${PARAMS[@]}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset
+          echo "Amplify stack $AMPLIFY_STACK updated."
+          aws cloudformation describe-stacks --stack-name "$AMPLIFY_STACK" \
+            --query "Stacks[0].Outputs" --output table
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+      - run: npm ci
       - run: npm run build -w @halloweenready/shared
       - run: npm run build -w @halloweenready/web
         env:
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.RAZOR_KEY_ID }}
+          NEXT_PUBLIC_SITE_URL: https://www.occasionfun.com
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.OCC_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.OCC_RAZOR_KEY_ID || secrets.RAZOR_KEY_ID }}
           NEXT_PUBLIC_COGNITO_REGION: ${{ env.AWS_REGION }}
           NEXT_PUBLIC_USD_INR_RATE: ${{ secrets.NEXT_PUBLIC_USD_INR_RATE }}
-          NEXT_PUBLIC_META_PIXEL_ID: ${{ secrets.NEXT_PUBLIC_META_PIXEL_ID }}
-          NEXT_PUBLIC_CLARITY_ID: ${{ secrets.NEXT_PUBLIC_CLARITY_ID }}
-          NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID }}
-          NEXT_PUBLIC_GA4_ID: ${{ secrets.NEXT_PUBLIC_GA4_ID }}
+          NEXT_PUBLIC_META_PIXEL_ID: ${{ secrets.OCC_NEXT_PUBLIC_META_PIXEL_ID }}
+          NEXT_PUBLIC_CLARITY_ID: ${{ secrets.OCC_NEXT_PUBLIC_CLARITY_ID }}
+          NEXT_PUBLIC_GTM_ID: ${{ secrets.OCC_NEXT_PUBLIC_GTM_ID }}
+          NEXT_PUBLIC_GA4_ID: ${{ secrets.OCC_NEXT_PUBLIC_GA4_ID }}
 
-      - name: Amplify publishes the live site
+      - name: Print GoDaddy DNS checklist
         run: |
-          echo "Next.js production build succeeded."
-          echo "AWS Amplify (amplify.yml) publishes halloweenready.com / the dev Amplify URL from this repo."
+          echo "Point occasionfun.com at the new Amplify app (not HalloweenReady):"
+          echo "  1. Amplify Hosting → occasionfun → Domain management → copy CNAME records to GoDaddy"
+          echo "  2. SES DKIM: aws cloudformation describe-stacks --stack-name $BACKEND_STACK --query 'Stacks[0].Outputs'"
+          echo "  3. Create an admin Cognito user in pool $USER_POOL_ID and add them to the admin group"
+          echo "Backend API: $API_URL"
+          echo "CDN: $CDN_URL"

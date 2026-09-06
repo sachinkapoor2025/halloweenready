@@ -88,14 +88,14 @@ export default function SettingsPage() {
       </p>
       <ul className="text-sm text-slate-600 list-disc pl-5 space-y-1">
         <li>
-          <strong>Website / orders / coupons</strong> — sent from <code>order@halloweenready.com</code> via{" "}
-          <code>mail.halloweenready.com</code>. Copies go to the customer,{" "}
-          <code>order@halloweenready.com</code>, <code>order@usarakhi.com</code>, and{" "}
+          <strong>Website / orders / coupons</strong> — sent from <code>order@occasionfun.com</code> via{" "}
+          <code>mail.occasionfun.com</code>. Copies go to the customer,{" "}
+          <code>order@occasionfun.com</code>, <code>order@usarakhi.com</code>, and{" "}
           <code>priya.yadav@mydgv.com</code> (server config; not edited here).
         </li>
         <li>
           <strong>Marketing campaigns</strong> — Mailercloud below; From ={" "}
-          <code>email@halloweenready.com</code>
+          <code>email@occasionfun.com</code>
         </li>
       </ul>
 
@@ -105,10 +105,10 @@ export default function SettingsPage() {
           Marketing only — host <code>smtp-prod.mailrcld.com</code>, port <code>587</code>, STARTTLS
           (secure unchecked). SMTP login can be your Mailercloud user.{" "}
           <strong>Default sender</strong> must be the verified Sender ID{" "}
-          <code>email@halloweenready.com</code>.
+          <code>email@occasionfun.com</code>.
         </p>
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Never set SMTP host to <code>smtp.halloweenready.com</code> here. That mailbox has a low daily
+          Never set SMTP host to <code>smtp.occasionfun.com</code> here. That mailbox has a low daily
           send limit (~220) used for order notifications — using it for campaigns blocks coupons and
           order emails for the rest of the day.
         </p>
@@ -198,8 +198,8 @@ export default function SettingsPage() {
           </p>
         )}
         <p className="text-xs text-slate-500">
-          Use the SMTP username shown in Mailercloud (often <code>order@halloweenready.com</code>). Do not use
-          the transactional <code>smtp.halloweenready.com</code> mailbox password here.
+          Use the SMTP username shown in Mailercloud (often <code>order@occasionfun.com</code>). Do not use
+          the transactional <code>smtp.occasionfun.com</code> mailbox password here.
         </p>
       </div>
 

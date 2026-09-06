@@ -1,5 +1,5 @@
-/** CloudFront distribution for product/media images (halloweenready-prod, not hr-ecom/usarakhi). */
-export declare const DEFAULT_PRODUCT_CDN = "https://d2lfdzx32wxe94.cloudfront.net";
+/** CloudFront for product images — set NEXT_PUBLIC_CDN_URL / CLOUDFRONT_DOMAIN. Never default to HalloweenReady. */
+export declare const DEFAULT_PRODUCT_CDN = "";
 export declare function getProductCdnBase(cdnBase?: string): string;
 /** Static path served from apps/web/public/uploads (Amplify). */
 export declare function staticUploadUrl(relativePath: string): string;

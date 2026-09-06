@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useApiClient } from "@/lib/auth-context";
 import { ensureStarterEmailTemplates } from "@/lib/ensure-starter-email-templates";
-import { SES_TIMEZONES, type SesCampaign, type SesTemplate } from "@halloweenready/shared";
+import { SES_TIMEZONES, BRAND, type SesCampaign, type SesTemplate } from "@halloweenready/shared";
 
 const DEFAULT_HTML =
-  `<h1>Hello {{name}}</h1><p>A note from HalloweenReady for {{company}}.</p><p><a href="https://www.halloweenready.com/products">Shop Halloween</a></p>`;
+  `<h1>Hello {{name}}</h1><p>A note from ${BRAND.name} for {{company}}.</p><p><a href="${BRAND.siteUrl}/products">Shop now</a></p>`;
 
 function ComposeInner() {
   const api = useApiClient();
@@ -18,9 +18,9 @@ function ComposeInner() {
 
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
-  const [senderName, setSenderName] = useState("HalloweenReady");
-  const [senderEmail, setSenderEmail] = useState("email@halloweenready.com");
-  const [replyTo, setReplyTo] = useState("email@halloweenready.com");
+  const [senderName, setSenderName] = useState<string>(BRAND.name);
+  const [senderEmail, setSenderEmail] = useState<string>(BRAND.marketingEmail);
+  const [replyTo, setReplyTo] = useState<string>(BRAND.marketingEmail);
   const [htmlBody, setHtmlBody] = useState(DEFAULT_HTML);
   const [templateId, setTemplateId] = useState("");
   const [mode, setMode] = useState<"now" | "later">("now");

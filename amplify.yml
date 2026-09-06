@@ -40,3 +40,5 @@ applications:
         NEXT_PUBLIC_BING_SITE_VERIFICATION: ${NEXT_PUBLIC_BING_SITE_VERIFICATION}
         NEXT_PUBLIC_BING_UET_ID: ${NEXT_PUBLIC_BING_UET_ID}
         NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
+        # OccasionFun Amplify app must set NEXT_PUBLIC_API_URL / NEXT_PUBLIC_CDN_URL
+        # from stack occasionfun-prod — never the HalloweenReady execute-api URL.

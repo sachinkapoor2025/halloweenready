@@ -75,17 +75,19 @@ describe("mergeProductImages / resolveProductImagesForUpsert", () => {
 });
 
 describe("resolveProductImageUrl", () => {
+  const cdn = "https://cdn.example.com";
+
   it("rewrites relative /uploads paths to the product CDN", () => {
     assert.equal(
-      resolveProductImageUrl("/uploads/orange-county/TFUSA007/TFUSA007.jpg"),
-      "https://d2lfdzx32wxe94.cloudfront.net/uploads/orange-county/TFUSA007/TFUSA007.jpg"
+      resolveProductImageUrl("/uploads/orange-county/TFUSA007/TFUSA007.jpg", cdn),
+      "https://cdn.example.com/uploads/orange-county/TFUSA007/TFUSA007.jpg"
     );
   });
 
   it("rewrites legacy WordPress upload URLs to the CDN", () => {
     assert.equal(
-      resolveProductImageUrl("https://halloweenready.com/wp-content/uploads/2026/03/photo.jpg"),
-      "https://d2lfdzx32wxe94.cloudfront.net/uploads/2026/03/photo.jpg"
+      resolveProductImageUrl("https://halloweenready.com/wp-content/uploads/2026/03/photo.jpg", cdn),
+      "https://cdn.example.com/uploads/2026/03/photo.jpg"
     );
   });
 });

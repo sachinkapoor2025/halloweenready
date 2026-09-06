@@ -1,4 +1,4 @@
-import { getApiUrl } from "@/lib/env";
+import { getApiUrl, siteUrl } from "@/lib/env";
 import { NextResponse } from "next/server";
 
 type Props = { params: Promise<{ token: string }> };
@@ -9,6 +9,6 @@ export async function GET(_req: Request, { params }: Props) {
     redirect: "manual",
     cache: "no-store",
   });
-  const location = res.headers.get("Location") || "https://www.halloweenready.com";
+  const location = res.headers.get("Location") || siteUrl;
   return NextResponse.redirect(location, 302);
 }

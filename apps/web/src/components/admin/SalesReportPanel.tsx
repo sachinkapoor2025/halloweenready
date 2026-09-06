@@ -19,7 +19,7 @@ function formatRevenue(usd: number, inr: number) {
 
 function downloadSalesExcel(period: SalesPeriodReport) {
   downloadCsv(
-    `halloweenready-sales-${period.period}-${new Date().toISOString().slice(0, 10)}.csv`,
+    `occasionfun-sales-${period.period}-${new Date().toISOString().slice(0, 10)}.csv`,
     [
       ["HalloweenReady Sales Report"],
       ["Period", period.label],

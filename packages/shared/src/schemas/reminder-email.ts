@@ -77,7 +77,7 @@ export function defaultCheckoutNudgeHtml(opts: {
         <tr><td style="padding:16px 28px 24px;border-top:1px solid #e2e8f0;">
           <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
             OccasionFun · Divit Global Ventures<br/>
-            You’re receiving this because you shared your email while browsing halloweenready.com.
+            You’re receiving this because you shared your email while browsing occasionfun.com.
           </p>
         </td></tr>
       </table>

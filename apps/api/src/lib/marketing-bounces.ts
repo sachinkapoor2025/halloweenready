@@ -5,11 +5,11 @@
  */
 
 import { GetCommand, PutCommand, UpdateCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { sesEmailKeys } from "@halloweenready/shared";
+import { BRAND, sesEmailKeys } from "@halloweenready/shared";
 import { docClient, now } from "./db";
 
 const TABLE =
-  process.env.EMAIL_CAMPAIGNS_TABLE ?? `halloweenready-email-campaigns-${process.env.ENVIRONMENT ?? "dev"}`;
+  process.env.EMAIL_CAMPAIGNS_TABLE ?? `${BRAND.namePrefix}-email-campaigns-${process.env.ENVIRONMENT ?? "dev"}`;
 
 const HARD_BOUNCE_RE =
   /\b(550|551|552|553|5\.1\.1|5\.1\.2|5\.4\.1|user unknown|mailbox unavailable|does not exist|invalid recipient|recipient rejected|address rejected|no such user|undeliverable)\b/i;

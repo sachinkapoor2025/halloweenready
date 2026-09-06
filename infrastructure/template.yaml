@@ -1,15 +1,54 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: HR E-Commerce — serverless stack (near-zero idle cost)
+Description: OccasionFun e-commerce backend (separate from HalloweenReady)
 
 Parameters:
   Environment:
     Type: String
-    Default: dev
+    Default: prod
     AllowedValues: [dev, staging, prod]
+  NamePrefix:
+    Type: String
+    Default: occasionfun
+    AllowedPattern: "^[a-z0-9-]+$"
+    Description: Resource name prefix. Must stay occasionfun on this branch so HalloweenReady tables/Lambdas are never touched.
+  BrandName:
+    Type: String
+    Default: OccasionFun
+  SiteUrl:
+    Type: String
+    Default: https://www.occasionfun.com
+  EmailDomain:
+    Type: String
+    Default: occasionfun.com
+    Description: SES identity domain (DKIM records must be added at the registrar)
+  SmtpHost:
+    Type: String
+    Default: mail.occasionfun.com
+  SmtpUser:
+    Type: String
+    Default: order@occasionfun.com
+  SmtpFrom:
+    Type: String
+    Default: order@occasionfun.com
+  NotifyEmail:
+    Type: String
+    Default: order@occasionfun.com,order@usarakhi.com,priya.yadav@mydgv.com
+  SesFromEmail:
+    Type: String
+    Default: email@occasionfun.com
+  SesReplyTo:
+    Type: String
+    Default: email@occasionfun.com
+  MarketingSmtpUser:
+    Type: String
+    Default: order@occasionfun.com
+  MarketingFromEmail:
+    Type: String
+    Default: email@occasionfun.com
   DomainName:
     Type: String
-    Default: ""
+    Default: occasionfun.com
   StripeSecretArn:
     Type: String
     Default: ""
@@ -41,7 +80,7 @@ Parameters:
     Type: String
     Default: ""
     NoEcho: true
-    Description: SMTP password for order@halloweenready.com (contact & order emails)
+    Description: SMTP password for order@occasionfun.com (contact & order emails)
   MarketingSmtpPassword:
     Type: String
     Default: ""
@@ -86,7 +125,7 @@ Parameters:
     Type: String
     Default: "false"
     AllowedValues: ["true", "false"]
-    Description: Deploy Orange County vendor HTTP API (optional; leave false for HalloweenReady)
+    Description: Deploy Orange County vendor HTTP API (optional; leave false for OccasionFun)
   OrangeCountyVendorApiKey:
     Type: String
     Default: ""
@@ -150,6 +189,7 @@ Globals:
         USER_POOL_ID: !Ref UserPool
         USER_POOL_CLIENT_ID: !Ref UserPoolClient
         ENVIRONMENT: !Ref Environment
+        NAME_PREFIX: !Ref NamePrefix
         LOAD_TEST_MODE: !Ref LoadTestMode
         STRIPE_SECRET_KEY: !Ref StripeSecretKey
         STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
@@ -158,27 +198,26 @@ Globals:
         RAZORPAY_KEY_SECRET: !Ref RazorpayKeySecret
         RAZORPAY_WEBHOOK_SECRET: !Ref RazorpayWebhookSecret
         CLOUDFRONT_DOMAIN: !GetAtt CloudFrontDistribution.DomainName
-        SMTP_HOST: mail.halloweenready.com
+        SMTP_HOST: !Ref SmtpHost
         SMTP_PORT: "465"
         SMTP_SECURE: "true"
-        SMTP_USER: order@halloweenready.com
-        SMTP_FROM: order@halloweenready.com
-        NOTIFY_EMAIL: order@halloweenready.com,order@usarakhi.com,priya.yadav@mydgv.com
+        SMTP_USER: !Ref SmtpUser
+        SMTP_FROM: !Ref SmtpFrom
+        NOTIFY_EMAIL: !Ref NotifyEmail
         SMTP_PASS: !Ref SmtpPassword
-        SITE_URL: https://www.halloweenready.com
+        SITE_URL: !Ref SiteUrl
         SES_AWS_REGION: us-east-1
         # Legacy SES_* names used only as marketing From fallbacks — keep as verified Sender ID.
-        SES_FROM_EMAIL: email@halloweenready.com
-        SES_REPLY_TO: email@halloweenready.com
-        # Marketing only (Mailercloud). Never point at smtp.halloweenready.com — that mailbox
-        # is reserved for transactional order/coupon/contact mail (SMTP_* above).
+        SES_FROM_EMAIL: !Ref SesFromEmail
+        SES_REPLY_TO: !Ref SesReplyTo
+        # Marketing only (Mailercloud). Never point at the transactional SMTP_* mailbox.
         MARKETING_TRANSPORT: smtp
         MARKETING_SMTP_HOST: smtp-prod.mailrcld.com
         MARKETING_SMTP_PORT: "587"
         MARKETING_SMTP_SECURE: "false"
-        MARKETING_SMTP_USER: order@halloweenready.com
+        MARKETING_SMTP_USER: !Ref MarketingSmtpUser
         MARKETING_SMTP_PASS: !Ref MarketingSmtpPassword
-        MARKETING_FROM_EMAIL: email@halloweenready.com
+        MARKETING_FROM_EMAIL: !Ref MarketingFromEmail
         USPS_CLIENT_ID: !Ref UspsClientId
         USPS_CLIENT_SECRET: !Ref UspsClientSecret
         USPS_SECRET_ARN: !Ref UspsSecretArn
@@ -196,13 +235,13 @@ Globals:
         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
         TWILIO_WHATSAPP_FROM: !Ref TwilioWhatsAppFrom
         CJ_API_KEY: !Ref CjApiKey
-        CJ_IMPORT_WORKER_FUNCTION: !Sub halloweenready-cj-import-${Environment}
+        CJ_IMPORT_WORKER_FUNCTION: !Sub ${NamePrefix}-cj-import-${Environment}
 
 Resources:
   ProductsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-products-${Environment}
+      TableName: !Sub ${NamePrefix}-products-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -235,7 +274,7 @@ Resources:
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-orders-${Environment}
+      TableName: !Sub ${NamePrefix}-orders-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -292,7 +331,7 @@ Resources:
   CartsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-carts-${Environment}
+      TableName: !Sub ${NamePrefix}-carts-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -326,7 +365,7 @@ Resources:
   CustomersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-customers-${Environment}
+      TableName: !Sub ${NamePrefix}-customers-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -359,7 +398,7 @@ Resources:
   EventsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-events-${Environment}
+      TableName: !Sub ${NamePrefix}-events-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -393,7 +432,7 @@ Resources:
   ConfigTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-config-${Environment}
+      TableName: !Sub ${NamePrefix}-config-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -411,7 +450,7 @@ Resources:
   EmailCampaignsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-email-campaigns-${Environment}
+      TableName: !Sub ${NamePrefix}-email-campaigns-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -454,7 +493,7 @@ Resources:
   ReminderEmailsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-reminder-emails-${Environment}
+      TableName: !Sub ${NamePrefix}-reminder-emails-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -486,7 +525,7 @@ Resources:
   PendingPaymentUnsubTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub halloweenready-pending-payment-unsub-${Environment}
+      TableName: !Sub ${NamePrefix}-pending-payment-unsub-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -504,6 +543,7 @@ Resources:
   UploadBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Sub ${NamePrefix}-uploads-${Environment}-${AWS::AccountId}
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -544,7 +584,7 @@ Resources:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Name: !Sub halloweenready-oac-${Environment}
+        Name: !Sub ${NamePrefix}-oac-${Environment}
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
@@ -554,6 +594,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
+        Comment: !Sub ${NamePrefix} product media CDN (${Environment})
         DefaultRootObject: index.html
         Origins:
           - Id: S3Origin
@@ -573,14 +614,14 @@ Resources:
   SesDomainIdentity:
     Type: AWS::SES::EmailIdentity
     Properties:
-      EmailIdentity: halloweenready.com
+      EmailIdentity: !Ref EmailDomain
       DkimSigningAttributes:
         NextSigningKeyLength: RSA_2048_BIT
 
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub halloweenready-users-${Environment}
+      UserPoolName: !Sub ${NamePrefix}-users-${Environment}
       AutoVerifiedAttributes: [email]
       UsernameAttributes: [email]
       AccountRecoverySetting:
@@ -591,16 +632,16 @@ Resources:
         EmailSendingAccount: COGNITO_DEFAULT
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_CODE
-        EmailSubject: Verify your HalloweenReady account
-        EmailMessage: |
-          Welcome to HalloweenReady!
+        EmailSubject: !Sub Verify your ${BrandName} account
+        EmailMessage: !Sub |
+          Welcome to ${BrandName}!
 
           Your verification code is {####}.
 
           This code expires in 24 hours. If you did not create an account, you can ignore this email.
 
-          — HalloweenReady Team
-          https://www.halloweenready.com
+          — ${BrandName} Team
+          ${SiteUrl}
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -619,7 +660,7 @@ Resources:
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub halloweenready-web-${Environment}
+      ClientName: !Sub ${NamePrefix}-web-${Environment}
       UserPoolId: !Ref UserPool
       GenerateSecret: false
       ExplicitAuthFlows:
@@ -660,7 +701,7 @@ Resources:
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-api-${Environment}
+      FunctionName: !Sub ${NamePrefix}-api-${Environment}
       Handler: index.handler
       CodeUri: ..
       Policies:
@@ -706,7 +747,7 @@ Resources:
             - Effect: Allow
               Action:
                 - lambda:InvokeFunction
-              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:halloweenready-cj-import-${Environment}
+              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${NamePrefix}-cj-import-${Environment}
       Events:
         ApiRoot:
           Type: HttpApi
@@ -726,7 +767,7 @@ Resources:
   CjImportWorkerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-cj-import-${Environment}
+      FunctionName: !Sub ${NamePrefix}-cj-import-${Environment}
       Handler: cj-import-worker.handler
       CodeUri: ..
       Timeout: 900
@@ -742,7 +783,7 @@ Resources:
             - Effect: Allow
               Action:
                 - lambda:InvokeFunction
-              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:halloweenready-cj-import-${Environment}
+              Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${NamePrefix}-cj-import-${Environment}
     Metadata:
       BuildMethod: makefile
 
@@ -751,7 +792,7 @@ Resources:
   ImageOptimizeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-image-optimize-${Environment}
+      FunctionName: !Sub ${NamePrefix}-image-optimize-${Environment}
       Handler: index.handler
       CodeUri: ..
       Timeout: 120
@@ -775,7 +816,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
 
-  # Optional Orange County vendor order feed (EnableVendorApi=true). Off by default for HalloweenReady.
+  # Optional Orange County vendor order feed (EnableVendorApi=true). Off by default for OccasionFun.
   # Storefront/admin traffic stays on HttpApi — vendors cannot reach those routes here.
   #
   # Retain policies: do NOT delete this API if the stack is updated/replaced or this
@@ -787,7 +828,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      Name: !Sub halloweenready-vendor-http-api-${Environment}
+      Name: !Sub ${NamePrefix}-vendor-http-api-${Environment}
       StageName: !Ref Environment
       CorsConfiguration:
         AllowMethods: ["GET", "POST", "OPTIONS"]
@@ -800,7 +841,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      FunctionName: !Sub halloweenready-vendor-api-${Environment}
+      FunctionName: !Sub ${NamePrefix}-vendor-api-${Environment}
       Handler: vendor-api.handler
       CodeUri: ..
       Environment:
@@ -808,7 +849,7 @@ Resources:
           ORDERS_TABLE: !Ref OrdersTable
           ENVIRONMENT: !Ref Environment
           ORANGE_COUNTY_VENDOR_API_KEY: !Ref OrangeCountyVendorApiKey
-          SITE_URL: https://www.halloweenready.com
+          SITE_URL: !Ref SiteUrl
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OrdersTable
@@ -868,7 +909,7 @@ Resources:
   ReviewEmailsCronFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-review-emails-${Environment}
+      FunctionName: !Sub ${NamePrefix}-review-emails-${Environment}
       Handler: scheduled.handler
       Timeout: 180
       MemorySize: 512
@@ -915,7 +956,7 @@ Resources:
   SesEmailCronFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-ses-email-${Environment}
+      FunctionName: !Sub ${NamePrefix}-ses-email-${Environment}
       Handler: ses-scheduled.handler
       Timeout: 120
       MemorySize: 512
@@ -925,16 +966,16 @@ Resources:
           EMAIL_CAMPAIGNS_TABLE: !Ref EmailCampaignsTable
           CONFIG_TABLE: !Ref ConfigTable
           ENVIRONMENT: !Ref Environment
-          SITE_URL: https://www.halloweenready.com
+          SITE_URL: !Ref SiteUrl
           SES_AWS_REGION: us-east-1
-          SES_FROM_EMAIL: email@halloweenready.com
-          SES_REPLY_TO: email@halloweenready.com
-          MARKETING_FROM_EMAIL: email@halloweenready.com
+          SES_FROM_EMAIL: !Ref SesFromEmail
+          SES_REPLY_TO: !Ref SesReplyTo
+          MARKETING_FROM_EMAIL: !Ref MarketingFromEmail
           MARKETING_TRANSPORT: smtp
           MARKETING_SMTP_HOST: smtp-prod.mailrcld.com
           MARKETING_SMTP_PORT: "587"
           MARKETING_SMTP_SECURE: "false"
-          MARKETING_SMTP_USER: order@halloweenready.com
+          MARKETING_SMTP_USER: !Ref MarketingSmtpUser
           MARKETING_SMTP_PASS: !Ref MarketingSmtpPassword
       Policies:
         - DynamoDBCrudPolicy:
@@ -963,7 +1004,7 @@ Resources:
   BounceSyncFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub halloweenready-bounce-sync-${Environment}
+      FunctionName: !Sub ${NamePrefix}-bounce-sync-${Environment}
       Handler: bounce-sync.handler
       Timeout: 120
       MemorySize: 512
@@ -972,7 +1013,7 @@ Resources:
         Variables:
           EMAIL_CAMPAIGNS_TABLE: !Ref EmailCampaignsTable
           ENVIRONMENT: !Ref Environment
-          SITE_URL: https://www.halloweenready.com
+          SITE_URL: !Ref SiteUrl
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EmailCampaignsTable
@@ -989,6 +1030,7 @@ Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
+      Name: !Sub ${NamePrefix}-http-api-${Environment}
       StageName: !Ref Environment
       CorsConfiguration:
         AllowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
@@ -1023,3 +1065,25 @@ Outputs:
     Value: !Ref UploadBucket
   CloudFrontDomain:
     Value: !GetAtt CloudFrontDistribution.DomainName
+  CdnUrl:
+    Description: HTTPS origin for product images (set NEXT_PUBLIC_CDN_URL to this)
+    Value: !Sub https://${CloudFrontDistribution.DomainName}
+  SiteUrl:
+    Value: !Ref SiteUrl
+  NamePrefix:
+    Value: !Ref NamePrefix
+  SesIdentity:
+    Description: Verify this domain in GoDaddy with the DKIM CNAMEs from SES
+    Value: !Ref EmailDomain
+  DkimToken1:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenName1
+  DkimValue1:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenValue1
+  DkimToken2:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenName2
+  DkimValue2:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenValue2
+  DkimToken3:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenName3
+  DkimValue3:
+    Value: !GetAtt SesDomainIdentity.DkimDNSTokenValue3

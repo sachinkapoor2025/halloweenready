@@ -1,4 +1,5 @@
-import { getApiUrl } from "@/lib/env";
+import { getApiUrl, siteUrl } from "@/lib/env";
+import { BRAND } from "@halloweenready/shared";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -12,7 +13,7 @@ export async function GET(_req: Request, { params }: Props) {
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Unsubscribe</title>
   <style>body{font-family:system-ui,sans-serif;max-width:480px;margin:48px auto;padding:0 16px;color:#0f172a}
   h1{font-size:22px}p{color:#475569;line-height:1.5}</style></head>
-  <body><h1>HalloweenReady</h1><p>${message.replace(/</g, "&lt;")}</p>
-  <p><a href="https://www.halloweenready.com">Return to store</a></p></body></html>`;
+  <body><h1>${BRAND.name}</h1><p>${message.replace(/</g, "&lt;")}</p>
+  <p><a href="${siteUrl}">Return to store</a></p></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }

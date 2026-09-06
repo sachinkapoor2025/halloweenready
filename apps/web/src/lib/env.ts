@@ -1,5 +1,5 @@
-/** Production API — fallback when Amplify build env vars are missing */
-export const PROD_API_URL = "https://c70qsnpe4g.execute-api.us-east-1.amazonaws.com/prod";
+/** No hardcoded HalloweenReady API — OccasionFun must set NEXT_PUBLIC_API_URL at build time. */
+export const PROD_API_URL = "";
 
 /** Amplify default URL for the branch being built (dev vs main). */
 export function getAmplifyBranchUrl(): string | undefined {
@@ -26,13 +26,15 @@ function readEnv(name: string, fallback: string): string {
 export function getApiUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (fromEnv) return normalizeApiUrl(fromEnv);
-  if (process.env.NODE_ENV === "production") return PROD_API_URL;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_API_URL is required for OccasionFun production builds");
+  }
   return "http://localhost:3001";
 }
 
 /**
  * Canonical site URL for SEO, sitemap, and Open Graph.
- * Prefer branch-specific Amplify env (main → halloweenready.com, dev → dev.*.amplifyapp.com).
+ * Prefer Amplify env (occasionfun.com or the Amplify default domain).
  * Falls back to Amplify's AWS_BRANCH/AWS_APP_ID when NEXT_PUBLIC_SITE_URL is unset.
  */
 export function getSiteUrl(): string {
@@ -46,14 +48,13 @@ export function getSiteUrl(): string {
   return "http://localhost:3000";
 }
 
-/** Production CDN — S3/CloudFront mirror for product images (WordPress no longer serves media). */
-export const PROD_CDN_URL = "https://d2lfdzx32wxe94.cloudfront.net";
+/** OccasionFun CDN — set NEXT_PUBLIC_CDN_URL from the occasionfun-prod CloudFront output. */
+export const PROD_CDN_URL = "";
 
-/** CloudFront (or cdn.halloweenready.com) base for product/media images migrated off WordPress. */
+/** CloudFront base for product/media images (never the HalloweenReady distribution). */
 export function getCdnUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_CDN_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, "");
-  if (process.env.NODE_ENV === "production") return PROD_CDN_URL;
   return PROD_CDN_URL;
 }
 

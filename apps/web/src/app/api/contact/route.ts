@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { contactFormSchema } from "@halloweenready/shared";
+import { contactFormSchema, BRAND } from "@halloweenready/shared";
 import { getApiUrl } from "@/lib/env";
 
 /** Proxies contact submissions to Lambda /leads (SMTP lives on API, not Amplify). */
@@ -36,14 +36,14 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: data.error ?? "Could not send message. Please try WhatsApp or email order@halloweenready.com." },
+        { error: data.error ?? `Could not send message. Please try WhatsApp or email ${BRAND.orderEmail}.` },
         { status: res.status >= 400 && res.status < 600 ? res.status : 502 }
       );
     }
 
     if (data.emailSent === false) {
       return NextResponse.json(
-        { error: "Your message was saved but email could not be sent. Please email order@halloweenready.com directly." },
+        { error: `Your message was saved but email could not be sent. Please email ${BRAND.orderEmail} directly.` },
         { status: 502 }
       );
     }

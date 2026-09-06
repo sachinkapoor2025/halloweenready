@@ -27,20 +27,21 @@ export const docClient = useMemory
     });
 
 const ENV = process.env.ENVIRONMENT ?? "dev";
+const NAME_PREFIX = process.env.NAME_PREFIX ?? "occasionfun";
 
 /** Per-domain tables (multi-table design). Each can be overridden by env var. */
-export const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE ?? `halloweenready-products-${ENV}`;
-export const ORDERS_TABLE = process.env.ORDERS_TABLE ?? `halloweenready-orders-${ENV}`;
-export const CARTS_TABLE = process.env.CARTS_TABLE ?? `halloweenready-carts-${ENV}`;
-export const CUSTOMERS_TABLE = process.env.CUSTOMERS_TABLE ?? `halloweenready-customers-${ENV}`;
-export const EVENTS_TABLE = process.env.EVENTS_TABLE ?? `halloweenready-events-${ENV}`;
-export const CONFIG_TABLE = process.env.CONFIG_TABLE ?? `halloweenready-config-${ENV}`;
+export const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE ?? `${NAME_PREFIX}-products-${ENV}`;
+export const ORDERS_TABLE = process.env.ORDERS_TABLE ?? `${NAME_PREFIX}-orders-${ENV}`;
+export const CARTS_TABLE = process.env.CARTS_TABLE ?? `${NAME_PREFIX}-carts-${ENV}`;
+export const CUSTOMERS_TABLE = process.env.CUSTOMERS_TABLE ?? `${NAME_PREFIX}-customers-${ENV}`;
+export const EVENTS_TABLE = process.env.EVENTS_TABLE ?? `${NAME_PREFIX}-events-${ENV}`;
+export const CONFIG_TABLE = process.env.CONFIG_TABLE ?? `${NAME_PREFIX}-config-${ENV}`;
 export const EMAIL_CAMPAIGNS_TABLE =
-  process.env.EMAIL_CAMPAIGNS_TABLE ?? `halloweenready-email-campaigns-${ENV}`;
+  process.env.EMAIL_CAMPAIGNS_TABLE ?? `${NAME_PREFIX}-email-campaigns-${ENV}`;
 export const REMINDER_EMAILS_TABLE =
-  process.env.REMINDER_EMAILS_TABLE ?? `halloweenready-reminder-emails-${ENV}`;
+  process.env.REMINDER_EMAILS_TABLE ?? `${NAME_PREFIX}-reminder-emails-${ENV}`;
 export const PENDING_PAYMENT_UNSUB_TABLE =
-  process.env.PENDING_PAYMENT_UNSUB_TABLE ?? `halloweenready-pending-payment-unsub-${ENV}`;
+  process.env.PENDING_PAYMENT_UNSUB_TABLE ?? `${NAME_PREFIX}-pending-payment-unsub-${ENV}`;
 
 /** All table names, useful for setup/migration scripts. */
 export const ALL_TABLES = {

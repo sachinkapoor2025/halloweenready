@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: OccasionFun Amplify storefront — separate app from HalloweenReady
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: occasionfun
+  Environment:
+    Type: String
+    Default: prod
+  Repository:
+    Type: String
+    Default: https://github.com/sachinkapoor2025/halloweenready
+  GithubAccessToken:
+    Type: String
+    NoEcho: true
+    Description: GitHub PAT with repo scope so Amplify can clone this repository
+  BranchName:
+    Type: String
+    Default: dev-occ
+  DomainName:
+    Type: String
+    Default: occasionfun.com
+  ApiUrl:
+    Type: String
+    Description: Backend HTTP API URL from the occasionfun SAM stack (includes /prod)
+  UserPoolId:
+    Type: String
+  UserPoolClientId:
+    Type: String
+  CdnUrl:
+    Type: String
+  SiteUrl:
+    Type: String
+    Default: https://www.occasionfun.com
+  CognitoRegion:
+    Type: String
+    Default: us-east-1
+  StripePublishableKey:
+    Type: String
+    Default: ""
+    NoEcho: true
+  RazorpayKeyId:
+    Type: String
+    Default: ""
+    NoEcho: true
+
+  EnableCustomDomain:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Set true only after the Amplify app exists and you are ready to attach occasionfun.com
+
+Conditions:
+  HasCustomDomain: !Equals [!Ref EnableCustomDomain, "true"]
+
+Resources:
+  AmplifyServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - amplify.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess-Amplify
+
+  AmplifyComputeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - amplify.amazonaws.com
+                - amplify.us-east-1.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess-Amplify
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Ref NamePrefix
+      Description: OccasionFun storefront (dev-occ). Do not connect halloweenready.com here.
+      Repository: !Ref Repository
+      AccessToken: !Ref GithubAccessToken
+      Platform: WEB_COMPUTE
+      IAMServiceRole: !GetAtt AmplifyServiceRole.Arn
+      ComputeRole: !GetAtt AmplifyComputeRole.Arn
+      EnableBranchAutoDeletion: false
+      EnvironmentVariables:
+        - Name: AMPLIFY_MONOREPO_APP_ROOT
+          Value: apps/web
+        - Name: _LIVE_UPDATES
+          Value: '[{"name":"Next.js version","pkg":"next","type":"internal","version":"latest"}]'
+        - Name: NEXT_PUBLIC_API_URL
+          Value: !Ref ApiUrl
+        - Name: NEXT_PUBLIC_SITE_URL
+          Value: !Ref SiteUrl
+        - Name: NEXT_PUBLIC_COGNITO_USER_POOL_ID
+          Value: !Ref UserPoolId
+        - Name: NEXT_PUBLIC_COGNITO_CLIENT_ID
+          Value: !Ref UserPoolClientId
+        - Name: NEXT_PUBLIC_COGNITO_REGION
+          Value: !Ref CognitoRegion
+        - Name: NEXT_PUBLIC_CDN_URL
+          Value: !Ref CdnUrl
+        - Name: NEXT_PUBLIC_IMAGE_MODE
+          Value: cdn
+        - Name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+          Value: !Ref StripePublishableKey
+        - Name: NEXT_PUBLIC_RAZORPAY_KEY_ID
+          Value: !Ref RazorpayKeyId
+
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref BranchName
+      Description: OccasionFun production branch
+      EnableAutoBuild: true
+      EnablePerformanceMode: false
+      Framework: Next.js - SSR
+      Stage: PRODUCTION
+      EnvironmentVariables:
+        - Name: NEXT_PUBLIC_API_URL
+          Value: !Ref ApiUrl
+        - Name: NEXT_PUBLIC_SITE_URL
+          Value: !Ref SiteUrl
+        - Name: NEXT_PUBLIC_COGNITO_USER_POOL_ID
+          Value: !Ref UserPoolId
+        - Name: NEXT_PUBLIC_COGNITO_CLIENT_ID
+          Value: !Ref UserPoolClientId
+        - Name: NEXT_PUBLIC_COGNITO_REGION
+          Value: !Ref CognitoRegion
+        - Name: NEXT_PUBLIC_CDN_URL
+          Value: !Ref CdnUrl
+        - Name: NEXT_PUBLIC_IMAGE_MODE
+          Value: cdn
+
+  AmplifyDomain:
+    Type: AWS::Amplify::Domain
+    Condition: HasCustomDomain
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      DomainName: !Ref DomainName
+      EnableAutoSubDomain: false
+      SubDomainSettings:
+        - Prefix: www
+          BranchName: !Ref BranchName
+        - Prefix: ""
+          BranchName: !Ref BranchName
+
+Outputs:
+  AmplifyAppId:
+    Value: !GetAtt AmplifyApp.AppId
+  AmplifyDefaultDomain:
+    Value: !GetAtt AmplifyApp.DefaultDomain
+  AmplifyBranchUrl:
+    Value: !Sub https://${BranchName}.${AmplifyApp.DefaultDomain}
+  CustomDomain:
+    Condition: HasCustomDomain
+    Value: !Ref DomainName

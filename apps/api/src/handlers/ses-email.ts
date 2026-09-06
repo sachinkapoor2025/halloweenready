@@ -24,6 +24,7 @@ import {
   DEFAULT_SENDER_MESSAGE_FOOTER,
   sesEmailKeys,
   orderKeys,
+  BRAND,
   type SesCampaign,
   type SesSettings,
   type SesRecipient,
@@ -54,20 +55,20 @@ import {
   upsertSuppression,
 } from "../lib/marketing-bounces";
 
-const TABLE = process.env.EMAIL_CAMPAIGNS_TABLE ?? `halloweenready-email-campaigns-${process.env.ENVIRONMENT ?? "dev"}`;
-const ORDERS_TABLE = process.env.ORDERS_TABLE ?? `halloweenready-orders-${process.env.ENVIRONMENT ?? "dev"}`;
-const SITE_URL = (process.env.SITE_URL ?? "https://www.halloweenready.com").replace(/\/$/, "");
+const TABLE = process.env.EMAIL_CAMPAIGNS_TABLE ?? `${BRAND.namePrefix}-email-campaigns-${process.env.ENVIRONMENT ?? "dev"}`;
+const ORDERS_TABLE = process.env.ORDERS_TABLE ?? `${BRAND.namePrefix}-orders-${process.env.ENVIRONMENT ?? "dev"}`;
+const SITE_URL = (process.env.SITE_URL ?? BRAND.siteUrl).replace(/\/$/, "");
 
 function defaultSettings(): SesSettings {
   const port = Number(process.env.MARKETING_SMTP_PORT || 587);
   return sesSettingsSchema.parse({
     awsRegion: process.env.SES_AWS_REGION || process.env.AWS_REGION || "us-east-1",
-    defaultSenderName: "HalloweenReady",
+    defaultSenderName: BRAND.name,
     // Mailercloud verified Sender ID (From). SMTP login user may differ (smtpUser).
     defaultSenderEmail:
-      process.env.MARKETING_FROM_EMAIL || process.env.SES_FROM_EMAIL || "email@halloweenready.com",
+      process.env.MARKETING_FROM_EMAIL || process.env.SES_FROM_EMAIL || BRAND.marketingEmail,
     defaultReplyTo:
-      process.env.MARKETING_FROM_EMAIL || process.env.SES_REPLY_TO || "email@halloweenready.com",
+      process.env.MARKETING_FROM_EMAIL || process.env.SES_REPLY_TO || BRAND.marketingEmail,
     dailyLimit: 50_000,
     maxSendRatePerMinute: 600,
     batchSize: 50,
@@ -83,7 +84,7 @@ function defaultSettings(): SesSettings {
     // Port 587 = STARTTLS; ignore MARKETING_SMTP_SECURE=true mistakes on 587.
     smtpSecure: (Number.isFinite(port) && port > 0 ? port : 587) === 465,
     // Marketing login/from defaults — never transactional order@ SMTP host.
-    smtpUser: process.env.MARKETING_SMTP_USER || "order@halloweenready.com",
+    smtpUser: process.env.MARKETING_SMTP_USER || BRAND.orderEmail,
     // Prefer Lambda env so sends work even before Admin saves a password.
     smtpPassword: process.env.MARKETING_SMTP_PASS?.trim() || "",
   });

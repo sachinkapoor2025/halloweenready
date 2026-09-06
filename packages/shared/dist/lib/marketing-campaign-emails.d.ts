@@ -202,7 +202,7 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
     readonly footerTagline: "Halloween Decorations & Party Supplies";
     readonly footerLogoUrl: "https://www.occasionfun.com/logo.png";
     readonly websiteUrl: "https://occasionfun.com";
-    readonly websiteLabel: "halloweenready.com";
+    readonly websiteLabel: "occasionfun.com";
     readonly orderEmail: "order@occasionfun.com";
     readonly facebookUrl: "https://www.facebook.com/halloweenready/";
     readonly facebookIconUrl: "https://www.occasionfun.com/email-templates/icons/facebook.png";

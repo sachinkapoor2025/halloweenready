@@ -3,6 +3,7 @@ import type {
   AttributionConfidence,
   TrafficTouch,
 } from "../schemas/attribution";
+import { BRAND } from "./brand";
 
 export type ResolveTrafficInput = {
   /** Full page URL or path+search (may include utm_* / click ids). */
@@ -36,7 +37,11 @@ const SOCIAL_PLATFORMS: Array<{ match: RegExp; source: string }> = [
   { match: /(^|\.)(reddit\.com)$/i, source: "reddit" },
 ];
 
-const INTERNAL_HOSTS = [/halloweenready\.com$/i, /localhost$/i, /amplifyapp\.com$/i];
+const INTERNAL_HOSTS = [
+  new RegExp(`${BRAND.domain.replace(/\./g, "\\.")}$`, "i"),
+  /localhost$/i,
+  /amplifyapp\.com$/i,
+];
 
 const CLICK_ID_KEYS = ["gclid", "wbraid", "gbraid", "msclkid", "fbclid", "ttclid", "twclid", "li_fat_id", "yclid"] as const;
 
@@ -44,7 +49,7 @@ function safeUrl(raw?: string): URL | null {
   if (!raw?.trim()) return null;
   try {
     if (raw.startsWith("http://") || raw.startsWith("https://")) return new URL(raw);
-    if (raw.startsWith("/")) return new URL(raw, "https://www.halloweenready.com");
+    if (raw.startsWith("/")) return new URL(raw, BRAND.siteUrl);
     return new URL(`https://${raw}`);
   } catch {
     return null;

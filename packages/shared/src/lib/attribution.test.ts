@@ -109,7 +109,7 @@ describe("resolveTrafficSource", () => {
   it("does not treat internal referrer as acquisition", () => {
     const t = resolveTrafficSource({
       pageUrl: "/cart",
-      referrer: "https://www.halloweenready.com/products",
+      referrer: "https://www.occasionfun.com/products",
     });
     assert.equal(t.source, "internal");
   });
@@ -176,7 +176,7 @@ describe("order route rebuild", () => {
         path: "/products/pearl-rakhi",
         productSlug: "pearl-rakhi",
         createdAt: "2026-08-01T10:34:00.000Z",
-        referrer: "https://www.halloweenready.com/",
+        referrer: "https://www.occasionfun.com/",
       },
       {
         type: "page_view",

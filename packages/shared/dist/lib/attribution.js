@@ -11,6 +11,7 @@ exports.touchKey = touchKey;
 exports.assistedFromTouches = assistedFromTouches;
 exports.confidenceRank = confidenceRank;
 exports.overallAttributionConfidence = overallAttributionConfidence;
+const brand_1 = require("./brand");
 const SEARCH_ENGINES = [
     { match: /google\./i, source: "google" },
     { match: /bing\./i, source: "bing" },
@@ -32,7 +33,11 @@ const SOCIAL_PLATFORMS = [
     { match: /(^|\.)(threads\.net)$/i, source: "threads" },
     { match: /(^|\.)(reddit\.com)$/i, source: "reddit" },
 ];
-const INTERNAL_HOSTS = [/halloweenready\.com$/i, /localhost$/i, /amplifyapp\.com$/i];
+const INTERNAL_HOSTS = [
+    new RegExp(`${brand_1.BRAND.domain.replace(/\./g, "\\.")}$`, "i"),
+    /localhost$/i,
+    /amplifyapp\.com$/i,
+];
 const CLICK_ID_KEYS = ["gclid", "wbraid", "gbraid", "msclkid", "fbclid", "ttclid", "twclid", "li_fat_id", "yclid"];
 function safeUrl(raw) {
     if (!raw?.trim())
@@ -41,7 +46,7 @@ function safeUrl(raw) {
         if (raw.startsWith("http://") || raw.startsWith("https://"))
             return new URL(raw);
         if (raw.startsWith("/"))
-            return new URL(raw, "https://www.halloweenready.com");
+            return new URL(raw, brand_1.BRAND.siteUrl);
         return new URL(`https://${raw}`);
     }
     catch {

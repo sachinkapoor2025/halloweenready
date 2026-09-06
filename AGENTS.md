@@ -66,7 +66,7 @@ npm run dev:api      # SAM local API on :3001
 
 ## Deploy
 
-Push to `main` triggers GitHub Actions. Do not manually deploy unless fixing CI.
+On branch `dev-occ`, push deploys **OccasionFun** only (`occasionfun-prod` + `occasionfun-amplify-prod`). HalloweenReady still deploys from `dev` / `main`. See `docs/OCCASIONFUN.md`. Do not merge `dev-occ` into `main`.
 
 ## Common Prompts (Examples)
 

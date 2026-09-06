@@ -7,6 +7,7 @@ import {
   cjSaveApiKeySchema,
   cjSearchQuerySchema,
   VENDOR_CJ_DROPSHIPPING,
+  BRAND,
 } from "@halloweenready/shared";
 import { requireAdmin } from "../lib/auth";
 import { accepted, badGateway, badRequest, forbidden, notFound, ok, serverError } from "../lib/response";
@@ -313,7 +314,7 @@ export async function getCjTracking(event: APIGatewayProxyEventV2) {
 
 export async function enableCjWebhook(event: APIGatewayProxyEventV2) {
   if (!requireAdmin(event)) return forbidden();
-  const site = (process.env.SITE_URL || "https://www.halloweenready.com").replace(/\/$/, "");
+  const site = (process.env.SITE_URL || BRAND.siteUrl).replace(/\/$/, "");
   const apiBase = (process.env.PUBLIC_API_URL || process.env.LOCAL_API_URL || "").replace(/\/$/, "");
   const callback =
     JSON.parse(event.body ?? "{}").callbackUrl ||

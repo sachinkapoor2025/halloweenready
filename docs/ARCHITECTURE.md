@@ -55,11 +55,13 @@ halloweenready/
 | `zoom` | 1600px | WebP q80 | ~80–200KB | Lightbox |
 | original | 2000px | JPEG/WebP | ≤350KB target, 8MB hard cap | Fallback only |
 
-Lambda: `halloweenready-image-optimize-{env}` on S3 Object Created (EventBridge). Backfill: `npm run backfill:image-variants`.
+Lambda: `${NamePrefix}-image-optimize-{env}` on S3 Object Created (EventBridge). Backfill: `npm run backfill:image-variants`.
+
+On `dev-occ` the prefix is `occasionfun`. HalloweenReady (`dev`/`main`) keeps `halloweenready`.
 
 ## DynamoDB Multi-Table Design
 
-Per-domain tables (`PAY_PER_REQUEST`), named `halloweenready-<domain>-{env}` and wired into
+Per-domain tables (`PAY_PER_REQUEST`), named `<prefix>-<domain>-{env}` and wired into
 the Lambda via env vars (`PRODUCTS_TABLE`, `ORDERS_TABLE`, `CARTS_TABLE`,
 `CUSTOMERS_TABLE`, `EVENTS_TABLE`, `CONFIG_TABLE`).
 
@@ -187,9 +189,19 @@ Admin credentials for staging are in team 1Password / SSM — developers never s
 
 ## AWS Deployment (GitHub Actions)
 
+HalloweenReady (`dev` / `main`):
+
 ```
-push main → build shared → build api → sam deploy → build web → Amplify/OpenNext deploy
+push main → build shared → SAM stack halloweenready-prod → Amplify halloweenready.com
 ```
+
+OccasionFun (`dev-occ`):
+
+```
+push dev-occ → build shared → SAM stack occasionfun-prod → CloudFormation stack occasionfun-amplify-prod
+```
+
+Do not merge `dev-occ` into `main`. Details: `docs/OCCASIONFUN.md`.
 
 ### Estimated Monthly Cost (Low Traffic / Idle)
 

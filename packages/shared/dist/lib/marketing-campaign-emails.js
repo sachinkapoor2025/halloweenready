@@ -365,7 +365,7 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
     footerTagline: "Halloween Decorations & Party Supplies",
     footerLogoUrl: LOGO,
     websiteUrl: SITE_SHORT,
-    websiteLabel: "halloweenready.com",
+    websiteLabel: "occasionfun.com",
     orderEmail: "order@occasionfun.com",
     facebookUrl: "https://www.facebook.com/halloweenready/",
     facebookIconUrl: FB,
