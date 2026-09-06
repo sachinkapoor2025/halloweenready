@@ -17,7 +17,7 @@ export function Footer() {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 text-sm">
           {/* Brand + contact — full width on mobile, one column on desktop */}
           <div className="col-span-2 lg:col-span-1">
-            <SiteLogoLink size="desktop" className="mb-5" />
+            <SiteLogoLink size="desktop" tone="footer" className="mb-5" />
             <p className="text-white/80 leading-relaxed mb-4 max-w-xs">
               Halloween costumes, decor, and party supplies. Check product pages for destination shipping quotes.
             </p>
