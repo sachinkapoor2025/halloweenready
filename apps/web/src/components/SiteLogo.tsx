@@ -11,25 +11,17 @@ type SiteLogoProps = {
   size?: keyof typeof LOGO;
   priority?: boolean;
   className?: string;
-  /** Footer uses a black mark so it reads on the dark background. */
-  tone?: "header" | "footer";
 };
 
-export function SiteLogo({
-  size = "desktop",
-  priority = false,
-  className = "",
-  tone = "header",
-}: SiteLogoProps) {
+export function SiteLogo({ size = "desktop", priority = false, className = "" }: SiteLogoProps) {
   const { width, height, className: sizeClass } = LOGO[size];
-  const toneClass = tone === "footer" ? "brightness-0" : "";
   return (
     <Image
       src={site.logoSrc}
       alt={site.name}
       width={width}
       height={height}
-      className={`${sizeClass} ${toneClass} ${className}`.trim()}
+      className={`${sizeClass} ${className}`.trim()}
       priority={priority}
     />
   );
@@ -40,12 +32,10 @@ export function SiteLogoLink({
   priority = false,
   className = "",
   onClick,
-  tone = "header",
 }: SiteLogoProps & { onClick?: () => void }) {
-  const plateClass = tone === "footer" ? "rounded-full bg-white p-0.5" : "";
   return (
-    <Link href="/" className={`inline-block shrink-0 ${plateClass} ${className}`.trim()} onClick={onClick}>
-      <SiteLogo size={size} priority={priority} tone={tone} />
+    <Link href="/" className={`inline-block shrink-0 ${className}`.trim()} onClick={onClick}>
+      <SiteLogo size={size} priority={priority} />
     </Link>
   );
 }
