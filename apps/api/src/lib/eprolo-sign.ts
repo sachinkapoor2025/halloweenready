@@ -1,23 +1,31 @@
 import { createHash, createHmac } from "node:crypto";
 
-export type EproloSignAlgorithm = "md5-key-secret-timestamp" | "hmac-sha256-key-timestamp";
+export type EproloSignAlgorithm =
+  | "md5-key-timestamp-secret"
+  | "md5-key-secret-timestamp"
+  | "hmac-sha256-key-timestamp";
 
 /**
- * Eprolo partner Open API signing.
- * Default: uppercase MD5(openApiKey + openApiSecret + timestampMs).
- * Kept in the API package so Next.js never bundles node:crypto.
+ * Eprolo Open API signing. Live checks: MD5(openApiKey + timestamp + openApiSecret)
+ * is accepted (wrong formulas return JSON "sign error"; this one proceeds past auth).
  */
 export function eproloSign(
   openApiKey: string,
   openApiSecret: string,
   timestampMs: string,
-  algorithm: EproloSignAlgorithm = "md5-key-secret-timestamp"
+  algorithm: EproloSignAlgorithm = "md5-key-timestamp-secret"
 ): string {
   if (algorithm === "hmac-sha256-key-timestamp") {
     return createHmac("sha256", openApiSecret).update(`${openApiKey}${timestampMs}`).digest("hex");
   }
+  if (algorithm === "md5-key-secret-timestamp") {
+    return createHash("md5")
+      .update(`${openApiKey}${openApiSecret}${timestampMs}`)
+      .digest("hex")
+      .toUpperCase();
+  }
   return createHash("md5")
-    .update(`${openApiKey}${openApiSecret}${timestampMs}`)
+    .update(`${openApiKey}${timestampMs}${openApiSecret}`)
     .digest("hex")
     .toUpperCase();
 }
@@ -25,7 +33,7 @@ export function eproloSign(
 export function eproloAuth(
   openApiKey: string,
   openApiSecret: string,
-  algorithm: EproloSignAlgorithm = "md5-key-secret-timestamp",
+  algorithm: EproloSignAlgorithm = "md5-key-timestamp-secret",
   nowMs = Date.now()
 ): {
   timestamp: string;
@@ -38,28 +46,19 @@ export function eproloAuth(
   const sign = eproloSign(openApiKey, openApiSecret, timestamp, algorithm);
   const headers = {
     apiKey: openApiKey,
-    openApiKey,
     timestamp,
     sign,
-    signature: sign,
     "Content-Type": "application/json",
   };
-  const query = {
-    apiKey: openApiKey,
-    openApiKey,
-    timestamp,
-    sign,
-    signature: sign,
-  };
+  const query = { apiKey: openApiKey, timestamp, sign };
   const body = { ...query };
   return { timestamp, sign, headers, query, body };
 }
 
-/** @deprecated use eproloAuth */
 export function eproloAuthHeaders(
   openApiKey: string,
   openApiSecret: string,
-  algorithm: EproloSignAlgorithm = "md5-key-secret-timestamp",
+  algorithm: EproloSignAlgorithm = "md5-key-timestamp-secret",
   nowMs = Date.now()
 ): Record<string, string> {
   return eproloAuth(openApiKey, openApiSecret, algorithm, nowMs).headers;
@@ -71,4 +70,17 @@ export function withEproloQuery(url: string, query: Record<string, string>): str
     next.searchParams.set(key, value);
   }
   return next.toString();
+}
+
+/** Hide key/sign values in admin UI. */
+export function redactEproloUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    for (const key of ["apiKey", "openApiKey", "sign", "signature"]) {
+      if (parsed.searchParams.has(key)) parsed.searchParams.set(key, "REDACTED");
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }

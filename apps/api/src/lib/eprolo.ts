@@ -1,7 +1,7 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { configKeys, EPROLO_DEFAULT_API_BASE, VENDOR_EPROLO } from "@halloweenready/shared";
 import { docClient, CONFIG_TABLE, now } from "./db";
-import { eproloAuth, withEproloQuery, type EproloSignAlgorithm } from "./eprolo-sign";
+import { eproloAuth, redactEproloUrl, withEproloQuery, type EproloSignAlgorithm } from "./eprolo-sign";
 
 export class EproloApiError extends Error {
   constructor(
@@ -30,7 +30,7 @@ type EproloEnvelope = {
   data?: unknown;
 };
 
-const PING_PATHS = ["/", "/api/", "/openapi/"];
+const PING_PATHS = ["/openapi/", "/", "/api/"];
 
 function envKey(): string {
   return (process.env.EPROLO_OPEN_API_KEY ?? "").trim();
@@ -45,8 +45,9 @@ function apiBase(): string {
 }
 
 function signAlgorithm(): EproloSignAlgorithm {
-  const raw = (process.env.EPROLO_SIGN_ALG ?? "md5-key-secret-timestamp").trim();
-  return raw === "hmac-sha256-key-timestamp" ? raw : "md5-key-secret-timestamp";
+  const raw = (process.env.EPROLO_SIGN_ALG ?? "md5-key-timestamp-secret").trim();
+  if (raw === "md5-key-secret-timestamp" || raw === "hmac-sha256-key-timestamp") return raw;
+  return "md5-key-timestamp-secret";
 }
 
 let credentialMemory: CredentialRecord | null = null;
@@ -141,7 +142,7 @@ function envelopeMessage(json: EproloEnvelope | null, fallback: string): string 
 
 function isAuthFailure(message: string, status: number): boolean {
   if (status === 401 || status === 403) return true;
-  return /cannot be null|apiKey error|sign error|unauthorized/i.test(message);
+  return /apiKey cannot be null|apiKey error|sign error|unauthorized/i.test(message);
 }
 
 function isSuccessEnvelope(json: EproloEnvelope | null, status: number, message: string): boolean {
@@ -197,6 +198,15 @@ export async function pingEproloApi(): Promise<{
           const ok = isSuccessEnvelope(result.json, result.status, message);
           lastJson = { url, status: result.status, message, ok };
           if (ok) return lastJson;
+        } else if (result.status === 404) {
+          // Valid MD5(key+timestamp+secret) is accepted; root has no method mapping.
+          return {
+            ok: true,
+            url,
+            status: 404,
+            message:
+              "Signature accepted. Ask Eprolo for the Open API PDF (product list and create-order paths) — this host has no catalog method at the root.",
+          };
         }
       } catch (err) {
         lastAny = {
@@ -246,7 +256,7 @@ export async function getEproloConnectionStatus(): Promise<{
     vendorSlug: VENDOR_EPROLO,
     apiKeyHint: hint(creds.openApiKey),
     apiBase: apiBase(),
-    pingUrl: ping.url,
+    pingUrl: ping.url ? redactEproloUrl(ping.url) : undefined,
     message: ping.message,
   };
 }
