@@ -59,6 +59,7 @@ const navItems: NavItem[] = [
       { href: "/admin/vendor-management?tab=expense", label: "Vendor expense" },
       { href: "/admin/vendor-management?tab=api", label: "Vendor API" },
       { href: "/admin/cj-dropshipping", label: "CJ Dropshipping" },
+      { href: "/admin/eprolo", label: "Eprolo" },
     ],
   },
   { type: "link", href: "/admin/email", label: "Marketing Email" },

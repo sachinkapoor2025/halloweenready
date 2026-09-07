@@ -122,6 +122,8 @@ When admin sets order status to **Delivered** or **Complete**, the API sets `rev
 | GET | `/admin/cj/imports/{jobId}` | Admin: one CJ import job with per-product status |
 | GET | `/admin/cj/orders` | Admin: list CJ shopping orders |
 | POST | `/admin/cj/orders/{orderId}/fulfill` | Admin: create a CJ fulfillment order from a HalloweenReady order |
+| GET | `/admin/eprolo/status` | Admin: Eprolo Open API connection ping |
+| PUT | `/admin/eprolo/credentials` | Admin: save Eprolo openApiKey + openApiSecret |
 | POST | `/leads` | Save partial customer info |
 | POST | `/events` | First-party analytics events (batched, public) |
 | GET | `/orders` | User orders |

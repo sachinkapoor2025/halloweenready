@@ -125,6 +125,16 @@ Parameters:
     Default: ""
     NoEcho: true
     Description: CJ Dropshipping API Key (My CJ → Authorization → API). Not the website password.
+  EproloOpenApiKey:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Eprolo Open API key from the Eprolo account manager (openApiKey).
+  EproloOpenApiSecret:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Eprolo Open API secret from the Eprolo account manager (openApiSecret).
 
 Conditions:
   VendorApiEnabled: !Equals [!Ref EnableVendorApi, "true"]
@@ -196,6 +206,8 @@ Globals:
         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
         TWILIO_WHATSAPP_FROM: !Ref TwilioWhatsAppFrom
         CJ_API_KEY: !Ref CjApiKey
+        EPROLO_OPEN_API_KEY: !Ref EproloOpenApiKey
+        EPROLO_OPEN_API_SECRET: !Ref EproloOpenApiSecret
         CJ_IMPORT_WORKER_FUNCTION: !Sub halloweenready-cj-import-${Environment}
 
 Resources:

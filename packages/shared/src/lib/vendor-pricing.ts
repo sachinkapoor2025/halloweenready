@@ -3,6 +3,7 @@ import {
   ORANGE_COUNTY_LIST_MARKUP,
   ORANGE_COUNTY_SALE_MARKUP,
   VENDOR_CJ_DROPSHIPPING,
+  VENDOR_EPROLO,
 } from "../constants";
 
 /** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
@@ -11,6 +12,14 @@ export function isCjDropshippingProduct(product: {
   cjPid?: string | null;
 }): boolean {
   return product.vendorSlug === VENDOR_CJ_DROPSHIPPING || Boolean(product.cjPid);
+}
+
+/** Live catalog SKU imported from Eprolo. */
+export function isEproloProduct(product: {
+  vendorSlug?: string | null;
+  eproloProductId?: string | null;
+}): boolean {
+  return product.vendorSlug === VENDOR_EPROLO || Boolean(product.eproloProductId);
 }
 
 /** Round money to cents for USD (or currency-aware). */

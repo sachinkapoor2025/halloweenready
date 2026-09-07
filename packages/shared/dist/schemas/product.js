@@ -34,6 +34,10 @@ exports.productSchema = zod_1.z.object({
     vendorCost: zod_1.z.number().positive().optional(),
     /** CJ Dropshipping product id (pid). */
     cjPid: zod_1.z.string().min(1).max(80).optional(),
+    /** Eprolo catalog product id. */
+    eproloProductId: zod_1.z.string().min(1).max(80).optional(),
+    /** Eprolo SKU used when fulfilling. */
+    eproloSku: zod_1.z.string().min(1).max(80).optional(),
     /** Default CJ variant id used when the shopper does not pick another. */
     cjVid: zod_1.z.string().min(1).max(80).optional(),
     /** CJ variants for size/color (storefront picker). */

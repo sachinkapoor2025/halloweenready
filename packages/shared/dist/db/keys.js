@@ -98,6 +98,7 @@ exports.configKeys = {
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
     cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" },
+    eprolo: { pk: "CONFIG#EPROLO", sk: "META" },
     homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" },
     homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" },
     chat: { pk: "CONFIG#CHAT", sk: "META" },
