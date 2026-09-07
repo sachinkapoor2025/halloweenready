@@ -106,8 +106,8 @@ export default function AdminEproloPage() {
         <li>Push to main so deploy writes them onto Lambda, or paste below for this environment only.</li>
         <li>
           Ask the Eprolo account manager for the Open API PDF (product list and create-order method names). The host
-          is <code className="text-xs">https://openapi.eprolo.com</code> — we ping that root with header{" "}
-          <code className="text-xs">apiKey</code>.
+          is <code className="text-xs">https://openapi.eprolo.com</code> — we ping that root with{" "}
+          <code className="text-xs">apiKey</code> and a signed <code className="text-xs">sign</code> query.
         </li>
       </ol>
 

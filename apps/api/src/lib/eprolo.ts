@@ -1,7 +1,7 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { configKeys, EPROLO_DEFAULT_API_BASE, VENDOR_EPROLO } from "@halloweenready/shared";
 import { docClient, CONFIG_TABLE, now } from "./db";
-import { eproloAuthHeaders, type EproloSignAlgorithm } from "./eprolo-sign";
+import { eproloAuth, withEproloQuery, type EproloSignAlgorithm } from "./eprolo-sign";
 
 export class EproloApiError extends Error {
   constructor(
@@ -141,7 +141,7 @@ function envelopeMessage(json: EproloEnvelope | null, fallback: string): string 
 
 function isAuthFailure(message: string, status: number): boolean {
   if (status === 401 || status === 403) return true;
-  return /apiKey cannot be null|apiKey error|unauthorized/i.test(message);
+  return /cannot be null|apiKey error|sign error|unauthorized/i.test(message);
 }
 
 function isSuccessEnvelope(json: EproloEnvelope | null, status: number, message: string): boolean {
@@ -166,7 +166,7 @@ export async function pingEproloApi(): Promise<{
   if (!creds) {
     return { ok: false, message: "Eprolo openApiKey / openApiSecret are not configured." };
   }
-  const headers = eproloAuthHeaders(creds.openApiKey, creds.openApiSecret, signAlgorithm());
+  const auth = eproloAuth(creds.openApiKey, creds.openApiSecret, signAlgorithm());
   const base = apiBase();
   const paths = process.env.EPROLO_PING_PATH?.trim()
     ? [process.env.EPROLO_PING_PATH.trim()]
@@ -176,10 +176,18 @@ export async function pingEproloApi(): Promise<{
   let lastAny: { url: string; status: number; message: string } | undefined;
 
   for (const path of paths) {
-    const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    const url = withEproloQuery(
+      `${base}${path.startsWith("/") ? path : `/${path}`}`,
+      auth.query
+    );
     for (const method of ["GET", "POST"] as const) {
       try {
-        const result = await requestJson(url, headers, method, method === "POST" ? {} : undefined);
+        const result = await requestJson(
+          url,
+          auth.headers,
+          method,
+          method === "POST" ? auth.body : undefined
+        );
         const message = envelopeMessage(
           result.json,
           result.json ? `HTTP ${result.status}` : result.text.replace(/\s+/g, " ").slice(0, 180)
