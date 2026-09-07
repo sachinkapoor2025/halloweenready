@@ -13,6 +13,7 @@ describe("eprolo-sign", () => {
 
   it("puts key, timestamp, and sign on request headers", () => {
     const headers = eproloAuthHeaders("KEY", "SECRET", "md5-key-secret-timestamp", 1700000000000);
+    assert.equal(headers.apiKey, "KEY");
     assert.equal(headers.openApiKey, "KEY");
     assert.equal(headers.timestamp, "1700000000000");
     assert.equal(headers.sign, eproloSign("KEY", "SECRET", "1700000000000"));

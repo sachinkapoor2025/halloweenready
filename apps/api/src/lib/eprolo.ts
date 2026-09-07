@@ -30,13 +30,7 @@ type EproloEnvelope = {
   data?: unknown;
 };
 
-const PING_PATHS = [
-  "/open/product/list",
-  "/product/list",
-  "/open-api/product/list",
-  "/v1/product/list",
-  "/api/open/product/list",
-];
+const PING_PATHS = ["/", "/api/", "/openapi/"];
 
 function envKey(): string {
   return (process.env.EPROLO_OPEN_API_KEY ?? "").trim();
@@ -109,15 +103,16 @@ export async function saveEproloCredentials(openApiKey: string, openApiSecret: s
   });
 }
 
-async function postJson(
+async function requestJson(
   url: string,
   headers: Record<string, string>,
-  body: unknown
+  method: "GET" | "POST",
+  body?: unknown
 ): Promise<{ status: number; json: EproloEnvelope | null; text: string }> {
   const res = await fetch(url, {
-    method: "POST",
+    method,
     headers,
-    body: JSON.stringify(body),
+    body: method === "POST" && body !== undefined ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(8_000),
   });
   const text = await res.text();
@@ -140,9 +135,26 @@ function looksLikeApiJson(json: EproloEnvelope | null): boolean {
   );
 }
 
+function envelopeMessage(json: EproloEnvelope | null, fallback: string): string {
+  return json?.message || json?.msg || fallback;
+}
+
+function isAuthFailure(message: string, status: number): boolean {
+  if (status === 401 || status === 403) return true;
+  return /apiKey cannot be null|apiKey error|unauthorized/i.test(message);
+}
+
+function isSuccessEnvelope(json: EproloEnvelope | null, status: number, message: string): boolean {
+  if (!json) return false;
+  if (json.success === true || json.result === true) return true;
+  const code = json.code;
+  if (code === 0 || code === "0" || code === 200 || code === "200") return true;
+  return status < 400 && !isAuthFailure(message, status);
+}
+
 /**
- * POST a tiny product-list payload to the configured host (and a few common path aliases)
- * so we can confirm the key/secret/sign against Eprolo without importing catalog yet.
+ * Eprolo Open API is a Tomcat servlet at https://openapi.eprolo.com/ (also /api/ and /openapi/).
+ * Nested paths like /api/open/product/list return HTML 404. Auth header is `apiKey`.
  */
 export async function pingEproloApi(): Promise<{
   ok: boolean;
@@ -155,49 +167,47 @@ export async function pingEproloApi(): Promise<{
     return { ok: false, message: "Eprolo openApiKey / openApiSecret are not configured." };
   }
   const headers = eproloAuthHeaders(creds.openApiKey, creds.openApiSecret, signAlgorithm());
-  const body = { page: 1, pageSize: 1 };
   const base = apiBase();
   const paths = process.env.EPROLO_PING_PATH?.trim()
     ? [process.env.EPROLO_PING_PATH.trim()]
     : PING_PATHS;
 
-  let last: { url: string; status: number; message: string } | undefined;
+  let lastJson: { url: string; status: number; message: string; ok: boolean } | undefined;
+  let lastAny: { url: string; status: number; message: string } | undefined;
+
   for (const path of paths) {
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-    try {
-      const result = await postJson(url, headers, body);
-      const message =
-        result.json?.message ||
-        result.json?.msg ||
-        (result.json ? `HTTP ${result.status} code=${String(result.json.code ?? "")}` : result.text.slice(0, 180));
-      last = { url, status: result.status, message };
-      if (looksLikeApiJson(result.json)) {
-        const failedAuth =
-          result.status === 401 ||
-          result.status === 403 ||
-          /sign|auth|secret|key/i.test(message);
-        return {
-          ok: !failedAuth && result.status < 500,
+    for (const method of ["GET", "POST"] as const) {
+      try {
+        const result = await requestJson(url, headers, method, method === "POST" ? {} : undefined);
+        const message = envelopeMessage(
+          result.json,
+          result.json ? `HTTP ${result.status}` : result.text.replace(/\s+/g, " ").slice(0, 180)
+        );
+        lastAny = { url, status: result.status, message };
+        if (looksLikeApiJson(result.json)) {
+          const ok = isSuccessEnvelope(result.json, result.status, message);
+          lastJson = { url, status: result.status, message, ok };
+          if (ok) return lastJson;
+        }
+      } catch (err) {
+        lastAny = {
           url,
-          status: result.status,
-          message,
+          status: 0,
+          message: err instanceof Error ? err.message : "request failed",
         };
       }
-    } catch (err) {
-      last = {
-        url,
-        status: 0,
-        message: err instanceof Error ? err.message : "request failed",
-      };
     }
   }
+
+  if (lastJson) return lastJson;
   return {
     ok: false,
-    url: last?.url,
-    status: last?.status,
+    url: lastAny?.url,
+    status: lastAny?.status,
     message:
-      last?.message ||
-      `No JSON API response from ${base}. Ask Eprolo for the Open API document (base URL + product list path) and set EPROLO_API_BASE.`,
+      lastAny?.message ||
+      `No JSON API response from ${base}. Ask Eprolo for the Open API document (method paths).`,
   };
 }
 

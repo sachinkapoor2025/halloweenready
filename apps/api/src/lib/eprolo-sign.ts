@@ -31,6 +31,7 @@ export function eproloAuthHeaders(
   const timestamp = String(nowMs);
   const sign = eproloSign(openApiKey, openApiSecret, timestamp, algorithm);
   return {
+    apiKey: openApiKey,
     openApiKey,
     timestamp,
     sign,

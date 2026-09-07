@@ -105,8 +105,9 @@ export default function AdminEproloPage() {
         </li>
         <li>Push to main so deploy writes them onto Lambda, or paste below for this environment only.</li>
         <li>
-          Ask the Eprolo account manager for the Open API PDF if catalog search / create-order paths differ from our
-          default ping.
+          Ask the Eprolo account manager for the Open API PDF (product list and create-order method names). The host
+          is <code className="text-xs">https://openapi.eprolo.com</code> — we ping that root with header{" "}
+          <code className="text-xs">apiKey</code>.
         </li>
       </ol>
 
