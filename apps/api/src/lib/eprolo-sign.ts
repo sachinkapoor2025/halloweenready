@@ -1,14 +1,11 @@
 import { createHash, createHmac } from "node:crypto";
 
-/** Default Open API host; override with EPROLO_API_BASE if the partner PDF differs. */
-export const EPROLO_DEFAULT_API_BASE = "https://openapi.eprolo.com";
-
 export type EproloSignAlgorithm = "md5-key-secret-timestamp" | "hmac-sha256-key-timestamp";
 
 /**
  * Eprolo partner Open API signing.
- * Default matches the usual Chinese open-API pattern for openApiKey + openApiSecret:
- * uppercase MD5(openApiKey + openApiSecret + timestampMs).
+ * Default: uppercase MD5(openApiKey + openApiSecret + timestampMs).
+ * Kept in the API package so Next.js never bundles node:crypto.
  */
 export function eproloSign(
   openApiKey: string,

@@ -1,7 +1,6 @@
 export * from "./schemas/product";
 export * from "./schemas/cj-dropshipping";
 export * from "./schemas/eprolo";
-export * from "./lib/eprolo-sign";
 export * from "./lib/cj-category";
 export * from "./lib/cj-freight";
 export * from "./lib/cj-storefront-api";

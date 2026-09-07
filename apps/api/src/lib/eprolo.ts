@@ -1,12 +1,7 @@
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
-import {
-  configKeys,
-  EPROLO_DEFAULT_API_BASE,
-  eproloAuthHeaders,
-  type EproloSignAlgorithm,
-  VENDOR_EPROLO,
-} from "@halloweenready/shared";
+import { configKeys, EPROLO_DEFAULT_API_BASE, VENDOR_EPROLO } from "@halloweenready/shared";
 import { docClient, CONFIG_TABLE, now } from "./db";
+import { eproloAuthHeaders, type EproloSignAlgorithm } from "./eprolo-sign";
 
 export class EproloApiError extends Error {
   constructor(
