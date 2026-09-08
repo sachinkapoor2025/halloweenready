@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@halloweenready/shared";
+import { productHref } from "@/lib/product-urls";
 
 /** SEO internal links from category pages to individual product URLs. */
 export function CategoryProductLinks({
@@ -29,7 +30,7 @@ export function CategoryProductLinks({
         {listed.map((product) => (
           <li key={product.slug}>
             <Link
-              href={`/products/${product.slug}`}
+              href={productHref(product.slug)}
               className="text-nav font-medium hover:underline leading-snug"
             >
               {product.name}

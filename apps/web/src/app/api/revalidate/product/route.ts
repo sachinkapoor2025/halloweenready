@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/env";
+import { productHref } from "@/lib/product-urls";
 
 /** Admin-only: bust Next.js cache after product image changes in admin portal. */
 export async function POST(req: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   const slug = body.slug?.trim();
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
 
-  revalidatePath(`/products/${slug}`);
+  revalidatePath(productHref(slug));
   revalidatePath("/products");
   revalidatePath("/");
 

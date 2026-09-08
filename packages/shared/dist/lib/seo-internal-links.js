@@ -4,6 +4,7 @@ exports.FEATURED_BLOG_LINKS = exports.PLANNING_LINKS = exports.PRIORITY_CITY_LIN
 exports.pickStable = pickStable;
 exports.getInternalLinkGroups = getInternalLinkGroups;
 const shipping_availability_1 = require("./shipping-availability");
+const slugify_1 = require("./slugify");
 exports.SEO_CATEGORY_LINKS = [
     { href: "/categories/home-decoration", label: "Halloween decorations" },
     { href: "/categories/costumesandaccessories", label: "Halloween costumes" },
@@ -70,7 +71,7 @@ function pathFor(page) {
         case "category":
             return `/categories/${page.categorySlug}`;
         case "product":
-            return `/products/${page.productSlug}`;
+            return (0, slugify_1.productHref)(page.productSlug);
         case "country":
             return `/countries/${page.countrySlug}`;
         case "city":

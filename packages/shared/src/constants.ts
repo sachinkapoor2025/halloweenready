@@ -126,6 +126,9 @@ export const VENDOR_HALLOWEENREADY = "halloweenready" as const;
 /** CJ Dropshipping catalog + fulfillment vendor. */
 export const VENDOR_CJ_DROPSHIPPING = "cj-dropshipping" as const;
 
+/** Eprolo dropshipping catalog + fulfillment vendor. */
+export const VENDOR_EPROLO = "eprolo" as const;
+
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export const ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers" as const;
 

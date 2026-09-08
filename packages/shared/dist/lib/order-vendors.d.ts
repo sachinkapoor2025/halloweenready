@@ -1,6 +1,6 @@
-import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING } from "../constants";
-export { VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING };
-export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | typeof VENDOR_CJ_DROPSHIPPING | string;
+import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING, VENDOR_EPROLO } from "../constants";
+export { VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING, VENDOR_EPROLO };
+export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | typeof VENDOR_CJ_DROPSHIPPING | typeof VENDOR_EPROLO | string;
 export type VendorFulfillment = {
     vendorSlug: string;
     warehouseId?: string;
@@ -13,6 +13,9 @@ export type VendorFulfillment = {
     cjOrderId?: string;
     cjOrderNumber?: string;
     cjPayUrl?: string;
+    /** Eprolo fulfillment order id after create-order. */
+    eproloOrderId?: string;
+    eproloOrderNumber?: string;
 };
 export declare function lineVendorKey(item: {
     vendorSlug?: string | null;
@@ -69,6 +72,8 @@ export declare function upsertVendorFulfillment(fulfillments: VendorFulfillment[
     cjOrderId?: string;
     cjOrderNumber?: string;
     cjPayUrl?: string;
+    eproloOrderId?: string;
+    eproloOrderNumber?: string;
 }): VendorFulfillment[];
 export declare function allVendorsHaveTracking(fulfillments: VendorFulfillment[]): boolean;
 export declare function anyVendorHasTracking(fulfillments: VendorFulfillment[]): boolean;

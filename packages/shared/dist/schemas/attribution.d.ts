@@ -824,9 +824,9 @@ export declare const orderRouteEventSchema: z.ZodObject<{
     confidenceReason: z.ZodOptional<z.ZodString>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
+    timestamp: string;
     label: string;
     eventType: string;
-    timestamp: string;
     productSlug?: string | undefined;
     source?: string | undefined;
     medium?: string | undefined;
@@ -838,9 +838,9 @@ export declare const orderRouteEventSchema: z.ZodObject<{
     pageUrl?: string | undefined;
     metadata?: Record<string, string> | undefined;
 }, {
+    timestamp: string;
     label: string;
     eventType: string;
-    timestamp: string;
     productSlug?: string | undefined;
     source?: string | undefined;
     medium?: string | undefined;

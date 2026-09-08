@@ -1,5 +1,6 @@
 export * from "./schemas/product";
 export * from "./schemas/cj-dropshipping";
+export * from "./schemas/eprolo";
 export * from "./lib/cj-category";
 export * from "./lib/cj-freight";
 export * from "./lib/cj-storefront-api";
@@ -57,6 +58,7 @@ export * from "./lib/viewer-geo";
 export * from "./lib/admin-analytics-tz";
 export * from "./lib/identity";
 export * from "./lib/meta-description";
+export * from "./lib/slugify";
 export * from "./lib/delivery";
 export * from "./lib/client-device";
 export * from "./lib/abandoned-cart";

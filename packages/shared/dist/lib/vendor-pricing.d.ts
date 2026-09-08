@@ -4,6 +4,11 @@ export declare function isCjDropshippingProduct(product: {
     vendorSlug?: string | null;
     cjPid?: string | null;
 }): boolean;
+/** Live catalog SKU imported from Eprolo. */
+export declare function isEproloProduct(product: {
+    vendorSlug?: string | null;
+    eproloProductId?: string | null;
+}): boolean;
 /** Round money to cents for USD (or currency-aware). */
 export declare function roundMoney(n: number, currency?: ShopCurrency): number;
 /**

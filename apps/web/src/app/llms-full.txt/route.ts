@@ -3,6 +3,7 @@ import { siteUrl } from "@/lib/env";
 import { loadStorefrontProducts } from "@/lib/product-loader";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
+import { productHref } from "@/lib/product-urls";
 
 /**
  * llms-full.txt — detailed product catalog for AI assistants (GEO).
@@ -37,7 +38,7 @@ export async function GET() {
     .map((p) => {
       const desc = p.description.replace(/\s+/g, " ").slice(0, 200);
       const tags = p.tags?.length ? ` | Tags: ${p.tags.join(", ")}` : "";
-      return `- **${p.name}** | ${p.currency} ${p.price} | ${p.categorySlug} | ${siteUrl}/products/${p.slug}\n  ${desc}${tags}`;
+      return `- **${p.name}** | ${p.currency} ${p.price} | ${p.categorySlug} | ${siteUrl}${productHref(p.slug)}\n  ${desc}${tags}`;
     })
     .join("\n\n");
 

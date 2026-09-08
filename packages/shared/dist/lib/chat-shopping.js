@@ -16,6 +16,7 @@ exports.textBlock = textBlock;
 exports.actionsBlock = actionsBlock;
 const homepage_ranking_1 = require("./homepage-ranking");
 const shipping_availability_1 = require("./shipping-availability");
+const slugify_1 = require("./slugify");
 exports.CATEGORY_SLUGS = {
     costumes: "costumesandaccessories",
     decorations: "home-decoration",
@@ -360,7 +361,7 @@ function toAssistantProduct(product) {
         compareAtPrice: product.compareAtPrice,
         currency: product.currency ?? "USD",
         categorySlug: product.categorySlug,
-        url: `/products/${product.slug}`,
+        url: (0, slugify_1.productHref)(product.slug),
         inventory: product.inventory,
         available,
         badge,

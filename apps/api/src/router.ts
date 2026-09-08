@@ -28,6 +28,7 @@ import * as vendorManagement from "./handlers/vendor-management";
 import * as markets from "./handlers/markets";
 import * as reviews from "./handlers/reviews";
 import * as cjDropshipping from "./handlers/cj-dropshipping";
+import * as eprolo from "./handlers/eprolo";
 import * as cjProducts from "./handlers/cj-products";
 import { stripeWebhook } from "./handlers/payments/stripe";
 import {
@@ -348,6 +349,8 @@ const routes: Route[] = [
   },
   { method: "GET", pattern: /^\/admin\/cj\/tracking$/, handler: cjDropshipping.getCjTracking },
   { method: "POST", pattern: /^\/admin\/cj\/webhook$/, handler: cjDropshipping.enableCjWebhook },
+  { method: "GET", pattern: /^\/admin\/eprolo\/status$/, handler: eprolo.getEproloStatus },
+  { method: "PUT", pattern: /^\/admin\/eprolo\/credentials$/, handler: eprolo.saveEproloKey },
   /** Mailercloud bounce/complaint/unsub → marketing SUPPRESS# (no SMTP credential changes). */
   { method: "POST", pattern: /^\/webhooks\/mailercloud$/, handler: sesEmail.mailercloudWebhook },
   { method: "POST", pattern: /^\/payments\/razorpay\/verify$/, handler: verifyRazorpayPayment },

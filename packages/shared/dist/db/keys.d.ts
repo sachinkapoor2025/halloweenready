@@ -92,6 +92,10 @@ export declare const configKeys: {
         pk: string;
         sk: "META";
     };
+    eprolo: {
+        pk: string;
+        sk: "META";
+    };
     homepageRanking: {
         pk: string;
         sk: "META";

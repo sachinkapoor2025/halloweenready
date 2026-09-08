@@ -1,4 +1,4 @@
-import { VENDOR_ORANGE_COUNTY, VENDOR_CJ_DROPSHIPPING, VENDOR_HALLOWEENREADY, HALLOWEEN_HAMPERS_CATEGORY_SLUG } from "../constants";
+import { VENDOR_ORANGE_COUNTY, VENDOR_CJ_DROPSHIPPING, VENDOR_EPROLO, VENDOR_HALLOWEENREADY, HALLOWEEN_HAMPERS_CATEGORY_SLUG } from "../constants";
 
 export type ProductAddonGroup = "dry-fruits" | "chocolates";
 
@@ -105,7 +105,7 @@ export function productAllowsAddons(product: {
   if (product.tags?.includes("halloween-hamper")) return false;
   const v = product.vendorSlug?.trim();
   if (!v || v === VENDOR_HALLOWEENREADY) return true;
-  if (v === VENDOR_ORANGE_COUNTY || v === VENDOR_CJ_DROPSHIPPING) return false;
+  if (v === VENDOR_ORANGE_COUNTY || v === VENDOR_CJ_DROPSHIPPING || v === VENDOR_EPROLO) return false;
   return true;
 }
 

@@ -63,6 +63,8 @@ export declare const VENDOR_ORANGE_COUNTY: "orange-county";
 export declare const VENDOR_HALLOWEENREADY: "halloweenready";
 /** CJ Dropshipping catalog + fulfillment vendor. */
 export declare const VENDOR_CJ_DROPSHIPPING: "cj-dropshipping";
+/** Eprolo dropshipping catalog + fulfillment vendor. */
+export declare const VENDOR_EPROLO: "eprolo";
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export declare const ORANGE_COUNTY_CATEGORY_SLUG: "rakhi-hampers";
 /** Curated Halloween gift hampers (fixed-price bundles). */

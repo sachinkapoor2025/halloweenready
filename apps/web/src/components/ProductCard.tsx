@@ -6,10 +6,12 @@ import { WishlistButton } from "@/components/WishlistButton";
 import { ProductImageRotator } from "@/components/ProductImageRotator";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
+import { productHref } from "@/lib/product-urls";
 
 export function ProductCard({ product }: { product: Product }) {
   const { format } = useCurrency();
   const discount = getDiscountPercent(product.price, product.compareAtPrice);
+  const href = productHref(product.slug);
 
   return (
     <div className="group border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-white relative">
@@ -20,7 +22,7 @@ export function ProductCard({ product }: { product: Product }) {
       )}
       <div className="relative aspect-square bg-slate-50 flex items-center justify-center text-slate-400">
         <WishlistButton product={product} />
-        <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
+        <Link href={href} className="absolute inset-0 block">
           <ProductImageRotator
             images={product.images ?? []}
             alt={product.name}
@@ -29,7 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </Link>
       </div>
-      <Link href={`/products/${product.slug}`} className="block p-4">
+      <Link href={href} className="block p-4">
         <h3 className="font-semibold text-slate-900 group-hover:text-primary line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>

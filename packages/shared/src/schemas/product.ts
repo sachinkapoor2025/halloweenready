@@ -32,6 +32,10 @@ export const productSchema = z.object({
   vendorCost: z.number().positive().optional(),
   /** CJ Dropshipping product id (pid). */
   cjPid: z.string().min(1).max(80).optional(),
+  /** Eprolo catalog product id. */
+  eproloProductId: z.string().min(1).max(80).optional(),
+  /** Eprolo SKU used when fulfilling. */
+  eproloSku: z.string().min(1).max(80).optional(),
   /** Default CJ variant id used when the shopper does not pick another. */
   cjVid: z.string().min(1).max(80).optional(),
   /** CJ variants for size/color (storefront picker). */

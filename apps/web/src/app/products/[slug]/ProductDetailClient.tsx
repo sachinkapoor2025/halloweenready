@@ -35,6 +35,7 @@ import {
 } from "@halloweenready/shared";
 import { ProductShippingPanel } from "@/components/ProductShippingPanel";
 import { FastSellingBanner } from "@/components/FastSellingBadge";
+import { productHref } from "@/lib/product-urls";
 
 type Tab = "description" | "reviews" | "faq";
 
@@ -420,7 +421,7 @@ export function ProductDetailClient({
                     name: value,
                     email: email || undefined,
                     phone: phone || undefined,
-                    page: `/products/${product.slug}`,
+                    page: productHref(product.slug),
                     productSlug: product.slug,
                     source: "product",
                   })
@@ -437,7 +438,7 @@ export function ProductDetailClient({
                     name: name || undefined,
                     email: value,
                     phone: phone || undefined,
-                    page: `/products/${product.slug}`,
+                    page: productHref(product.slug),
                     productSlug: product.slug,
                     source: "product",
                   })
@@ -454,7 +455,7 @@ export function ProductDetailClient({
                     name: name || undefined,
                     email: email || undefined,
                     phone: value,
-                    page: `/products/${product.slug}`,
+                    page: productHref(product.slug),
                     productSlug: product.slug,
                     source: "product",
                   })

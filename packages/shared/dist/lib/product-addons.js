@@ -90,7 +90,7 @@ function productAllowsAddons(product) {
     const v = product.vendorSlug?.trim();
     if (!v || v === constants_1.VENDOR_HALLOWEENREADY)
         return true;
-    if (v === constants_1.VENDOR_ORANGE_COUNTY || v === constants_1.VENDOR_CJ_DROPSHIPPING)
+    if (v === constants_1.VENDOR_ORANGE_COUNTY || v === constants_1.VENDOR_CJ_DROPSHIPPING || v === constants_1.VENDOR_EPROLO)
         return false;
     return true;
 }

@@ -8,6 +8,7 @@ import { displayOrderRef } from "./order-number";
 import { ORDER_STATUS } from "../constants";
 import { productImageVariantUrl } from "./image-variants";
 import { resolveProductImageUrl } from "./image-url";
+import { productHref } from "./slugify";
 
 const SITE_NAME = "HalloweenReady";
 const DEFAULT_SITE = "https://www.halloweenready.com";
@@ -248,7 +249,7 @@ function productRowsHtml(order: OrderConfirmedNotifyOrder, site: string): string
       const unit = formatOrderMoney(lineUnitPrice(item), currency);
       const rowTotal = formatOrderMoney(lineTotal(item), currency);
       const img = absoluteImageUrl(item.image, site);
-      const href = item.productSlug ? `${site}/products/${encodeURIComponent(item.productSlug)}` : site;
+      const href = item.productSlug ? `${site}${productHref(item.productSlug)}` : site;
       const imgCell = img
         ? `<a href="${escAttr(href)}" target="_blank" style="text-decoration:none;">
              <img src="${escAttr(img)}" width="72" height="72" alt="${name}" style="display:block;width:72px;height:72px;object-fit:cover;border:1px solid ${LINE};border-radius:8px;background-color:${CREAM};" />

@@ -13,12 +13,26 @@ import { CurrencySelect } from "@/components/CurrencySelect";
 function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      const root = document.getElementById("header-cities-menu");
+      if (root && target && !root.contains(target)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <div
-      className="relative shrink-0"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div id="header-cities-menu" className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -252,19 +266,21 @@ export function Header() {
         </div>
       </div>
 
-      {/* Desktop nav */}
+      {/* Desktop nav — Cities sits outside overflow-x-auto so the dropdown is not clipped */}
       <nav className="hidden md:block border-t border-slate-100 bg-white overflow-visible">
         <div className="max-w-7xl mx-auto px-4 py-2.5">
-          <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`btn-nav shrink-0 px-3 py-1.5 text-[13px] ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div className="flex items-center gap-1.5">
+            <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`btn-nav shrink-0 px-3 py-1.5 text-[13px] ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
             <CitiesMenu />
           </div>
         </div>

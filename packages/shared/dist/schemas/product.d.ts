@@ -29,6 +29,10 @@ export declare const productSchema: z.ZodObject<{
     vendorCost: z.ZodOptional<z.ZodNumber>;
     /** CJ Dropshipping product id (pid). */
     cjPid: z.ZodOptional<z.ZodString>;
+    /** Eprolo catalog product id. */
+    eproloProductId: z.ZodOptional<z.ZodString>;
+    /** Eprolo SKU used when fulfilling. */
+    eproloSku: z.ZodOptional<z.ZodString>;
     /** Default CJ variant id used when the shopper does not pick another. */
     cjVid: z.ZodOptional<z.ZodString>;
     /** CJ variants for size/color (storefront picker). */
@@ -184,6 +188,8 @@ export declare const productSchema: z.ZodObject<{
     additionalCategorySlugs?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
@@ -251,6 +257,8 @@ export declare const productSchema: z.ZodObject<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
@@ -317,6 +325,8 @@ export declare const createProductSchema: z.ZodObject<{
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     warehouseId: z.ZodOptional<z.ZodString>;
     availableCountryCodes: z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>;
+    eproloProductId: z.ZodOptional<z.ZodString>;
+    eproloSku: z.ZodOptional<z.ZodString>;
     weightOz: z.ZodOptional<z.ZodNumber>;
     lengthIn: z.ZodOptional<z.ZodNumber>;
     widthIn: z.ZodOptional<z.ZodNumber>;
@@ -449,6 +459,8 @@ export declare const createProductSchema: z.ZodObject<{
     additionalCategorySlugs?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
@@ -515,6 +527,8 @@ export declare const createProductSchema: z.ZodObject<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
@@ -580,6 +594,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     availableCountryCodes: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodEffects<z.ZodString, string, string>, "many">>>;
     vendorCost: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
     cjPid: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    eproloProductId: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    eproloSku: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     cjVid: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     cjVariants: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
         vid: z.ZodString;
@@ -713,6 +729,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;
@@ -779,6 +797,8 @@ export declare const updateProductSchema: z.ZodObject<Omit<{
     tags?: string[] | undefined;
     warehouseId?: string | undefined;
     availableCountryCodes?: string[] | undefined;
+    eproloProductId?: string | undefined;
+    eproloSku?: string | undefined;
     weightOz?: number | undefined;
     lengthIn?: number | undefined;
     widthIn?: number | undefined;

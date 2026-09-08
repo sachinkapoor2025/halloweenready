@@ -35,6 +35,7 @@ const order_number_1 = require("./order-number");
 const constants_1 = require("../constants");
 const image_variants_1 = require("./image-variants");
 const image_url_1 = require("./image-url");
+const slugify_1 = require("./slugify");
 const SITE_NAME = "HalloweenReady";
 const DEFAULT_SITE = "https://www.halloweenready.com";
 const PAGE_BG = "#f3eee6";
@@ -209,7 +210,7 @@ function productRowsHtml(order, site) {
         const unit = formatOrderMoney(lineUnitPrice(item), currency);
         const rowTotal = formatOrderMoney(lineTotal(item), currency);
         const img = absoluteImageUrl(item.image, site);
-        const href = item.productSlug ? `${site}/products/${encodeURIComponent(item.productSlug)}` : site;
+        const href = item.productSlug ? `${site}${(0, slugify_1.productHref)(item.productSlug)}` : site;
         const imgCell = img
             ? `<a href="${escAttr(href)}" target="_blank" style="text-decoration:none;">
              <img src="${escAttr(img)}" width="72" height="72" alt="${name}" style="display:block;width:72px;height:72px;object-fit:cover;border:1px solid ${LINE};border-radius:8px;background-color:${CREAM};" />

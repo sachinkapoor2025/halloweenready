@@ -16,6 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./schemas/product"), exports);
 __exportStar(require("./schemas/cj-dropshipping"), exports);
+__exportStar(require("./schemas/eprolo"), exports);
 __exportStar(require("./lib/cj-category"), exports);
 __exportStar(require("./lib/cj-freight"), exports);
 __exportStar(require("./lib/cj-storefront-api"), exports);
@@ -73,6 +74,7 @@ __exportStar(require("./lib/viewer-geo"), exports);
 __exportStar(require("./lib/admin-analytics-tz"), exports);
 __exportStar(require("./lib/identity"), exports);
 __exportStar(require("./lib/meta-description"), exports);
+__exportStar(require("./lib/slugify"), exports);
 __exportStar(require("./lib/delivery"), exports);
 __exportStar(require("./lib/client-device"), exports);
 __exportStar(require("./lib/abandoned-cart"), exports);
