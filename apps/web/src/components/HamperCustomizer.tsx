@@ -6,6 +6,7 @@ import type { HamperCustomization, Product } from "@halloweenready/shared";
 import { resolveHamperCustomization } from "@halloweenready/shared";
 import { ProductImage } from "@/components/ProductImage";
 import { useCurrency } from "@/lib/currency-context";
+import { productHref } from "@/lib/product-urls";
 
 type Line = NonNullable<Product["hamperContents"]>[number];
 
@@ -142,7 +143,7 @@ export function HamperCustomizer({
                   />
                   <ProductImage src={item.image} alt="" className="h-9 w-9 rounded object-cover shrink-0 bg-slate-100" />
                   <span className="min-w-0 flex-1">
-                    <Link href={`/products/${item.slug}`} className="font-medium text-primary hover:underline line-clamp-2">
+                    <Link href={productHref(item.slug)} className="font-medium text-primary hover:underline line-clamp-2">
                       {item.name}
                     </Link>
                     <span className="block text-xs text-slate-500">+{format(item.price, product.currency)}</span>
@@ -192,7 +193,7 @@ function HamperLineRow({
         <input type="checkbox" checked={!excluded} onChange={onToggleExclude} className="mt-1" />
         <ProductImage src={item.image} alt="" className="h-10 w-10 rounded object-cover shrink-0 bg-slate-100" />
         <span className="min-w-0 flex-1">
-          <Link href={`/products/${item.slug}`} className="text-sm font-medium text-primary hover:underline line-clamp-2">
+          <Link href={productHref(item.slug)} className="text-sm font-medium text-primary hover:underline line-clamp-2">
             {item.name}
           </Link>
           {typeof item.price === "number" && (

@@ -2,6 +2,7 @@ import { getApiUrl, getSiteUrl, getCdnUrl } from "@/lib/env";
 import { CJ_STOREFRONT_PRODUCTS_PATH } from "@halloweenready/shared";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { stripHtml } from "@/lib/html-text";
+import { productHref } from "@/lib/product-urls";
 
 type FeedProduct = {
   slug: string;
@@ -73,7 +74,7 @@ export async function GET() {
   <g:id>${escapeXml(p.sku ?? p.slug)}</g:id>
   <g:title>${escapeXml(p.name)}</g:title>
   <g:description>${escapeXml(description)}</g:description>
-  <g:link>${escapeXml(`${site}/products/${p.slug}`)}</g:link>
+  <g:link>${escapeXml(`${site}${productHref(p.slug)}`)}</g:link>
   <g:image_link>${escapeXml(productImage(p))}</g:image_link>
   <g:price>${price} ${currency}</g:price>
   <g:availability>${availability}</g:availability>

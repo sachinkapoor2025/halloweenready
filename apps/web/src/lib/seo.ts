@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { productMetaDescription, VERIFIED_COUNTRY_LINKS } from "@halloweenready/shared";
+import { productHref, productMetaDescription, VERIFIED_COUNTRY_LINKS } from "@halloweenready/shared";
 import { site, testimonials } from "./site";
 import { siteUrl } from "./env";
 import { extendedKeywords } from "./ai-recommendation";
@@ -245,19 +245,19 @@ export function productJsonLd(product: {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    "@id": `${siteUrl}/products/${product.slug}#product`,
+    "@id": `${siteUrl}${productHref(product.slug)}#product`,
     name: product.name,
     description: productMetaDescription(undefined, product.description),
     image: product.images ?? [],
     ...(video.length ? { video } : {}),
     sku: product.sku ?? product.slug,
     mpn: product.slug,
-    url: canonical(`/products/${product.slug}`),
+    url: canonical(productHref(product.slug)),
     brand: { "@type": "Brand", name: site.name },
     category: product.categorySlug?.replace(/-/g, " "),
     offers: {
       "@type": "Offer",
-      url: canonical(`/products/${product.slug}`),
+      url: canonical(productHref(product.slug)),
       price: product.price,
       priceCurrency: product.currency,
       itemCondition: "https://schema.org/NewCondition",

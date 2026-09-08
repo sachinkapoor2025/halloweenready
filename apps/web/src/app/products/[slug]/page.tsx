@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { InternalLinksSection } from "@/components/InternalLinksSection";
@@ -10,6 +10,7 @@ import { resolveImageUrl } from "@/lib/images";
 import { loadProduct, loadRelatedProducts, getStaticProductSlugs } from "@/lib/product-loader";
 import { api } from "@/lib/api";
 import { cjStorefrontProductsPath, getInternalLinkGroups, type Product } from "@halloweenready/shared";
+import { normalizeProductSlugParam, productHref } from "@/lib/product-urls";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -33,7 +34,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeProductSlugParam(rawSlug);
   const p = await loadProduct(slug);
   if (!p) return { title: "Product" };
 
@@ -41,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: p.seoTitle ?? p.name,
     seoDescription: p.seoDescription,
     description: p.description,
-    path: `/products/${slug}`,
+    path: productHref(p.slug),
     price: p.price,
     currency: p.currency,
     ogImage: resolveImageUrl(p.images?.[0]),
@@ -50,9 +52,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeProductSlugParam(rawSlug);
   const product = await loadProduct(slug);
   if (!product) notFound();
+
+  // One canonical URL per product — normalize casing / encoding without creating duplicates.
+  if (rawSlug !== product.slug) {
+    permanentRedirect(productHref(product.slug));
+  }
 
   const relatedProducts = await loadRelatedProducts(product.categorySlug, product.slug);
 
@@ -69,7 +77,7 @@ export default async function ProductPage({ params }: Props) {
       <JsonLd
         data={[
           productJsonLd(product),
-          breadcrumbJsonLd(crumbs.map((c) => ({ name: c.label, path: c.href ?? `/products/${slug}` }))),
+          breadcrumbJsonLd(crumbs.map((c) => ({ name: c.label, path: c.href ?? productHref(product.slug) }))),
           faqJsonLd(productPageFaqs),
         ]}
       />

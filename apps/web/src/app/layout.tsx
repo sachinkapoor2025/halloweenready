@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   },
   description: site.description,
   keywords: defaultKeywords,
+  icons: {
+    icon: [{ url: site.logoSrc, type: "image/png" }],
+    shortcut: site.logoSrc,
+    apple: [{ url: site.logoSrc, type: "image/png" }],
+  },
   alternates: {
     canonical: canonical("/"),
   },
@@ -63,6 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href={site.logoSrc} type="image/png" sizes="any" />
+        <link rel="icon" href={site.logoSrc} type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href={site.logoSrc} />
+        <link rel="shortcut icon" href={site.logoSrc} type="image/png" />
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt — AI site summary" />
         <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs-full.txt — product catalog for AI" />
         <link rel="help" type="text/plain" href="/llms.txt" title="Information for AI assistants" />

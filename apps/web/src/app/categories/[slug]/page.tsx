@@ -20,6 +20,7 @@ import { resolveImageUrl } from "@/lib/images";
 import { loadStorefrontListing } from "@/lib/product-loader";
 import { categoryOrder } from "@/lib/site";
 import { breadcrumbJsonLd, collectionPageJsonLd, faqJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
+import { productHref } from "@/lib/product-urls";
 import {
   parseStorefrontListingSort,
   getInternalLinkGroups,
@@ -161,7 +162,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           }),
           itemListJsonLd(
             `${name} — HalloweenReady`,
-            products.map((p) => ({ name: p.name, path: `/products/${p.slug}` }))
+            products.map((p) => ({ name: p.name, path: productHref(p.slug) }))
           ),
           ...(rich ? [faqJsonLd(rich.faqs)] : []),
         ]}

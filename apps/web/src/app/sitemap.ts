@@ -6,6 +6,7 @@ import { blogPosts } from "@/lib/content/blog-posts";
 import { allSeoLocationSlugs, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
 import { allCountrySeoSlugs } from "@/lib/content/country-pages";
 import { indexableGeoPaths } from "@/lib/content/geo";
+import { productHref } from "@/lib/product-urls";
 
 function sitemapDate(value?: string): Date {
   if (!value) return new Date();
@@ -103,7 +104,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const products = await loadStorefrontProducts();
   const productRoutes = products.map((p) => ({
-    url: `${siteUrl}/products/${p.slug}`,
+    url: `${siteUrl}${productHref(p.slug)}`,
     lastModified: sitemapDate(p.updatedAt),
     changeFrequency: "weekly" as const,
     priority: 0.8,

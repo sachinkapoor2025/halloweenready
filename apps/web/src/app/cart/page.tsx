@@ -16,6 +16,7 @@ import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipp
 import type { DisplayCurrency } from "@/lib/currency-context";
 import type { CartItem } from "@halloweenready/shared";
 import { cartLineUnitTotal } from "@halloweenready/shared";
+import { productHref } from "@/lib/product-urls";
 
 function TrashIcon() {
   return (
@@ -132,7 +133,7 @@ export default function CartPage() {
                     className="flex gap-4 pb-6 border-b border-slate-200 last:border-0 last:pb-0"
                   >
                     <Link
-                      href={`/products/${item.productSlug}`}
+                      href={productHref(item.productSlug)}
                       className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-slate-50 border border-slate-100"
                     >
                       <ProductImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -141,7 +142,7 @@ export default function CartPage() {
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="space-y-3 min-w-0">
                         <Link
-                          href={`/products/${item.productSlug}`}
+                          href={productHref(item.productSlug)}
                           className="font-bold text-slate-900 hover:text-nav line-clamp-2 leading-snug block"
                         >
                           {item.name}

@@ -1,4 +1,5 @@
 import { isProductAvailableForCountry } from "./shipping-availability";
+import { productHref } from "./slugify";
 
 export type SeoLink = {
   href: string;
@@ -100,7 +101,7 @@ function pathFor(page: InternalLinkPage): string {
     case "category":
       return `/categories/${page.categorySlug}`;
     case "product":
-      return `/products/${page.productSlug}`;
+      return productHref(page.productSlug);
     case "country":
       return `/countries/${page.countrySlug}`;
     case "city":

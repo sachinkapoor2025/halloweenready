@@ -19,10 +19,11 @@ import {
   CJ_STOREFRONT_SHIP_COUNTRIES,
   parseStorefrontListingQuery,
   sortStorefrontListing,
+  buildProductSlug,
   type Product,
   type CjStorefrontShipCountry,
 } from "@halloweenready/shared";
-import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
+import { docClient, PRODUCTS_TABLE, now } from "../lib/db";
 import { ok, okCached, created, badRequest, notFound, forbidden } from "../lib/response";
 import { getAuth, resolveStaffActor } from "../lib/auth";
 import { withResolvedProductImages, resolveProductImageUrl } from "../lib/images";
@@ -427,7 +428,7 @@ export async function createProduct(event: APIGatewayProxyEventV2) {
   const parsed = createProductSchema.safeParse(body);
   if (!parsed.success) return badRequest(parsed.error.message);
 
-  const slug = slugify(parsed.data.name);
+  const slug = buildProductSlug(parsed.data.name);
   const timestamp = now();
   const inventory = parsed.data.inventory ?? DEFAULT_PRODUCT_INVENTORY;
   const item: Product & { PK: string; SK: string; GSI1PK: string; GSI1SK: string } = {
@@ -635,7 +636,7 @@ export async function bulkUploadProducts(event: APIGatewayProxyEventV2) {
       continue;
     }
 
-    const slug = slugify(parsed.data.name);
+    const slug = buildProductSlug(parsed.data.name);
     const timestamp = now();
     const tags = parsed.data.tags
       ? parsed.data.tags.split(",").map((t) => t.trim()).filter(Boolean)

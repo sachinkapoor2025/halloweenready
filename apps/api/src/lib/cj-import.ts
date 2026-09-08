@@ -10,9 +10,10 @@ import {
   productKeys,
   resolveProductImagesForUpsert,
   stripHtml,
+  buildProductSlug,
   type Product,
 } from "@halloweenready/shared";
-import { docClient, PRODUCTS_TABLE, now, slugify } from "./db";
+import { docClient, PRODUCTS_TABLE, now } from "./db";
 import {
   cjAddToMyProduct,
   cjGetProduct,
@@ -68,9 +69,7 @@ function pickDefaultVariant(variants: ReturnType<typeof mapVariants>) {
 }
 
 function productSlug(name: string, pid: string): string {
-  const base = slugify(name) || "cj-product";
-  const suffix = pid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toLowerCase();
-  return suffix ? `${base}-${suffix}` : base;
+  return buildProductSlug(name, pid);
 }
 
 function listVendorCost(row: CjListProduct): number | undefined {

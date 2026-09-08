@@ -8,6 +8,7 @@ import type {
 import type { Product } from "../schemas/product";
 import { inferProductAudience, inferProductTheme } from "./homepage-ranking";
 import { isProductAvailableForCountry } from "./shipping-availability";
+import { productHref } from "./slugify";
 
 export const CATEGORY_SLUGS = {
   costumes: "costumesandaccessories",
@@ -309,7 +310,7 @@ export function toAssistantProduct(product: Product): AssistantProduct {
     compareAtPrice: product.compareAtPrice,
     currency: product.currency ?? "USD",
     categorySlug: product.categorySlug,
-    url: `/products/${product.slug}`,
+    url: productHref(product.slug),
     inventory: product.inventory,
     available,
     badge,

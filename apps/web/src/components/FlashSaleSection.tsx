@@ -11,6 +11,7 @@ import {
 import { AddToCartControl } from "@/components/AddToCartControl";
 import { ProductImageRotator } from "@/components/ProductImageRotator";
 import { useCurrency } from "@/lib/currency-context";
+import { productHref } from "@/lib/product-urls";
 
 type Remaining = { h: string; m: string; s: string };
 
@@ -168,7 +169,7 @@ export function FlashSaleSection({ product }: { product: Product | null }) {
           <div className="w-full max-w-md mx-auto lg:mx-0 order-none">
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
               <div className="relative aspect-square w-full overflow-hidden bg-slate-50">
-                <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
+                <Link href={productHref(product.slug)} className="absolute inset-0 block">
                   <ProductImageRotator
                     images={gallery}
                     alt={product.name}
@@ -185,7 +186,7 @@ export function FlashSaleSection({ product }: { product: Product | null }) {
                   <OfferTimer remaining={remaining} variant="overlay" />
                 </div>
               </div>
-              <Link href={`/products/${product.slug}`} className="block px-3 py-3 lg:block">
+              <Link href={productHref(product.slug)} className="block px-3 py-3 lg:block">
                 <h3 className="font-semibold text-sm text-slate-900 line-clamp-2 hover:text-nav">
                   {product.name}
                 </h3>
@@ -259,7 +260,7 @@ export function FlashSaleSection({ product }: { product: Product | null }) {
                 />
               </div>
               <Link
-                href={`/products/${product.slug}`}
+                href={productHref(product.slug)}
                 className="text-sm font-semibold text-nav hover:underline"
               >
                 View combo details →
