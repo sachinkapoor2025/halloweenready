@@ -328,4 +328,104 @@ export const blogPostInlineLinks: Record<string, readonly InlineLink[]> = {
     { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
     { phrase: "Halloween planning guide", href: "/halloween-guide" },
   ],
+  "cheap-halloween-decorations-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "best-halloween-shop-online-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "how-to-decorate-for-halloween-uk": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "fancy-dress-ideas-halloween-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-party-ideas-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-scented-candles": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-stationery-and-gift-wrap": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-temporary-tattoos": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "pumpkin-carving-template-kit": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "best-fancy-dress-shop-uk": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-decorations-before-october-31": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-sale-2026": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "fall-autumn-decor-halloween": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "gothic-halloween-jewelry": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-enamel-pins": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-activities-for-kids": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-preparation-checklist": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-costume-ideas-2026": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "how-to-decorate-your-home-for-halloween": [
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween party supplies", href: "/categories/partysupplier" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
+  "halloween-party-ideas-unforgettable": [
+    { phrase: "Halloween decorations", href: "/categories/home-decoration" },
+    { phrase: "Halloween costumes", href: "/categories/costumesandaccessories" },
+    { phrase: "Halloween planning guide", href: "/halloween-guide" },
+  ],
 };
