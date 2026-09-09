@@ -270,7 +270,7 @@ export function Header() {
       <nav className="hidden md:block border-t border-slate-100 bg-white overflow-visible">
         <div className="max-w-7xl mx-auto px-4 py-2.5">
           <div className="flex items-center gap-1.5">
-            <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
