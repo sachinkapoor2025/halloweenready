@@ -1,3 +1,5 @@
+import { giftBlogPosts } from "./gift-blog-posts";
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -4717,6 +4719,7 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  ...giftBlogPosts,
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {
