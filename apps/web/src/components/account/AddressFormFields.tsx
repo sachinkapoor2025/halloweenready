@@ -2,7 +2,12 @@
 
 import type { ShippingAddress } from "@halloweenready/shared";
 import { LeadCaptureInput } from "@/components/LeadCaptureInput";
-import { US_STATES } from "@/lib/shipping-address";
+import {
+  CountrySelectField,
+  StateRegionField,
+  postalCodeLabel,
+  withCountry,
+} from "@/components/CountryStateFields";
 
 export function AddressFormFields({
   value,
@@ -18,7 +23,7 @@ export function AddressFormFields({
   return (
     <div className="space-y-4">
       <LeadCaptureInput
-        label="Recipient name"
+        label="Your name"
         value={value.name}
         onChange={(e) => update("name", e.target.value)}
         required
@@ -60,41 +65,24 @@ export function AddressFormFields({
           required
           autoComplete="address-level2"
         />
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
-          <select
-            value={value.state}
-            onChange={(e) => update("state", e.target.value)}
-            required
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent bg-white"
-          >
-            <option value="">Select state</option>
-            {US_STATES.map((s) => (
-              <option key={s.code} value={s.code}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <StateRegionField
+          country={value.country}
+          value={value.state}
+          onChange={(state) => update("state", state)}
+        />
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <LeadCaptureInput
-          label="ZIP code"
+          label={postalCodeLabel(value.country)}
           value={value.postalCode}
           onChange={(e) => update("postalCode", e.target.value)}
           required
-          inputMode="numeric"
           autoComplete="postal-code"
         />
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
-          <input
-            type="text"
-            value="United States"
-            readOnly
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-600"
-          />
-        </div>
+        <CountrySelectField
+          value={value.country}
+          onChange={(iso) => onChange(withCountry(value, iso))}
+        />
       </div>
     </div>
   );

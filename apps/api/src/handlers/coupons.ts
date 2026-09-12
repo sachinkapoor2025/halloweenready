@@ -4,15 +4,20 @@ import { randomBytes } from "crypto";
 import {
   couponValidateSchema,
   createAdminCouponSchema,
+  createTestOrderCouponSchema,
   couponKeys,
   WELCOME_COUPON_HOURS,
   ABANDONED_CART_COUPON_HOURS,
   ABANDONED_CART_DISCOUNT_PERCENT,
   adminCouponHoursForDiscount,
   isAdminConfirmedSaleDiscount,
+  isTestOrderCoupon,
   pickDailyDealDiscount,
   dailyDealDayKey,
   normalizePhone,
+  TEST_ORDER_COUPON_KIND,
+  TEST_ORDER_COUPON_MINUTES,
+  TEST_ORDER_FORCE_TOTAL_USD,
   type CouponValidationResult,
   type WelcomeCoupon,
   type StoreCoupon,
@@ -27,12 +32,12 @@ import {
   sendWhatsAppMessage,
 } from "../lib/whatsapp";
 
-function generateCode(): string {
+function generateCode(prefix = "HALLOWEEN"): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes = randomBytes(6);
   let suffix = "";
   for (let i = 0; i < 6; i++) suffix += chars[bytes[i]! % chars.length];
-  return `HALLOWEEN-${suffix}`;
+  return `${prefix}-${suffix}`;
 }
 
 function welcomeExpiresAt(from = new Date()): string {
@@ -147,6 +152,12 @@ export async function validateCouponRecord(
     code: coupon.code,
     discountPercent: coupon.discountPercent,
     expiresAt: coupon.expiresAt,
+    ...(isTestOrderCoupon(coupon)
+      ? {
+          kind: TEST_ORDER_COUPON_KIND,
+          forceTotalUsd: coupon.forceTotalUsd ?? TEST_ORDER_FORCE_TOTAL_USD,
+        }
+      : { kind: "percent" as const }),
   };
 }
 
@@ -566,6 +577,78 @@ export async function createAdminAbandonedCoupon(event: APIGatewayProxyEventV2) 
       provider: whatsapp.provider,
       deepLink: whatsapp.deepLink,
       error: whatsapp.error,
+    },
+  });
+}
+
+/** Admin: 20-minute coupon that forces checkout total (items + shipping) to $1 USD. */
+export async function createAdminTestOrderCoupon(event: APIGatewayProxyEventV2) {
+  const auth = requireAdmin(event);
+  if (!auth) return unauthorized("Admin access required");
+
+  let body: unknown;
+  try {
+    body = JSON.parse(event.body ?? "{}");
+  } catch {
+    return badRequest("Invalid JSON");
+  }
+
+  const parsed = createTestOrderCouponSchema.safeParse(body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? parsed.error.message;
+    return badRequest(msg);
+  }
+
+  const email = normalizeEmail(parsed.data.email);
+  const phone = normalizePhone(parsed.data.phone);
+  if (!email && !phone) {
+    return badRequest("Enter a customer email or mobile number");
+  }
+
+  const timestamp = now();
+  const expiresAt = new Date(Date.now() + TEST_ORDER_COUPON_MINUTES * 60 * 1000).toISOString();
+  const code = generateCode("TEST");
+
+  const coupon: StoreCoupon & { PK: string; SK: string } = {
+    PK: couponKeys.pk(code),
+    SK: couponKeys.sk(),
+    code,
+    ...(email ? { email } : {}),
+    ...(phone ? { phone } : {}),
+    discountPercent: 100,
+    expiresAt,
+    createdAt: timestamp,
+    source: "admin",
+    createdBy: auth.email,
+    kind: TEST_ORDER_COUPON_KIND,
+    forceTotalUsd: TEST_ORDER_FORCE_TOTAL_USD,
+  };
+
+  try {
+    await docClient.send(
+      new PutCommand({
+        TableName: CONFIG_TABLE,
+        Item: coupon,
+        ConditionExpression: "attribute_not_exists(PK)",
+      })
+    );
+  } catch (err) {
+    console.error("createAdminTestOrderCoupon put failed:", err);
+    return serverError("Could not create test coupon — please try again");
+  }
+
+  return ok({
+    coupon: {
+      code,
+      email,
+      phone,
+      discountPercent: 100,
+      expiresAt,
+      createdAt: timestamp,
+      createdBy: auth.email,
+      source: "admin" as const,
+      kind: TEST_ORDER_COUPON_KIND,
+      forceTotalUsd: TEST_ORDER_FORCE_TOTAL_USD,
     },
   });
 }

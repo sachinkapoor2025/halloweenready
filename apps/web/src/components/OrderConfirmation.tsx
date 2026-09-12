@@ -68,7 +68,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
       <div className="bg-primary text-white">
         <div className="max-w-2xl mx-auto px-4 pt-8 pb-20 text-center">
           <div className="flex justify-center mb-6">
-            <SiteLogoLink className="brightness-0 invert" priority />
+            <SiteLogoLink priority />
           </div>
 
           <div
@@ -268,9 +268,9 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
                 <TruckIcon />
               </div>
               <div>
-                <p className="font-semibold text-slate-900 text-sm">USA delivery</p>
+                <p className="font-semibold text-slate-900 text-sm">Delivery</p>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Ships domestically within America. Express 2–3 days to major metros; 5–7 days nationwide.
+                  Delivering in 5–7 days.
                 </p>
               </div>
             </div>
@@ -293,7 +293,7 @@ export function OrderConfirmation({ order, paid }: OrderConfirmationProps) {
           <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/80 p-4 text-center">
             <p className="text-sm font-semibold text-amber-950 mb-1">Help other sisters find us</p>
             <p className="text-xs text-amber-900/90 mb-3 leading-relaxed">
-              Your review helps other shoppers choose HalloweenReady with confidence for Halloween delivery across the USA.
+              Your review helps other shoppers choose HalloweenReady with confidence.
             </p>
             <Link
               href="/reviews"

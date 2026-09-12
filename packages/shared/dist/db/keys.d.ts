@@ -7,6 +7,8 @@ export declare const productKeys: {
     sk: () => "META";
     gsi1pk: (categorySlug: string) => string;
     gsi1sk: (slug: string) => string;
+    /** Cached CJ freight quote for one variant → destination. */
+    freightSk: (country: string, vid: string) => string;
 };
 export declare const categoryKeys: {
     pk: (slug: string) => string;
@@ -33,8 +35,8 @@ export declare const orderKeys: {
     gsi2sk: (createdAt: string) => string;
     gsi3pk: (status: string) => string;
     gsi3sk: (createdAt: string) => string;
-    /** Atomic counters for human order numbers (OC / US). */
-    counterPk: (prefix: "OC" | "US") => string;
+    /** Atomic counters for human order numbers (OC / US). HW allocations reuse the US counter. */
+    counterPk: (prefix: "OC" | "US" | "HW") => string;
     counterSk: () => "META";
     /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
     numberPk: (orderNumber: string) => string;
@@ -86,6 +88,38 @@ export declare const configKeys: {
         pk: string;
         sk: "META";
     };
+    cjDropshipping: {
+        pk: string;
+        sk: "META";
+    };
+    eprolo: {
+        pk: string;
+        sk: "META";
+    };
+    homepageRanking: {
+        pk: string;
+        sk: "META";
+    };
+    homepageSnapshot: {
+        pk: string;
+        sk: "META";
+    };
+    chat: {
+        pk: string;
+        sk: "META";
+    };
+};
+/** Admin CJ catalog import jobs (config table). */
+export declare const cjImportJobKeys: {
+    pk: (jobId: string) => string;
+    sk: () => "META";
+    listPk: () => "ENTITY#CJ_IMPORT";
+    listSk: (createdAt: string, jobId: string) => string;
+};
+/** Lookup so we skip a CJ pid that is already on the store. */
+export declare const cjPidKeys: {
+    pk: (pid: string) => string;
+    sk: () => "META";
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 export declare const warehouseKeys: {

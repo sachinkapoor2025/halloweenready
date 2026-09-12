@@ -47,6 +47,14 @@ This repository is an **AI-first e-commerce platform**. Developers add features 
 - IN → Razorpay (`apps/api/src/handlers/payments/razorpay.ts`)
 - Never store card data; use gateway tokens only
 
+## CJ Dropshipping
+
+CJ provides the API — we do not create one. Get an **API Key** from My CJ → Authorization → API (install the API app first). Website email/password cannot call the API. Store the key as `CJ_API_KEY` or paste it in Admin → Vendor Management → CJ Dropshipping. Access tokens are cached in `CONFIG#CJ_DROPSHIPPING`.
+
+## Eprolo
+
+Eprolo provides the Open API — we do not create one. The account manager sends **openApiKey** and **openApiSecret**. Store them as GitHub Actions secrets `EPROLO_OPEN_API_KEY` and `EPROLO_OPEN_API_SECRET` (deployed to Lambda), or paste them in Admin → Vendor Management → Eprolo. Credentials can also be cached in `CONFIG#EPROLO`. Never commit the values.
+
 ## Database
 
 - Single-table DynamoDB — follow PK/SK patterns in ARCHITECTURE.md

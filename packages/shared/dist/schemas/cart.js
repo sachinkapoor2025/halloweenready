@@ -14,6 +14,8 @@ exports.cartItemSchema = zod_1.z.object({
     lineId: zod_1.z.string().min(1).optional(),
     productSlug: zod_1.z.string(),
     name: zod_1.z.string(),
+    /** Plain-text product snippet for order emails (optional; older carts omit this). */
+    description: zod_1.z.string().max(200).optional(),
     price: zod_1.z.number(),
     currency: zod_1.z.enum(["USD", "INR"]),
     quantity: zod_1.z.number().int().min(1),
@@ -26,10 +28,30 @@ exports.cartItemSchema = zod_1.z.object({
      */
     vendorCost: zod_1.z.number().nonnegative().optional(),
     sku: zod_1.z.string().optional(),
+    /** CJ product id snapshot (fulfillment). */
+    cjPid: zod_1.z.string().min(1).max(80).optional(),
+    /** CJ variant id for this cart line. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
+    /** Human variant label, e.g. Black-XL. */
+    variantKey: zod_1.z.string().max(120).optional(),
     /** Copied from product — flash / fixed deals are not coupon-eligible. */
     couponExcluded: zod_1.z.boolean().optional(),
     /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
     addons: zod_1.z.array(exports.cartItemAddonSchema).max(20).optional(),
+    /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+    hamperCustomization: zod_1.z
+        .object({
+        excludedSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(40).default([]),
+        replacements: zod_1.z
+            .array(zod_1.z.object({
+            fromSlug: zod_1.z.string().min(1),
+            toSlug: zod_1.z.string().min(1),
+        }))
+            .max(40)
+            .default([]),
+        extraSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(20).default([]),
+    })
+        .optional(),
 });
 const addToCartAddonSchema = zod_1.z.union([
     zod_1.z.string().min(1).max(80),
@@ -49,6 +71,21 @@ exports.addToCartSchema = zod_1.z.object({
      * Plain string ids still accepted (= quantity 1).
      */
     addons: zod_1.z.array(addToCartAddonSchema).max(20).optional(),
+    /** Optional CJ variant when the product has multiple SKUs. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
+    hamperCustomization: zod_1.z
+        .object({
+        excludedSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(40).default([]),
+        replacements: zod_1.z
+            .array(zod_1.z.object({
+            fromSlug: zod_1.z.string().min(1),
+            toSlug: zod_1.z.string().min(1),
+        }))
+            .max(40)
+            .default([]),
+        extraSlugs: zod_1.z.array(zod_1.z.string().min(1)).max(20).default([]),
+    })
+        .optional(),
 });
 exports.cartSchema = zod_1.z.object({
     items: zod_1.z.array(exports.cartItemSchema).default([]),

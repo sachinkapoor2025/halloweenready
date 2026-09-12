@@ -26,6 +26,8 @@ export const docClient = useMemory
       marshallOptions: { removeUndefinedValues: true },
     });
 
+export { slugify, buildProductSlug, seoSlugBase, productHref } from "@halloweenready/shared";
+
 const ENV = process.env.ENVIRONMENT ?? "dev";
 
 /** Per-domain tables (multi-table design). Each can be overridden by env var. */
@@ -67,13 +69,4 @@ export function ttlInDays(days: number): number {
 /** UTC day bucket (YYYY-MM-DD) for rollups/analytics. */
 export function dayBucket(date: Date = new Date()): string {
   return date.toISOString().slice(0, 10);
-}
-
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }

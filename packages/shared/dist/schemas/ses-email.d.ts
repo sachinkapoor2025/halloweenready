@@ -185,14 +185,14 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         name: string;
         description: string;
-        imageUrl: string;
         href: string;
+        imageUrl: string;
         buttonText: string;
     }, {
         name: string;
         description: string;
-        imageUrl: string;
         href: string;
+        imageUrl: string;
         buttonText: string;
     }>, "many">;
     promiseHeading: z.ZodString;
@@ -202,12 +202,12 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
         title: z.ZodString;
         description: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }, {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }>, "many">;
     midCtaHeading: z.ZodString;
@@ -226,6 +226,7 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     unsubscribeLabel: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     description: string;
+    heading: string;
     preheader: string;
     logoUrl: string;
     logoHref: string;
@@ -237,21 +238,20 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     heroOverlaySubtitle: string;
     heroButtonText: string;
     heroButtonHref: string;
-    heading: string;
     categoriesHeading: string;
     categoriesSubheading: string;
     categories: {
         name: string;
         description: string;
-        imageUrl: string;
         href: string;
+        imageUrl: string;
         buttonText: string;
     }[];
     promiseHeading: string;
     promiseSubheading: string;
     promises: {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }[];
     midCtaHeading: string;
@@ -270,6 +270,7 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     unsubscribeLabel: string;
 }, {
     description: string;
+    heading: string;
     preheader: string;
     logoUrl: string;
     logoHref: string;
@@ -281,21 +282,20 @@ export declare const marketingEmailContentSchema: z.ZodObject<{
     heroOverlaySubtitle: string;
     heroButtonText: string;
     heroButtonHref: string;
-    heading: string;
     categoriesHeading: string;
     categoriesSubheading: string;
     categories: {
         name: string;
         description: string;
-        imageUrl: string;
         href: string;
+        imageUrl: string;
         buttonText: string;
     }[];
     promiseHeading: string;
     promiseSubheading: string;
     promises: {
-        title: string;
         description: string;
+        title: string;
         icon: string;
     }[];
     midCtaHeading: string;
@@ -348,14 +348,14 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         }, "strip", z.ZodTypeAny, {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }, {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }>, "many">;
         promiseHeading: z.ZodString;
@@ -365,12 +365,12 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
             title: z.ZodString;
             description: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }>, "many">;
         midCtaHeading: z.ZodString;
@@ -389,6 +389,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         unsubscribeLabel: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -400,21 +401,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -433,6 +433,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         unsubscribeLabel: string;
     }, {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -444,21 +445,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -484,6 +484,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -495,21 +496,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -535,6 +535,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -546,21 +547,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -586,6 +586,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -597,21 +598,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -637,6 +637,7 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -648,21 +649,20 @@ export declare const createSesTemplateSchema: z.ZodEffects<z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -712,14 +712,14 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         }, "strip", z.ZodTypeAny, {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }, {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }>, "many">;
         promiseHeading: z.ZodString;
@@ -729,12 +729,12 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
             title: z.ZodString;
             description: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }, {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }>, "many">;
         midCtaHeading: z.ZodString;
@@ -753,6 +753,7 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         unsubscribeLabel: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -764,21 +765,20 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -797,6 +797,7 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         unsubscribeLabel: string;
     }, {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -808,21 +809,20 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -848,6 +848,7 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -859,21 +860,20 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;
@@ -899,6 +899,7 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
     layout?: "premium-marketing" | undefined;
     contentFields?: {
         description: string;
+        heading: string;
         preheader: string;
         logoUrl: string;
         logoHref: string;
@@ -910,21 +911,20 @@ export declare const updateSesTemplateSchema: z.ZodObject<{
         heroOverlaySubtitle: string;
         heroButtonText: string;
         heroButtonHref: string;
-        heading: string;
         categoriesHeading: string;
         categoriesSubheading: string;
         categories: {
             name: string;
             description: string;
-            imageUrl: string;
             href: string;
+            imageUrl: string;
             buttonText: string;
         }[];
         promiseHeading: string;
         promiseSubheading: string;
         promises: {
-            title: string;
             description: string;
+            title: string;
             icon: string;
         }[];
         midCtaHeading: string;

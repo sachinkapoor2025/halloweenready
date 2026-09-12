@@ -1,5 +1,9 @@
 version = 0.1
 
+[default.build.parameters]
+cached = true
+parallel = true
+
 [default.deploy.parameters]
 stack_name = "halloweenready-dev"
 resolve_s3 = true
@@ -16,6 +20,10 @@ s3_prefix = "halloweenready"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=staging LoadTestMode=true"
+
+[prod.build.parameters]
+cached = true
+parallel = true
 
 [prod.deploy.parameters]
 stack_name = "halloweenready-prod"

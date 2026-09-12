@@ -11,6 +11,7 @@ export const ATTRIBUTION_CHANNELS = [
   "referral",
   "email",
   "direct",
+  "chat",
   "unknown",
 ] as const;
 export type AttributionChannel = (typeof ATTRIBUTION_CHANNELS)[number];

@@ -1,6 +1,8 @@
 import { getApiUrl, getSiteUrl, getCdnUrl } from "@/lib/env";
+import { CJ_STOREFRONT_PRODUCTS_PATH } from "@halloweenready/shared";
 import { getCatalogProducts } from "@/lib/catalog-fallback";
 import { stripHtml } from "@/lib/html-text";
+import { productHref } from "@/lib/product-urls";
 
 type FeedProduct = {
   slug: string;
@@ -35,7 +37,7 @@ export async function GET() {
   let products: FeedProduct[] = [];
 
   try {
-    const res = await fetch(`${getApiUrl()}/products`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${getApiUrl()}${CJ_STOREFRONT_PRODUCTS_PATH}`, { next: { revalidate: 3600 } });
     if (res.ok) {
       const data = (await res.json()) as { products: FeedProduct[] };
       products = data.products ?? [];
@@ -72,7 +74,7 @@ export async function GET() {
   <g:id>${escapeXml(p.sku ?? p.slug)}</g:id>
   <g:title>${escapeXml(p.name)}</g:title>
   <g:description>${escapeXml(description)}</g:description>
-  <g:link>${escapeXml(`${site}/products/${p.slug}`)}</g:link>
+  <g:link>${escapeXml(`${site}${productHref(p.slug)}`)}</g:link>
   <g:image_link>${escapeXml(productImage(p))}</g:image_link>
   <g:price>${price} ${currency}</g:price>
   <g:availability>${availability}</g:availability>
@@ -91,9 +93,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
 <channel>
-<title>HalloweenReady — Halloween Decorations & Party Supplies USA</title>
+<title>HalloweenReady — Halloween Decorations, Costumes & Party Supplies</title>
 <link>${escapeXml(site)}</link>
-<description>Halloween decorations, costumes, and party supplies delivered to all 50 US states</description>
+<description>Halloween decorations, costumes, and party supplies. International shipping — delivering in 5–7 days.</description>
 ${items}
 </channel>
 </rss>`;

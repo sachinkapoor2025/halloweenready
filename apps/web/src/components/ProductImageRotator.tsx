@@ -32,13 +32,13 @@ export function ProductImageRotator({
   const [urls, setUrls] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(priority);
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setUrls([]);
     setIndex(0);
-    if (resolved.length === 0) return;
+    if (resolved.length === 0 || (!visible && !priority)) return;
 
     let cancelled = false;
     const measured: SizedProductImage[] = [];
@@ -67,7 +67,7 @@ export function ProductImageRotator({
     return () => {
       cancelled = true;
     };
-  }, [resolved]);
+  }, [resolved, visible, priority]);
 
   useEffect(() => {
     if (!root || typeof IntersectionObserver === "undefined") return;

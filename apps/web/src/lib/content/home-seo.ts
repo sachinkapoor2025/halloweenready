@@ -1,11 +1,11 @@
-/** SEO-rich homepage copy — Halloween / USA delivery keywords, internal link targets. */
+/** SEO-rich homepage copy — Halloween shopping keywords and internal link targets. */
 export const homeSeoContent = {
   intro: {
-    heading: "Shop Halloween Costumes & Decor Online — Fast USA Delivery",
+    heading: "Shop Halloween costumes, decorations, and party supplies",
     paragraphs: [
-      "Halloween is the season for costumes, haunted decor, candy, and unforgettable parties. Whether you're planning a family trick-or-treat route or transforming your home into a haunted mansion, HalloweenReady makes it simple to shop premium Halloween gear with reliable domestic delivery across America.",
-      "We ship from within the United States to all 50 states — California, New York, Texas, Florida, and beyond. Order costumes, decorations, candy, accessories, and party supplies with 2–5 business day delivery to major metros.",
-      "Browse our curated collections across Costumes, Decorations, Candy & Treats, Accessories, and Party Supplies — everything you need for a spooktacular October 31.",
+      "Halloween is the season for gatherings, trick-or-treat, and home displays that feel festive without being hard to plan. Halloween decorations set the mood at the door, while the rest of the evening comes together with costumes, treats, and a few well-chosen extras.",
+      "HalloweenReady is a global Halloween store. Delivering in 5–7 days. Check a product page for shipping to your country. We do not assume every SKU ships everywhere.",
+      "If you are hosting, shop Halloween party supplies alongside your display pieces so plates, balloons, and tableware match the same theme. Browse costumes, decorations, and treats in one place for a simpler October 31.",
     ],
   },
   categories: {
@@ -40,48 +40,48 @@ export const homeSeoContent = {
     ],
   },
   delivery: {
-    heading: "Halloween Delivery to All 50 US States",
+    heading: "Halloween shopping worldwide",
     paragraphs: [
-      "We deliver Halloween orders across California, New York, Texas, Florida, New Jersey, Illinois, and every other US state. Domestic fulfillment means your costumes and decor arrive quickly — without international shipping delays.",
-      "Planning for Halloween 2026? Order by October 25 for guaranteed pre-Halloween delivery. Popular costumes sell out early — shop in October for the best selection.",
+      "Shop from the USA, UK, Canada, Australia, India, UAE, and other markets. US city pages (California, New York, Texas, Florida, and more) stay live for local shopping context. Confirm whether an item can ship to your address on the product page.",
+      "Halloween 2026 falls on Saturday, October 31. Delivering in 5–7 days. Order earlier in October if you need buffer — we do not guarantee pre-Halloween arrival.",
     ],
   },
   howItWorks: {
     heading: "How to Shop Halloween on HalloweenReady",
     steps: [
       "Browse costumes, decor, candy, or party supplies and add items to your cart.",
-      "Enter your US shipping address at checkout — order from anywhere worldwide.",
+      "Enter your shipping address at checkout.",
       "Pay securely with Stripe (USD) or Razorpay (INR).",
-      "We pack your order with care and deliver within 2–5 business days across the USA.",
-      "Enjoy a spooktacular Halloween with gear delivered to your door.",
+      "Confirm the product-page shipping quote for that destination.",
+      "Track the order using the method shown after checkout.",
     ],
   },
   tradition: {
-    heading: "The Spirit of Halloween",
+    heading: "What makes Halloween feel special",
     paragraphs: [
-      "Halloween brings communities together for trick-or-treat, costume parties, haunted houses, and creative home displays. From classic horror to playful family fun, the right costume and decor turn an ordinary October night into something magical.",
-      "Whether you're handing out candy, hosting a party, or going all-out on yard decor, HalloweenReady helps you celebrate with quality products and fast USA shipping.",
+      "Halloween brings neighbors together for trick-or-treat, costume parties, and creative home displays. A clear theme — classic horror, playful family fun, or a simple orange-and-black porch — usually looks more intentional than mixing every idea at once.",
+      "Whether you are handing out candy, hosting friends, or building a yard haunt, it helps to start with the spaces guests will actually use, then add lighting and a few statement pieces rather than filling every surface.",
     ],
   },
   whyUs: {
     heading: "Why Shoppers Choose HalloweenReady",
     bullets: [
-      "Domestic USA shipping — no customs hassle",
-      "Costumes, decor, candy, accessories, and party supplies in one store",
-      "2–5 business day delivery to all 50 states",
-      "Pay in USD (Stripe) or INR (Razorpay) from anywhere",
-      "Order by Oct 25 for guaranteed pre-Halloween delivery",
+      "International checkout — choose your country",
+      "Costumes, decor, accessories, and party supplies in one store",
+      "Country shopping pages for the USA, UK, Canada, Australia, India, UAE, and Europe",
+      "Pay in USD (Stripe) or INR (Razorpay); display prices can use local currency",
+      "Delivering in 5–7 days — we do not guarantee October 31 arrival",
       "WhatsApp and email support for sizing and order help",
     ],
   },
   faqs: [
     {
-      q: "How long does Halloween delivery take in the USA?",
-      a: "Most orders arrive in 2–5 business days after dispatch to any of the 50 US states.",
+      q: "How long does Halloween delivery take?",
+      a: "Delivering in 5–7 days. Confirm shipping on the product page. We do not guarantee arrival before October 31.",
     },
     {
       q: "When should I order for Halloween 2026?",
-      a: "Halloween 2026 is October 31, 2026. Order costumes by October 20 and decor or candy by October 25 for on-time delivery.",
+      a: "Halloween 2026 is October 31, 2026. Order earlier in October if you need transit buffer, and confirm the product-page quote before you treat a date as guaranteed.",
     },
     {
       q: "Do you sell kids Halloween costumes?",

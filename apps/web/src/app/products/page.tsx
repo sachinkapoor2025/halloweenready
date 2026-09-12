@@ -1,43 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { HomeProductCard } from "@/components/HomeProductCard";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
 import { SearchTracker } from "@/components/SearchTracker";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
 import type { Product, Category } from "@halloweenready/shared";
 import { homeCategoryOrder, orderCategories } from "@/lib/site";
+import { getCatalogCategories } from "@/lib/catalog-fallback";
+import { HomepageCategorySections } from "@/components/HomepageCategorySections";
+import { loadStorefrontListing } from "@/lib/product-loader";
 import {
-  getCatalogCategories,
-  getCatalogProducts,
-  getCatalogProductsByCategory,
-} from "@/lib/catalog-fallback";
-import { withListingImages } from "@/lib/product-loader";
-import { categorySlugVariants } from "@halloweenready/shared";
+  parseStorefrontListingSort,
+  getInternalLinkGroups,
+  HOMEPAGE_CATEGORY_PREVIEW_LIMIT,
+} from "@halloweenready/shared";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ search?: string; category?: string }>;
+  searchParams: Promise<{ search?: string; category?: string; sort?: string }>;
 }
 
 const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
   "home-decoration": {
-    title: "Halloween Home Decorations USA",
-    description: "Shop spooky home decorations, yard props, and indoor Halloween decor with fast USA delivery.",
+    title: "Halloween Home Decorations",
+    description: "Shop home decorations, yard props, and indoor Halloween decor. Delivering in 5–7 days.",
   },
   costumesandaccessories: {
-    title: "Halloween Costumes & Accessories USA",
-    description: "Shop adult, teen, and kids Halloween costumes and accessories with fast USA delivery.",
+    title: "Halloween Costumes & Accessories",
+    description: "Shop adult, teen, and kids Halloween costumes and accessories. Delivering in 5–7 days.",
   },
   partysupplier: {
-    title: "Halloween Party Supplies USA",
+    title: "Halloween Party Supplies",
     description: "Plates, banners, balloons, and themed tableware for Halloween parties.",
   },
   toysandnovelty: {
-    title: "Halloween Toys & Novelty USA",
+    title: "Halloween Toys & Novelty",
     description: "Fun Halloween toys, games, and novelty items for kids and parties.",
   },
 };
@@ -46,9 +47,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const params = await searchParams;
   if (params.search) {
     return pageMetadata({
-      title: `Search: ${params.search} — Halloween USA`,
-      description: `Search results for "${params.search}" — Halloween products with USA delivery from HalloweenReady.`,
-      path: `/products?search=${encodeURIComponent(params.search)}`,
+      title: `Search: ${params.search} — HalloweenReady`,
+      description: `Search results for "${params.search}" — Halloween products from HalloweenReady.`,
+      path: "/products",
+      noIndex: true,
     });
   }
   if (params.category && CATEGORY_SEO[params.category]) {
@@ -56,13 +58,22 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     return pageMetadata({
       title: seo.title,
       description: seo.description,
-      path: `/products?category=${params.category}`,
+      path: `/categories/${params.category}`,
+      noIndex: true,
+    });
+  }
+  if (params.category) {
+    return pageMetadata({
+      title: "Shop Halloween",
+      description: "Browse Halloween decorations, costumes, party supplies, and seasonal accessories.",
+      path: "/products",
+      noIndex: true,
     });
   }
   return pageMetadata({
-    title: "Shop Halloween — Shop Halloween to USA Online",
+    title: "Shop Halloween Costumes, Decor & Party Supplies",
     description:
-      "Browse Halloween decorations, costumes, party supplies, and seasonal accessories. Fast delivery to all 50 US states.",
+      "Browse Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
     path: "/products",
   });
 }
@@ -71,24 +82,18 @@ export default async function ProductsPage({ searchParams }: Props) {
   const params = await searchParams;
   const search = params.search;
   const category = params.category;
+  const sort = parseStorefrontListingSort(params.sort);
+  const showGrouped = !search && !category;
 
   let products: Product[] = [];
+  let total = 0;
+  let hasMore = false;
   let categories: Category[] = [];
 
   try {
-    const query = new URLSearchParams();
-    if (search) query.set("search", search);
-    if (category) query.set("category", category);
-    const qs = query.toString() ? `?${query.toString()}` : "";
-
-    const [productsData, categoriesData] = await Promise.all([
-      api<{ products: Product[] }>(`/products${qs}`),
-      api<{ categories: Category[] }>("/categories"),
-    ]);
-    products = productsData.products;
+    const categoriesData = await api<{ categories: Category[] }>("/categories");
     categories = categoriesData.categories;
   } catch {
-    products = [];
     categories = [];
   }
 
@@ -96,16 +101,16 @@ export default async function ProductsPage({ searchParams }: Props) {
     categories = getCatalogCategories();
   }
 
-  const catalogProducts = getCatalogProducts();
-  if (catalogProducts.length > 0) {
-    if (category) {
-      if (products.length === 0) products = getCatalogProductsByCategory(category);
-    } else if (!search) {
-      const apiBySlug = new Map(products.map((p) => [p.slug, p]));
-      products = catalogProducts.map((c) => apiBySlug.get(c.slug) ?? c);
-    }
+  if (!showGrouped) {
+    const listing = await loadStorefrontListing({
+      ...(category ? { category } : {}),
+      ...(search ? { search } : {}),
+      sort,
+    });
+    products = listing.products;
+    total = listing.total;
+    hasMore = listing.hasMore;
   }
-  products = withListingImages(products);
 
   const h1 = search
     ? `Search: ${search}`
@@ -115,19 +120,23 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const sortedCategories = orderCategories(categories);
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
-  const productsByCategory = homeCategoryOrder.map((slug) => {
-    const variants = new Set(categorySlugVariants(slug));
-    return {
-      slug,
-      name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
-      products: products.filter((p) => variants.has(p.categorySlug)),
-    };
-  });
-  const showGrouped = !search && !category;
+  const categoryPreviews = homeCategoryOrder.map((slug) => ({
+    slug,
+    name: categoryMap.get(slug)?.name ?? slug.replace(/-/g, " "),
+  }));
+  const firstCategory = showGrouped ? categoryPreviews[0] : undefined;
+  const firstCategoryProducts = firstCategory
+    ? (
+        await loadStorefrontListing({
+          category: firstCategory.slug,
+          limit: HOMEPAGE_CATEGORY_PREVIEW_LIMIT,
+        })
+      ).products
+    : [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      {search ? <SearchTracker query={search} resultCount={products.length} /> : null}
+      {search ? <SearchTracker query={search} resultCount={total} /> : null}
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -139,8 +148,8 @@ export default async function ProductsPage({ searchParams }: Props) {
       </div>
       {!search && !category && (
         <p className="text-slate-600 mb-8 max-w-2xl">
-          Browse Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery
-          across all 50 US states.
+          Browse Halloween decorations, costumes, party supplies, and seasonal accessories.
+          Open a product page for a shipping quote to your destination.
         </p>
       )}
 
@@ -164,33 +173,35 @@ export default async function ProductsPage({ searchParams }: Props) {
         </div>
       )}
 
-      {products.length === 0 ? (
+      {products.length === 0 && !showGrouped ? (
         <p className="text-slate-600">No products found. Try another category or search term.</p>
       ) : showGrouped ? (
-        <div className="space-y-10">
-          {productsByCategory.map((section) =>
-            section.products.length > 0 ? (
-              <section key={section.slug}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-primary capitalize">{section.name}</h2>
-                  <Link href={`/categories/${section.slug}`} className="text-nav font-semibold text-sm hover:underline">
-                    View All →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-                  {section.products.map((p) => (
-                    <HomeProductCard key={p.slug} product={p} />
-                  ))}
-                </div>
-              </section>
-            ) : null
-          )}
-        </div>
+        <HomepageCategorySections
+          categories={categoryPreviews}
+          contained
+          eagerCount={1}
+          initialBySlug={
+            firstCategory ? { [firstCategory.slug]: firstCategoryProducts } : undefined
+          }
+        />
       ) : (
         <Suspense fallback={<p className="text-slate-500">Loading products…</p>}>
-          <ProductGrid products={products} />
+          <ProductGrid
+            products={products}
+            total={total}
+            hasMore={hasMore}
+            category={category}
+            search={search}
+            sort={sort}
+          />
         </Suspense>
       )}
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "listing" })}
+        title="Explore Halloween"
+        intro="Shop by category, destination, or planning guide."
+      />
     </div>
   );
 }

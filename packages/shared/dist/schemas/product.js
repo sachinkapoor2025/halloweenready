@@ -32,11 +32,54 @@ exports.productSchema = zod_1.z.object({
     availableCountryCodes: zod_1.z.array(zod_1.z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
     /** Wholesale cost from vendor — never expose on public storefront APIs. */
     vendorCost: zod_1.z.number().positive().optional(),
+    /** CJ Dropshipping product id (pid). */
+    cjPid: zod_1.z.string().min(1).max(80).optional(),
+    /** Eprolo catalog product id. */
+    eproloProductId: zod_1.z.string().min(1).max(80).optional(),
+    /** Eprolo SKU used when fulfilling. */
+    eproloSku: zod_1.z.string().min(1).max(80).optional(),
+    /** Default CJ variant id used when the shopper does not pick another. */
+    cjVid: zod_1.z.string().min(1).max(80).optional(),
+    /** CJ variants for size/color (storefront picker). */
+    cjVariants: zod_1.z
+        .array(zod_1.z.object({
+        vid: zod_1.z.string().min(1),
+        sku: zod_1.z.string().optional(),
+        key: zod_1.z.string().optional(),
+        name: zod_1.z.string().optional(),
+        image: zod_1.z.string().optional(),
+        inventory: zod_1.z.number().int().min(0).optional(),
+        price: zod_1.z.number().positive().optional(),
+        vendorCost: zod_1.z.number().positive().optional(),
+        weightOz: zod_1.z.number().positive().optional(),
+        lengthIn: zod_1.z.number().positive().optional(),
+        widthIn: zod_1.z.number().positive().optional(),
+        heightIn: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
     /**
      * Public storefront flag: show dry-fruit / chocolate add-on picker.
      * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
      */
     allowsAddons: zod_1.z.boolean().optional(),
+    /** Snapshot of products inside a hamper (name/image/price for PDP + cart). */
+    hamperContents: zod_1.z
+        .array(zod_1.z.object({
+        slug: zod_1.z.string().min(1),
+        name: zod_1.z.string().min(1),
+        image: zod_1.z.string().optional(),
+        price: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
+    /** Snapshot of products that can replace an included item or be added extra. */
+    hamperAddons: zod_1.z
+        .array(zod_1.z.object({
+        slug: zod_1.z.string().min(1),
+        name: zod_1.z.string().min(1),
+        image: zod_1.z.string().optional(),
+        price: zod_1.z.number().nonnegative(),
+    }))
+        .optional(),
     /**
      * When true, coupons cannot discount this product (flash / fixed-price deals).
      * Also skips competitive storefront price cuts so the listed price stays exact.
@@ -60,6 +103,14 @@ exports.productSchema = zod_1.z.object({
     lengthIn: zod_1.z.number().positive().optional(),
     widthIn: zod_1.z.number().positive().optional(),
     heightIn: zod_1.z.number().positive().optional(),
+    /** CJ / imported product videos shown in the PDP gallery. */
+    videos: zod_1.z
+        .array(zod_1.z.object({
+        url: zod_1.z.string().url(),
+        posterUrl: zod_1.z.string().url().optional(),
+        durationSec: zod_1.z.number().positive().optional(),
+    }))
+        .optional(),
 });
 exports.createProductSchema = exports.productSchema.omit({ slug: true }).extend({
     name: zod_1.z.string().min(1),

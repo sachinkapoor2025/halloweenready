@@ -39,18 +39,7 @@ export const shippingAddressSchema = z.object({
 export const DEFAULT_SENDER_MESSAGE =
   "Happy Halloween! Please accept this package of spooky surprises from HalloweenReady.";
 
-export const checkoutShippingAddressSchema = shippingAddressSchema.extend({
-  senderName: z
-    .string()
-    .trim()
-    .min(1, "Sender name is required")
-    .max(80, "Sender name is too long"),
-  senderMessage: z
-    .string()
-    .trim()
-    .min(10, "Please write a short message for your brother")
-    .max(500, "Message is too long (max 500 characters)"),
-});
+export const checkoutShippingAddressSchema = shippingAddressSchema;
 
 /** Line assignment for a checkout shipment (must partition the cart). */
 export const checkoutShipmentItemSchema = z.object({
@@ -132,7 +121,7 @@ export const orderSchema = z.object({
   /**
    * Human-readable order number for staff, customers, and vendors.
    * Orange County fulfill orders: OC10001…
-   * All other HalloweenReady orders: US10001…
+   * All other HalloweenReady orders: HW10001… (legacy orders may still be US10001…).
    */
   orderNumber: z.string().optional(),
   userId: z.string().optional(),
@@ -172,6 +161,9 @@ export const orderSchema = z.object({
         carrier: z.string().optional(),
         status: z.enum(["pending", "processing", "shipped", "delivered"]).optional(),
         updatedAt: z.string().optional(),
+        cjOrderId: z.string().optional(),
+        cjOrderNumber: z.string().optional(),
+        cjPayUrl: z.string().optional(),
       })
     )
     .optional(),
@@ -200,6 +192,12 @@ export const orderSchema = z.object({
   reviewEmailDueAt: z.string().optional(),
   /** Set after review request email is sent (idempotency). */
   reviewEmailSentAt: z.string().optional(),
+  /** Set after paid confirmation is emailed (webhook retries if the first attempt timed out). */
+  paidEmailSentAt: z.string().optional(),
+  /** Last CJ createOrder attempt (ISO). */
+  cjFulfillAttemptedAt: z.string().optional(),
+  /** Set when auto-push to CJ fails so admin can retry. Empty string clears. */
+  cjFulfillError: z.string().optional(),
   /** Last pending-payment reminder send time (ISO). */
   pendingPaymentReminderLastSentAt: z.string().optional(),
   /** America/New_York calendar day (YYYY-MM-DD) of last pending-payment reminder. */

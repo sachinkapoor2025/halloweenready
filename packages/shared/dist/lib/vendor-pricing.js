@@ -1,11 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isCjDropshippingProduct = isCjDropshippingProduct;
+exports.isEproloProduct = isEproloProduct;
 exports.roundMoney = roundMoney;
 exports.pricingFromVendorCost = pricingFromVendorCost;
 exports.stripVendorPrivateFields = stripVendorPrivateFields;
 exports.stripVendorCost = stripVendorCost;
 const currency_1 = require("../currency");
 const constants_1 = require("../constants");
+/** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
+function isCjDropshippingProduct(product) {
+    return product.vendorSlug === constants_1.VENDOR_CJ_DROPSHIPPING || Boolean(product.cjPid);
+}
+/** Live catalog SKU imported from Eprolo. */
+function isEproloProduct(product) {
+    return product.vendorSlug === constants_1.VENDOR_EPROLO || Boolean(product.eproloProductId);
+}
 /** Round money to cents for USD (or currency-aware). */
 function roundMoney(n, currency = "USD") {
     return (0, currency_1.roundForCurrency)(n, currency);
@@ -27,7 +37,12 @@ function pricingFromVendorCost(vendorCost, currency = "USD") {
 /** Strip backend-only vendor fields before public product APIs / SSR. */
 function stripVendorPrivateFields(product) {
     const { vendorCost: _c, vendorSlug: _v, ...rest } = product;
-    return rest;
+    if (!rest.cjVariants?.length)
+        return rest;
+    return {
+        ...rest,
+        cjVariants: rest.cjVariants.map(({ vendorCost: _vc, ...variant }) => variant),
+    };
 }
 /** @deprecated Use stripVendorPrivateFields */
 function stripVendorCost(product) {

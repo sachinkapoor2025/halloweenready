@@ -9,6 +9,7 @@ import * as config from "./handlers/config";
 import * as uploads from "./handlers/uploads";
 import * as events from "./handlers/events";
 import * as analytics from "./handlers/analytics";
+import * as homepageRanking from "./handlers/homepage-ranking";
 import * as salesReport from "./handlers/sales-report";
 import * as adminCarts from "./handlers/admin-carts";
 import * as adminCustomers from "./handlers/admin-customers";
@@ -26,6 +27,9 @@ import * as paymentReconciliation from "./handlers/payment-reconciliation";
 import * as vendorManagement from "./handlers/vendor-management";
 import * as markets from "./handlers/markets";
 import * as reviews from "./handlers/reviews";
+import * as cjDropshipping from "./handlers/cj-dropshipping";
+import * as eprolo from "./handlers/eprolo";
+import * as cjProducts from "./handlers/cj-products";
 import { stripeWebhook } from "./handlers/payments/stripe";
 import {
   razorpayWebhook,
@@ -44,7 +48,38 @@ interface Route {
 
 const routes: Route[] = [
   { method: "GET", pattern: /^\/health$/, handler: async () => ok({ status: "ok" }) },
+  { method: "GET", pattern: /^\/cj\/products$/, handler: cjProducts.listCjStoreProducts },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)\/videos$/,
+    handler: cjProducts.getCjStoreProductVideos,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)\/shipping$/,
+    handler: cjProducts.getCjStoreProductShipping,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/cj\/products\/([^/]+)$/,
+    handler: cjProducts.getCjStoreProduct,
+    params: ["slug"],
+  },
   { method: "GET", pattern: /^\/products$/, handler: products.listProducts },
+  {
+    method: "GET",
+    pattern: /^\/products\/([^/]+)\/videos$/,
+    handler: products.getProductVideos,
+    params: ["slug"],
+  },
+  {
+    method: "GET",
+    pattern: /^\/products\/([^/]+)\/shipping$/,
+    handler: products.getProductShipping,
+    params: ["slug"],
+  },
   { method: "GET", pattern: /^\/products\/([^/]+)$/, handler: products.getProduct, params: ["slug"] },
   {
     method: "GET",
@@ -62,6 +97,13 @@ const routes: Route[] = [
   { method: "PUT", pattern: /^\/products\/([^/]+)$/, handler: products.updateProduct, params: ["slug"] },
   { method: "DELETE", pattern: /^\/products\/([^/]+)$/, handler: products.deleteProduct, params: ["slug"] },
   { method: "GET", pattern: /^\/admin\/products$/, handler: products.listAdminProducts },
+  {
+    method: "GET",
+    pattern: /^\/admin\/products\/([^/]+)$/,
+    handler: products.getAdminProduct,
+    params: ["slug"],
+  },
+  { method: "POST", pattern: /^\/admin\/products\/purge-samples$/, handler: products.purgeSampleCatalogProducts },
   { method: "POST", pattern: /^\/products\/bulk$/, handler: products.bulkUploadProducts },
   { method: "GET", pattern: /^\/categories$/, handler: categories.listCategories },
   { method: "GET", pattern: /^\/categories\/([^/]+)$/, handler: categories.getCategory, params: ["slug"] },
@@ -237,7 +279,17 @@ const routes: Route[] = [
   { method: "GET", pattern: /^\/admin\/analytics\/overview$/, handler: analytics.getAnalyticsOverview },
   { method: "GET", pattern: /^\/admin\/analytics\/sales$/, handler: salesReport.getSalesReport },
   { method: "GET", pattern: /^\/admin\/analytics\/products$/, handler: analytics.getTopProducts },
+  { method: "GET", pattern: /^\/admin\/analytics\/performance$/, handler: homepageRanking.getProductPerformance },
+  { method: "GET", pattern: /^\/admin\/analytics\/performance\/([^/]+)$/, handler: homepageRanking.getProductPerformanceDetail, params: ["slug"] },
+  { method: "GET", pattern: /^\/admin\/analytics\/merchandising$/, handler: homepageRanking.getMerchandisingInsights },
+  { method: "GET", pattern: /^\/admin\/homepage-ranking$/, handler: homepageRanking.getHomepageRankingConfig },
+  { method: "PUT", pattern: /^\/admin\/homepage-ranking$/, handler: homepageRanking.updateHomepageRankingConfig },
+  { method: "POST", pattern: /^\/admin\/homepage-ranking\/refresh$/, handler: homepageRanking.postRefreshHomepageRanking },
+  { method: "GET", pattern: /^\/homepage\/products$/, handler: homepageRanking.getHomepageCatalog },
   { method: "GET", pattern: /^\/admin\/analytics\/searches$/, handler: analytics.getTopSearches },
+  { method: "GET", pattern: /^\/admin\/analytics\/chat$/, handler: analytics.getChatAnalytics },
+  { method: "GET", pattern: /^\/config\/chat$/, handler: config.getChatConfig },
+  { method: "PUT", pattern: /^\/admin\/config\/chat$/, handler: config.updateChatConfig },
   { method: "GET", pattern: /^\/admin\/analytics\/insights$/, handler: analytics.getAnalyticsInsights },
   { method: "GET", pattern: /^\/admin\/analytics\/visitors$/, handler: analytics.getVisitorAnalytics },
   { method: "GET", pattern: /^\/admin\/live-visitors$/, handler: analytics.listLiveVisitors },
@@ -250,6 +302,7 @@ const routes: Route[] = [
   { method: "GET", pattern: /^\/admin\/welcome-coupons$/, handler: coupons.listWelcomeCoupons },
   { method: "POST", pattern: /^\/admin\/coupons\/abandoned$/, handler: coupons.createAdminAbandonedCoupon },
   { method: "GET", pattern: /^\/admin\/coupons\/abandoned$/, handler: coupons.listAdminCoupons },
+  { method: "POST", pattern: /^\/admin\/coupons\/test-order$/, handler: coupons.createAdminTestOrderCoupon },
   { method: "POST", pattern: /^\/leads$/, handler: orders.captureLead },
   {
     method: "POST",
@@ -259,6 +312,7 @@ const routes: Route[] = [
   { method: "POST", pattern: /^\/events$/, handler: events.recordEvent },
   { method: "GET", pattern: /^\/config\/payments$/, handler: config.getPaymentConfig },
   { method: "GET", pattern: /^\/config\/usd-inr-rate$/, handler: config.getUsdInrRate },
+  { method: "GET", pattern: /^\/config\/fx-rates$/, handler: config.getFxRates },
   { method: "PUT", pattern: /^\/config\/payments$/, handler: config.updatePaymentConfig },
   { method: "GET", pattern: /^\/blog-images$/, handler: config.getBlogImages },
   { method: "PUT", pattern: /^\/admin\/blog-images$/, handler: config.updateBlogImages },
@@ -267,6 +321,36 @@ const routes: Route[] = [
   { method: "DELETE", pattern: /^\/products\/([^/]+)\/images$/, handler: uploads.deleteImageFromProduct, params: ["slug"] },
   { method: "POST", pattern: /^\/webhooks\/stripe$/, handler: stripeWebhook },
   { method: "POST", pattern: /^\/webhooks\/razorpay$/, handler: razorpayWebhook },
+  { method: "POST", pattern: /^\/webhooks\/cj$/, handler: cjDropshipping.cjWebhook },
+  { method: "GET", pattern: /^\/admin\/cj\/status$/, handler: cjDropshipping.getCjStatus },
+  { method: "PUT", pattern: /^\/admin\/cj\/api-key$/, handler: cjDropshipping.saveCjKey },
+  { method: "GET", pattern: /^\/admin\/cj\/categories$/, handler: cjDropshipping.listCjCategories },
+  { method: "GET", pattern: /^\/admin\/cj\/products$/, handler: cjDropshipping.searchCjProducts },
+  { method: "GET", pattern: /^\/admin\/cj\/products\/([^/]+)$/, handler: cjDropshipping.getCjProduct, params: ["pid"] },
+  { method: "POST", pattern: /^\/admin\/cj\/products\/import$/, handler: cjDropshipping.importCjCatalog },
+  { method: "POST", pattern: /^\/admin\/cj\/products\/import-halloween$/, handler: cjDropshipping.importHalloweenCatalog },
+  { method: "GET", pattern: /^\/admin\/cj\/imports$/, handler: cjDropshipping.listCjImportJobsHandler },
+  {
+    method: "GET",
+    pattern: /^\/admin\/cj\/imports\/([^/]+)$/,
+    handler: cjDropshipping.getCjImportJobHandler,
+    params: ["jobId"],
+  },
+  { method: "GET", pattern: /^\/admin\/cj\/my-products$/, handler: cjDropshipping.listCjMyProducts },
+  { method: "GET", pattern: /^\/admin\/cj\/warehouses$/, handler: cjDropshipping.listCjWarehouses },
+  { method: "GET", pattern: /^\/admin\/cj\/balance$/, handler: cjDropshipping.getCjBalance },
+  { method: "POST", pattern: /^\/admin\/cj\/freight$/, handler: cjDropshipping.quoteCjFreight },
+  { method: "GET", pattern: /^\/admin\/cj\/orders$/, handler: cjDropshipping.listCjOrders },
+  {
+    method: "POST",
+    pattern: /^\/admin\/cj\/orders\/([^/]+)\/fulfill$/,
+    handler: cjDropshipping.fulfillCjOrder,
+    params: ["orderId"],
+  },
+  { method: "GET", pattern: /^\/admin\/cj\/tracking$/, handler: cjDropshipping.getCjTracking },
+  { method: "POST", pattern: /^\/admin\/cj\/webhook$/, handler: cjDropshipping.enableCjWebhook },
+  { method: "GET", pattern: /^\/admin\/eprolo\/status$/, handler: eprolo.getEproloStatus },
+  { method: "PUT", pattern: /^\/admin\/eprolo\/credentials$/, handler: eprolo.saveEproloKey },
   /** Mailercloud bounce/complaint/unsub → marketing SUPPRESS# (no SMTP credential changes). */
   { method: "POST", pattern: /^\/webhooks\/mailercloud$/, handler: sesEmail.mailercloudWebhook },
   { method: "POST", pattern: /^\/payments\/razorpay\/verify$/, handler: verifyRazorpayPayment },

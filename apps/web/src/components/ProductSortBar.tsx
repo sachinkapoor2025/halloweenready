@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import {
+  parseStorefrontListingSort,
+  sortStorefrontListing,
+  type StorefrontListingSort,
+} from "@halloweenready/shared";
 
-export type ProductSort =
-  | "featured"
-  | "price-asc"
-  | "price-desc"
-  | "name-asc"
-  | "name-desc";
+export type ProductSort = StorefrontListingSort;
 
 const OPTIONS: { value: ProductSort; label: string }[] = [
   { value: "featured", label: "Featured" },
@@ -21,7 +21,7 @@ export function ProductSortBar({ className = "" }: { className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const current = (searchParams.get("sort") as ProductSort) || "featured";
+  const current = parseStorefrontListingSort(searchParams.get("sort") ?? undefined);
 
   const onChange = (sort: ProductSort) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,17 +56,5 @@ export function sortProducts<T extends { name: string; price: number }>(
   products: T[],
   sort: ProductSort
 ): T[] {
-  const list = [...products];
-  switch (sort) {
-    case "price-asc":
-      return list.sort((a, b) => a.price - b.price);
-    case "price-desc":
-      return list.sort((a, b) => b.price - a.price);
-    case "name-asc":
-      return list.sort((a, b) => a.name.localeCompare(b.name));
-    case "name-desc":
-      return list.sort((a, b) => b.name.localeCompare(a.name));
-    default:
-      return list;
-  }
+  return sortStorefrontListing(products, sort);
 }

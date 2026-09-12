@@ -1,6 +1,9 @@
 name: Deploy
 
-# Trigger: push to main/dev/feature/* or manual workflow_dispatch.
+# Three jobs, same as before:
+#   build       — compile/typecheck shared + API + web
+#   deploy-api  — SAM (Lambda / API Gateway)
+#   deploy-web  — Next.js production build; AWS Amplify publishes the live site
 on:
   push:
     branches:
@@ -26,7 +29,8 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run build -w @halloweenready/shared
+      - run: npm run typecheck
 
   deploy-api:
     runs-on: ubuntu-latest
@@ -75,6 +79,9 @@ jobs:
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
           MARKETING_SMTP_PASS: ${{ secrets.MARKETING_SMTP_PASS }}
+          CJ_API_KEY: ${{ secrets.CJ_API_KEY }}
+          EPROLO_OPEN_API_KEY: ${{ secrets.EPROLO_OPEN_API_KEY }}
+          EPROLO_OPEN_API_SECRET: ${{ secrets.EPROLO_OPEN_API_SECRET }}
         run: |
           # Omit empty WhatsApp/Twilio/marketing overrides so a prior SAM deploy's values are not wiped.
           BASE_URL="${USPS_BASE_URL:-https://apis.usps.com}"
@@ -86,19 +93,26 @@ jobs:
           [ -n "${TWILIO_ACCOUNT_SID:-}" ] && EXTRA="$EXTRA TwilioAccountSid=${TWILIO_ACCOUNT_SID}"
           [ -n "${TWILIO_AUTH_TOKEN:-}" ] && EXTRA="$EXTRA TwilioAuthToken=${TWILIO_AUTH_TOKEN}"
           [ -n "${TWILIO_WHATSAPP_FROM:-}" ] && EXTRA="$EXTRA TwilioWhatsAppFrom=${TWILIO_WHATSAPP_FROM}"
+          if [ -n "${SMTP_PASSWORD:-}" ]; then
+            EXTRA="$EXTRA SmtpPassword=${SMTP_PASSWORD}"
+          else
+            echo "::warning::SMTP_PASSWORD secret is empty — keeping the previously deployed order@halloweenready.com password so cart/order emails keep sending."
+          fi
           if [ -n "${MARKETING_SMTP_PASS:-}" ]; then
             EXTRA="$EXTRA MarketingSmtpPassword=${MARKETING_SMTP_PASS}"
           else
             echo "::warning::MARKETING_SMTP_PASS secret is empty — marketing campaigns need Mailercloud credentials in Admin → Email → Settings (or set the GitHub secret)."
           fi
           [ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ] && EXTRA="$EXTRA RazorpayWebhookSecret=${RAZORPAY_WEBHOOK_SECRET}"
-          sam build && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
+          [ -n "${CJ_API_KEY:-}" ] && EXTRA="$EXTRA CjApiKey=${CJ_API_KEY}"
+          [ -n "${EPROLO_OPEN_API_KEY:-}" ] && EXTRA="$EXTRA EproloOpenApiKey=${EPROLO_OPEN_API_KEY}"
+          [ -n "${EPROLO_OPEN_API_SECRET:-}" ] && EXTRA="$EXTRA EproloOpenApiSecret=${EPROLO_OPEN_API_SECRET}"
+          sam build --cached --parallel --config-env prod && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env prod \
             --parameter-overrides "\
           Environment=prod \
           EnableVendorApi=false \
           RazorpayKeyId=${RAZORPAY_KEY_ID} \
           RazorpayKeySecret=${RAZORPAY_KEY_SECRET} \
-          SmtpPassword=${SMTP_PASSWORD} \
           StripeSecretKey=${STRIPE_SECRET_KEY} \
           StripeWebhookSecret=${STRIPE_WEBHOOK_SECRET} \
           UspsClientId=${USPS_CLIENT_ID} \
@@ -156,7 +170,7 @@ jobs:
           NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID }}
           NEXT_PUBLIC_GA4_ID: ${{ secrets.NEXT_PUBLIC_GA4_ID }}
 
-      - name: Deploy note
+      - name: Amplify publishes the live site
         run: |
-          echo "Connect AWS Amplify to this repo — amplify.yml is configured."
-          echo "Set Amplify env: RAZOR_KEY_ID (same as GitHub secret) for Razorpay checkout."
+          echo "Next.js production build succeeded."
+          echo "AWS Amplify (amplify.yml) publishes halloweenready.com / the dev Amplify URL from this repo."

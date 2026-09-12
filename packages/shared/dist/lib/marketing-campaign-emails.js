@@ -242,7 +242,7 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
     offerEyebrow: "HALLOWEEN SPECIAL",
     offerHeadline: "Shop More, Save More",
     offerSubhead: "Stock up for Halloween night",
-    offerThreshold: "Cart Value Above $10.99",
+    offerThreshold: "Free shipping on carts of $49+",
     offerBody: "Celebrate Halloween with decorations, costumes, and party supplies — delivered across America. Add more to your cart and unlock seasonal savings.",
     ctaText: "Shop Now",
     ctaHref: SITE_SHORT,
@@ -359,7 +359,7 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
         { icon: "🤝", title: "Trusted Service", description: "WhatsApp support before & after delivery." },
     ],
     midCtaHeading: "Don't Miss This Halloween Offer",
-    midCtaBody: "Shop more, save more when your cart is above $10.99. Get Halloween-ready — order today.",
+    midCtaBody: "Shop more, save more when your cart is $49 or more — free shipping. Get Halloween-ready — order today.",
     midCtaText: "Shop Now",
     midCtaHref: SITE_SHORT,
     footerTagline: "Halloween Decorations & Party Supplies",
@@ -815,7 +815,7 @@ function buildStartingPriceEmailHtml(cfg = exports.STARTING_PRICE_EMAIL_CONFIG) 
         footer: footerFrom(cfg),
     });
 }
-/** Template 3 HTML — Shop More, Save More (cart above $10.99 / ₹1,046). */
+/** Template 3 HTML — Shop More, Save More (free shipping at $49+). */
 function buildShopMoreSaveMoreEmailHtml(cfg = exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG) {
     const categoryBlocks = [
         twoColCards([cfg.categories[0], cfg.categories[1]]),

@@ -41,6 +41,7 @@ function VendorManagementHubInner() {
           <h1 className="text-2xl font-bold">Vendor Management</h1>
           <p className="text-sm text-slate-600 mt-1">
             Orange County vendor tools — API console and (super admin) expense / payout tracking.
+            CJ wholesale vs store prices live under Vendor Management → CJ Dropshipping → Cost & pricing.
           </p>
         </div>
         <div className="flex flex-col xs:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">

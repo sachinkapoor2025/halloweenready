@@ -13,6 +13,8 @@ import {
   convertCartItemsToCurrency,
   cartSubtotal,
   couponEligibleSubtotal,
+  applyCouponToOrderTotals,
+  isTestOrderCoupon,
   buildOrderShipments,
   singleCheckoutShipment,
   isValidScheduleDeliveryDate,
@@ -56,7 +58,6 @@ import {
   resolveOrderByIdOrNumber,
 } from "../lib/order-numbers";
 import {
-  applyPercentDiscount,
   issueWelcomeCoupon,
   markCouponUsed,
   validateCouponRecord,
@@ -284,9 +285,11 @@ export async function checkout(event: APIGatewayProxyEventV2) {
   const shipping = built.shippingTotal;
   const orderShipments = built.shipments;
   const tax = 0;
+  const currency: "USD" | "INR" = checkoutCurrency === "INR" ? "INR" : "USD";
 
   let discount = 0;
   let couponCode: string | undefined;
+  let total = Math.max(0, subtotal + shipping + tax);
   const checkoutEmail = normalizeEmail(parsed.data.shippingAddress.email);
   const checkoutPhone = parsed.data.shippingAddress.phone?.trim();
 
@@ -294,21 +297,29 @@ export async function checkout(event: APIGatewayProxyEventV2) {
     if (!checkoutEmail && !checkoutPhone) {
       return badRequest("Phone or email is required to apply a coupon");
     }
-    const eligibleSubtotal = couponEligibleSubtotal(orderItems as CartItem[]);
-    if (eligibleSubtotal <= 0) {
-      return badRequest("Coupons cannot be applied to flash sale items");
-    }
     const coupon = await validateCouponRecord(parsed.data.couponCode, {
       email: checkoutEmail,
       phone: checkoutPhone,
     });
     if (!coupon.valid) return badRequest(coupon.error ?? "Invalid coupon code");
-    discount = applyPercentDiscount(eligibleSubtotal, coupon.discountPercent!);
+    const eligibleSubtotal = couponEligibleSubtotal(orderItems as CartItem[]);
+    if (!isTestOrderCoupon(coupon) && eligibleSubtotal <= 0) {
+      return badRequest("Coupons cannot be applied to flash sale items");
+    }
+    const priced = applyCouponToOrderTotals({
+      kind: coupon.kind,
+      discountPercent: coupon.discountPercent,
+      eligibleSubtotal,
+      subtotal,
+      shipping,
+      tax,
+      currency,
+      usdInrRate,
+    });
+    discount = priced.discount;
+    total = priced.total;
     couponCode = coupon.code;
   }
-
-  const total = Math.max(0, subtotal - discount + shipping + tax);
-  const currency = checkoutCurrency;
 
   const orderId = uuidv4();
   const timestamp = now();
@@ -740,8 +751,9 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
     if (!emailResult.ok) console.error("Order payment failed email failed:", emailResult.error);
   }
 
-  // Notify customer + order@halloweenready on every status step (accepted → … → complete, cancelled/refunded).
+  // Notify customer + order@halloweenready on every status step (order confirmed → … → complete, cancelled/refunded).
   // Skip pending_payment → cancelled: shopper never paid; admin alert above is enough.
+  // Same-status saves do not notify (statusChanged). Missing email/WhatsApp skips that channel only.
   if (
     statusChanged &&
     !(
@@ -749,13 +761,49 @@ export async function updateOrderStatus(event: APIGatewayProxyEventV2) {
       resolvedStatus === ORDER_STATUS.CANCELLED
     )
   ) {
-    const statusEmailResult = await notifyCustomerOrderStatusChange(updated);
-    if (!statusEmailResult.ok && !statusEmailResult.skipped) {
-      console.error("Order status email failed:", statusEmailResult.error);
+    try {
+      const statusEmailResult = await notifyCustomerOrderStatusChange(updated, {
+        previousNotificationStatus: order.status,
+      });
+      if (!statusEmailResult.ok && !statusEmailResult.skipped) {
+        console.error("Order status email failed:", statusEmailResult.error);
+      }
+    } catch (err) {
+      console.error("Order status notification failed:", err);
     }
   }
 
   return ok({ order: updated });
+}
+
+async function sendPaidOrderNotification(order: StoredOrder): Promise<StoredOrder> {
+  if (order.paidEmailSentAt) return order;
+  const emailResult = await notifyAdminOrderPaid(order);
+  if (!emailResult.ok) {
+    console.error("Order paid email failed:", emailResult.error);
+    return order;
+  }
+  const stamped: StoredOrder = {
+    ...order,
+    paidEmailSentAt: now(),
+    updatedAt: now(),
+  };
+  await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: stamped }));
+  return stamped;
+}
+
+async function pushPaidOrderToCj(orderId: string): Promise<void> {
+  try {
+    const { fulfillOrderWithCj } = await import("../lib/cj-fulfill");
+    const cjResult = await fulfillOrderWithCj(orderId);
+    if (!cjResult.ok) {
+      console.warn("CJ auto-fulfill failed:", orderId, cjResult.message);
+    } else if (!cjResult.skipped) {
+      console.info("CJ auto-fulfill ok:", orderId, cjResult.cjOrderId);
+    }
+  } catch (err) {
+    console.error("CJ auto-fulfill error:", orderId, err);
+  }
 }
 
 /** Mark an order paid (called by Stripe/Razorpay webhooks + Razorpay verify). */
@@ -766,7 +814,12 @@ export async function markOrderPaid(
   if (!orderId) return;
   const order = await fetchOrder(orderId);
   if (!order) return;
-  if (order.status === ORDER_STATUS.PAID) return;
+  if (order.status === ORDER_STATUS.PAID) {
+    // First webhook may have timed out after marking paid but before email / CJ push.
+    await sendPaidOrderNotification(order);
+    await pushPaidOrderToCj(order.orderId);
+    return;
+  }
   // Only promote unpaid checkouts — avoid clobbering fulfilled orders via late webhooks.
   if (order.status !== ORDER_STATUS.PENDING_PAYMENT) {
     console.warn("markOrderPaid skipped — order not pending_payment", {
@@ -777,7 +830,7 @@ export async function markOrderPaid(
   }
 
   const timestamp = now();
-  const updated: StoredOrder = {
+  let updated: StoredOrder = {
     ...order,
     status: ORDER_STATUS.PAID,
     statusHistory: [...(order.statusHistory ?? []), { status: ORDER_STATUS.PAID, at: timestamp }],
@@ -803,6 +856,12 @@ export async function markOrderPaid(
     }
   }
   await decrementInventoryForOrder(updated);
+
+  // Push to CJ before SMTP so a slow mailbox cannot skip warehouse fulfillment.
+  await pushPaidOrderToCj(updated.orderId);
+  updated = (await fetchOrder(orderId)) ?? updated;
+  updated = await sendPaidOrderNotification(updated);
+  updated = (await fetchOrder(orderId)) ?? updated;
 
   const settings = await loadShippingSettings();
   if (
@@ -841,9 +900,6 @@ export async function markOrderPaid(
       await docClient.send(new PutCommand({ TableName: ORDERS_TABLE, Item: failed }));
     }
   }
-
-  const emailResult = await notifyAdminOrderPaid(updated);
-  if (!emailResult.ok) console.error("Order paid email failed:", emailResult.error);
 
   const { markReminderEmailConverted } = await import("./reminder-emails");
   await markReminderEmailConverted(updated.shippingAddress?.email);

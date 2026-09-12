@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useApiClient, useAuth } from "@/lib/auth-context";
 import type { Product } from "@halloweenready/shared";
@@ -10,8 +10,9 @@ import {
   getUnitsSold,
   isFastSelling,
   productHasShippingDims,
+  isCjDropshippingProduct,
 } from "@halloweenready/shared";
-import { formatMoney, paginate, downloadCsv } from "@/lib/admin-utils";
+import { formatMoney, downloadCsv } from "@/lib/admin-utils";
 import { compressProductImage } from "@/lib/compress-product-image";
 import { TableControls } from "@/components/admin/TableControls";
 
@@ -21,9 +22,11 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [total, setTotal] = useState(0);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -51,21 +54,43 @@ export default function AdminProductsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
+    const qs = new URLSearchParams({
+      page: String(page),
+      limit: String(pageSize),
+    });
+    if (search.trim()) qs.set("search", search.trim());
     Promise.all([
-      apiClient<{ products: Product[] }>("/admin/products"),
+      apiClient<{ products: Product[]; total?: number }>("/admin/products?" + qs.toString()),
       apiClient<{ categories: { slug: string; name: string }[] }>("/categories"),
     ])
       .then(([p, c]) => {
-        setProducts(p.products);
-        setCategories(c.categories);
+        setProducts(p.products ?? []);
+        setTotal(p.total ?? p.products?.length ?? 0);
+        setCategories(c.categories ?? []);
+        setMessage("");
       })
-      .catch(() => setProducts([]))
+      .catch((err) => {
+        setProducts([]);
+        setTotal(0);
+        setMessage(err instanceof Error ? err.message : "Could not load products.");
+      })
       .finally(() => setLoading(false));
-  }, [apiClient]);
+  }, [apiClient, page, pageSize, search]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const next = searchInput.trim();
+    const t = window.setTimeout(() => {
+      setSearch((prev) => {
+        if (prev !== next) setPage(1);
+        return next;
+      });
+    }, 300);
+    return () => window.clearTimeout(t);
+  }, [searchInput]);
 
   useEffect(() => {
     apiClient<{ count: number }>("/admin/shipping/products-missing-dims")
@@ -73,18 +98,8 @@ export default function AdminProductsPage() {
       .catch(() => setMissingDimsCount(0));
   }, [apiClient, products]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.slug.includes(q) ||
-        p.sku?.toLowerCase().includes(q)
-    );
-  }, [products, search]);
-
-  const { items: pageItems, totalPages, total } = paginate(filtered, page, pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageItems = products;
 
   const resetForm = () => {
     setForm({
@@ -189,25 +204,31 @@ export default function AdminProductsPage() {
     }
   };
 
-  const startEdit = (p: Product) => {
-    setEditing(p);
-    setForm({
-      name: p.name,
-      description: p.description,
-      price: String(p.price),
-      categorySlug: p.categorySlug,
-      inventory: String(p.inventory),
-      currency: p.currency,
-      sku: p.sku ?? "",
-      compareAtPrice: p.compareAtPrice ? String(p.compareAtPrice) : "",
-      tags: p.tags?.join(", ") ?? "",
-      published: p.published !== false,
-      weightOz: p.weightOz != null ? String(p.weightOz) : "",
-      lengthIn: p.lengthIn != null ? String(p.lengthIn) : "",
-      widthIn: p.widthIn != null ? String(p.widthIn) : "",
-      heightIn: p.heightIn != null ? String(p.heightIn) : "",
-    });
-    setTab("create");
+  const startEdit = async (p: Product) => {
+    try {
+      const data = await apiClient<{ product: Product }>(`/admin/products/${encodeURIComponent(p.slug)}`);
+      const full = data.product;
+      setEditing(full);
+      setForm({
+        name: full.name,
+        description: full.description,
+        price: String(full.price),
+        categorySlug: full.categorySlug,
+        inventory: String(full.inventory),
+        currency: full.currency,
+        sku: full.sku ?? "",
+        compareAtPrice: full.compareAtPrice ? String(full.compareAtPrice) : "",
+        tags: full.tags?.join(", ") ?? "",
+        published: full.published !== false,
+        weightOz: full.weightOz != null ? String(full.weightOz) : "",
+        lengthIn: full.lengthIn != null ? String(full.lengthIn) : "",
+        widthIn: full.widthIn != null ? String(full.widthIn) : "",
+        heightIn: full.heightIn != null ? String(full.heightIn) : "",
+      });
+      setTab("create");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not load product for editing.");
+    }
   };
 
   const deleteProduct = async (slug: string) => {
@@ -564,8 +585,8 @@ export default function AdminProductsPage() {
           <input
             type="search"
             placeholder="Search by name, slug, SKU…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full border rounded-lg px-3 py-2 text-sm"
           />
           <TableControls
@@ -573,6 +594,7 @@ export default function AdminProductsPage() {
             totalPages={totalPages}
             total={total}
             pageSize={pageSize}
+            pageSizeOptions={[10, 25, 50, 100]}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
           />
@@ -586,7 +608,9 @@ export default function AdminProductsPage() {
                     <th className="py-3 px-4">Product</th>
                     <th className="py-3 px-4">SKU</th>
                     <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">CJ cost</th>
                     <th className="py-3 px-4">Price</th>
+                    <th className="py-3 px-4">Added</th>
                     <th className="py-3 px-4">Stock</th>
                     <th className="py-3 px-4">Sold</th>
                     <th className="py-3 px-4">Status</th>
@@ -654,11 +678,28 @@ export default function AdminProductsPage() {
                       <td className="py-3 px-4 text-xs">{p.sku ?? "—"}</td>
                       <td className="py-3 px-4">{p.categorySlug}</td>
                       <td className="py-3 px-4">
+                        {isCjDropshippingProduct(p) && typeof p.vendorCost === "number"
+                          ? formatMoney(p.vendorCost, "USD")
+                          : "—"}
+                      </td>
+                      <td className="py-3 px-4">
                         {formatMoney(p.price, p.currency)}
                         {p.compareAtPrice && (
                           <div className="text-xs text-slate-400 line-through">
                             {formatMoney(p.compareAtPrice, p.currency)}
                           </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {isCjDropshippingProduct(p) && typeof p.vendorCost === "number" ? (
+                          <span>
+                            {formatMoney(p.price - p.vendorCost, p.currency)}
+                            <span className="block text-xs text-slate-500">
+                              {p.price > 0 ? `${(((p.price - p.vendorCost) / p.price) * 100).toFixed(0)}% margin` : ""}
+                            </span>
+                          </span>
+                        ) : (
+                          "—"
                         )}
                       </td>
                       <td className="py-3 px-4">

@@ -76,45 +76,64 @@ async function fetchJson(url: string, timeoutMs = 8000): Promise<unknown> {
   }
 }
 
-/** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
-export async function fetchLiveUsdInrRate(): Promise<ExchangeRateQuote | null> {
+export type UsdRatesQuote = {
+  rates: Record<string, number>;
+  source: string;
+  asOf: string;
+};
+
+function positiveRates(raw: Record<string, number> | undefined): Record<string, number> | null {
+  if (!raw) return null;
+  const rates: Record<string, number> = { USD: 1 };
+  for (const [code, value] of Object.entries(raw)) {
+    if (typeof value === "number" && value > 0) rates[code.toUpperCase()] = value;
+  }
+  return Object.keys(rates).length > 1 ? rates : null;
+}
+
+/** Fetch USD→all rates from public FX APIs (no API key). */
+export async function fetchLiveUsdRates(): Promise<UsdRatesQuote | null> {
   const asOf = new Date().toISOString();
 
   try {
-    const data = (await fetchJson("https://api.frankfurter.app/latest?from=USD&to=INR")) as {
-      rates?: { INR?: number };
-    };
-    const rate = data.rates?.INR;
-    if (rate && rate > 0) {
-      return { rate, source: "frankfurter", asOf };
-    }
-  } catch {
-    /* try next provider */
-  }
-
-  try {
     const data = (await fetchJson("https://open.er-api.com/v6/latest/USD")) as {
-      rates?: { INR?: number };
+      rates?: Record<string, number>;
     };
-    const rate = data.rates?.INR;
-    if (rate && rate > 0) {
-      return { rate, source: "open.er-api.com", asOf };
-    }
+    const rates = positiveRates(data.rates);
+    if (rates) return { rates, source: "open.er-api.com", asOf };
   } catch {
     /* try next provider */
   }
 
   try {
-    const data = (await fetchJson("https://api.exchangerate.host/latest?base=USD&symbols=INR")) as {
-      rates?: { INR?: number };
+    const data = (await fetchJson("https://api.frankfurter.app/latest?from=USD")) as {
+      rates?: Record<string, number>;
     };
-    const rate = data.rates?.INR;
-    if (rate && rate > 0) {
-      return { rate, source: "exchangerate.host", asOf };
-    }
+    const rates = positiveRates(data.rates);
+    if (rates) return { rates, source: "frankfurter", asOf };
+  } catch {
+    /* try next provider */
+  }
+
+  try {
+    const data = (await fetchJson("https://api.exchangerate.host/latest?base=USD")) as {
+      rates?: Record<string, number>;
+    };
+    const rates = positiveRates(data.rates);
+    if (rates) return { rates, source: "exchangerate.host", asOf };
   } catch {
     /* exhausted providers */
   }
 
+  return null;
+}
+
+/** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
+export async function fetchLiveUsdInrRate(): Promise<ExchangeRateQuote | null> {
+  const quote = await fetchLiveUsdRates();
+  const rate = quote?.rates.INR;
+  if (quote && rate && rate > 0) {
+    return { rate, source: quote.source, asOf: quote.asOf };
+  }
   return null;
 }

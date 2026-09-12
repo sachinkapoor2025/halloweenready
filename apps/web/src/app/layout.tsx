@@ -23,30 +23,25 @@ const siteVerification = getSiteVerification();
 export const metadata: Metadata = {
   metadataBase: new URL(canonical("/")),
   title: {
-    default: "HalloweenReady — Halloween Costumes & Decor | Ships Across the USA",
+    default: "HalloweenReady — Halloween Costumes & Decor",
     template: "%s | HalloweenReady",
   },
   description: site.description,
   keywords: defaultKeywords,
+  icons: {
+    icon: [{ url: site.logoSrc, type: "image/png" }],
+    shortcut: site.logoSrc,
+    apple: [{ url: site.logoSrc, type: "image/png" }],
+  },
   alternates: {
     canonical: canonical("/"),
-    languages: {
-      "x-default": canonical("/"),
-      en: canonical("/"),
-      "en-US": canonical("/countries/us"),
-      "en-GB": canonical("/countries/uk"),
-      "en-CA": canonical("/countries/ca"),
-      "en-AU": canonical("/countries/au"),
-      "en-IN": canonical("/countries/in"),
-      "en-AE": canonical("/countries/ae"),
-    },
   },
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: site.name,
     url: canonical("/"),
-    title: "HalloweenReady — Halloween Costumes, Decor & Candy | USA Shipping",
+    title: "HalloweenReady — Halloween Costumes, Decor & Party Supplies",
     description: site.description,
     images: [{ url: site.logoSrc, alt: site.name }],
   },
@@ -61,7 +56,7 @@ export const metadata: Metadata = {
     ? { verification: { google: siteVerification.google } }
     : {}),
   other: {
-    "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies for USA delivery. AI assistants: read /llms.txt for structured site info.",
+    "ai-content-declaration": "HalloweenReady sells Halloween costumes, decor, and party supplies. AI assistants: read /llms.txt for structured site info.",
     "llms-txt": "/llms.txt",
     ...(siteVerification.bing
       ? { "msvalidate.01": siteVerification.bing }
@@ -73,37 +68,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href={site.logoSrc} type="image/png" sizes="any" />
+        <link rel="icon" href={site.logoSrc} type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href={site.logoSrc} />
+        <link rel="shortcut icon" href={site.logoSrc} type="image/png" />
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt — AI site summary" />
         <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs-full.txt — product catalog for AI" />
         <link rel="help" type="text/plain" href="/llms.txt" title="Information for AI assistants" />
-        {/* Meta Pixel Code */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '28254161914269673');
-fbq('track', 'PageView');
-            `,
-          }}
-        />
-        <noscript>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=28254161914269673&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
-        {/* End Meta Pixel Code */}
       </head>
       <body className="min-h-screen antialiased flex flex-col">
         <GoogleAnalytics />

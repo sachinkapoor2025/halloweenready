@@ -44,6 +44,10 @@ export function okCached(body: unknown, maxAgeSeconds = 30) {
   });
 }
 
+export function accepted(body: unknown) {
+  return json(202, body);
+}
+
 export function created(body: unknown) {
   return json(201, body);
 }

@@ -3,11 +3,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { listAllBlogPosts } from "@/lib/content/seo-blog";
 import { pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Halloween Blog — Guides, Tips & Halloween USA",
+  title: "Halloween Blog — Guides for Decor, Costumes & Parties",
   description:
-    "Halloween guides: decorations, costumes, party supplies, and 2026 planning tips from HalloweenReady.",
+    "Practical Halloween guides: indoor and outdoor decorations, costumes, party supplies, and 2026 planning tips from HalloweenReady.",
   path: "/blog",
 });
 
@@ -15,10 +17,21 @@ export default function BlogPage() {
   const posts = listAllBlogPosts();
   return (
     <div className="max-w-5xl mx-auto px-4 py-12 overflow-x-hidden">
-      <h1 className="text-3xl font-bold text-primary mb-2">Halloween Guides & Blog</h1>
+      <h1 className="text-3xl font-bold text-primary mb-2">Halloween guides and blog</h1>
       <p className="text-slate-600 mb-8">
-        Expert guides on Halloween costumes, decorations, party planning, and shopping for USA delivery from
-        HalloweenReady.
+        Practical articles on{" "}
+        <Link href="/categories/home-decoration" className="text-nav hover:underline">
+          Halloween decorations
+        </Link>
+        ,{" "}
+        <Link href="/categories/costumesandaccessories" className="text-nav hover:underline">
+          Halloween costumes
+        </Link>
+        , and party planning. For a season overview, start with the{" "}
+        <Link href="/halloween-guide" className="text-nav hover:underline">
+          Halloween planning guide
+        </Link>
+        .
       </p>
       <div className="grid gap-6 sm:grid-cols-2">
         {posts.map((post) => (
@@ -56,6 +69,11 @@ export default function BlogPage() {
           </article>
         ))}
       </div>
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "guide" })}
+        title="Shop and plan Halloween"
+        intro="From the blog hub, continue to categories, destinations, and the main Halloween guide."
+      />
     </div>
   );
 }

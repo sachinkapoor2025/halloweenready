@@ -9,12 +9,17 @@ import {
   ORDER_STATUS,
   VENDOR_ORANGE_COUNTY,
   VENDOR_HALLOWEENREADY,
+  VENDOR_CJ_DROPSHIPPING,
   ensureVendorFulfillments,
   isMultiVendorOrder,
+  isCjDropshippingProduct,
+  getHalloweenHamperDef,
   lineVendorKey,
   orderHasOrangeCounty,
   orderHasUsarakhi,
   vendorDisplayLabel,
+  isManualWhatsAppStatus,
+  orderStatusWhatsAppDeepLink,
 } from "@halloweenready/shared";
 import {
   statusLabel,
@@ -57,6 +62,7 @@ export default function AdminOrderDetailPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [buyingLabel, setBuyingLabel] = useState(false);
+  const [pushingCj, setPushingCj] = useState(false);
   const [syncingPayment, setSyncingPayment] = useState(false);
   const [ratesWarning, setRatesWarning] = useState("");
   const [loadingRates, setLoadingRates] = useState(false);
@@ -261,6 +267,28 @@ export default function AdminOrderDetailPage() {
     }
   };
 
+  const pushToCj = async () => {
+    setPushingCj(true);
+    setError("");
+    setMessage("");
+    try {
+      const data = await apiClient<{ ok: boolean; message: string; cjOrderId?: string; cjPayUrl?: string }>(
+        `/admin/cj/orders/${encodeURIComponent(orderId)}/fulfill`,
+        { method: "POST", body: JSON.stringify({}) }
+      );
+      await load();
+      setMessage(
+        data.message +
+          (data.cjOrderId ? ` CJ order ${data.cjOrderId}.` : "") +
+          (data.cjPayUrl ? " Pay the CJ invoice in the CJ portal if the wallet is empty." : "")
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not push this order to CJ Dropshipping.");
+    } finally {
+      setPushingCj(false);
+    }
+  };
+
   /** Pull capture status from Razorpay when browser verify/webhook was missed. */
   const syncRazorpayPayment = async () => {
     setSyncingPayment(true);
@@ -326,6 +354,20 @@ export default function AdminOrderDetailPage() {
   const hasUs = orderHasUsarakhi(order);
   const multiVendor = isMultiVendorOrder(order);
   const fulfillments = ensureVendorFulfillments(order);
+  const hasCjItems = (order.items ?? []).some(
+    (item) =>
+      isCjDropshippingProduct({ vendorSlug: item.vendorSlug, cjPid: item.cjPid }) ||
+      Boolean(item.cjVid) ||
+      Boolean(getHalloweenHamperDef(item.productSlug))
+  );
+  const cjLane = fulfillments.find((f) => f.vendorSlug === VENDOR_CJ_DROPSHIPPING);
+  const canPushCj =
+    hasCjItems &&
+    !cjLane?.cjOrderId &&
+    order.status !== ORDER_STATUS.PENDING_PAYMENT &&
+    order.status !== ORDER_STATUS.CANCELLED;
+  const whatsappHref = orderStatusWhatsAppDeepLink(order);
+  const showWhatsApp = isManualWhatsAppStatus(order.status);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -380,6 +422,16 @@ export default function AdminOrderDetailPage() {
             >
               Download shipping label
             </button>
+          )}
+          {showWhatsApp && whatsappHref && (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm bg-[#25D366] text-white rounded-lg px-3 py-1.5 hover:bg-[#1ebe5d] print:hidden font-medium"
+            >
+              Send WhatsApp
+            </a>
           )}
           {order.status === ORDER_STATUS.PENDING_PAYMENT && (
             <Link
@@ -723,8 +775,40 @@ export default function AdminOrderDetailPage() {
                       ? `${f.trackingNumber}${f.carrier ? ` (${f.carrier})` : ""}`
                       : "No tracking yet"}
                   </p>
+                  {f.cjOrderId ? (
+                    <p className="text-[11px] text-slate-500 mt-1 break-all">
+                      CJ order {f.cjOrderId}
+                      {f.cjOrderNumber ? ` · ${f.cjOrderNumber}` : ""}
+                    </p>
+                  ) : null}
+                  {f.cjPayUrl ? (
+                    <a
+                      href={f.cjPayUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-nav hover:underline mt-1 inline-block"
+                    >
+                      Pay this CJ order
+                    </a>
+                  ) : null}
                 </div>
               ))}
+              {canPushCj && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 space-y-2">
+                  <p className="text-xs text-amber-900">
+                    This order has CJ Dropshipping products but is not in the CJ portal yet.
+                    {order.cjFulfillError ? ` Last error: ${order.cjFulfillError}` : ""}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={pushingCj}
+                    onClick={() => void pushToCj()}
+                    className="w-full bg-nav text-white py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                  >
+                    {pushingCj ? "Pushing to CJ…" : "Push to CJ Dropshipping"}
+                  </button>
+                </div>
+              )}
               {multiVendor && (
                 <p className="text-[11px] text-slate-500">
                   Mixed cart: Orange County and HalloweenReady each get their own AWB. Order becomes Shipped
@@ -870,15 +954,43 @@ export default function AdminOrderDetailPage() {
 
               {isReviveFromCancelled && transitions.length > 0 && (
                 <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
-                  This order was cancelled. Moving it to On hold, Accepted, or Processing revives it for
+                  This order was cancelled. Moving it to On hold, Order Confirmed, or Processing revives it for
                   fulfillment.
                 </p>
               )}
 
               {isAcceptOnly && !isReviveFromCancelled && (
                 <p className="text-xs text-slate-500">
-                  Accept confirms the order for fulfillment. Add tracking when you move it to Processing or Shipped.
+                  Confirming the order emails the customer automatically. Use Send WhatsApp to open a pre-filled
+                  message you can review and send. Add tracking when you move it to Processing or Shipped.
                 </p>
+              )}
+              {order.status === ORDER_STATUS.ACCEPTED && (
+                <p className="text-xs text-slate-500">
+                  The Order Confirmed email was sent when this status was set. Use Send WhatsApp to open a
+                  pre-filled message with the same order details.
+                </p>
+              )}
+              {(order.status === ORDER_STATUS.DELIVERED || order.status === ORDER_STATUS.COMPLETE) && (
+                <p className="text-xs text-slate-500">
+                  The delivered/completed email was sent when this status was set. Use Send WhatsApp to open a
+                  pre-filled message with order details and the review link.
+                </p>
+              )}
+              {showWhatsApp && !whatsappHref && (
+                <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
+                  No customer phone on this order, so WhatsApp cannot be opened.
+                </p>
+              )}
+              {showWhatsApp && whatsappHref && (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-full bg-[#25D366] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1ebe5d]"
+                >
+                  Send WhatsApp
+                </a>
               )}
 
               {showShippingFields && (
@@ -991,10 +1103,10 @@ export default function AdminOrderDetailPage() {
                     ? isOnHoldOnly
                       ? "Revive → on hold"
                       : isAcceptOnly
-                        ? "Revive → accepted"
+                        ? "Revive → order confirmed"
                         : "Revive order"
                     : isAcceptOnly
-                      ? "Accept order"
+                      ? "Confirm order"
                       : isOnHoldOnly
                         ? "Put on hold"
                         : "Save update"}

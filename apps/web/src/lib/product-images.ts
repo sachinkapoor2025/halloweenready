@@ -14,6 +14,8 @@ export function isPlaceholderProductImage(url: string | undefined | null): boole
     u.includes("logo-option-") ||
     u.includes("placeholder.jpg") ||
     u.includes("placeholder.svg") ||
+    u.includes("/banners/") ||
+    u.includes("bannerpage") ||
     // Amazon-import stubs that sync:public-uploads replaced with the pumpkin JPEG
     /^imgi_/i.test(file)
   );

@@ -1,12 +1,15 @@
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import {
   LOW_STOCK_THRESHOLD,
+  DEFAULT_USD_INR_RATE,
+  convertCurrencyAmount,
   productKeys,
   type Order,
   type Product,
 } from "@halloweenready/shared";
-import { docClient, PRODUCTS_TABLE, now } from "./db";
+import { docClient, PRODUCTS_TABLE, now, dayBucket } from "./db";
 import { notifyLowStock } from "./email";
+import { incrementRollup, geoRollupKeys } from "./event-rollups";
 
 function aggregateQuantities(
   items: { productSlug: string; quantity: number; name: string }[]
@@ -92,6 +95,28 @@ export async function decrementInventoryForOrder(order: Order): Promise<void> {
       );
       const updated = result.Attributes as Product;
       await maybeSendLowStockAlert(updated, updated.inventory);
+      const line = order.items.find((i) => i.productSlug === slug);
+      const lineRevenue = (line?.price ?? 0) * qty;
+      const revenueUsd =
+        (line?.currency ?? order.currency) === "INR"
+          ? convertCurrencyAmount(lineRevenue, "INR", "USD", DEFAULT_USD_INR_RATE)
+          : lineRevenue;
+      const addr = order.shippingAddress;
+      const day = dayBucket(new Date(order.updatedAt || timestamp));
+      const fields = { orders: 1, qty, revenueUsd, homepageOrders: 0 };
+      void Promise.all([
+        incrementRollup(day, `PRODUCT#${slug}`, "product", slug, fields),
+        ...geoRollupKeys(slug, addr.country, addr.state, addr.city).map((geo) =>
+          incrementRollup(day, geo.metric, geo.kind, geo.label, fields)
+        ),
+        incrementRollup(
+          day,
+          `CATEGORY#${updated.categorySlug ?? "unknown"}`,
+          "category",
+          updated.categorySlug ?? "unknown",
+          fields
+        ),
+      ]).catch((err) => console.warn("order performance rollup failed", slug, err));
     } catch (err) {
       console.error(`Inventory decrement failed for ${slug} (${name}):`, err);
     }

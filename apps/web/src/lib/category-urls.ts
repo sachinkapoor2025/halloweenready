@@ -2,10 +2,10 @@
  * Storefront category URLs for HalloweenReady.
  * Uses `/categories/{slug}` — no usarakhi SEO path mapping.
  */
-import { homeCategoryOrder } from "@/lib/site";
+import { categoryOrder } from "@/lib/site";
 
 export const CATEGORY_PUBLIC_SLUG: Record<string, string> = Object.fromEntries(
-  homeCategoryOrder.map((slug) => [slug, slug])
+  categoryOrder.map((slug) => [slug, slug])
 );
 
 /** Storefront path for a category API slug. */

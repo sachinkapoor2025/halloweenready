@@ -9,6 +9,8 @@ export const productKeys = {
   sk: () => "META" as const,
   gsi1pk: (categorySlug: string) => `CATEGORY#${categorySlug}`,
   gsi1sk: (slug: string) => `PRODUCT#${slug}`,
+  /** Cached CJ freight quote for one variant → destination. */
+  freightSk: (country: string, vid: string) => `FREIGHT#${country.toUpperCase()}#${vid}`,
 };
 
 export const categoryKeys = {
@@ -43,8 +45,9 @@ export const orderKeys = {
   // GSI3: filter by status, sorted by date
   gsi3pk: (status: string) => `STATUS#${status}`,
   gsi3sk: (createdAt: string) => createdAt,
-  /** Atomic counters for human order numbers (OC / US). */
-  counterPk: (prefix: "OC" | "US") => `COUNTER#ORDER#${prefix}`,
+  /** Atomic counters for human order numbers (OC / US). HW allocations reuse the US counter. */
+  counterPk: (prefix: "OC" | "US" | "HW") =>
+    `COUNTER#ORDER#${prefix === "HW" ? "US" : prefix}`,
   counterSk: () => "META" as const,
   /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
   numberPk: (orderNumber: string) => `ORDERNUM#${orderNumber.trim().toUpperCase()}`,
@@ -102,6 +105,25 @@ export const configKeys = {
   payments: { pk: "CONFIG#PAYMENTS", sk: "META" as const },
   blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" as const },
   shipping: { pk: "CONFIG#SHIPPING", sk: "META" as const },
+  cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" as const },
+  eprolo: { pk: "CONFIG#EPROLO", sk: "META" as const },
+  homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" as const },
+  homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" as const },
+  chat: { pk: "CONFIG#CHAT", sk: "META" as const },
+};
+
+/** Admin CJ catalog import jobs (config table). */
+export const cjImportJobKeys = {
+  pk: (jobId: string) => `CJ_IMPORT#${jobId}`,
+  sk: () => "META" as const,
+  listPk: () => "ENTITY#CJ_IMPORT" as const,
+  listSk: (createdAt: string, jobId: string) => `${createdAt}#${jobId}`,
+};
+
+/** Lookup so we skip a CJ pid that is already on the store. */
+export const cjPidKeys = {
+  pk: (pid: string) => `CJPID#${pid}`,
+  sk: () => "META" as const,
 };
 
 /** Multi-warehouse / multi-vendor registry (config table). */

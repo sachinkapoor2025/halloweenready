@@ -1,27 +1,45 @@
 export const site = {
   name: "HalloweenReady",
   domain: "halloweenready.com",
-  tagline: "Halloween Decorations & Party Supplies — Fast USA Delivery",
+  tagline: "Halloween Decorations, Costumes & Party Supplies",
   description:
-    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories with fast delivery across the USA. Premium-quality products for haunted houses, yard displays, and Halloween parties.",
+    "HalloweenReady.com — shop Halloween decorations, costumes, party supplies, and seasonal accessories. Check each product for a shipping quote to your destination.",
   supportEmail: "support@halloweenready.com",
   phone: "+1 (669) 260-3819",
-  whatsapp: "16692603819",
-  whatsappDisplay: "+1 (669) 260-3819",
+  /** Customer WhatsApp — India store number (do not display the digits on the storefront). */
+  whatsapp: "919266467887",
+  whatsappDisplay: "+91 9266467887",
   logoSrc: "/logo.png",
   primaryColor: "#1a0a2e",
   navBlue: "#ff6b00",
   accentColor: "#e11d48",
 } as const;
 
+export const STORE_LOCATIONS = [
+  {
+    id: "uk",
+    flag: "🇬🇧",
+    country: "United Kingdom",
+    lines: ["5 Exeter Road", "Southampton, Hampshire", "SO18 2ED", "United Kingdom"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=5+Exeter+Road%2C+Southampton+SO18+2ED",
+  },
+  {
+    id: "in",
+    flag: "🇮🇳",
+    country: "India",
+    lines: ["House No. 392", "Mohalla Sodian Wala", "Ferozepur City, Punjab 152002", "India"],
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=House+No.+392%2C+Mohalla+Sodian+Wala%2C+Ferozepur+City%2C+Punjab+152002",
+  },
+] as const;
+
 export const navItems = [
   { label: "Home", href: "/" },
+  { label: "Hampers", href: "/categories/halloween-hampers", category: "halloween-hampers" },
   { label: "Home Decorations", href: "/categories/home-decoration", category: "home-decoration" },
   { label: "Costumes", href: "/categories/costumesandaccessories", category: "costumesandaccessories" },
   { label: "Party Supplies", href: "/categories/partysupplier", category: "partysupplier" },
   { label: "Toys & Novelty", href: "/categories/toysandnovelty", category: "toysandnovelty" },
   { label: "Halloween Guide", href: "/halloween-guide" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -65,15 +83,15 @@ export const cityLinks: CityLink[] = [
 export const homeBanners = [
   {
     src: "/banners/bannerpage1.png",
-    alt: "Halloween decorations costumes and party supplies for USA shipping — HalloweenReady",
+    alt: "Halloween decorations costumes and party supplies — HalloweenReady",
     href: "/products",
-    eyebrow: "HALLOWEEN 2026 · USA SHIPPING",
+    eyebrow: "HALLOWEEN 2026 · SHOP WORLDWIDE",
     title: "Celebrate Halloween in",
     titleAccent: "Style",
     description:
-      "Premium Halloween decorations, costumes, and party supplies with fast shipping across all 50 states.",
+      "Premium Halloween decorations, costumes, and party supplies. Delivering in 5–7 days — confirm shipping on each product page.",
     cta: "Shop Halloween",
-    pill: "Decorations · Costumes · Party Supplies · Fast USA delivery",
+    pill: "Decorations · Costumes · Party Supplies",
   },
   {
     src: "/banners/bannerpage2.png",
@@ -85,7 +103,7 @@ export const homeBanners = [
     description:
       "Inflatable ghosts, LED pumpkins, skeletons, and yard decor — everything for the ultimate Halloween display.",
     cta: "Shop Decorations",
-    pill: "Indoor & outdoor decor · Same-day dispatch on most orders",
+    pill: "Indoor & outdoor decor",
   },
 ] as const;
 
@@ -111,7 +129,7 @@ export const homeCategoryOrder = [
   "printedandpapercrafts",
 ] as const;
 
-export const categoryOrder = homeCategoryOrder;
+export const categoryOrder = ["halloween-hampers", ...homeCategoryOrder] as const;
 
 export function orderCategories<T extends { slug: string }>(categories: readonly T[]): T[] {
   const rank = new Map<string, number>(homeCategoryOrder.map((slug, index) => [slug, index]));
@@ -156,42 +174,42 @@ export const testimonials = [
 export const faqs = [
   {
     q: "How quickly do you ship Halloween decorations?",
-    a: "Most orders are processed quickly and shipped within standard business timeframes. Delivery times vary based on location and shipping method selected.",
+    a: "Delivering in 5–7 days. Carts under $49 pay a stepped shipping fee; $49+ ships free. The checkout total matches the payment page.",
   },
   {
     q: "Do you offer outdoor Halloween decorations?",
-    a: "Yes, we offer a wide range of outdoor decorations including inflatables, yard signs, tombstones, lighting, and large display props.",
+    a: "Yes. The collection includes inflatables, yard signs, tombstones, lighting, and larger display props. Choose outdoor-rated items for yards and porches, and keep walkways clear when you set them up.",
   },
   {
     q: "Are your Halloween products suitable for parties?",
-    a: "Absolutely. We offer party supplies, tableware, decorations, banners, balloons, and themed accessories for Halloween events of all sizes.",
+    a: "Yes. You can find tableware, banners, balloons, photo props, and themed accessories for small family gatherings or larger Halloween events.",
   },
   {
     q: "Can I decorate both indoor and outdoor spaces?",
-    a: "Yes. Our collection includes products specifically designed for both indoor and outdoor Halloween decorating.",
+    a: "Yes. Indoor pieces work well on tables, shelves, and walls. Outdoor pieces are meant for yards and porches — check each product page if you need weather-resistant materials.",
   },
   {
     q: "Do you sell inflatable Halloween decorations?",
-    a: "Yes. We carry a variety of inflatable pumpkins, ghosts, skeletons, and other popular Halloween characters.",
+    a: "Yes. We carry inflatable pumpkins, ghosts, skeletons, and other popular characters. Most include stakes and a blower unless the product page says otherwise.",
   },
   {
     q: "What are your most popular Halloween categories?",
-    a: "Our best-selling categories include hanging decorations, inflatables, skeletons, lighting, yard décor, party supplies, and trick-or-treat accessories.",
+    a: "Shoppers often start with hanging decorations, inflatables, skeletons, lighting, yard pieces, party supplies, and trick-or-treat accessories, then add costumes if they need outfits too.",
   },
   {
-    q: "Does HalloweenReady ship across the USA?",
-    a: "Yes. We deliver Halloween orders to all 50 US states with fast domestic fulfillment.",
+    q: "Does HalloweenReady ship internationally?",
+    a: "Yes. Choose your country at checkout. We have shopping pages for the USA, UK, Canada, Australia, India, UAE, and several European countries. Delivering in 5–7 days.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "Stripe (USD — Visa, Mastercard, Amex) and Razorpay (INR — UPI, cards, netbanking) for secure online checkout.",
+    a: "You can pay with Stripe in USD (Visa, Mastercard, Amex) or Razorpay in INR (UPI, cards, net banking) at secure checkout. Prices can display in other currencies.",
   },
   {
     q: "Can I trust HalloweenReady for Halloween shopping?",
-    a: "HalloweenReady offers secure checkout, WhatsApp and email support, domestic USA shipping, and a satisfaction guarantee.",
+    a: "Checkout is encrypted. You can reach the team on WhatsApp or email for sizing and delivery questions. We stand behind the purchase if something arrives damaged.",
   },
   {
     q: "When should I order for Halloween 2026?",
-    a: "Halloween 2026 is October 31, 2026. Order decor and party supplies by October 25 for guaranteed pre-Halloween delivery.",
+    a: "Halloween 2026 is Saturday, October 31. Delivering in 5–7 days, so order with that window in mind. Earlier in October gives more buffer — we do not guarantee arrival before October 31.",
   },
 ] as const;

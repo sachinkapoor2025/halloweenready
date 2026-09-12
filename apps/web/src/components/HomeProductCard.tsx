@@ -9,17 +9,21 @@ import { FastSellingBadge } from "@/components/FastSellingBadge";
 import { useCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
 import { ProductImageRotator } from "@/components/ProductImageRotator";
+import { productHref } from "@/lib/product-urls";
 
 export function HomeProductCard({
   product,
   showFastSellingBadge = false,
+  priority = false,
 }: {
   product: Product;
   showFastSellingBadge?: boolean;
+  priority?: boolean;
 }) {
   const { format } = useCurrency();
   const discount = getDiscountPercent(product.price, product.compareAtPrice);
   const fastSelling = showFastSellingBadge || isFastSelling(product);
+  const href = productHref(product.slug);
 
   return (
     <div className="card-spooky overflow-hidden relative flex h-full flex-col">
@@ -35,16 +39,17 @@ export function HomeProductCard({
       )}
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
         <WishlistButton product={product} />
-        <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
+        <Link href={href} className="absolute inset-0 block">
           <ProductImageRotator
             images={product.images ?? []}
             alt={product.name}
             staggerKey={product.slug}
             className="absolute inset-0 h-full w-full"
+            priority={priority}
           />
         </Link>
       </div>
-      <Link href={`/products/${product.slug}`} className="block flex-1">
+      <Link href={href} className="block flex-1">
         <div className="p-3 flex h-full flex-col">
           <h3 className="font-semibold text-sm text-slate-900 line-clamp-2 min-h-[2.75rem] hover:text-nav">
             {product.name}

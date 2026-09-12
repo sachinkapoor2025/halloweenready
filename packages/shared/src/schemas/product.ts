@@ -30,11 +30,60 @@ export const productSchema = z.object({
   availableCountryCodes: z.array(z.string().trim().length(2).transform((v) => v.toUpperCase())).optional(),
   /** Wholesale cost from vendor — never expose on public storefront APIs. */
   vendorCost: z.number().positive().optional(),
+  /** CJ Dropshipping product id (pid). */
+  cjPid: z.string().min(1).max(80).optional(),
+  /** Eprolo catalog product id. */
+  eproloProductId: z.string().min(1).max(80).optional(),
+  /** Eprolo SKU used when fulfilling. */
+  eproloSku: z.string().min(1).max(80).optional(),
+  /** Default CJ variant id used when the shopper does not pick another. */
+  cjVid: z.string().min(1).max(80).optional(),
+  /** CJ variants for size/color (storefront picker). */
+  cjVariants: z
+    .array(
+      z.object({
+        vid: z.string().min(1),
+        sku: z.string().optional(),
+        key: z.string().optional(),
+        name: z.string().optional(),
+        image: z.string().optional(),
+        inventory: z.number().int().min(0).optional(),
+        price: z.number().positive().optional(),
+        vendorCost: z.number().positive().optional(),
+        weightOz: z.number().positive().optional(),
+        lengthIn: z.number().positive().optional(),
+        widthIn: z.number().positive().optional(),
+        heightIn: z.number().positive().optional(),
+      })
+    )
+    .optional(),
   /**
    * Public storefront flag: show dry-fruit / chocolate add-on picker.
    * Set by API after stripping vendorSlug (true for HalloweenReady, false for OC).
    */
   allowsAddons: z.boolean().optional(),
+  /** Snapshot of products inside a hamper (name/image/price for PDP + cart). */
+  hamperContents: z
+    .array(
+      z.object({
+        slug: z.string().min(1),
+        name: z.string().min(1),
+        image: z.string().optional(),
+        price: z.number().positive().optional(),
+      })
+    )
+    .optional(),
+  /** Snapshot of products that can replace an included item or be added extra. */
+  hamperAddons: z
+    .array(
+      z.object({
+        slug: z.string().min(1),
+        name: z.string().min(1),
+        image: z.string().optional(),
+        price: z.number().nonnegative(),
+      })
+    )
+    .optional(),
   /**
    * When true, coupons cannot discount this product (flash / fixed-price deals).
    * Also skips competitive storefront price cuts so the listed price stays exact.
@@ -58,6 +107,16 @@ export const productSchema = z.object({
   lengthIn: z.number().positive().optional(),
   widthIn: z.number().positive().optional(),
   heightIn: z.number().positive().optional(),
+  /** CJ / imported product videos shown in the PDP gallery. */
+  videos: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        posterUrl: z.string().url().optional(),
+        durationSec: z.number().positive().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const createProductSchema = productSchema.omit({ slug: true }).extend({

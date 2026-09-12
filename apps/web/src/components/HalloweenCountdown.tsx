@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const HALLOWEEN_DATE = new Date("2026-10-31T00:00:00");
-/** Order-by date for guaranteed pre-Halloween delivery */
+/** Order-by reminder for Halloween 2026 — not a delivery guarantee */
 const ORDER_DEADLINE = new Date("2026-10-25T23:59:59");
 
 function daysUntil(target: Date): number {
@@ -47,7 +47,7 @@ export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }
         )}
         {daysToOrder !== null && daysToOrder > 0 && daysToOrder <= 14 && (
           <span className="block text-xs text-nav mt-0.5">
-            Order within {daysToOrder} days for guaranteed pre-Halloween USA delivery
+            Order within {daysToOrder} days for the best chance of arrival before Halloween
           </span>
         )}
       </p>
@@ -65,7 +65,7 @@ export function HalloweenCountdown({ variant = "banner" }: { variant?: Variant }
           </>
         )}
         {daysToOrder !== null && daysToOrder > 0 && daysToOrder <= 21 && (
-          <> · Order by Oct 25 for guaranteed delivery</>
+          <> · Order by Oct 25 for more transit buffer</>
         )}
         {" · "}
         <Link href="/halloween-guide" className="underline underline-offset-2 hover:text-orange-200">

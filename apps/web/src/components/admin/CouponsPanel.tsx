@@ -11,6 +11,9 @@ import {
   ADMIN_EXTREME_DISCOUNT_MAX,
   isAdminConfirmedSaleDiscount,
   isAdminExtremeDiscount,
+  isTestOrderCoupon,
+  TEST_ORDER_COUPON_MINUTES,
+  TEST_ORDER_FORCE_TOTAL_USD,
   type StoreCoupon,
 } from "@halloweenready/shared";
 import { PhoneInput, buildPhoneValue } from "@/components/PhoneInput";
@@ -50,6 +53,14 @@ export function CouponsPanel() {
   const [error, setError] = useState("");
   const [lastWhatsAppLink, setLastWhatsAppLink] = useState("");
   const [lastCode, setLastCode] = useState("");
+  const [testEmail, setTestEmail] = useState("");
+  const [testPhoneCountry, setTestPhoneCountry] = useState("US");
+  const [testPhoneLocal, setTestPhoneLocal] = useState("");
+  const [testSaving, setTestSaving] = useState(false);
+  const [testMessage, setTestMessage] = useState("");
+  const [testError, setTestError] = useState("");
+  const [lastTestCode, setLastTestCode] = useState("");
+  const [copied, setCopied] = useState(false);
   const [rows, setRows] = useState<StoreCoupon[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,6 +84,54 @@ export function CouponsPanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!testEmail && user?.email) setTestEmail(user.email);
+  }, [user?.email, testEmail]);
+
+  const copyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const generateTestOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const hasEmail = Boolean(testEmail.trim() && testEmail.includes("@"));
+    const mobileDigits = testPhoneLocal.replace(/\D/g, "");
+    const hasPhone = mobileDigits.length >= 7;
+    if (!hasEmail && !hasPhone) {
+      setTestError("Enter the email or mobile you will use at checkout");
+      return;
+    }
+
+    setTestSaving(true);
+    setTestMessage("");
+    setTestError("");
+    setLastTestCode("");
+    try {
+      const res = await api<{ coupon: StoreCoupon }>("/admin/coupons/test-order", {
+        method: "POST",
+        body: JSON.stringify({
+          ...(hasEmail ? { email: testEmail.trim() } : {}),
+          ...(hasPhone ? { phone: mobileDigits } : {}),
+        }),
+      });
+      setLastTestCode(res.coupon.code);
+      setTestMessage(
+        `Test coupon ${res.coupon.code} is valid for ${TEST_ORDER_COUPON_MINUTES} minutes. Use this same email/phone at checkout — items + shipping will charge $${TEST_ORDER_FORCE_TOTAL_USD}.00.`
+      );
+      await load();
+    } catch (err) {
+      setTestError(err instanceof Error ? err.message : "Could not generate test coupon");
+    } finally {
+      setTestSaving(false);
+    }
+  };
 
   const generate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,6 +240,68 @@ export function CouponsPanel() {
           {user?.email ?? "logged-in admin"}).
         </p>
       </div>
+
+      <form
+        onSubmit={generateTestOrder}
+        className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-4"
+      >
+        <div>
+          <h3 className="text-sm font-semibold text-amber-950">$1 test-order coupon</h3>
+          <p className="text-xs text-amber-900/80 mt-1">
+            For end-to-end site testing only. Whatever the cart is — including shipping — checkout
+            charges ${TEST_ORDER_FORCE_TOTAL_USD}.00 USD (or the INR equivalent). Valid{" "}
+            {TEST_ORDER_COUPON_MINUTES} minutes, one use. Bind it to the email or phone you will enter
+            at checkout.
+          </p>
+        </div>
+        <label className="block text-sm">
+          Checkout email <span className="text-slate-400 font-normal">(optional if phone is set)</span>
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="you@halloweenready.com"
+            className="mt-1 w-full border rounded-lg px-3 py-2 bg-white"
+          />
+        </label>
+        <div>
+          <PhoneInput
+            label="Checkout phone"
+            countryIso={testPhoneCountry}
+            localNumber={testPhoneLocal}
+            onCountryChange={setTestPhoneCountry}
+            onLocalNumberChange={setTestPhoneLocal}
+            compact
+            placeholder="Mobile number"
+            className="text-sm"
+            selectClassName="mt-1"
+            inputClassName="mt-1"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={testSaving}
+          className="bg-amber-800 text-white rounded-lg px-4 py-2.5 text-sm font-medium disabled:opacity-50"
+        >
+          {testSaving ? "Generating…" : `Generate $${TEST_ORDER_FORCE_TOTAL_USD} test coupon (${TEST_ORDER_COUPON_MINUTES} min)`}
+        </button>
+        {testMessage && <p className="text-sm text-green-800">{testMessage}</p>}
+        {testError && <p className="text-sm text-red-600">{testError}</p>}
+        {lastTestCode && (
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-white px-3 py-2">
+            <p className="text-sm">
+              Code: <strong className="font-mono text-base">{lastTestCode}</strong>
+            </p>
+            <button
+              type="button"
+              onClick={() => void copyCode(lastTestCode)}
+              className="text-sm font-medium text-amber-900 hover:underline"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        )}
+      </form>
 
       <form onSubmit={generate} className="bg-white border rounded-xl p-5 space-y-4">
         <label className="block text-sm">
@@ -351,19 +472,27 @@ export function CouponsPanel() {
             {rows.slice(0, 50).map((c) => {
               const expired = new Date(c.expiresAt).getTime() < Date.now();
               const used = Boolean(c.usedAt);
-              const extreme = isAdminExtremeDiscount(c.discountPercent);
+              const testOrder = isTestOrderCoupon(c);
+              const extreme = !testOrder && isAdminExtremeDiscount(c.discountPercent);
               const confirmed =
-                Boolean(c.confirmedSale) || isAdminConfirmedSaleDiscount(c.discountPercent);
+                !testOrder &&
+                (Boolean(c.confirmedSale) || isAdminConfirmedSaleDiscount(c.discountPercent));
               const phoneVal =
                 "phone" in c && typeof (c as { phone?: string }).phone === "string"
                   ? (c as { phone?: string }).phone
                   : "";
+              const remainingMs = new Date(c.expiresAt).getTime() - Date.now();
+              const remainingMin = Math.max(0, Math.ceil(remainingMs / 60000));
               return (
                 <li key={c.code} className="px-4 py-3 flex flex-wrap gap-2 justify-between">
                   <div>
                     <p className="font-mono font-medium flex flex-wrap items-center gap-2">
                       {c.code}
-                      {extreme ? (
+                      {testOrder ? (
+                        <span className="rounded bg-amber-800 text-white text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5">
+                          Test $1
+                        </span>
+                      ) : extreme ? (
                         <span className="rounded bg-amber-700 text-white text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5">
                           Extreme
                         </span>
@@ -377,7 +506,7 @@ export function CouponsPanel() {
                       {[
                         c.email || null,
                         phoneVal || null,
-                        `${c.discountPercent}%`,
+                        testOrder ? `$${TEST_ORDER_FORCE_TOTAL_USD} total` : `${c.discountPercent}%`,
                         `by ${(c as { createdBy?: string }).createdBy ?? "—"}`,
                       ]
                         .filter(Boolean)
@@ -385,7 +514,15 @@ export function CouponsPanel() {
                     </p>
                   </div>
                   <div className="text-xs text-right text-slate-500">
-                    <p>{used ? "Used" : expired ? "Expired" : "Active"}</p>
+                    <p>
+                      {used
+                        ? "Used"
+                        : expired
+                          ? "Expired"
+                          : testOrder
+                            ? `Active · ${remainingMin} min left`
+                            : "Active"}
+                    </p>
                     <p>exp {new Date(c.expiresAt).toLocaleString()}</p>
                   </div>
                 </li>

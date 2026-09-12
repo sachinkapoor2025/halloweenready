@@ -11,25 +11,25 @@ export declare const leadCaptureSchema: z.ZodObject<{
     source: z.ZodDefault<z.ZodEnum<["checkout", "newsletter", "product", "browse", "admin", "contact", "chat", "review"]>>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    source: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review";
+    source: "admin" | "product" | "chat" | "checkout" | "newsletter" | "browse" | "contact" | "review";
     sessionId: string;
     name?: string | undefined;
     productSlug?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
+    page?: string | undefined;
     metadata?: Record<string, string> | undefined;
     userId?: string | undefined;
-    page?: string | undefined;
 }, {
     sessionId: string;
     name?: string | undefined;
     productSlug?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    source?: "admin" | "checkout" | "newsletter" | "product" | "browse" | "contact" | "chat" | "review" | undefined;
+    source?: "admin" | "product" | "chat" | "checkout" | "newsletter" | "browse" | "contact" | "review" | undefined;
+    page?: string | undefined;
     metadata?: Record<string, string> | undefined;
     userId?: string | undefined;
-    page?: string | undefined;
 }>;
 export declare const LEAD_STATUS: {
     readonly NEW: "new";
@@ -46,14 +46,14 @@ export declare const updateLeadSchema: z.ZodObject<{
     adminNotes: z.ZodOptional<z.ZodString>;
     assignedTo: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    sessionId: string;
     createdAt: string;
+    sessionId: string;
     adminNotes?: string | undefined;
     leadStatus?: "new" | "contacted" | "follow_up" | "converted" | undefined;
     assignedTo?: string | undefined;
 }, {
-    sessionId: string;
     createdAt: string;
+    sessionId: string;
     adminNotes?: string | undefined;
     leadStatus?: "new" | "contacted" | "follow_up" | "converted" | undefined;
     assignedTo?: string | undefined;

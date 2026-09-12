@@ -68,6 +68,10 @@ export const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
 export const EVENT_TYPES = {
   PAGE_VIEW: "page_view",
   PRODUCT_VIEW: "product_view",
+  /** Listing card entered the viewport (prefer rollup-only writes). */
+  PRODUCT_IMPRESSION: "product_impression",
+  /** Listing card click through to PDP. */
+  PRODUCT_CLICK: "product_click",
   SEARCH: "search",
   CART_ADD: "cart_add",
   CART_REMOVE: "cart_remove",
@@ -77,6 +81,9 @@ export const EVENT_TYPES = {
   SESSION_PING: "session_ping",
   COUNTRY_CHANGED: "country_changed",
   POSTAL_CODE_ENTERED: "postal_code_entered",
+  CHAT_OPEN: "chat_open",
+  CHAT_CLOSE: "chat_close",
+  CHAT_MESSAGE: "chat_message",
 } as const;
 
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
@@ -116,8 +123,17 @@ export const VENDOR_ORANGE_COUNTY = "orange-county" as const;
 /** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
 export const VENDOR_HALLOWEENREADY = "halloweenready" as const;
 
+/** CJ Dropshipping catalog + fulfillment vendor. */
+export const VENDOR_CJ_DROPSHIPPING = "cj-dropshipping" as const;
+
+/** Eprolo dropshipping catalog + fulfillment vendor. */
+export const VENDOR_EPROLO = "eprolo" as const;
+
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 export const ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers" as const;
+
+/** Curated Halloween gift hampers (fixed-price bundles). */
+export const HALLOWEEN_HAMPERS_CATEGORY_SLUG = "halloween-hampers" as const;
 
 /**
  * Hamper pricing from vendor cost (Excel). Uses retail margin on selling price:
@@ -152,6 +168,7 @@ export const CATEGORY_SLUG_ALIASES: Record<string, string[]> = {
   jewellryandaccessories: ["jewellryandaccessories"],
   lifestyleandwearable: ["lifestyleandwearable"],
   printedandpapercrafts: ["printedandpapercrafts"],
+  "halloween-hampers": ["halloween-hampers", "hampers", "gift-hampers"],
   decorations: ["home-decoration", "decorations"],
   costumes: ["costumesandaccessories", "costumes"],
   "party-supplies": ["partysupplier", "party-supplies"],

@@ -8,8 +8,8 @@ export declare const paymentConfigSchema: z.ZodObject<{
             enabled: z.ZodDefault<z.ZodBoolean>;
         }, "strip", z.ZodTypeAny, {
             currency: "USD";
-            provider: "stripe";
             enabled: boolean;
+            provider: "stripe";
         }, {
             currency: "USD";
             provider: "stripe";
@@ -21,8 +21,8 @@ export declare const paymentConfigSchema: z.ZodObject<{
             enabled: z.ZodDefault<z.ZodBoolean>;
         }, "strip", z.ZodTypeAny, {
             currency: "INR";
-            provider: "razorpay";
             enabled: boolean;
+            provider: "razorpay";
         }, {
             currency: "INR";
             provider: "razorpay";
@@ -31,13 +31,13 @@ export declare const paymentConfigSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         US: {
             currency: "USD";
-            provider: "stripe";
             enabled: boolean;
+            provider: "stripe";
         };
         IN: {
             currency: "INR";
-            provider: "razorpay";
             enabled: boolean;
+            provider: "razorpay";
         };
     }, {
         US: {
@@ -56,13 +56,13 @@ export declare const paymentConfigSchema: z.ZodObject<{
     regions: {
         US: {
             currency: "USD";
-            provider: "stripe";
             enabled: boolean;
+            provider: "stripe";
         };
         IN: {
             currency: "INR";
-            provider: "razorpay";
             enabled: boolean;
+            provider: "razorpay";
         };
     };
 }, {

@@ -20,6 +20,9 @@ export type ProductAddonSelection = {
 export declare function getProductAddon(id: string): ProductAddonDef | undefined;
 export declare function productAllowsAddons(product: {
     vendorSlug?: string | null;
+    categorySlug?: string | null;
+    tags?: string[] | null;
+    slug?: string | null;
 }): boolean;
 export type CartAddonLike = {
     id: string;

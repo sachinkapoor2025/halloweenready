@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/lib/site";
+import { site, whatsappChatUrl } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -25,8 +25,16 @@ export default function ReturnsPage() {
         </p>
         <h2 className="text-xl font-bold text-primary">Delivery issues</h2>
         <p>
-          If your Halloween has not arrived within the estimated 5–7 business day window, reach out on WhatsApp{" "}
-          {site.whatsappDisplay} or email {site.supportEmail}. We will track your shipment and resolve the issue
+          If your Halloween has not arrived within the estimated 5–7 day window, reach out on{" "}
+          <a
+            href={whatsappChatUrl("Hi HalloweenReady, my order has not arrived yet.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-nav underline"
+          >
+            WhatsApp
+          </a>{" "}
+          or email {site.supportEmail}. We will track your shipment and resolve the issue
           promptly.
         </p>
         <h2 className="text-xl font-bold text-primary">Cancellations</h2>
@@ -42,7 +50,16 @@ export default function ReturnsPage() {
               {site.supportEmail}
             </a>
           </li>
-          <li>WhatsApp: {site.whatsappDisplay}</li>
+          <li>
+            <a
+              href={whatsappChatUrl("Hi HalloweenReady, I need help with a return.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-nav underline"
+            >
+              WhatsApp
+            </a>
+          </li>
           <li>
             <Link href="/contact" className="text-nav underline">
               Contact form

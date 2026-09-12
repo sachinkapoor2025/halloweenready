@@ -3,8 +3,8 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 
 const LOGO = {
-  desktop: { width: 180, height: 60, className: "h-12 w-auto max-w-[180px] object-contain" },
-  mobile: { width: 160, height: 52, className: "h-11 w-auto max-w-[160px] object-contain" },
+  desktop: { width: 72, height: 72, className: "h-16 w-16 rounded-full object-contain" },
+  mobile: { width: 64, height: 64, className: "h-14 w-14 rounded-full object-contain" },
 } as const;
 
 type SiteLogoProps = {
@@ -13,7 +13,6 @@ type SiteLogoProps = {
   className?: string;
 };
 
-/** Same logo rendering in header and footer — no blend modes. */
 export function SiteLogo({ size = "desktop", priority = false, className = "" }: SiteLogoProps) {
   const { width, height, className: sizeClass } = LOGO[size];
   return (

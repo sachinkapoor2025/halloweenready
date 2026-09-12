@@ -17,8 +17,8 @@ type StoredOrder = Order & {
 };
 
 /**
- * Atomically allocate the next human order number for a prefix (OC or US).
- * Sequence starts at ORDER_NUMBER_START (10001).
+ * Atomically allocate the next human order number for a prefix (OC or HW).
+ * Sequence starts at ORDER_NUMBER_START (10001). HW reuses the US counter.
  */
 export async function allocateOrderNumber(prefix: OrderNumberPrefix): Promise<string> {
   const result = await docClient.send(
@@ -78,7 +78,7 @@ async function loadOrderByUuid(orderId: string): Promise<StoredOrder | undefined
 }
 
 /**
- * Resolve an order by UUID or human order number (OC10001 / US10001).
+ * Resolve an order by UUID or human order number (OC10001 / HW10001 / legacy US10001).
  */
 export async function resolveOrderByIdOrNumber(
   idOrNumber: string

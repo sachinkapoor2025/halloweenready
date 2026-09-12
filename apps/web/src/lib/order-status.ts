@@ -3,7 +3,7 @@ import { ORDER_STATUS, ORDER_STATUS_TRANSITIONS } from "@halloweenready/shared";
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.PENDING_PAYMENT]: "Pending payment",
   [ORDER_STATUS.PAID]: "Paid",
-  [ORDER_STATUS.ACCEPTED]: "Accepted",
+  [ORDER_STATUS.ACCEPTED]: "Order Confirmed",
   [ORDER_STATUS.ON_HOLD]: "On hold",
   [ORDER_STATUS.PROCESSING]: "Processing",
   [ORDER_STATUS.SHIPPED]: "Shipped",

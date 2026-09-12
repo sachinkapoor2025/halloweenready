@@ -1,4 +1,5 @@
 import { roundForCurrency, type ShopCurrency } from "../currency";
+import { HALLOWEEN_HAMPERS_CATEGORY_SLUG } from "../constants";
 import {
   productUsesFixedStorefrontPrice,
   withFlashComboStorefrontPricing,
@@ -60,7 +61,13 @@ export function withCompetitiveStorefrontPricing<T extends VendorPriced>(product
   // Flash combo price is owned by code — never show a stale Dynamo $3.99.
   const priced = withFlashComboStorefrontPricing(product);
   // Already has intentional list vs sale pricing from the vendor catalog.
-  if (priced.vendorSlug || priced.categorySlug === "rakhi-hampers") return priced;
+  if (
+    priced.vendorSlug ||
+    priced.categorySlug === "rakhi-hampers" ||
+    priced.categorySlug === HALLOWEEN_HAMPERS_CATEGORY_SLUG
+  ) {
+    return priced;
+  }
   // Flash / fixed-price deals must stay at the exact listed price.
   if (productUsesFixedStorefrontPrice(priced)) {
     return { ...priced, storefrontPricingApplied: true };

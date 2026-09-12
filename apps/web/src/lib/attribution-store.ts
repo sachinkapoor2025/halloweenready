@@ -156,5 +156,32 @@ export function attributionEventMetadata(): Record<string, string> {
   if (last?.campaign) out.attrLastCampaign = last.campaign;
   if (first?.confidence) out.attrFirstConfidence = first.confidence;
   if (last?.confidence) out.attrLastConfidence = last.confidence;
+  if (last?.source === "chat_assistant") out.source = "chat_assistant";
   return out;
+}
+
+/** Last-touch from the shopping assistant — used for chat-assisted order attribution. */
+export function markChatAssistedTouch(productSlug?: string): void {
+  if (typeof window === "undefined") return;
+  const touch: TrafficTouch = {
+    source: "chat_assistant",
+    medium: "assistant",
+    campaign: "personal-shopping-assistant",
+    content: productSlug,
+    landingPage: window.location.pathname,
+    channel: "chat",
+    confidence: "high",
+    confidenceReason: "Product interaction inside HalloweenReady shopping assistant",
+    at: new Date().toISOString(),
+  };
+  const existingFirst = readJson<TrafficTouch>(FIRST_KEY) ?? undefined;
+  const existingLast = readJson<TrafficTouch>(LAST_KEY) ?? undefined;
+  const existingAssisted = readJson<TrafficTouch[]>(ASSISTED_KEY) ?? [];
+  const journey = applyTouchToJourney(
+    { first: existingFirst, last: existingLast, assisted: existingAssisted },
+    touch
+  );
+  if (!existingFirst) writeJson(FIRST_KEY, journey.first);
+  writeJson(LAST_KEY, journey.last);
+  writeJson(ASSISTED_KEY, journey.assisted);
 }

@@ -1,8 +1,17 @@
 import { resolveProductImageUrl, resolveProductImageUrls } from "@halloweenready/shared";
 
-export function withResolvedProductImages<T extends { images?: string[] }>(item: T): T {
-  if (!item.images?.length) return item;
-  return { ...item, images: resolveProductImageUrls(item.images) };
+export function withResolvedProductImages<T extends { images?: string[]; cjVariants?: Array<{ image?: string }> }>(
+  item: T
+): T {
+  const images = item.images?.length ? resolveProductImageUrls(item.images) : item.images;
+  const cjVariants = item.cjVariants?.map((variant) =>
+    variant.image ? { ...variant, image: resolveProductImageUrl(variant.image) } : variant
+  );
+  return {
+    ...item,
+    ...(images ? { images } : {}),
+    ...(cjVariants ? { cjVariants } : {}),
+  };
 }
 
 export { resolveProductImageUrl, resolveProductImageUrls };

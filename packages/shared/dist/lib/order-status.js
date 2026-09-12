@@ -27,6 +27,8 @@ function isOrderAwaitingPayment(status) {
 }
 /** Human-readable customer-facing status label. */
 function formatOrderStatusLabel(status) {
+    if (status === constants_1.ORDER_STATUS.ACCEPTED)
+        return "Order Confirmed";
     return status.replace(/_/g, " ");
 }
 /** Short customer headline for the order confirmation page. */
@@ -38,8 +40,9 @@ function orderConfirmationHeadline(status) {
             return "Your order was delivered!";
         case constants_1.ORDER_STATUS.COMPLETE:
             return "Your order is complete!";
-        case constants_1.ORDER_STATUS.PROCESSING:
         case constants_1.ORDER_STATUS.ACCEPTED:
+            return "Your order is confirmed!";
+        case constants_1.ORDER_STATUS.PROCESSING:
             return "Your order is being prepared!";
         case constants_1.ORDER_STATUS.ON_HOLD:
             return "Your order is on hold";
@@ -65,8 +68,9 @@ function orderConfirmationSubcopy(status) {
             return "Your gift has arrived. We hope your brother loves it — thank you for choosing HalloweenReady.";
         case constants_1.ORDER_STATUS.COMPLETE:
             return "Thank you for shopping Halloween with HalloweenReady.";
-        case constants_1.ORDER_STATUS.PROCESSING:
         case constants_1.ORDER_STATUS.ACCEPTED:
+            return "We've confirmed your order and our team is preparing it for USA dispatch.";
+        case constants_1.ORDER_STATUS.PROCESSING:
             return "We've received your payment and our team is preparing your order for USA dispatch.";
         case constants_1.ORDER_STATUS.ON_HOLD:
             return "Our team is reviewing your order. We'll email you with an update shortly.";
@@ -75,10 +79,10 @@ function orderConfirmationSubcopy(status) {
         case constants_1.ORDER_STATUS.CANCELLED:
             return "This order was cancelled. You can place a new order anytime.";
         case constants_1.ORDER_STATUS.PENDING_PAYMENT:
-            return "Complete payment to confirm your order and start USA delivery.";
+            return "Complete payment to confirm your order. Delivering in 5–7 days.";
         default:
             return isOrderPaymentSettled(status)
                 ? "Your Halloween order is on its way. We've sent a confirmation email and our team will dispatch your order soon."
-                : "Complete payment to confirm your order and start USA delivery.";
+                : "Complete payment to confirm your order. Delivering in 5–7 days.";
     }
 }

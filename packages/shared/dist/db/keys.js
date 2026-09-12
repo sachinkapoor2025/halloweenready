@@ -4,13 +4,15 @@
  * Each domain has its own table; builders below are grouped per table.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.auditLogKeys = exports.inventoryListingKeys = exports.marketKeys = exports.vendorRecordKeys = exports.warehouseKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
+exports.legacyKeys = exports.pendingPaymentUnsubKeys = exports.reminderEmailKeys = exports.sesEmailKeys = exports.vendorPayoutKeys = exports.paymentLedgerKeys = exports.expenseKeys = exports.couponKeys = exports.uploadRegistryKeys = exports.auditLogKeys = exports.inventoryListingKeys = exports.marketKeys = exports.vendorRecordKeys = exports.warehouseKeys = exports.cjPidKeys = exports.cjImportJobKeys = exports.configKeys = exports.eventKeys = exports.accountKeys = exports.customerKeys = exports.cartKeys = exports.orderKeys = exports.reviewKeys = exports.categoryKeys = exports.productKeys = void 0;
 // ---- products table (products + categories) ----
 exports.productKeys = {
     pk: (slug) => `PRODUCT#${slug}`,
     sk: () => "META",
     gsi1pk: (categorySlug) => `CATEGORY#${categorySlug}`,
     gsi1sk: (slug) => `PRODUCT#${slug}`,
+    /** Cached CJ freight quote for one variant → destination. */
+    freightSk: (country, vid) => `FREIGHT#${country.toUpperCase()}#${vid}`,
 };
 exports.categoryKeys = {
     pk: (slug) => `CATEGORY#${slug}`,
@@ -41,8 +43,8 @@ exports.orderKeys = {
     // GSI3: filter by status, sorted by date
     gsi3pk: (status) => `STATUS#${status}`,
     gsi3sk: (createdAt) => createdAt,
-    /** Atomic counters for human order numbers (OC / US). */
-    counterPk: (prefix) => `COUNTER#ORDER#${prefix}`,
+    /** Atomic counters for human order numbers (OC / US). HW allocations reuse the US counter. */
+    counterPk: (prefix) => `COUNTER#ORDER#${prefix === "HW" ? "US" : prefix}`,
     counterSk: () => "META",
     /** Lookup pointer: ORDERNUM#OC10001 → orderId (UUID). */
     numberPk: (orderNumber) => `ORDERNUM#${orderNumber.trim().toUpperCase()}`,
@@ -95,6 +97,23 @@ exports.configKeys = {
     payments: { pk: "CONFIG#PAYMENTS", sk: "META" },
     blogImages: { pk: "CONFIG#BLOG_IMAGES", sk: "META" },
     shipping: { pk: "CONFIG#SHIPPING", sk: "META" },
+    cjDropshipping: { pk: "CONFIG#CJ_DROPSHIPPING", sk: "META" },
+    eprolo: { pk: "CONFIG#EPROLO", sk: "META" },
+    homepageRanking: { pk: "CONFIG#HOMEPAGE_RANKING", sk: "META" },
+    homepageSnapshot: { pk: "CONFIG#HOMEPAGE_SNAPSHOT", sk: "META" },
+    chat: { pk: "CONFIG#CHAT", sk: "META" },
+};
+/** Admin CJ catalog import jobs (config table). */
+exports.cjImportJobKeys = {
+    pk: (jobId) => `CJ_IMPORT#${jobId}`,
+    sk: () => "META",
+    listPk: () => "ENTITY#CJ_IMPORT",
+    listSk: (createdAt, jobId) => `${createdAt}#${jobId}`,
+};
+/** Lookup so we skip a CJ pid that is already on the store. */
+exports.cjPidKeys = {
+    pk: (pid) => `CJPID#${pid}`,
+    sk: () => "META",
 };
 /** Multi-warehouse / multi-vendor registry (config table). */
 exports.warehouseKeys = {

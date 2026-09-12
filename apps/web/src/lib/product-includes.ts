@@ -3,6 +3,7 @@ import { looksLikeHtml, stripHtml } from "./html-text";
 
 type ProductLike = Pick<Product, "name" | "description" | "categorySlug" | "tags"> & {
   slug?: string;
+  hamperContents?: Product["hamperContents"];
 };
 
 function hasChocolateSignal(text: string): boolean {
@@ -94,11 +95,7 @@ function categoryIncludeLines(categorySlug: string): string[] {
 
 /** Shown on every product's What's included checklist. */
 function shippingIncludeLines(): string[] {
-  return [
-    "Ships from our USA warehouse",
-    "Domestic delivery across all 50 states",
-    "Best quality at competitive rates",
-  ];
+  return ["Delivering in 5–7 days", "Best quality at competitive rates"];
 }
 
 function fromHtmlList(description: string): string[] {
@@ -108,7 +105,7 @@ function fromHtmlList(description: string): string[] {
 }
 
 function isMarketingLine(line: string): boolean {
-  return /clear what'?s-included|domestic usa shipping|festive packaging|secure checkout|no international customs|stripe|razorpay/i.test(
+  return /clear what'?s-included|domestic usa shipping|ships from|from china|from usa|california warehouse|festive packaging|secure checkout|no international customs|stripe|razorpay/i.test(
     line
   );
 }
@@ -124,7 +121,11 @@ export function normalizeHamperIncludeLine(line: string): string[] {
  * Customer-facing "What's included" lines for HalloweenReady product detail pages.
  */
 export function getProductIncludes(product: ProductLike): string[] {
-  const { description, name, categorySlug, tags } = product;
+  const { description, name, categorySlug, tags, hamperContents } = product;
+
+  if (hamperContents?.length) {
+    return [...hamperContents.map((c) => c.name), ...shippingIncludeLines()];
+  }
 
   if (looksLikeHtml(description) && /<li[\s>]/i.test(description)) {
     const fromHtml = fromHtmlList(description).flatMap(normalizeHamperIncludeLine);

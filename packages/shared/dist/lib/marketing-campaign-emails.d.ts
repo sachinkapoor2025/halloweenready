@@ -164,7 +164,7 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
     readonly offerEyebrow: "HALLOWEEN SPECIAL";
     readonly offerHeadline: "Shop More, Save More";
     readonly offerSubhead: "Stock up for Halloween night";
-    readonly offerThreshold: "Cart Value Above $10.99";
+    readonly offerThreshold: "Free shipping on carts of $49+";
     readonly offerBody: "Celebrate Halloween with decorations, costumes, and party supplies — delivered across America. Add more to your cart and unlock seasonal savings.";
     readonly ctaText: "Shop Now";
     readonly ctaHref: "https://halloweenready.com";
@@ -196,7 +196,7 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
         description: string;
     }[];
     readonly midCtaHeading: "Don't Miss This Halloween Offer";
-    readonly midCtaBody: "Shop more, save more when your cart is above $10.99. Get Halloween-ready — order today.";
+    readonly midCtaBody: "Shop more, save more when your cart is $49 or more — free shipping. Get Halloween-ready — order today.";
     readonly midCtaText: "Shop Now";
     readonly midCtaHref: "https://halloweenready.com";
     readonly footerTagline: "Halloween Decorations & Party Supplies";
@@ -215,5 +215,5 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
 export declare function buildFreeShippingEmailHtml(cfg?: typeof FREE_SHIPPING_EMAIL_CONFIG): string;
 /** Template 2 HTML — Starting at ₹343 / $3.99. */
 export declare function buildStartingPriceEmailHtml(cfg?: typeof STARTING_PRICE_EMAIL_CONFIG): string;
-/** Template 3 HTML — Shop More, Save More (cart above $10.99 / ₹1,046). */
+/** Template 3 HTML — Shop More, Save More (free shipping at $49+). */
 export declare function buildShopMoreSaveMoreEmailHtml(cfg?: typeof SHOP_MORE_SAVE_MORE_EMAIL_CONFIG): string;

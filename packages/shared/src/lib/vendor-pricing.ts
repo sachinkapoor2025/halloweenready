@@ -2,7 +2,25 @@ import { roundForCurrency, type ShopCurrency } from "../currency";
 import {
   ORANGE_COUNTY_LIST_MARKUP,
   ORANGE_COUNTY_SALE_MARKUP,
+  VENDOR_CJ_DROPSHIPPING,
+  VENDOR_EPROLO,
 } from "../constants";
+
+/** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
+export function isCjDropshippingProduct(product: {
+  vendorSlug?: string | null;
+  cjPid?: string | null;
+}): boolean {
+  return product.vendorSlug === VENDOR_CJ_DROPSHIPPING || Boolean(product.cjPid);
+}
+
+/** Live catalog SKU imported from Eprolo. */
+export function isEproloProduct(product: {
+  vendorSlug?: string | null;
+  eproloProductId?: string | null;
+}): boolean {
+  return product.vendorSlug === VENDOR_EPROLO || Boolean(product.eproloProductId);
+}
 
 /** Round money to cents for USD (or currency-aware). */
 export function roundMoney(n: number, currency: ShopCurrency = "USD"): number {
@@ -28,11 +46,19 @@ export function pricingFromVendorCost(
 }
 
 /** Strip backend-only vendor fields before public product APIs / SSR. */
-export function stripVendorPrivateFields<T extends { vendorCost?: number; vendorSlug?: string }>(
-  product: T
-): Omit<T, "vendorCost" | "vendorSlug"> {
+export function stripVendorPrivateFields<
+  T extends {
+    vendorCost?: number;
+    vendorSlug?: string;
+    cjVariants?: Array<{ vendorCost?: number }>;
+  },
+>(product: T): Omit<T, "vendorCost" | "vendorSlug"> {
   const { vendorCost: _c, vendorSlug: _v, ...rest } = product;
-  return rest;
+  if (!rest.cjVariants?.length) return rest as Omit<T, "vendorCost" | "vendorSlug">;
+  return {
+    ...rest,
+    cjVariants: rest.cjVariants.map(({ vendorCost: _vc, ...variant }) => variant),
+  } as Omit<T, "vendorCost" | "vendorSlug">;
 }
 
 /** @deprecated Use stripVendorPrivateFields */

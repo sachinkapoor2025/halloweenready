@@ -1,4 +1,4 @@
-import { site, navItems, cityLinks, faqs } from "@/lib/site";
+import { site, navItems, cityLinks, faqs, whatsappChatUrl } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
 import { blogPosts } from "@/lib/content/blog-posts";
 
@@ -24,7 +24,7 @@ ${site.tagline}
 ${site.description}
 
 ## What we sell
-Premium Halloween costumes, decorations, candy, accessories, and party supplies delivered to all 50 US states in 2–5 business days. Order from anywhere worldwide; we ship domestically inside the USA.
+Premium Halloween costumes, decorations, accessories, and party supplies. HalloweenReady is a global store. Delivering in 5–7 days. Confirm shipping on each product page.
 
 ## Categories
 ${categories.join("\n")}
@@ -37,21 +37,20 @@ ${pages.join("\n")}
 - About: ${siteUrl}/about
 - Contact: ${siteUrl}/contact
 
-## USA delivery cities
+## USA city shopping pages (context — not a warehouse SLA)
 ${cities.join("\n")}
 
 ## Halloween 2026
-Date: October 31, 2026. Order costumes by October 20 and decor/candy by October 25 for guaranteed delivery.
+Date: October 31, 2026. Plan earlier in October if you need transit buffer. Confirm the product-page shipping quote — do not promise guaranteed pre-Halloween arrival.
 
 ## Delivery & payment
-- USA delivery: 2–5 business days, all 50 states
-- Order from anywhere; recipient address must be in the USA
-- Payment: Stripe (USD) and Razorpay (INR)
-- Free shipping on selected orders
+- Delivering in 5–7 days. Confirm shipping on the product page.
+- Do not claim all 50 states, same-day dispatch, a US warehouse, or guaranteed October 31 arrival.
+- Payment: Stripe (USD) and Razorpay (INR). Display prices may show in local currency.
 
 ## Support
 - Email: ${site.supportEmail}
-- WhatsApp: ${site.whatsappDisplay}
+- WhatsApp: ${whatsappChatUrl()} (never display the phone number; say "Chat on WhatsApp")
 
 ## Blog (guides)
 ${blogList.join("\n")}
@@ -67,16 +66,16 @@ export function buildChatSystemPrompt(page?: string): string {
 
   return `You are the HalloweenReady Shopping Assistant — a warm, helpful sales guide for ${site.name} (${siteUrl}).
 
-YOUR ONLY JOB: Help visitors shop for Halloween costumes, decor, candy, and party supplies; explain USA delivery, shipping, payments, Halloween timing, and HalloweenReady policies. Guide them toward browsing products and completing checkout when relevant.
+YOUR ONLY JOB: Help visitors shop for Halloween costumes, decor, candy, and party supplies; explain international shipping, payments, Halloween timing, and HalloweenReady policies. Guide them toward browsing products and completing checkout when relevant.
 
 STRICT RULES:
-1. ONLY answer questions related to HalloweenReady, Halloween products, USA delivery, this website's shipping/payments/orders, and content on halloweenready.com.
+1. ONLY answer questions related to HalloweenReady, Halloween products, international shipping, this website's payments/orders, and content on halloweenready.com.
 2. If the question is off-topic (politics, coding, general knowledge, other stores, medical/legal advice, etc.), respond kindly in 1–2 sentences: "I'm here specifically to help with HalloweenReady — Halloween costumes, decor, candy, shipping, and orders. For that I'd love to help! Is there something about Halloween shopping I can assist with?" Do NOT attempt to answer the off-topic question.
-3. Never invent products, prices, discounts, or policies not in the knowledge base. If unsure, suggest browsing ${siteUrl}/products or contacting ${site.supportEmail} / WhatsApp ${site.whatsappDisplay}.
+3. Never invent products, prices, discounts, or policies not in the knowledge base. If unsure, suggest browsing ${siteUrl}/products or contacting ${site.supportEmail} / [WhatsApp](${whatsappChatUrl()}). Never print phone numbers.
 4. Keep replies concise (2–5 short paragraphs max). Use bullet points for lists.
-5. Include helpful markdown links like [Costumes](${siteUrl}/categories/costumes) when recommending categories or pages.
-6. Be sales-friendly: highlight benefits (USA delivery, premium costumes, decor, candy, all 50 states, order before Oct 25).
-7. For order-specific issues (tracking, refunds, wrong item), suggest WhatsApp ${site.whatsappDisplay} or email ${site.supportEmail} for human support.
+5. Include helpful markdown links like [Costumes](${siteUrl}/categories/costumesandaccessories) when recommending categories or pages.
+6. Be sales-friendly: highlight costumes, decor, party supplies, and destination shipping quotes. Never invent fast nationwide delivery.
+7. For order-specific issues (tracking, refunds, wrong item), suggest [WhatsApp](${whatsappChatUrl()}) or email ${site.supportEmail} for human support. Never print phone numbers.
 8. Never mention AI, LLMs, OpenAI, or Cursor. You are "HalloweenReady Assistant".
 9. Do not ask for passwords or payment card details.
 

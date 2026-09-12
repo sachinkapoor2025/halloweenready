@@ -1,8 +1,13 @@
-import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY } from "../constants";
+import { VENDOR_ORANGE_COUNTY, VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING, VENDOR_EPROLO } from "../constants";
 
-export { VENDOR_HALLOWEENREADY };
+export { VENDOR_HALLOWEENREADY, VENDOR_CJ_DROPSHIPPING, VENDOR_EPROLO };
 
-export type OrderVendorSlug = typeof VENDOR_ORANGE_COUNTY | typeof VENDOR_HALLOWEENREADY | string;
+export type OrderVendorSlug =
+  | typeof VENDOR_ORANGE_COUNTY
+  | typeof VENDOR_HALLOWEENREADY
+  | typeof VENDOR_CJ_DROPSHIPPING
+  | typeof VENDOR_EPROLO
+  | string;
 
 export type VendorFulfillment = {
   vendorSlug: string;
@@ -12,6 +17,13 @@ export type VendorFulfillment = {
   /** pending until AWB recorded; shipped once tracking is set. */
   status?: "pending" | "processing" | "shipped" | "delivered";
   updatedAt?: string;
+  /** CJ shopping order id after createOrderV2. */
+  cjOrderId?: string;
+  cjOrderNumber?: string;
+  cjPayUrl?: string;
+  /** Eprolo fulfillment order id after create-order. */
+  eproloOrderId?: string;
+  eproloOrderNumber?: string;
 };
 
 export function lineVendorKey(item: { vendorSlug?: string | null }): string {
@@ -22,6 +34,8 @@ export function lineVendorKey(item: { vendorSlug?: string | null }): string {
 export function vendorDisplayLabel(slug: string): string {
   if (slug === VENDOR_ORANGE_COUNTY) return "Orange County";
   if (slug === VENDOR_HALLOWEENREADY) return "HalloweenReady";
+  if (slug === VENDOR_CJ_DROPSHIPPING) return "CJ Dropshipping";
+  if (slug === VENDOR_EPROLO) return "Eprolo";
   return slug
     .split("-")
     .filter(Boolean)
@@ -142,6 +156,11 @@ export function upsertVendorFulfillment(
     carrier?: string;
     status?: VendorFulfillment["status"];
     updatedAt?: string;
+    cjOrderId?: string;
+    cjOrderNumber?: string;
+    cjPayUrl?: string;
+    eproloOrderId?: string;
+    eproloOrderNumber?: string;
   }
 ): VendorFulfillment[] {
   const slug = patch.vendorSlug.trim();
@@ -156,12 +175,25 @@ export function upsertVendorFulfillment(
   const status =
     patch.status ??
     (trackingNumber ? ("shipped" as const) : base.status ?? ("pending" as const));
+  const cjOrderId = patch.cjOrderId !== undefined ? patch.cjOrderId.trim() : base.cjOrderId;
+  const cjOrderNumber =
+    patch.cjOrderNumber !== undefined ? patch.cjOrderNumber.trim() : base.cjOrderNumber;
+  const cjPayUrl = patch.cjPayUrl !== undefined ? patch.cjPayUrl.trim() : base.cjPayUrl;
+  const eproloOrderId =
+    patch.eproloOrderId !== undefined ? patch.eproloOrderId.trim() : base.eproloOrderId;
+  const eproloOrderNumber =
+    patch.eproloOrderNumber !== undefined ? patch.eproloOrderNumber.trim() : base.eproloOrderNumber;
   const row: VendorFulfillment = {
     vendorSlug: slug,
     ...(warehouseId ? { warehouseId } : {}),
     ...(trackingNumber ? { trackingNumber } : {}),
     ...(carrier ? { carrier } : {}),
     status,
+    ...(cjOrderId ? { cjOrderId } : {}),
+    ...(cjOrderNumber ? { cjOrderNumber } : {}),
+    ...(cjPayUrl ? { cjPayUrl } : {}),
+    ...(eproloOrderId ? { eproloOrderId } : {}),
+    ...(eproloOrderNumber ? { eproloOrderNumber } : {}),
     ...(patch.updatedAt ? { updatedAt: patch.updatedAt } : base.updatedAt ? { updatedAt: base.updatedAt } : {}),
   };
   if (idx >= 0) next[idx] = row;

@@ -22,9 +22,9 @@ export const countrySeoPages: CountrySeoPage[] = [
     name: "United States",
     hreflang: "en-US",
     locale: "en_US",
-    title: "Halloween Costumes USA | Shop Online with Fast US Delivery",
+    title: "Halloween Costumes USA | Shop Online for US Delivery",
     description:
-      "Buy Halloween costumes, decorations, and party supplies online in the USA. HalloweenReady ships from our San Jose warehouse to all 50 states.",
+      "Buy Halloween costumes, decorations, and party supplies online for the USA. Check each product’s shipping quote for delivery to your ZIP code.",
     h1: "Halloween costumes online in the USA",
     keywords: [
       "Halloween costumes USA",
@@ -33,9 +33,9 @@ export const countrySeoPages: CountrySeoPage[] = [
       "Halloween costumes delivered in USA",
     ],
     intro:
-      "HalloweenReady is a US-based Halloween store. Browse costumes, yard decor, and party supplies, then check out with a US ZIP code so we can fulfill from our San Jose warehouse.",
+      "Shop Halloween costumes, decorations, and party supplies for delivery to the United States. Browse the catalog, then open a product page to see a shipping quote for your ZIP code. Availability depends on the item — we do not assume every product ships to every address.",
     fulfillment:
-      "US orders ship from 936 Bellhurst Ave, San Jose, California. Enter your ZIP code in the header to confirm serviceability before checkout.",
+      "Halloween catalog items are fulfilled through international dropshipping partners. Delivery times vary by product and destination. Use the shipping panel on the product page rather than a blanket nationwide promise.",
     postalLabel: "ZIP code",
     sections: [
       {
@@ -44,13 +44,13 @@ export const countrySeoPages: CountrySeoPage[] = [
       },
       {
         heading: "Delivery across the USA",
-        body: "We fulfill domestic US orders from California. Delivery times depend on the shipping method at checkout — typically a few business days to most ZIP codes.",
+        body: "We do not operate a blanket ‘ships in two days to every ZIP’ policy for this catalog. Storefront freight quotes for the United States are available on product pages. Confirm the method and transit estimate before checkout.",
       },
     ],
     faqs: [
       {
         q: "Do you ship Halloween costumes across the USA?",
-        a: "Yes. US orders are fulfilled from our San Jose warehouse and can be delivered to all 50 states.",
+        a: "Many items can be quoted for US delivery on the product page. Confirm the destination and method there before checkout — we do not claim a local warehouse for every SKU.",
       },
       {
         q: "How do I confirm you deliver to my ZIP code?",
@@ -66,7 +66,7 @@ export const countrySeoPages: CountrySeoPage[] = [
     locale: "en_GB",
     title: "Halloween Costumes UK | Shop Online for UK Delivery",
     description:
-      "Buy Halloween costumes online in the UK. HalloweenReady prefers UK warehouse fulfilment from Southampton when stock is available.",
+      "Buy Halloween costumes online in the UK. Check each product’s shipping quote for delivery to your postcode — availability depends on the item.",
     h1: "Halloween costumes online in the UK",
     keywords: [
       "Halloween costumes UK",
@@ -75,9 +75,9 @@ export const countrySeoPages: CountrySeoPage[] = [
       "Halloween costumes delivered in the UK",
     ],
     intro:
-      "Looking for Halloween costumes in the United Kingdom? Select United Kingdom in the header and enter your postcode. We prefer our Southampton warehouse for UK delivery whenever inventory allows.",
+      "Looking for Halloween costumes in the United Kingdom? Select United Kingdom in the header and enter your postcode. Open a product page for a shipping quote. We do not promise a local UK warehouse for every SKU.",
     fulfillment:
-      "UK warehouse: 5 Exeter Road, Southampton SO18 2ED. UK support phone is stored exactly as 7710647388. Add a UK email from Admin → Markets when it is ready — no code change required.",
+      "UK-bound Halloween catalog items are fulfilled through international dropshipping partners. Transit estimates appear on the product shipping panel when a quote is available.",
     postalLabel: "postcode",
     sections: [
       {
@@ -86,17 +86,17 @@ export const countrySeoPages: CountrySeoPage[] = [
       },
       {
         heading: "How UK fulfilment works",
-        body: "If an item is in UK stock, we assign the UK warehouse. Mixed baskets may split internally between vendors or warehouses while you still see one customer order.",
+        body: "If a live freight quote returns methods for GB, those methods are the delivery estimate. Mixed baskets may still use store checkout shipping policy. We never invent next-day UK delivery.",
       },
     ],
     faqs: [
       {
         q: "Can I buy Halloween costumes online for UK delivery?",
-        a: "Yes. Choose United Kingdom, enter your postcode, and we will route eligible items through the UK warehouse when stock allows.",
+        a: "Choose United Kingdom, enter your postcode, and check the product-page shipping quote. A quote is the only confirmation that a method is available.",
       },
       {
-        q: "What if a costume is only in the US warehouse?",
-        a: "We show a realistic international estimate instead of promising local delivery. You can still change country at any time.",
+        q: "What if a costume cannot be quoted to the UK?",
+        a: "We show that the destination is unavailable instead of promising local delivery. You can still change country at any time.",
       },
     ],
   },
@@ -114,7 +114,7 @@ export const countrySeoPages: CountrySeoPage[] = [
     intro:
       "Canadian shoppers can browse the same HalloweenReady catalogue and enter a postal code to confirm whether we can deliver to their address.",
     fulfillment:
-      "Canada is served from our North American network, typically the US warehouse, with international transit times shown at checkout.",
+      "Canada-bound catalog items use international dropshipping partners. Storefront freight quotes are available for CA on product pages when the method is offered.",
     postalLabel: "postal code",
     sections: [
       {
@@ -143,7 +143,7 @@ export const countrySeoPages: CountrySeoPage[] = [
     intro:
       "Halloween falls in Australian spring. Order earlier than US shoppers if you want costumes before 31 October, and confirm your postcode in the header.",
     fulfillment:
-      "Australian orders currently fulfil from our international-capable warehouse with longer transit than domestic US shipping.",
+      "Australian orders use international dropshipping partners. Expect longer transit than domestic US shipping, and confirm the product-page quote before checkout.",
     postalLabel: "postcode",
     sections: [
       {
@@ -170,9 +170,9 @@ export const countrySeoPages: CountrySeoPage[] = [
     h1: "Halloween costumes online in India",
     keywords: ["Halloween costumes India", "Halloween costumes online India"],
     intro:
-      "Select India in the header to prefer India warehouse inventory and INR checkout. Enter your 6-digit PIN code before placing an order.",
+      "Select India in the header and enter your 6-digit PIN code before placing an order. India delivery depends on a product shipping quote — we do not assume every Halloween SKU can be delivered there.",
     fulfillment:
-      "India warehouse: House No. 392, Mohalla Sodian Wala, Ferozepur City, 152002, Punjab. Phone +91 9266467887. This number is not shown to US shoppers by default.",
+      "We do not treat India as a guaranteed destination for every catalog item. Check the product page; if no quote is offered, do not assume delivery.",
     postalLabel: "PIN code",
     sections: [
       {
@@ -183,7 +183,7 @@ export const countrySeoPages: CountrySeoPage[] = [
     faqs: [
       {
         q: "Do you deliver Halloween costumes in India?",
-        a: "Yes. Choose India, enter your PIN code, and eligible orders fulfil from the Punjab warehouse.",
+        a: "Choose India, enter your PIN code, and check whether a shipping quote is offered on the product. We do not promise Punjab warehouse fulfilment for every SKU.",
       },
     ],
   },
@@ -228,8 +228,8 @@ export const countrySeoPages: CountrySeoPage[] = [
     h1: "Halloween costumes online in Germany",
     keywords: ["Halloween costumes Germany", "Halloween costumes online Germany"],
     intro:
-      "German shoppers get a dedicated country page — not a generic “Europe” URL. Select Germany and enter your postcode so we can prefer the UK warehouse for European delivery.",
-    fulfillment: "European orders prefer the Southampton UK warehouse when it serves DE.",
+      "German shoppers get a dedicated country page — not a generic Europe URL. Select Germany and enter your postcode, then confirm a product-page freight quote. We do not assume UK-warehouse stock for every item.",
+    fulfillment: "Germany is a quoteable storefront destination. Use the product shipping panel rather than a local-warehouse promise.",
     postalLabel: "postcode",
     sections: [
       {
@@ -240,7 +240,7 @@ export const countrySeoPages: CountrySeoPage[] = [
     faqs: [
       {
         q: "Can I order Halloween costumes to Germany?",
-        a: "Yes where the UK warehouse service area includes Germany. Enter your postcode to confirm.",
+        a: "Enter your postcode and check the product-page quote. A successful quote is the only confirmation that a method is available.",
       },
     ],
   },

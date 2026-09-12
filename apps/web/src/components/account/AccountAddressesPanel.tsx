@@ -94,7 +94,7 @@ export function AccountAddressesPanel({
 
     const payload = {
       ...form,
-      country: "US",
+      country: (form.country || "US").toUpperCase().slice(0, 2),
       label: label || form.name,
       isDefault,
       ...(form.phone?.trim() ? { phone: form.phone.trim() } : {}),
@@ -239,7 +239,7 @@ export function AccountAddressesPanel({
   return (
     <div className="pt-2 space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-600">Manage your saved US delivery addresses.</p>
+        <p className="text-sm text-slate-600">Manage your saved delivery addresses.</p>
         <button
           type="button"
           onClick={startAdd}

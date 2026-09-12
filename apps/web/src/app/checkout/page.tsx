@@ -15,7 +15,7 @@ import { ShippingAddressForm } from "@/components/ShippingAddressForm";
 import { SecureCheckoutBadge } from "@/components/SecureCheckoutBadge";
 import { CheckoutLegalNotice } from "@/components/CheckoutLegalNotice";
 import { TrustBadges } from "@/components/TrustBadges";
-import { CouponInput } from "@/components/CouponInput";
+import { CouponInput, type AppliedCouponMeta } from "@/components/CouponInput";
 import { StripePaymentForm } from "@/components/StripePaymentForm";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
 import { loadWelcomeCoupon } from "@/lib/welcome-coupon";
@@ -25,7 +25,11 @@ import {
   saveShippingAddress,
 } from "@/lib/shipping-address";
 import { fetchAccount, createAccountAddress } from "@/lib/account";
-import { ORDER_STATUS, type Order, type ShippingAddress } from "@halloweenready/shared";
+import { useMarket } from "@/lib/market-context";
+import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
+import { FreeShippingNotice } from "@/components/FreeShippingNotice";
+import { withCountry } from "@/components/CountryStateFields";
+import { ORDER_STATUS, applyCouponToOrderTotals, cartSubtotal, convertCartItemsToCurrency, type CartItem, type Order, type ShippingAddress } from "@halloweenready/shared";
 
 declare global {
   interface Window {
@@ -51,14 +55,15 @@ function CheckoutPageInner() {
   const { cart, loading: cartLoading, refresh } = useCart();
   const { user, token } = useAuth();
   const { format, displayCurrency, convert, usdInrRate } = useCurrency();
+  const { countryCode } = useMarket();
+  const payCurrency = payCurrencyForDisplay(displayCurrency);
   const sessionId = useSessionId();
   const captureLeadDebounced = useDebouncedLeadCapture(sessionId);
   const captureLeadNow = useLeadCapture(sessionId);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [appliedCouponCode, setAppliedCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCouponMeta | null>(null);
   const [savedCouponCode, setSavedCouponCode] = useState("");
   const [stripeCheckout, setStripeCheckout] = useState<{ clientSecret: string; orderId: string } | null>(
     null
@@ -73,7 +78,7 @@ function CheckoutPageInner() {
 
   useEffect(() => {
     if (displayCurrency === "INR") setPaymentMethod("razorpay");
-    else if (displayCurrency === "USD") setPaymentMethod("stripe");
+    else setPaymentMethod("stripe");
     setStripeCheckout(null);
   }, [displayCurrency]);
 
@@ -98,10 +103,6 @@ function CheckoutPageInner() {
         if (data.order.shippingAddress) setAddress(data.order.shippingAddress);
         if (data.order.paymentProvider === "razorpay") setPaymentMethod("razorpay");
         else if (data.order.paymentProvider === "stripe") setPaymentMethod("stripe");
-        if (data.order.discount > 0) {
-          setDiscount(data.order.discount);
-          if (data.order.couponCode) setAppliedCouponCode(data.order.couponCode);
-        }
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load order for retry"))
       .finally(() => setRetryLoading(false));
@@ -115,7 +116,10 @@ function CheckoutPageInner() {
       const lineCurrency = (item.currency ?? "USD") as DisplayCurrency;
       return sum + convert(item.price * item.quantity, lineCurrency);
     }, 0);
-    trackCheckoutStart(value);
+    trackCheckoutStart(
+      value,
+      cart.items.map((item) => item.productSlug)
+    );
   }, [cart, convert]);
 
   useEffect(() => {
@@ -190,6 +194,12 @@ function CheckoutPageInner() {
 
     void prefill();
   }, [user, token, sessionId]);
+
+  useEffect(() => {
+    if (address.line1) return;
+    if (!countryCode) return;
+    setAddress((a) => (a.line1 || a.country === countryCode ? a : withCountry(a, countryCode)));
+  }, [countryCode, address.line1, address.country]);
 
   const captureField = (field: string, value: string) => {
     const a = addressRef.current;
@@ -280,7 +290,7 @@ function CheckoutPageInner() {
 
     const payload = {
       ...address,
-      country: "US" as const,
+      country: (address.country || countryCode || "US").toUpperCase().slice(0, 2),
       label: address.name,
       isDefault: true,
       ...(address.phone?.trim() ? { phone: address.phone.trim() } : {}),
@@ -347,7 +357,7 @@ function CheckoutPageInner() {
 
       const payload: ShippingAddress = {
         ...address,
-        country: "US",
+        country: (address.country || countryCode || "US").toUpperCase().slice(0, 2),
         ...(address.phone?.trim() ? { phone: address.phone.trim() } : {}),
         ...(address.line2?.trim() ? { line2: address.line2.trim() } : { line2: undefined }),
       };
@@ -371,10 +381,10 @@ function CheckoutPageInner() {
         token,
         body: JSON.stringify({
           paymentMethod,
-          checkoutCurrency: displayCurrency,
-          ...(displayCurrency === "INR" ? { usdInrRate } : {}),
+          checkoutCurrency: payCurrency,
+          ...(payCurrency === "INR" ? { usdInrRate } : {}),
           shippingAddress: payload,
-          ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
+          ...(appliedCoupon?.code ? { couponCode: appliedCoupon.code } : {}),
         }),
       });
 
@@ -433,9 +443,41 @@ function CheckoutPageInner() {
         return sum + convert(item.price * item.quantity, lineCurrency);
       }, 0);
   const itemCount = checkoutItems.reduce((sum, i) => sum + i.quantity, 0);
+  const shippingQuote = isRetry
+    ? { totalCharge: retryOrder!.shipping, quote: null }
+    : quoteCartShipping(checkoutItems as CartItem[], payCurrency, usdInrRate);
+  const displayShipping = isRetry
+    ? convert(retryOrder!.shipping, (retryOrder!.currency ?? "USD") as DisplayCurrency)
+    : convert(shippingQuote.totalCharge, payCurrency);
+  const paySubtotal = isRetry
+    ? retryOrder!.subtotal
+    : cartSubtotal(convertCartItemsToCurrency(checkoutItems as CartItem[], payCurrency, usdInrRate));
+  const payShipping = isRetry ? retryOrder!.shipping : shippingQuote.totalCharge;
+  const couponPriced =
+    appliedCoupon && !isRetry
+      ? applyCouponToOrderTotals({
+          kind: appliedCoupon.kind,
+          discountPercent: appliedCoupon.discountPercent,
+          eligibleSubtotal: paySubtotal,
+          subtotal: paySubtotal,
+          shipping: payShipping,
+          currency: payCurrency,
+          usdInrRate,
+        })
+      : null;
+  const discount = isRetry
+    ? retryOrder!.discount
+    : couponPriced
+      ? convert(couponPriced.discount, payCurrency)
+      : 0;
+  const appliedCouponCode = isRetry
+    ? (retryOrder!.couponCode ?? "")
+    : (appliedCoupon?.code ?? "");
   const orderTotal = isRetry
     ? retryOrder!.total
-    : Math.max(0, displaySubtotal - discount);
+    : couponPriced
+      ? convert(couponPriced.total, payCurrency)
+      : Math.max(0, displaySubtotal + displayShipping);
 
   return (
     <>
@@ -487,16 +529,28 @@ function CheckoutPageInner() {
                 <span className="text-slate-700">Items ({itemCount})</span>
                 <span className="font-medium">{format(displaySubtotal, displayCurrency)}</span>
               </div>
-              {discount > 0 && (
+              {appliedCouponCode && discount !== 0 && (
                 <div className="flex justify-between gap-4 text-green-700">
                   <span>Coupon ({appliedCouponCode})</span>
-                  <span>−{format(discount, displayCurrency)}</span>
+                  <span>−{format(Math.abs(discount), displayCurrency)}</span>
                 </div>
               )}
               <div className="flex justify-between gap-4">
                 <span className="text-slate-700">Shipping</span>
-                <span className="font-bold text-accent">FREE</span>
+                <span className={displayShipping > 0 ? "font-semibold text-slate-900" : "font-bold text-accent"}>
+                  {displayShipping > 0 ? format(displayShipping, displayCurrency) : "FREE"}
+                </span>
               </div>
+              {shippingQuote.quote && (
+                <FreeShippingNotice
+                  quote={shippingQuote.quote}
+                  formatMoney={format}
+                  currency={payCurrency}
+                />
+              )}
+              <p className="text-xs text-slate-500">
+                Shipping is included in the total below — the payment page will charge this same amount.
+              </p>
               <div className="flex justify-between gap-4 pt-2 border-t border-slate-200">
                 <span className="font-bold text-slate-900">Total</span>
                 <span className="font-bold text-nav text-base">
@@ -508,18 +562,18 @@ function CheckoutPageInner() {
             {!isRetry && (
               <CouponInput
                 email={address.email}
-                subtotal={displaySubtotal}
+                phone={address.phone}
+                subtotal={paySubtotal}
+                shipping={payShipping}
                 currency={displayCurrency}
+                payCurrency={payCurrency}
+                usdInrRate={usdInrRate}
                 formatMoney={format}
                 initialCode={savedCouponCode}
-                onApplied={(amount, code) => {
-                  setDiscount(amount);
-                  setAppliedCouponCode(code);
+                onApplied={(_amount, _code, meta) => {
+                  if (meta) setAppliedCoupon(meta);
                 }}
-                onCleared={() => {
-                  setDiscount(0);
-                  setAppliedCouponCode("");
-                }}
+                onCleared={() => setAppliedCoupon(null)}
               />
             )}
 
@@ -531,7 +585,7 @@ function CheckoutPageInner() {
                   setPaymentMethod(method);
                   setStripeCheckout(null);
                 }}
-                checkoutCurrency={displayCurrency}
+                checkoutCurrency={payCurrency}
               />
             </div>
 

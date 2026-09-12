@@ -7,8 +7,8 @@ export declare const userProfileSchema: z.ZodObject<{
     role: z.ZodDefault<z.ZodEnum<["customer", "admin"]>>;
 }, "strip", z.ZodTypeAny, {
     email: string;
-    userId: string;
     role: "customer" | "admin";
+    userId: string;
     name?: string | undefined;
     phone?: string | undefined;
 }, {

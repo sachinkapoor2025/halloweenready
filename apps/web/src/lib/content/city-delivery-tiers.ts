@@ -15,5 +15,5 @@ export const secondaryCities: SecondaryCity[] = [];
 
 export function secondaryCityIntro(slug: string, name: string, state: string): string {
   const place = `${name}, ${state}`;
-  return `HalloweenReady ships Halloween decorations, costumes, and party supplies to ${place} with fast domestic USA delivery.`;
+  return `HalloweenReady ships Halloween decorations, costumes, and party supplies to ${place}. Delivering in 5–7 days — confirm shipping on the product page.`;
 }

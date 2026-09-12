@@ -15,5 +15,12 @@ export declare function convertCartItemsToCurrency(items: CartItem[], to: ShopCu
 export declare function cartSubtotal(items: CartItem[]): number;
 export { cartLineUnitTotal, sumAddonPrices };
 export declare function resolveUsdInrRate(envRate?: string | number): number;
+export type UsdRatesQuote = {
+    rates: Record<string, number>;
+    source: string;
+    asOf: string;
+};
+/** Fetch USD→all rates from public FX APIs (no API key). */
+export declare function fetchLiveUsdRates(): Promise<UsdRatesQuote | null>;
 /** Fetch USD→INR from public rate APIs (no API key). Tries multiple providers. */
 export declare function fetchLiveUsdInrRate(): Promise<ExchangeRateQuote | null>;

@@ -4,8 +4,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
+import { blogPostInlineLinks } from "@/lib/content/page-inline-links";
 import { listAllBlogPosts, resolveBlogPost } from "@/lib/content/seo-blog";
+import { applyInlineLinks } from "@/lib/inline-links";
 import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -38,6 +42,7 @@ export default async function BlogPostPage({ params }: Props) {
     { label: "Blog", href: "/blog" },
     { label: post.title },
   ];
+  const inlineLinks = blogPostInlineLinks[post.slug] ?? [];
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-10 overflow-x-hidden min-w-0 w-full">
@@ -80,7 +85,7 @@ export default async function BlogPostPage({ params }: Props) {
             )}
             {section.paragraphs.map((p, j) => (
               <p key={j} className="text-slate-700 leading-relaxed mb-4 break-words [overflow-wrap:anywhere]">
-                {p}
+                {applyInlineLinks(p, inlineLinks)}
               </p>
             ))}
           </section>
@@ -95,6 +100,16 @@ export default async function BlogPostPage({ params }: Props) {
           </Link>
         </div>
       )}
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({
+          type: "blog",
+          blogSlug: post.slug,
+          relatedCategory: post.relatedCategory,
+        })}
+        title="Keep reading and shopping"
+        intro="Related guides, categories, and Halloween destination pages."
+      />
 
       <div className="mt-8 pt-6 border-t">
         <Link href="/blog" className="text-nav hover:underline text-sm">

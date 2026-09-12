@@ -1,54 +1,39 @@
 import Link from "next/link";
-import { EXPLORE_MORE_GROUPS } from "@/lib/explore-more-links";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
-/**
- * FNP-style multi-column Explore More links for product pages.
- * Crawlable semantic nav — strengthens internal linking for cities, types, and collections.
- */
-export function ExploreMoreSection() {
+/** Product-page explore block — contextual graph, not every city × category dump. */
+export function ExploreMoreSection({
+  categorySlug,
+  productSlug,
+  availableCountryCodes,
+}: {
+  categorySlug: string;
+  productSlug: string;
+  availableCountryCodes?: string[] | null;
+}) {
+  const groups = getInternalLinkGroups({
+    type: "product",
+    categorySlug,
+    productSlug,
+    availableCountryCodes,
+  });
+
   return (
-    <nav
-      className="mt-10 pt-8 border-t border-slate-200"
-      aria-labelledby="explore-more-heading"
-    >
-      <h2 id="explore-more-heading" className="text-lg sm:text-xl font-bold text-primary mb-2">
-        Explore More
-      </h2>
-      <p className="text-sm text-slate-600 mb-6 max-w-3xl">
-        Browse Halloween by city, category, and popular collections — fast links to help you find the right products for USA delivery.
-      </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
-        {EXPLORE_MORE_GROUPS.map((group) => (
-          <section key={group.heading} aria-labelledby={`explore-${slugify(group.heading)}`}>
-            <h3
-              id={`explore-${slugify(group.heading)}`}
-              className="text-sm font-bold uppercase tracking-wide text-primary mb-3"
-            >
-              {group.heading}
-            </h3>
-            <ul className="space-y-2">
-              {group.links.map((link) => (
-                <li key={`${group.heading}-${link.href}-${link.label}`}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-slate-700 hover:text-nav hover:underline underline-offset-2 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
-    </nav>
+    <InternalLinksSection
+      groups={groups}
+      title="Explore more"
+      intro="Continue to related categories, destination pages, and Halloween guides."
+    />
   );
 }
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+export function ExploreMoreFallback() {
+  return (
+    <p className="mt-8 text-sm">
+      <Link href="/products" className="text-nav hover:underline">
+        Browse all Halloween products
+      </Link>
+    </p>
+  );
 }

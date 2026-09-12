@@ -7,9 +7,15 @@ export type ViewerGeo = {
 };
 
 const GEO_HEADER_KEYS: Record<keyof ViewerGeo, string[]> = {
-  country: ["cloudfront-viewer-country", "cf-ipcountry", "x-country-code"],
-  city: ["cloudfront-viewer-city"],
-  region: ["cloudfront-viewer-country-region"],
+  country: [
+    "cloudfront-viewer-country",
+    "cf-ipcountry",
+    "x-vercel-ip-country",
+    "x-country-code",
+    "x-geo-country",
+  ],
+  city: ["cloudfront-viewer-city", "x-vercel-ip-city"],
+  region: ["cloudfront-viewer-country-region", "x-vercel-ip-country-region"],
   regionName: ["cloudfront-viewer-country-region-name"],
 };
 

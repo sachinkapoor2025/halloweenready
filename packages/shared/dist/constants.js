@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CATEGORY_SLUG_ALIASES = exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.ORANGE_COUNTY_SALE_MARKUP = exports.ORANGE_COUNTY_LIST_MARKUP = exports.ORANGE_COUNTY_CATEGORY_SLUG = exports.VENDOR_HALLOWEENREADY = exports.VENDOR_ORANGE_COUNTY = exports.ORANGE_COUNTY_PRODUCT_INVENTORY = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
+exports.CATEGORY_SLUG_ALIASES = exports.FAST_SELLING_THRESHOLD = exports.LOW_STOCK_ALERT_EMAIL = exports.LOW_STOCK_THRESHOLD = exports.ORANGE_COUNTY_SALE_MARKUP = exports.ORANGE_COUNTY_LIST_MARKUP = exports.HALLOWEEN_HAMPERS_CATEGORY_SLUG = exports.ORANGE_COUNTY_CATEGORY_SLUG = exports.VENDOR_EPROLO = exports.VENDOR_CJ_DROPSHIPPING = exports.VENDOR_HALLOWEENREADY = exports.VENDOR_ORANGE_COUNTY = exports.ORANGE_COUNTY_PRODUCT_INVENTORY = exports.DEFAULT_PRODUCT_INVENTORY = exports.PAYMENT_PROVIDERS = exports.PAYMENT_REGIONS = exports.USER_ROLES = exports.EVENT_TTL_DAYS = exports.EVENT_TYPES = exports.ORDER_STATUS_TRANSITIONS = exports.ORDER_STATUS = void 0;
 exports.categorySlugVariants = categorySlugVariants;
 exports.ORDER_STATUS = {
     PENDING_PAYMENT: "pending_payment",
@@ -70,6 +70,10 @@ exports.ORDER_STATUS_TRANSITIONS = {
 exports.EVENT_TYPES = {
     PAGE_VIEW: "page_view",
     PRODUCT_VIEW: "product_view",
+    /** Listing card entered the viewport (prefer rollup-only writes). */
+    PRODUCT_IMPRESSION: "product_impression",
+    /** Listing card click through to PDP. */
+    PRODUCT_CLICK: "product_click",
     SEARCH: "search",
     CART_ADD: "cart_add",
     CART_REMOVE: "cart_remove",
@@ -79,6 +83,9 @@ exports.EVENT_TYPES = {
     SESSION_PING: "session_ping",
     COUNTRY_CHANGED: "country_changed",
     POSTAL_CODE_ENTERED: "postal_code_entered",
+    CHAT_OPEN: "chat_open",
+    CHAT_CLOSE: "chat_close",
+    CHAT_MESSAGE: "chat_message",
 };
 /** Raw analytics events expire after this many days (TTL); rollups are kept. */
 exports.EVENT_TTL_DAYS = 90;
@@ -107,8 +114,14 @@ exports.ORANGE_COUNTY_PRODUCT_INVENTORY = 500;
 exports.VENDOR_ORANGE_COUNTY = "orange-county";
 /** Default HalloweenReady fulfillment key (catalog lines without product.vendorSlug). */
 exports.VENDOR_HALLOWEENREADY = "halloweenready";
+/** CJ Dropshipping catalog + fulfillment vendor. */
+exports.VENDOR_CJ_DROPSHIPPING = "cj-dropshipping";
+/** Eprolo dropshipping catalog + fulfillment vendor. */
+exports.VENDOR_EPROLO = "eprolo";
 /** Internal OC category slug stub (not used on HalloweenReady storefront). */
 exports.ORANGE_COUNTY_CATEGORY_SLUG = "rakhi-hampers";
+/** Curated Halloween gift hampers (fixed-price bundles). */
+exports.HALLOWEEN_HAMPERS_CATEGORY_SLUG = "halloween-hampers";
 /**
  * Hamper pricing from vendor cost (Excel). Uses retail margin on selling price:
  *   sale price = cost × 2.0  → 50% margin before coupons  ((P−C)/P)
@@ -133,6 +146,7 @@ exports.CATEGORY_SLUG_ALIASES = {
     jewellryandaccessories: ["jewellryandaccessories"],
     lifestyleandwearable: ["lifestyleandwearable"],
     printedandpapercrafts: ["printedandpapercrafts"],
+    "halloween-hampers": ["halloween-hampers", "hampers", "gift-hampers"],
     decorations: ["home-decoration", "decorations"],
     costumes: ["costumesandaccessories", "costumes"],
     "party-supplies": ["partysupplier", "party-supplies"],

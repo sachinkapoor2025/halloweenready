@@ -8,16 +8,31 @@ import { site, navItems, cityLinks } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { CountrySelector } from "@/components/CountrySelector";
+import { CurrencySelect } from "@/components/CurrencySelect";
 
 function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      const root = document.getElementById("header-cities-menu");
+      if (root && target && !root.contains(target)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <div
-      className="relative shrink-0"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div id="header-cities-menu" className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -204,6 +219,7 @@ export function Header() {
         <div className="flex-1" />
 
         <div className="flex items-center shrink-0 gap-1">
+          <CurrencySelect variant="header" />
           <CountrySelector compact />
           <AccountLink className="text-nav hover:text-primary p-1.5" />
           <WishlistLink className="text-nav hover:text-primary p-1.5" />
@@ -220,6 +236,7 @@ export function Header() {
         </div>
 
         <div className="flex items-start justify-end shrink-0 gap-3">
+          <CurrencySelect variant="header" className="mt-1" />
           <CountrySelector />
           <DesktopHeaderAction href="/account" label="Account">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -249,19 +266,21 @@ export function Header() {
         </div>
       </div>
 
-      {/* Desktop nav */}
+      {/* Desktop nav — Cities sits outside overflow-x-auto so the dropdown is not clipped */}
       <nav className="hidden md:block border-t border-slate-100 bg-white overflow-visible">
         <div className="max-w-7xl mx-auto px-4 py-2.5">
-          <div className="flex flex-wrap items-center gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`btn-nav ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div className="flex items-center gap-1.5">
+            <div className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`btn-nav shrink-0 px-3 py-1.5 text-[13px] ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
             <CitiesMenu />
           </div>
         </div>
@@ -292,7 +311,8 @@ export function Header() {
             </div>
 
             <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-              <div className="px-2 pb-2">
+              <div className="px-2 pb-2 space-y-2">
+                <CurrencySelect variant="inline" />
                 <CountrySelector />
               </div>
               {navItems.map((item) => (

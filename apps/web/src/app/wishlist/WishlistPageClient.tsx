@@ -6,6 +6,7 @@ import { AddToCartControl } from "@/components/AddToCartControl";
 import { ProductImage } from "@/components/ProductImage";
 import { useCurrency, type DisplayCurrency } from "@/lib/currency-context";
 import { getDiscountPercent } from "@/lib/pricing";
+import { productHref } from "@/lib/product-urls";
 
 export function WishlistPageClient() {
   const { items, remove } = useWishlist();
@@ -47,7 +48,7 @@ export function WishlistPageClient() {
                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                   </svg>
                 </button>
-                <Link href={`/products/${item.slug}`} className="block w-full h-full">
+                <Link href={productHref(item.slug)} className="block w-full h-full">
                   {item.image ? (
                     <ProductImage src={item.image} alt={item.name} variant="card" className="w-full h-full object-cover" />
                   ) : (
@@ -55,7 +56,7 @@ export function WishlistPageClient() {
                   )}
                 </Link>
               </div>
-              <Link href={`/products/${item.slug}`} className="block p-3 flex-1">
+              <Link href={productHref(item.slug)} className="block p-3 flex-1">
                 <h3 className="font-semibold text-sm text-slate-900 line-clamp-2 min-h-[2.5rem] hover:text-nav">
                   {item.name}
                 </h3>

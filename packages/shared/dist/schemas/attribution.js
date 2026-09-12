@@ -11,6 +11,7 @@ exports.ATTRIBUTION_CHANNELS = [
     "referral",
     "email",
     "direct",
+    "chat",
     "unknown",
 ];
 /** Normalized marketing touch (first / last / assisted). */

@@ -19,9 +19,9 @@ const addr = (name: string) => ({
 });
 
 describe("buildOrderShipments", () => {
-  it("charges shipping only on under-$7 deliveries", () => {
+  it("charges shipping on deliveries below the $49 free threshold", () => {
     const cart: CartItem[] = [
-      { productSlug: "a", name: "A", price: 10, currency: "USD", quantity: 1 },
+      { productSlug: "a", name: "A", price: 50, currency: "USD", quantity: 1 },
       { productSlug: "b", name: "B", price: 12, currency: "USD", quantity: 1 },
       { productSlug: "c", name: "C", price: 3, currency: "USD", quantity: 1 },
     ];
@@ -39,9 +39,9 @@ describe("buildOrderShipments", () => {
     assert.ok(!("error" in built));
     if ("error" in built) return;
     assert.equal(built.shipments[0].shipping, 0);
-    assert.equal(built.shipments[1].shipping, 0);
+    assert.equal(built.shipments[1].shipping, 8);
     assert.equal(built.shipments[2].shipping, BELOW_THRESHOLD_SHIPPING_USD);
-    assert.equal(built.shippingTotal, BELOW_THRESHOLD_SHIPPING_USD);
+    assert.equal(built.shippingTotal, 8 + BELOW_THRESHOLD_SHIPPING_USD);
   });
 
   it("charges per vendor when mixed vendors share one address", () => {

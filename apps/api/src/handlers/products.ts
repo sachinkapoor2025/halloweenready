@@ -12,14 +12,26 @@ import {
   resolveProductImagesForUpsert,
   productVisibleToActor,
   defaultVendorSlugForNewProduct,
+  isCjDropshippingProduct,
+  isStorefrontVisibleProduct,
+  isHalloweenHamperProduct,
+  HALLOWEEN_HAMPERS_CATEGORY_SLUG,
+  CJ_STOREFRONT_SHIP_COUNTRIES,
+  parseStorefrontListingQuery,
+  sortStorefrontListing,
+  buildProductSlug,
   type Product,
+  type CjStorefrontShipCountry,
 } from "@halloweenready/shared";
-import { docClient, PRODUCTS_TABLE, now, slugify } from "../lib/db";
+import { docClient, PRODUCTS_TABLE, now } from "../lib/db";
 import { ok, okCached, created, badRequest, notFound, forbidden } from "../lib/response";
 import { getAuth, resolveStaffActor } from "../lib/auth";
 import { withResolvedProductImages, resolveProductImageUrl } from "../lib/images";
 import { syncInventoryAlertState } from "../lib/inventory";
+import { quoteProductShipping, checkoutOnlyShipping } from "../lib/cj-product-shipping";
+import { CjApiError } from "../lib/cj-dropshipping";
 import { ensureProductInDb } from "../lib/ensure-product";
+import { ensureHalloweenHampersInDb } from "../lib/halloweenready-catalog";
 
 function forStorefront(product: Product): Product {
   const allowsAddons = productAllowsAddons(product);
@@ -27,6 +39,99 @@ function forStorefront(product: Product): Product {
     withCompetitiveStorefrontPricing(withResolvedProductImages(product))
   );
   return { ...stripped, allowsAddons } as Product;
+}
+
+/** Listing payloads must stay under API Gateway’s 6MB cap once the catalog is thousands of SKUs. */
+export function forStorefrontListing(product: Product): Product {
+  const full = forStorefront(product);
+  return {
+    ...full,
+    description: (full.description ?? "").slice(0, 280),
+    images: (full.images ?? []).slice(0, 2),
+  };
+}
+
+/** Table row only — never spread the DynamoDB item (GSI keys, SEO, variants blow past Lambda’s 6MB cap). */
+function forAdminList(product: Product): Product {
+  const images = (product.images ?? []).slice(0, 2).map((url) => resolveProductImageUrl(url));
+  return {
+    slug: product.slug,
+    name: product.name,
+    description: "",
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    currency: product.currency ?? "USD",
+    categorySlug: product.categorySlug,
+    images,
+    tags: [],
+    sku: product.sku,
+    inventory: product.inventory,
+    published: product.published,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+    vendorSlug: product.vendorSlug,
+    vendorCost: product.vendorCost,
+    cjPid: product.cjPid,
+    unitsSold: product.unitsSold,
+    weightOz: product.weightOz,
+    lengthIn: product.lengthIn,
+    widthIn: product.widthIn,
+    heightIn: product.heightIn,
+  } as Product;
+}
+
+function forAdminPricing(product: Product): Product {
+  return {
+    slug: product.slug,
+    name: product.name,
+    description: "",
+    price: product.price,
+    currency: product.currency ?? "USD",
+    categorySlug: product.categorySlug,
+    images: [] as string[],
+    tags: [] as string[],
+    sku: product.sku,
+    inventory: product.inventory,
+    published: product.published,
+    vendorSlug: product.vendorSlug,
+    vendorCost: product.vendorCost,
+    cjPid: product.cjPid,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  } as Product;
+}
+
+const ADMIN_LIST_PROJECTION =
+  "slug, #n, price, compareAtPrice, currency, categorySlug, images, sku, inventory, published, createdAt, updatedAt, vendorSlug, vendorCost, cjPid, unitsSold, weightOz, lengthIn, widthIn, heightIn";
+
+const ADMIN_LIST_CACHE_TTL_MS = 60_000;
+let adminListCache: { at: number; items: Product[] } | null = null;
+
+async function scanAdminProductRows(): Promise<Product[]> {
+  const nowMs = Date.now();
+  if (adminListCache && nowMs - adminListCache.at < ADMIN_LIST_CACHE_TTL_MS) {
+    return adminListCache.items;
+  }
+
+  const items: Product[] = [];
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PRODUCTS_TABLE,
+        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+        ProjectionExpression: ADMIN_LIST_PROJECTION,
+        ExpressionAttributeNames: { "#n": "name" },
+        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+        ExclusiveStartKey,
+      })
+    );
+    if (result.Items?.length) items.push(...(result.Items as Product[]));
+    ExclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+
+  adminListCache = { at: nowMs, items };
+  return items;
 }
 
 function isKidsComboProduct(product: Product): boolean {
@@ -107,9 +212,14 @@ async function scanAllProducts(): Promise<Product[]> {
   return items;
 }
 
+export async function listCatalogProducts(): Promise<Product[]> {
+  return scanAllProducts();
+}
+
 /** Call after product create/update/delete so storefront list stays fresh. */
 export function invalidateProductListCache(categorySlug?: string) {
   productListCache = null;
+  adminListCache = null;
   productGetCache.clear();
   if (categorySlug) categoryProductCache.delete(categorySlug);
   else categoryProductCache.clear();
@@ -137,7 +247,8 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
         if (product.additionalCategorySlugs?.includes("rakhi-combo")) bySlug.set(product.slug, product);
       }
       items = [...bySlug.values()];
-    } else if (category === "rakhi-hampers") {
+    } else if (category === HALLOWEEN_HAMPERS_CATEGORY_SLUG) {
+      await ensureHalloweenHampersInDb();
       items = await queryProductsByCategory(category);
     } else {
       const [primary, hampers] = await Promise.all([
@@ -155,6 +266,7 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
   }
 
   items = items.filter((p) => p.published !== false && (p.inventory ?? 0) > 0);
+  items = items.filter(isStorefrontVisibleProduct);
   if (search) {
     items = items.filter(
       (p) =>
@@ -164,9 +276,22 @@ export async function listProducts(event: APIGatewayProxyEventV2) {
     );
   }
 
+  const { offset, limit, sort } = parseStorefrontListingQuery(event.queryStringParameters ?? undefined);
+  items = sortStorefrontListing(items, sort);
+  const total = items.length;
+  if (limit != null) items = items.slice(offset, offset + limit);
+
+  const body = {
+    products: items.map(forStorefrontListing),
+    total,
+    offset,
+    limit: limit ?? total,
+    hasMore: limit != null ? offset + items.length < total : false,
+  };
+
   // Short CDN TTL only — listing + PDP must not drift for minutes after price edits.
-  if (search) return ok({ products: items.map(forStorefront) });
-  return okCached({ products: items.map(forStorefront) }, 10);
+  if (search) return ok(body);
+  return okCached(body, 10);
 }
 
 export async function getProduct(event: APIGatewayProxyEventV2) {
@@ -187,10 +312,17 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   );
 
   let item = result.Item as (Product & { published?: boolean }) | undefined;
+  if (item && isHalloweenHamperProduct(item)) {
+    const refreshed = await ensureProductInDb(slug);
+    if (refreshed) item = refreshed as Product & { published?: boolean };
+  }
+  if (item && !isStorefrontVisibleProduct(item)) {
+    item = undefined;
+  }
   if (!item) {
     // Storefront may list bundled catalog SKUs before DynamoDB import — upsert on first view.
     const upserted = await ensureProductInDb(slug);
-    if (upserted) {
+    if (upserted && isStorefrontVisibleProduct(upserted as Product)) {
       item = upserted as Product & { published?: boolean };
       invalidateProductListCache(item.categorySlug);
     }
@@ -203,6 +335,91 @@ export async function getProduct(event: APIGatewayProxyEventV2) {
   return okCached({ product: forStorefront(product) }, 10);
 }
 
+/** Live CJ freight methods + transit time for the product page. */
+export async function getProductShipping(event: APIGatewayProxyEventV2) {
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
+  const q = event.queryStringParameters ?? {};
+  const dest = (q.country ?? "US").toUpperCase();
+  if (!(CJ_STOREFRONT_SHIP_COUNTRIES as readonly string[]).includes(dest)) {
+    return badRequest("Unsupported destination country");
+  }
+  const quantity = Math.min(10, Math.max(1, Number(q.quantity) || 1));
+  const vid = q.vid?.trim() || undefined;
+
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  const product = result.Item as Product | undefined;
+  if (!product || product.published === false) return notFound("Product not found");
+
+  try {
+    const shipping = await quoteProductShipping({
+      product,
+      destCountry: dest as CjStorefrontShipCountry,
+      vid,
+      quantity,
+    });
+    return okCached({ shipping }, 300);
+  } catch (err) {
+    if (err instanceof CjApiError) {
+      return okCached(
+        { shipping: checkoutOnlyShipping(product, dest as CjStorefrontShipCountry, quantity) },
+        30
+      );
+    }
+    throw err;
+  }
+}
+
+/** CJ product videos for the PDP gallery. Hydrates Dynamo if import skipped them. */
+export async function getProductVideos(event: APIGatewayProxyEventV2) {
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
+    })
+  );
+  const product = result.Item as Product | undefined;
+  if (!product || product.published === false) return notFound("Product not found");
+  if (product.videos && product.videos.length > 0) {
+    return okCached({ videos: product.videos }, 300);
+  }
+  if (!product.cjPid) return okCached({ videos: [] }, 60);
+
+  try {
+    const { collectCjProductVideos, cjProductImageUrls } = await import("../lib/cj-import");
+    const { cjGetProduct } = await import("../lib/cj-dropshipping");
+    const detail = await cjGetProduct(product.cjPid);
+    const videos = await collectCjProductVideos(product.cjPid, detail);
+    const images = resolveProductImagesForUpsert(cjProductImageUrls(detail), product.images).images;
+    if (videos.length > 0 || images.length !== (product.images?.length ?? 0)) {
+      await docClient.send(
+        new PutCommand({
+          TableName: PRODUCTS_TABLE,
+          Item: {
+            ...product,
+            ...(videos.length > 0 ? { videos } : {}),
+            images,
+            updatedAt: now(),
+          },
+        })
+      );
+      invalidateProductListCache(product.categorySlug);
+    }
+    return okCached({ videos, images }, 300);
+  } catch {
+    return okCached({ videos: [], images: product.images ?? [] }, 30);
+  }
+}
+
 export async function createProduct(event: APIGatewayProxyEventV2) {
   const actor = await resolveStaffActor(event);
   if (!actor) return forbidden();
@@ -211,7 +428,7 @@ export async function createProduct(event: APIGatewayProxyEventV2) {
   const parsed = createProductSchema.safeParse(body);
   if (!parsed.success) return badRequest(parsed.error.message);
 
-  const slug = slugify(parsed.data.name);
+  const slug = buildProductSlug(parsed.data.name);
   const timestamp = now();
   const inventory = parsed.data.inventory ?? DEFAULT_PRODUCT_INVENTORY;
   const item: Product & { PK: string; SK: string; GSI1PK: string; GSI1SK: string } = {
@@ -284,25 +501,95 @@ export async function updateProduct(event: APIGatewayProxyEventV2) {
   return ok({ product: updated });
 }
 
-/** Admin: list all products including unpublished. */
+/** Admin: list products including unpublished. Never return the full catalog in one payload (Lambda 6MB cap). */
 export async function listAdminProducts(event: APIGatewayProxyEventV2) {
   const actor = await resolveStaffActor(event);
   if (!actor) return forbidden();
 
+  const q = event.queryStringParameters ?? {};
+  const view = q.view === "pricing" ? "pricing" : "table";
+  const search = q.search?.trim().toLowerCase() ?? "";
+  const page = Math.max(1, Number(q.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(q.limit) || 25));
+
+  const ts = (p: Product) => Date.parse(p.updatedAt ?? p.createdAt ?? "") || 0;
+  let items = (await scanAdminProductRows()).filter((p) => productVisibleToActor(p, actor));
+  if (search) {
+    items = items.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(search) ||
+        p.slug?.toLowerCase().includes(search) ||
+        p.sku?.toLowerCase().includes(search)
+    );
+  }
+  items.sort((a, b) => ts(b) - ts(a));
+
+  if (view === "pricing") {
+    return ok({ products: items.map(forAdminPricing), total: items.length });
+  }
+
+  const total = items.length;
+  const start = (page - 1) * limit;
+  return ok({
+    products: items.slice(start, start + limit).map(forAdminList),
+    total,
+    page,
+    limit,
+  });
+}
+
+export async function getAdminProduct(event: APIGatewayProxyEventV2) {
+  const actor = await resolveStaffActor(event);
+  if (!actor) return forbidden();
+
+  const slug = event.pathParameters?.slug;
+  if (!slug) return badRequest("Slug required");
+
   const result = await docClient.send(
-    new ScanCommand({
+    new GetCommand({
       TableName: PRODUCTS_TABLE,
-      FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
-      ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+      Key: { PK: productKeys.pk(slug), SK: productKeys.sk() },
     })
   );
+  const item = result.Item as Product | undefined;
+  if (!item) return notFound("Product not found");
+  if (!productVisibleToActor(item, actor)) return forbidden();
+  return ok({ product: withResolvedProductImages(item) });
+}
 
-  const items = ((result.Items ?? []) as Product[])
-    .filter((p) => productVisibleToActor(p, actor))
-    .sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
-  return ok({ products: items.map(withResolvedProductImages) });
+/** Delete bundled sample catalog SKUs; keep CJ Dropshipping imports. */
+export async function purgeSampleCatalogProducts(event: APIGatewayProxyEventV2) {
+  const actor = await resolveStaffActor(event);
+  if (!actor?.isAdmin) return forbidden();
+
+  const deleted: string[] = [];
+  let ExclusiveStartKey: Record<string, unknown> | undefined;
+  do {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: PRODUCTS_TABLE,
+        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
+        ExclusiveStartKey,
+      })
+    );
+    for (const raw of result.Items ?? []) {
+      const product = raw as Product;
+      if (isCjDropshippingProduct(product) || isHalloweenHamperProduct(product)) continue;
+      if (!product.slug) continue;
+      await docClient.send(
+        new DeleteCommand({
+          TableName: PRODUCTS_TABLE,
+          Key: { PK: productKeys.pk(product.slug), SK: productKeys.sk() },
+        })
+      );
+      deleted.push(product.slug);
+    }
+    ExclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+  } while (ExclusiveStartKey);
+
+  invalidateProductListCache();
+  return ok({ deleted: deleted.length, slugs: deleted });
 }
 
 export async function deleteProduct(event: APIGatewayProxyEventV2) {
@@ -349,7 +636,7 @@ export async function bulkUploadProducts(event: APIGatewayProxyEventV2) {
       continue;
     }
 
-    const slug = slugify(parsed.data.name);
+    const slug = buildProductSlug(parsed.data.name);
     const timestamp = now();
     const tags = parsed.data.tags
       ? parsed.data.tags.split(",").map((t) => t.trim()).filter(Boolean)

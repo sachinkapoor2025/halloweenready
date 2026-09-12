@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { defaultCurrencyForCountry, detectViewerGeo } from "@/lib/geo-currency";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET() {
   const geo = await detectViewerGeo();
   const currency = defaultCurrencyForCountry(geo.country);
@@ -12,13 +15,12 @@ export async function GET() {
       regionName: geo.regionName,
       city: geo.city,
       currency,
+      source: geo.source,
     },
     {
       headers: {
-        "Cache-Control": "private, max-age=3600",
+        "Cache-Control": "private, no-store",
       },
     }
   );
 }
-
-export const runtime = "nodejs";

@@ -11,9 +11,9 @@ export declare const categorySchema: z.ZodObject<{
     published: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     name: string;
+    description: string;
     published: boolean;
     slug: string;
-    description: string;
     sortOrder: number;
     image?: string | undefined;
     seoTitle?: string | undefined;
@@ -22,9 +22,9 @@ export declare const categorySchema: z.ZodObject<{
 }, {
     name: string;
     slug: string;
+    description?: string | undefined;
     image?: string | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     parentSlug?: string | undefined;
@@ -42,8 +42,8 @@ export declare const createCategorySchema: z.ZodObject<Omit<{
     published: z.ZodDefault<z.ZodBoolean>;
 }, "slug">, "strip", z.ZodTypeAny, {
     name: string;
-    published: boolean;
     description: string;
+    published: boolean;
     sortOrder: number;
     image?: string | undefined;
     seoTitle?: string | undefined;
@@ -51,9 +51,9 @@ export declare const createCategorySchema: z.ZodObject<Omit<{
     parentSlug?: string | undefined;
 }, {
     name: string;
+    description?: string | undefined;
     image?: string | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     parentSlug?: string | undefined;
@@ -71,18 +71,18 @@ export declare const updateCategorySchema: z.ZodObject<Omit<{
     published: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
 }, "slug">, "strip", z.ZodTypeAny, {
     name?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     parentSlug?: string | undefined;
     sortOrder?: number | undefined;
 }, {
     name?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     published?: boolean | undefined;
-    description?: string | undefined;
     seoTitle?: string | undefined;
     seoDescription?: string | undefined;
     parentSlug?: string | undefined;

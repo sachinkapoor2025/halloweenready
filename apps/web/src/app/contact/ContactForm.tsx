@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site, whatsappChatUrl } from "@/lib/site";
 import { useSessionId } from "@/lib/session";
 import { api } from "@/lib/api";
+import { StoreLocations } from "@/components/StoreLocations";
 import { PhoneInput, buildPhoneValue } from "@/components/PhoneInput";
 import { DEFAULT_COUNTRY_ISO } from "@/lib/country-codes";
 
@@ -64,8 +65,16 @@ export function ContactForm() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-primary mb-6">Contact Us</h1>
       <p className="text-slate-600 mb-8">
-        Have questions about your Halloween order or delivery to the USA? Our team is here to help you before, during, and
-        after Halloween.
+        Have questions about your Halloween order or delivery? We can help before, during, and after Halloween.
+        For cutoffs and transit times, see{" "}
+        <Link href="/shipping" className="text-nav hover:underline">
+          shipping and delivery
+        </Link>
+        . Common answers also live on our{" "}
+        <Link href="/faq" className="text-nav hover:underline">
+          FAQ page
+        </Link>
+        .
       </p>
       <div className="grid md:grid-cols-3 gap-6 mb-10">
         <div className="border border-slate-200 rounded-xl p-6">
@@ -82,13 +91,16 @@ export function ContactForm() {
             rel="noopener noreferrer"
             className="text-nav hover:underline"
           >
-            {site.whatsappDisplay}
+            Chat on WhatsApp
           </a>
         </div>
         <div className="border border-slate-200 rounded-xl p-6">
           <h2 className="font-bold text-primary mb-2">Delivery</h2>
-          <p className="text-slate-600 text-sm">5–7 business days across all 50 US states. Same-day dispatch on most orders.</p>
+          <p className="text-slate-600 text-sm">Delivering in 5–7 days.</p>
         </div>
+      </div>
+      <div className="mb-10">
+        <StoreLocations variant="light" />
       </div>
 
       {sent ? (

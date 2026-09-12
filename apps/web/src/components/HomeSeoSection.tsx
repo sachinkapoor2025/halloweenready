@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { cityLinks, whatsappChatUrl } from "@/lib/site";
+import { homepageInlineLinks } from "@/lib/content/page-inline-links";
 import { homeSeoContent } from "@/lib/content/home-seo";
+import { applyInlineLinks } from "@/lib/inline-links";
+import { cityLinks, whatsappChatUrl } from "@/lib/site";
 
 export function HomeSeoSection() {
   const { intro, categories, delivery, howItWorks, tradition, whyUs, faqs } = homeSeoContent;
@@ -17,7 +19,7 @@ export function HomeSeoSection() {
               </h2>
               {intro.paragraphs.map((para, i) => (
                 <p key={i} className="mb-4">
-                  {para}
+                  {applyInlineLinks(para, homepageInlineLinks)}
                 </p>
               ))}
             </header>
@@ -39,7 +41,7 @@ export function HomeSeoSection() {
                 </p>
               ))}
               <div className="flex flex-wrap gap-2 mt-2">
-                {cityLinks.map((city) => (
+                {cityLinks.slice(0, 12).map((city) => (
                   <Link
                     key={city.slug}
                     href={`/cities/${city.slug}`}
@@ -108,7 +110,7 @@ export function HomeSeoSection() {
             <section className="bg-nav text-white rounded-xl p-6">
               <h3 className="text-lg font-semibold mb-2">Ready for Halloween 2026?</h3>
               <p className="text-sm text-white/90 mb-4">
-                Browse costumes, decor, and candy above — we help shoppers worldwide place Halloween orders for USA delivery.
+                Browse costumes, decor, and candy above. HalloweenReady ships internationally — delivering in 5–7 days.
               </p>
               <div className="flex flex-wrap gap-3 text-sm">
                 <Link
@@ -118,7 +120,7 @@ export function HomeSeoSection() {
                   Shop all Halloween items
                 </Link>
                 <a
-                  href={whatsappChatUrl("Hi HalloweenReady, I need help with Halloween delivery to the USA.")}
+                  href={whatsappChatUrl("Hi HalloweenReady, I need help with a Halloween order.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border border-white/60 px-4 py-2 rounded-lg hover:bg-white/10"

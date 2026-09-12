@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VENDOR_HALLOWEENREADY = void 0;
+exports.VENDOR_EPROLO = exports.VENDOR_CJ_DROPSHIPPING = exports.VENDOR_HALLOWEENREADY = void 0;
 exports.lineVendorKey = lineVendorKey;
 exports.vendorDisplayLabel = vendorDisplayLabel;
 exports.orderVendorKeys = orderVendorKeys;
@@ -16,6 +16,8 @@ exports.primaryTrackingFromFulfillments = primaryTrackingFromFulfillments;
 exports.buildInitialVendorFulfillments = buildInitialVendorFulfillments;
 const constants_1 = require("../constants");
 Object.defineProperty(exports, "VENDOR_HALLOWEENREADY", { enumerable: true, get: function () { return constants_1.VENDOR_HALLOWEENREADY; } });
+Object.defineProperty(exports, "VENDOR_CJ_DROPSHIPPING", { enumerable: true, get: function () { return constants_1.VENDOR_CJ_DROPSHIPPING; } });
+Object.defineProperty(exports, "VENDOR_EPROLO", { enumerable: true, get: function () { return constants_1.VENDOR_EPROLO; } });
 function lineVendorKey(item) {
     const slug = item.vendorSlug?.trim();
     return slug || constants_1.VENDOR_HALLOWEENREADY;
@@ -25,6 +27,10 @@ function vendorDisplayLabel(slug) {
         return "Orange County";
     if (slug === constants_1.VENDOR_HALLOWEENREADY)
         return "HalloweenReady";
+    if (slug === constants_1.VENDOR_CJ_DROPSHIPPING)
+        return "CJ Dropshipping";
+    if (slug === constants_1.VENDOR_EPROLO)
+        return "Eprolo";
     return slug
         .split("-")
         .filter(Boolean)
@@ -122,12 +128,22 @@ function upsertVendorFulfillment(fulfillments, patch) {
     const warehouseId = patch.warehouseId !== undefined ? patch.warehouseId.trim() : base.warehouseId;
     const status = patch.status ??
         (trackingNumber ? "shipped" : base.status ?? "pending");
+    const cjOrderId = patch.cjOrderId !== undefined ? patch.cjOrderId.trim() : base.cjOrderId;
+    const cjOrderNumber = patch.cjOrderNumber !== undefined ? patch.cjOrderNumber.trim() : base.cjOrderNumber;
+    const cjPayUrl = patch.cjPayUrl !== undefined ? patch.cjPayUrl.trim() : base.cjPayUrl;
+    const eproloOrderId = patch.eproloOrderId !== undefined ? patch.eproloOrderId.trim() : base.eproloOrderId;
+    const eproloOrderNumber = patch.eproloOrderNumber !== undefined ? patch.eproloOrderNumber.trim() : base.eproloOrderNumber;
     const row = {
         vendorSlug: slug,
         ...(warehouseId ? { warehouseId } : {}),
         ...(trackingNumber ? { trackingNumber } : {}),
         ...(carrier ? { carrier } : {}),
         status,
+        ...(cjOrderId ? { cjOrderId } : {}),
+        ...(cjOrderNumber ? { cjOrderNumber } : {}),
+        ...(cjPayUrl ? { cjPayUrl } : {}),
+        ...(eproloOrderId ? { eproloOrderId } : {}),
+        ...(eproloOrderNumber ? { eproloOrderNumber } : {}),
         ...(patch.updatedAt ? { updatedAt: patch.updatedAt } : base.updatedAt ? { updatedAt: base.updatedAt } : {}),
     };
     if (idx >= 0)

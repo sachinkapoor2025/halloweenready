@@ -3,7 +3,9 @@ import type { CategoryRichContent } from "@/lib/content/category-rich-content";
 import { categoryPageInlineLinks } from "@/lib/content/page-inline-links";
 import type { Product } from "@halloweenready/shared";
 import { applyInlineLinks } from "@/lib/inline-links";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { whatsappChatUrl } from "@/lib/site";
+import { productHref } from "@/lib/product-urls";
 
 interface Props {
   content: CategoryRichContent;
@@ -16,6 +18,9 @@ export function CategoryContentSection({ content, categoryName, products = [] }:
 
   return (
     <div className="mt-12 pt-10 border-t border-slate-200">
+      <div className="mb-8">
+        <AssistantPromo variant="category" />
+      </div>
       <div className="grid lg:grid-cols-3 gap-10 xl:gap-12 items-start">
         <article className="lg:col-span-2 space-y-8 text-slate-700 leading-relaxed">
           <header>
@@ -133,7 +138,7 @@ export function CategoryContentSection({ content, categoryName, products = [] }:
             <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
               {products.slice(0, 8).map((product) => (
                 <li key={product.slug}>
-                  <Link href={`/products/${product.slug}`} className="font-medium text-nav hover:underline">
+                  <Link href={productHref(product.slug)} className="font-medium text-nav hover:underline">
                     {product.name}
                   </Link>
                 </li>

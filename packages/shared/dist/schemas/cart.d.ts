@@ -21,6 +21,8 @@ export declare const cartItemSchema: z.ZodObject<{
     lineId: z.ZodOptional<z.ZodString>;
     productSlug: z.ZodString;
     name: z.ZodString;
+    /** Plain-text product snippet for order emails (optional; older carts omit this). */
+    description: z.ZodOptional<z.ZodString>;
     price: z.ZodNumber;
     currency: z.ZodEnum<["USD", "INR"]>;
     quantity: z.ZodNumber;
@@ -33,6 +35,12 @@ export declare const cartItemSchema: z.ZodObject<{
      */
     vendorCost: z.ZodOptional<z.ZodNumber>;
     sku: z.ZodOptional<z.ZodString>;
+    /** CJ product id snapshot (fulfillment). */
+    cjPid: z.ZodOptional<z.ZodString>;
+    /** CJ variant id for this cart line. */
+    cjVid: z.ZodOptional<z.ZodString>;
+    /** Human variant label, e.g. Black-XL. */
+    variantKey: z.ZodOptional<z.ZodString>;
     /** Copied from product — flash / fixed deals are not coupon-eligible. */
     couponExcluded: z.ZodOptional<z.ZodBoolean>;
     /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -53,6 +61,35 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity?: number | undefined;
     }>, "many">>;
+    /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+    hamperCustomization: z.ZodOptional<z.ZodObject<{
+        excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            fromSlug: z.ZodString;
+            toSlug: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            fromSlug: string;
+            toSlug: string;
+        }, {
+            fromSlug: string;
+            toSlug: string;
+        }>, "many">>;
+        extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+    }, "strip", z.ZodTypeAny, {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    }, {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     price: number;
@@ -60,10 +97,14 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
+    variantKey?: string | undefined;
     couponExcluded?: boolean | undefined;
     addons?: {
         id: string;
@@ -71,6 +112,14 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity: number;
     }[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    } | undefined;
 }, {
     name: string;
     price: number;
@@ -78,10 +127,14 @@ export declare const cartItemSchema: z.ZodObject<{
     productSlug: string;
     currency: "USD" | "INR";
     lineId?: string | undefined;
+    description?: string | undefined;
     image?: string | undefined;
     vendorSlug?: string | undefined;
     vendorCost?: number | undefined;
     sku?: string | undefined;
+    cjPid?: string | undefined;
+    cjVid?: string | undefined;
+    variantKey?: string | undefined;
     couponExcluded?: boolean | undefined;
     addons?: {
         id: string;
@@ -89,6 +142,14 @@ export declare const cartItemSchema: z.ZodObject<{
         price: number;
         quantity?: number | undefined;
     }[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    } | undefined;
 }>;
 export declare const addToCartSchema: z.ZodObject<{
     productSlug: z.ZodString;
@@ -110,24 +171,72 @@ export declare const addToCartSchema: z.ZodObject<{
         id: string;
         quantity?: number | undefined;
     }>]>, "many">>;
+    /** Optional CJ variant when the product has multiple SKUs. */
+    cjVid: z.ZodOptional<z.ZodString>;
+    hamperCustomization: z.ZodOptional<z.ZodObject<{
+        excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            fromSlug: z.ZodString;
+            toSlug: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            fromSlug: string;
+            toSlug: string;
+        }, {
+            fromSlug: string;
+            toSlug: string;
+        }>, "many">>;
+        extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+    }, "strip", z.ZodTypeAny, {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    }, {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     quantity: number;
     productSlug: string;
     name?: string | undefined;
+    cjVid?: string | undefined;
     addons?: (string | {
         id: string;
         quantity: number;
     })[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs: string[];
+        replacements: {
+            fromSlug: string;
+            toSlug: string;
+        }[];
+        extraSlugs: string[];
+    } | undefined;
     email?: string | undefined;
     phone?: string | undefined;
 }, {
     productSlug: string;
     name?: string | undefined;
     quantity?: number | undefined;
+    cjVid?: string | undefined;
     addons?: (string | {
         id: string;
         quantity?: number | undefined;
     })[] | undefined;
+    hamperCustomization?: {
+        excludedSlugs?: string[] | undefined;
+        replacements?: {
+            fromSlug: string;
+            toSlug: string;
+        }[] | undefined;
+        extraSlugs?: string[] | undefined;
+    } | undefined;
     email?: string | undefined;
     phone?: string | undefined;
 }>;
@@ -137,6 +246,8 @@ export declare const cartSchema: z.ZodObject<{
         lineId: z.ZodOptional<z.ZodString>;
         productSlug: z.ZodString;
         name: z.ZodString;
+        /** Plain-text product snippet for order emails (optional; older carts omit this). */
+        description: z.ZodOptional<z.ZodString>;
         price: z.ZodNumber;
         currency: z.ZodEnum<["USD", "INR"]>;
         quantity: z.ZodNumber;
@@ -149,6 +260,12 @@ export declare const cartSchema: z.ZodObject<{
          */
         vendorCost: z.ZodOptional<z.ZodNumber>;
         sku: z.ZodOptional<z.ZodString>;
+        /** CJ product id snapshot (fulfillment). */
+        cjPid: z.ZodOptional<z.ZodString>;
+        /** CJ variant id for this cart line. */
+        cjVid: z.ZodOptional<z.ZodString>;
+        /** Human variant label, e.g. Black-XL. */
+        variantKey: z.ZodOptional<z.ZodString>;
         /** Copied from product — flash / fixed deals are not coupon-eligible. */
         couponExcluded: z.ZodOptional<z.ZodBoolean>;
         /** Optional HalloweenReady dry-fruit / chocolate extras on this line. */
@@ -169,6 +286,35 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }>, "many">>;
+        /** Hamper swaps (same bundle price) plus paid extra add-ons. */
+        hamperCustomization: z.ZodOptional<z.ZodObject<{
+            excludedSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+            replacements: z.ZodDefault<z.ZodArray<z.ZodObject<{
+                fromSlug: z.ZodString;
+                toSlug: z.ZodString;
+            }, "strip", z.ZodTypeAny, {
+                fromSlug: string;
+                toSlug: string;
+            }, {
+                fromSlug: string;
+                toSlug: string;
+            }>, "many">>;
+            extraSlugs: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        }, "strip", z.ZodTypeAny, {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        }, {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        }>>;
     }, "strip", z.ZodTypeAny, {
         name: string;
         price: number;
@@ -176,10 +322,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -187,6 +337,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }, {
         name: string;
         price: number;
@@ -194,10 +352,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -205,6 +367,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }>, "many">>;
     updatedAt: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -215,10 +385,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -226,6 +400,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity: number;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs: string[];
+            replacements: {
+                fromSlug: string;
+                toSlug: string;
+            }[];
+            extraSlugs: string[];
+        } | undefined;
     }[];
     updatedAt: string;
 }, {
@@ -237,10 +419,14 @@ export declare const cartSchema: z.ZodObject<{
         productSlug: string;
         currency: "USD" | "INR";
         lineId?: string | undefined;
+        description?: string | undefined;
         image?: string | undefined;
         vendorSlug?: string | undefined;
         vendorCost?: number | undefined;
         sku?: string | undefined;
+        cjPid?: string | undefined;
+        cjVid?: string | undefined;
+        variantKey?: string | undefined;
         couponExcluded?: boolean | undefined;
         addons?: {
             id: string;
@@ -248,6 +434,14 @@ export declare const cartSchema: z.ZodObject<{
             price: number;
             quantity?: number | undefined;
         }[] | undefined;
+        hamperCustomization?: {
+            excludedSlugs?: string[] | undefined;
+            replacements?: {
+                fromSlug: string;
+                toSlug: string;
+            }[] | undefined;
+            extraSlugs?: string[] | undefined;
+        } | undefined;
     }[] | undefined;
 }>;
 export type CartItemAddon = z.infer<typeof cartItemAddonSchema>;

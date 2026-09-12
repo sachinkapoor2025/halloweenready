@@ -136,7 +136,7 @@ export function orderStatusWhatsAppMessage(input: {
         totalLabel: input.totalLabel ?? "",
       });
     case "accepted":
-      return `${hi}! We've accepted your HalloweenReady order #${shortId}.${total}\n\nTrack: ${orderUrl}`;
+      return `${hi}! Your HalloweenReady order #${shortId} is confirmed.${total}\n\nTrack: ${orderUrl}`;
     case "on_hold":
       return `${hi}! Order #${shortId} is temporarily on hold while we review it.${total}\n\nWe'll update you soon. ${orderUrl}`;
     case "processing":

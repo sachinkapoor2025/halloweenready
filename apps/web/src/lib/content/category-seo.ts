@@ -31,5 +31,15 @@ export const categoryPageSeo: Record<string, CategoryPageSeo> = Object.fromEntri
 ) as Record<string, CategoryPageSeo>;
 
 export function getCategoryPageSeo(slug: string): CategoryPageSeo | undefined {
+  if (slug === "halloween-hampers") {
+    return {
+      title: "Halloween Hampers | Gift Kits from $49",
+      description:
+        "Shop Halloween hampers from $49–$299. Swap included items at the same hamper price, add extras, and get free shipping on every kit.",
+      h1: "Halloween Hampers",
+      alt: "Halloween gift hampers with decorations, costumes, and party supplies",
+      keywords: "Halloween hampers, Halloween gift baskets, boo baskets, Halloween kits, HalloweenReady",
+    };
+  }
   return categoryPageSeo[slug];
 }

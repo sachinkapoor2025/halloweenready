@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { productKeys, categoryKeys, configKeys, defaultPaymentConfig } from "@halloweenready/shared";
+import { buildHalloweenHamperCatalogProducts, HALLOWEEN_HAMPERS_CATEGORY } from "@halloweenready/shared";
 import { docClient, PRODUCTS_TABLE, CONFIG_TABLE, now } from "./db";
 import { getMemoryStoreSize } from "./memory-store";
 
@@ -42,7 +43,13 @@ export async function seedIfEmpty() {
   const timestamp = now();
   console.log(`Seeding in-memory DB: ${catalog.products.length} HalloweenReady products...`);
 
-  for (const cat of catalog.categories) {
+  const categories = [
+    { ...HALLOWEEN_HAMPERS_CATEGORY, description: HALLOWEEN_HAMPERS_CATEGORY.description, sortOrder: 0 },
+    ...catalog.categories.filter((c) => c.slug !== HALLOWEEN_HAMPERS_CATEGORY.slug),
+  ];
+  const hamperProducts = buildHalloweenHamperCatalogProducts();
+
+  for (const cat of categories) {
     const sortOrder = typeof cat.sortOrder === "number" ? cat.sortOrder : 0;
     await docClient.send(
       new PutCommand({
@@ -61,7 +68,7 @@ export async function seedIfEmpty() {
     );
   }
 
-  for (const p of catalog.products) {
+  for (const p of [...hamperProducts, ...catalog.products]) {
     await docClient.send(
       new PutCommand({
         TableName: PRODUCTS_TABLE,

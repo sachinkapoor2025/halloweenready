@@ -1,4 +1,14 @@
 import { type ShopCurrency } from "../currency";
+/** Live catalog SKU imported from CJ (as opposed to bundled sample products). */
+export declare function isCjDropshippingProduct(product: {
+    vendorSlug?: string | null;
+    cjPid?: string | null;
+}): boolean;
+/** Live catalog SKU imported from Eprolo. */
+export declare function isEproloProduct(product: {
+    vendorSlug?: string | null;
+    eproloProductId?: string | null;
+}): boolean;
 /** Round money to cents for USD (or currency-aware). */
 export declare function roundMoney(n: number, currency?: ShopCurrency): number;
 /**
@@ -15,6 +25,9 @@ export declare function pricingFromVendorCost(vendorCost: number, currency?: Sho
 export declare function stripVendorPrivateFields<T extends {
     vendorCost?: number;
     vendorSlug?: string;
+    cjVariants?: Array<{
+        vendorCost?: number;
+    }>;
 }>(product: T): Omit<T, "vendorCost" | "vendorSlug">;
 /** @deprecated Use stripVendorPrivateFields */
 export declare function stripVendorCost<T extends {

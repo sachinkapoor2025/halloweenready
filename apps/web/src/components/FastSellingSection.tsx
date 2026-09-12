@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@halloweenready/shared";
 import { FAST_SELLING_THRESHOLD, isFastSelling, sortByUnitsSold } from "@halloweenready/shared";
-import { HomeProductCard } from "@/components/HomeProductCard";
+import { TrackedProductCard } from "@/components/TrackedProductCard";
 
 type FastSellingSectionProps = {
   products: Product[];
@@ -30,9 +30,16 @@ export function FastSellingSection({ products, limit = 10 }: FastSellingSectionP
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-          {fastSelling.map((p) => (
-            <HomeProductCard key={p.slug} product={p} showFastSellingBadge />
-          ))}
+          {fastSelling.map((p, i) => (
+              <TrackedProductCard
+                key={p.slug}
+                product={p}
+                position={i + 1}
+                listingPage="homepage"
+                showFastSellingBadge
+                priority={i < 4}
+              />
+            ))}
         </div>
       </div>
     </section>

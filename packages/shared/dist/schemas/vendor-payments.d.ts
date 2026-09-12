@@ -48,16 +48,16 @@ export declare const updateVendorPayoutSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     currency?: "USD" | "INR" | undefined;
     paymentMethod?: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash" | undefined;
-    amount?: number | undefined;
     notes?: string | undefined;
+    amount?: number | undefined;
     paidDate?: string | undefined;
     orderIds?: string[] | undefined;
     reference?: string | undefined;
 }, {
     currency?: "USD" | "INR" | undefined;
     paymentMethod?: "other" | "bank_transfer" | "wire" | "zelle" | "venmo" | "upi" | "cash" | undefined;
-    amount?: number | undefined;
     notes?: string | undefined;
+    amount?: number | undefined;
     paidDate?: string | undefined;
     orderIds?: string[] | undefined;
     reference?: string | undefined;

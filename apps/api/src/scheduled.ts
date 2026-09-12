@@ -4,6 +4,7 @@ import { processAbandonedCartEmails } from "./handlers/abandoned-cart-emails";
 import { processPendingPaymentReminders } from "./handlers/pending-payment-reminders";
 import { reconcilePendingRazorpayPayments } from "./handlers/payments/razorpay";
 import { runPaymentReconciliationJob } from "./handlers/payment-reconciliation";
+import { refreshHomepageSnapshot } from "./handlers/homepage-ranking";
 
 type CronEvent = {
   task?: string;
@@ -17,6 +18,16 @@ export async function handler(event: CronEvent, _context: Context) {
       return { razorpayReconcile };
     } catch (err) {
       console.error("Razorpay reconcile cron failed:", err);
+      throw err;
+    }
+  }
+
+  if (event?.task === "homepageRanking") {
+    try {
+      const snapshot = await refreshHomepageSnapshot();
+      return { homepageRanking: { poolSize: snapshot.poolSize, generatedAt: snapshot.generatedAt } };
+    } catch (err) {
+      console.error("Homepage ranking cron failed:", err);
       throw err;
     }
   }

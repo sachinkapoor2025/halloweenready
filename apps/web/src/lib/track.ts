@@ -217,12 +217,40 @@ export const trackPageView = (path?: string) => {
 };
 export const trackProductView = (productSlug: string) =>
   track({ type: EVENT_TYPES.PRODUCT_VIEW, productSlug });
+export const trackProductImpression = (
+  productSlug: string,
+  meta?: { position?: number; listingPage?: string; category?: string }
+) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_IMPRESSION,
+    productSlug,
+    metadata: {
+      ...(meta?.position != null ? { position: String(meta.position) } : {}),
+      ...(meta?.listingPage ? { listingPage: meta.listingPage } : {}),
+      ...(meta?.category ? { category: meta.category } : {}),
+    },
+  });
+export const trackProductClick = (
+  productSlug: string,
+  meta?: { position?: number; listingPage?: string; category?: string }
+) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_CLICK,
+    productSlug,
+    metadata: {
+      ...(meta?.position != null ? { position: String(meta.position) } : {}),
+      ...(meta?.listingPage ? { listingPage: meta.listingPage } : {}),
+      ...(meta?.category ? { category: meta.category } : {}),
+    },
+    immediate: true,
+  });
 export const trackSearch = (query: string, resultCount: number) =>
   track({ type: EVENT_TYPES.SEARCH, query, resultCount });
 export const trackCartAdd = (
   productSlug: string,
   value?: number,
-  contact?: { name?: string; email?: string; phone?: string }
+  contact?: { name?: string; email?: string; phone?: string },
+  extra?: Record<string, string>
 ) =>
   track({
     type: EVENT_TYPES.CART_ADD,
@@ -232,13 +260,71 @@ export const trackCartAdd = (
       ...(contact?.name?.trim() ? { name: contact.name.trim() } : {}),
       ...(contact?.email?.trim() ? { email: contact.email.trim() } : {}),
       ...(contact?.phone?.trim() ? { phone: contact.phone.trim() } : {}),
+      ...extra,
     },
     immediate: true,
   });
 export const trackCartRemove = (productSlug: string) =>
   track({ type: EVENT_TYPES.CART_REMOVE, productSlug });
-export const trackCheckoutStart = (value?: number) =>
-  track({ type: EVENT_TYPES.CHECKOUT_START, value, immediate: true });
+
+export const trackChatOpen = (path?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_OPEN,
+    path,
+    metadata: { channel: "chat" },
+    immediate: true,
+  });
+
+export const trackChatClose = (path?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_CLOSE,
+    path,
+    metadata: { channel: "chat" },
+    immediate: true,
+  });
+
+export const trackChatMessage = (intent?: string) =>
+  track({
+    type: EVENT_TYPES.CHAT_MESSAGE,
+    metadata: { channel: "chat", ...(intent ? { intent } : {}) },
+  });
+
+export const trackChatSearch = (query: string, resultCount: number, intent?: string) =>
+  track({
+    type: EVENT_TYPES.SEARCH,
+    query,
+    resultCount,
+    metadata: { channel: "chat", ...(intent ? { intent } : {}) },
+    immediate: true,
+  });
+
+export const trackChatProductImpression = (productSlug: string, position?: number) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_IMPRESSION,
+    productSlug,
+    metadata: {
+      channel: "chat",
+      listingPage: "chat",
+      ...(position != null ? { position: String(position) } : {}),
+    },
+  });
+
+export const trackChatProductClick = (productSlug: string, position?: number) =>
+  track({
+    type: EVENT_TYPES.PRODUCT_CLICK,
+    productSlug,
+    metadata: { channel: "chat", listingPage: "chat", ...(position != null ? { position: String(position) } : {}) },
+    immediate: true,
+  });
+export const trackCheckoutStart = (value?: number, productSlugs?: string[]) =>
+  track({
+    type: EVENT_TYPES.CHECKOUT_START,
+    value,
+    ...(productSlugs?.length
+      ? { metadata: { productSlugs: productSlugs.slice(0, 40).join(",") } }
+      : {}),
+    immediate: true,
+  });
 
 declare global {
   interface Window {

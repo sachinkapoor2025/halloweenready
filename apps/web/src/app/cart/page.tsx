@@ -7,10 +7,16 @@ import { useCurrency } from "@/lib/currency-context";
 import { SecureCheckoutBadge } from "@/components/SecureCheckoutBadge";
 import { PaymentMethodIcons } from "@/components/PaymentMethodIcons";
 import { CheckoutLegalNotice } from "@/components/CheckoutLegalNotice";
+import { AssistantPromo } from "@/components/assistant/AssistantPromo";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ProductImage } from "@/components/ProductImage";
 import { EstimatedDeliveryNote } from "@/components/EstimatedDeliveryNote";
+import { FreeShippingNotice } from "@/components/FreeShippingNotice";
+import { payCurrencyForDisplay, quoteCartShipping } from "@/lib/quote-cart-shipping";
 import type { DisplayCurrency } from "@/lib/currency-context";
+import type { CartItem } from "@halloweenready/shared";
+import { cartLineUnitTotal } from "@halloweenready/shared";
+import { productHref } from "@/lib/product-urls";
 
 function TrashIcon() {
   return (
@@ -21,8 +27,18 @@ function TrashIcon() {
   );
 }
 
-function CartQuantityControls({ productSlug, quantity }: { productSlug: string; quantity: number }) {
-  const { addItem, updateItem, removeItem } = useCart();
+function CartQuantityControls({
+  lineId,
+  productSlug,
+  quantity,
+  cjVid,
+}: {
+  lineId: string;
+  productSlug: string;
+  quantity: number;
+  cjVid?: string;
+}) {
+  const { updateItem, removeItem } = useCart();
   const [busy, setBusy] = useState(false);
 
   const run = async (fn: () => Promise<void>) => {
@@ -41,7 +57,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
           type="button"
           disabled={busy}
           aria-label="Decrease quantity"
-          onClick={() => void run(() => (quantity <= 1 ? removeItem(productSlug) : updateItem(productSlug, quantity - 1)))}
+          onClick={() => void run(() => (quantity <= 1 ? removeItem(lineId) : updateItem(lineId, quantity - 1)))}
           className="px-3 py-2 text-primary font-bold hover:bg-violet-200/60 disabled:opacity-50 transition"
         >
           −
@@ -53,7 +69,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
           type="button"
           disabled={busy}
           aria-label="Increase quantity"
-          onClick={() => void run(() => addItem(productSlug, 1))}
+          onClick={() => void run(() => updateItem(lineId, quantity + 1))}
           className="px-3 py-2 text-primary font-bold hover:bg-violet-200/60 disabled:opacity-50 transition"
         >
           +
@@ -63,7 +79,7 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
         type="button"
         disabled={busy}
         aria-label="Remove item"
-        onClick={() => void run(() => removeItem(productSlug))}
+        onClick={() => void run(() => removeItem(lineId))}
         className="text-red-500 hover:text-red-600 p-1 disabled:opacity-50 transition"
       >
         <TrashIcon />
@@ -74,14 +90,19 @@ function CartQuantityControls({ productSlug, quantity }: { productSlug: string; 
 
 export default function CartPage() {
   const { cart, loading } = useCart();
-  const { format } = useCurrency();
+  const { format, displayCurrency, convert, usdInrRate } = useCurrency();
 
   if (loading) return <div className="p-10 text-center text-slate-600">Loading cart...</div>;
 
   const items = cart?.items ?? [];
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + cartLineUnitTotal(i) * i.quantity, 0);
   const currency = (items[0]?.currency ?? "USD") as DisplayCurrency;
+  const payCurrency = payCurrencyForDisplay(displayCurrency);
+  const shipping = quoteCartShipping(items as CartItem[], payCurrency, usdInrRate);
+  const displaySubtotal = convert(total, currency);
+  const displayShipping = convert(shipping.totalCharge, payCurrency);
+  const displayTotal = displaySubtotal + displayShipping;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 sm:py-10">
@@ -103,15 +124,16 @@ export default function CartPage() {
             <ul className="space-y-6">
               {items.map((item) => {
                 const lineCurrency = (item.currency ?? currency) as DisplayCurrency;
-                const lineTotal = item.price * item.quantity;
+                const lineTotal = cartLineUnitTotal(item) * item.quantity;
+                const lineId = item.lineId ?? item.productSlug;
 
                 return (
                   <li
-                    key={item.productSlug}
+                    key={lineId}
                     className="flex gap-4 pb-6 border-b border-slate-200 last:border-0 last:pb-0"
                   >
                     <Link
-                      href={`/products/${item.productSlug}`}
+                      href={productHref(item.productSlug)}
                       className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-slate-50 border border-slate-100"
                     >
                       <ProductImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -120,12 +142,40 @@ export default function CartPage() {
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="space-y-3 min-w-0">
                         <Link
-                          href={`/products/${item.productSlug}`}
+                          href={productHref(item.productSlug)}
                           className="font-bold text-slate-900 hover:text-nav line-clamp-2 leading-snug block"
                         >
                           {item.name}
                         </Link>
-                        <CartQuantityControls productSlug={item.productSlug} quantity={item.quantity} />
+                        {item.hamperCustomization && (
+                          <ul className="text-xs text-slate-600 space-y-0.5">
+                            {item.hamperCustomization.replacements.map((r) => (
+                              <li key={`${r.fromSlug}-${r.toSlug}`}>
+                                Swapped {r.fromSlug.replace(/-/g, " ")} → {r.toSlug.replace(/-/g, " ")}
+                              </li>
+                            ))}
+                            {item.hamperCustomization.extraSlugs.map((slug) => (
+                              <li key={slug}>Extra: {slug.replace(/-/g, " ")}</li>
+                            ))}
+                          </ul>
+                        )}
+                        {item.addons?.some((a) => a.id.startsWith("hamper-extra:")) && (
+                          <ul className="text-xs text-slate-600">
+                            {item.addons
+                              .filter((a) => a.id.startsWith("hamper-extra:"))
+                              .map((a) => (
+                                <li key={a.id}>
+                                  {a.name} +{format(a.price * a.quantity, lineCurrency)}
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                        <CartQuantityControls
+                          lineId={lineId}
+                          productSlug={item.productSlug}
+                          quantity={item.quantity}
+                          cjVid={item.cjVid}
+                        />
                       </div>
 
                       <div className="sm:text-right shrink-0">
@@ -151,15 +201,27 @@ export default function CartPage() {
             <div className="space-y-3 text-sm border-b border-slate-200 pb-4 mb-5">
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Subtotal ({itemCount} {itemCount === 1 ? "item" : "items"})</span>
-                <span className="font-medium text-slate-900">{format(total, currency)}</span>
+                <span className="font-medium text-slate-900">{format(displaySubtotal, displayCurrency)}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Shipping fee</span>
-                <span className="font-bold text-accent">FREE</span>
+                <span className={displayShipping > 0 ? "font-semibold text-slate-900" : "font-bold text-accent"}>
+                  {displayShipping > 0 ? format(displayShipping, displayCurrency) : "FREE"}
+                </span>
               </div>
+              {shipping.quote && (
+                <FreeShippingNotice
+                  quote={shipping.quote}
+                  formatMoney={format}
+                  currency={payCurrency}
+                />
+              )}
+              <p className="text-xs text-slate-500">
+                Same shipping amount is charged at checkout and on the payment page.
+              </p>
               <div className="flex items-center justify-between gap-4 pt-2 border-t border-slate-100">
                 <span className="font-bold text-slate-900">Estimated total</span>
-                <span className="font-bold text-accent text-base">{format(total, currency)}</span>
+                <span className="font-bold text-accent text-base">{format(displayTotal, displayCurrency)}</span>
               </div>
             </div>
 
@@ -171,6 +233,9 @@ export default function CartPage() {
             </div>
 
             <TrustBadges variant="compact" className="mb-4" />
+            <div className="mb-4">
+              <AssistantPromo variant="cart" />
+            </div>
 
             <EstimatedDeliveryNote variant="banner" prefix="Order today →" className="mb-5" />
 

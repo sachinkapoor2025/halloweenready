@@ -59,3 +59,8 @@ export function getCdnUrl(): string {
 
 export const siteUrl = getSiteUrl();
 export const apiUrl = getApiUrl();
+
+/** True while `next build` is prerendering pages (CI static generation). */
+export function isNextProductionBuild(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build" || process.env.CI === "true";
+}

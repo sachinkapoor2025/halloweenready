@@ -4,6 +4,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { seoEventsHub } from "@/lib/content/seo-data";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
+import { InternalLinksSection } from "@/components/InternalLinksSection";
+import { getInternalLinkGroups } from "@halloweenready/shared";
 
 // TODO: convert to transactional once ticket booking ships
 
@@ -272,6 +274,12 @@ export default function HalloweenEventsGuidePage() {
           </Link>
         </div>
       </section>
+
+      <InternalLinksSection
+        groups={getInternalLinkGroups({ type: "events" })}
+        title="Related Halloween pages"
+        intro="Shop costumes and accessories for the night out, or return to the planning guide."
+      />
     </div>
   );
 }

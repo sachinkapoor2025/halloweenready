@@ -1,22 +1,16 @@
-import { api } from "@/lib/api";
 import { site, navItems, faqs } from "@/lib/site";
 import { siteUrl } from "@/lib/env";
-import type { Product } from "@halloweenready/shared";
+import { loadStorefrontProducts } from "@/lib/product-loader";
 import { blogPosts } from "@/lib/content/blog-posts";
 import { seoLocations, seoBlogEntries, seoEventsHub } from "@/lib/content/seo-data";
+import { productHref } from "@/lib/product-urls";
 
 /**
  * llms-full.txt — detailed product catalog for AI assistants (GEO).
  * Extends /llms.txt with per-product name, price, category, description.
  */
 export async function GET() {
-  let products: Product[] = [];
-  try {
-    const data = await api<{ products: Product[] }>("/products");
-    products = data.products;
-  } catch {
-    products = [];
-  }
+  const products = await loadStorefrontProducts();
 
   const categories = navItems
     .filter((n): n is typeof n & { category: string } => "category" in n)
@@ -44,7 +38,7 @@ export async function GET() {
     .map((p) => {
       const desc = p.description.replace(/\s+/g, " ").slice(0, 200);
       const tags = p.tags?.length ? ` | Tags: ${p.tags.join(", ")}` : "";
-      return `- **${p.name}** | ${p.currency} ${p.price} | ${p.categorySlug} | ${siteUrl}/products/${p.slug}\n  ${desc}${tags}`;
+      return `- **${p.name}** | ${p.currency} ${p.price} | ${p.categorySlug} | ${siteUrl}${productHref(p.slug)}\n  ${desc}${tags}`;
     })
     .join("\n\n");
 
@@ -57,9 +51,9 @@ export async function GET() {
 ${site.description}
 
 **Website:** ${siteUrl}
-**Halloween 2026:** August 28, 2026 — order by early August for on-time USA delivery.
-**Delivery:** 5–7 business days to all 50 US states (domestic US fulfillment).
-**Payments:** Stripe (USD), Razorpay (INR).
+**Halloween 2026:** Saturday, October 31, 2026 — order earlier in October for more transit buffer.
+**Delivery:** Delivering in 5–7 days. Confirm shipping on each product page. Do not claim all 50 US states or guaranteed October 31 arrival.
+**Payments:** Stripe (USD), Razorpay (INR). Display prices may show in local currency.
 
 ---
 
@@ -102,7 +96,7 @@ ${faqList}
 
 ## Contact
 
-Email: ${site.supportEmail} | WhatsApp: ${site.whatsappDisplay}
+Email: ${site.supportEmail} | WhatsApp: https://wa.me/${site.whatsapp}
 Press: ${siteUrl}/press
 `;
 

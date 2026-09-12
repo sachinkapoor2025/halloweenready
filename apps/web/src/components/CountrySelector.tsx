@@ -4,12 +4,23 @@ import { useEffect, useState } from "react";
 import { useMarket } from "@/lib/market-context";
 
 export function CountrySelector({ compact = false }: { compact?: boolean }) {
-  const { countryCode, postalCode, markets, market, setMarketLocation, checkServiceability, lastServiceability } =
-    useMarket();
+  const {
+    countryCode,
+    postalCode,
+    markets,
+    market,
+    loading,
+    manualOverride,
+    setMarketLocation,
+    resetToDetectedLocation,
+    checkServiceability,
+    lastServiceability,
+  } = useMarket();
   const [open, setOpen] = useState(false);
   const [draftCountry, setDraftCountry] = useState(countryCode);
   const [draftPostal, setDraftPostal] = useState(postalCode);
   const [checking, setChecking] = useState(false);
+  const [detecting, setDetecting] = useState(false);
 
   useEffect(() => {
     setDraftCountry(countryCode);
@@ -17,15 +28,24 @@ export function CountrySelector({ compact = false }: { compact?: boolean }) {
   }, [countryCode, postalCode, open]);
 
   const selected = markets.find((m) => m.countryCode === draftCountry) ?? market;
-  const label = market
-    ? `${market.flagEmoji} ${market.name}${postalCode ? ` — ${postalCode}` : ""}`
-    : "Select delivery country";
+  const label = loading
+    ? "Detecting…"
+    : market
+      ? `${market.flagEmoji} ${market.name}${postalCode ? ` — ${postalCode}` : ""}`
+      : "Select delivery country";
 
   const save = async () => {
     setChecking(true);
     setMarketLocation(draftCountry, draftPostal.trim(), "manual");
     await checkServiceability();
     setChecking(false);
+    setOpen(false);
+  };
+
+  const useMyLocation = async () => {
+    setDetecting(true);
+    await resetToDetectedLocation();
+    setDetecting(false);
     setOpen(false);
   };
 
@@ -41,9 +61,14 @@ export function CountrySelector({ compact = false }: { compact?: boolean }) {
         }
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-busy={loading}
       >
         <span className="truncate max-w-[220px] sm:max-w-[280px]">
-          {compact ? market?.flagEmoji ?? "🌍" : `Delivering to: ${label}`}
+          {compact
+            ? loading
+              ? "…"
+              : (market?.flagEmoji ?? "🌍")
+            : `Delivering to: ${label}`}
         </span>
         <span className="text-[10px] uppercase tracking-wide text-nav">Change</span>
       </button>
@@ -81,15 +106,18 @@ export function CountrySelector({ compact = false }: { compact?: boolean }) {
             {lastServiceability?.postalMessage && !lastServiceability.postalValid && (
               <p className="text-xs text-red-600 mb-2">{lastServiceability.postalMessage}</p>
             )}
-            {lastServiceability?.deliverable && lastServiceability.warehouse && (
-              <p className="text-xs text-emerald-700 mb-2">
-                Ships from {lastServiceability.warehouse.name}
-                {lastServiceability.warehouse.estimatedDeliveryDays
-                  ? ` · about ${lastServiceability.warehouse.estimatedDeliveryDays} days`
-                  : ""}
-              </p>
+            {lastServiceability?.deliverable && (
+              <p className="text-xs text-emerald-700 mb-2">Delivering in 5–7 days</p>
             )}
-            <div className="flex justify-end gap-2 mt-2">
+            <div className="flex flex-wrap items-center justify-end gap-2 mt-2">
+              <button
+                type="button"
+                className="mr-auto text-sm px-3 py-1.5 text-nav font-semibold"
+                onClick={() => void useMyLocation()}
+                disabled={detecting || loading}
+              >
+                {detecting ? "Detecting…" : "Use my location"}
+              </button>
               <button type="button" className="text-sm px-3 py-1.5 text-slate-600" onClick={() => setOpen(false)}>
                 Cancel
               </button>
@@ -102,6 +130,11 @@ export function CountrySelector({ compact = false }: { compact?: boolean }) {
                 {checking ? "Checking…" : "Save location"}
               </button>
             </div>
+            {manualOverride && (
+              <p className="text-[11px] text-slate-500 mt-2">
+                You chose this country. Use my location to switch back to the country from your IP.
+              </p>
+            )}
           </div>
         </>
       )}
