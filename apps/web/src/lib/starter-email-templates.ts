@@ -7,9 +7,11 @@ import {
   buildFreeShippingEmailHtml,
   buildStartingPriceEmailHtml,
   buildShopMoreSaveMoreEmailHtml,
+  buildHalloweenCollectionEmailHtml,
   FREE_SHIPPING_EMAIL_CONFIG,
   STARTING_PRICE_EMAIL_CONFIG,
   SHOP_MORE_SAVE_MORE_EMAIL_CONFIG,
+  HALLOWEEN_COLLECTION_EMAIL_CONFIG,
   type MarketingEmailContent,
 } from "@halloweenready/shared";
 
@@ -28,6 +30,7 @@ export const HALLOWEEN_PREMIUM_TEMPLATE_ID = "premium-halloween";
 export const FREE_SHIPPING_TEMPLATE_ID = FREE_SHIPPING_EMAIL_CONFIG.templateId;
 export const STARTING_PRICE_TEMPLATE_ID = STARTING_PRICE_EMAIL_CONFIG.templateId;
 export const SHOP_MORE_SAVE_MORE_TEMPLATE_ID = SHOP_MORE_SAVE_MORE_EMAIL_CONFIG.templateId;
+export const HALLOWEEN_COLLECTION_TEMPLATE_ID = HALLOWEEN_COLLECTION_EMAIL_CONFIG.templateId;
 
 /** @deprecated Use HALLOWEEN_PREMIUM_TEMPLATE_ID */
 export const RAKSHA_BANDHAN_TEMPLATE_ID = HALLOWEEN_PREMIUM_TEMPLATE_ID;
@@ -42,6 +45,12 @@ export const STARTER_EMAIL_TEMPLATES: StarterEmailTemplateMeta[] = [
     layout: PREMIUM_MARKETING_EMAIL_LAYOUT,
     contentFields: DEFAULT_PREMIUM_MARKETING_EMAIL_CONTENT,
     preserveAdminEdits: true,
+  },
+  {
+    templateId: HALLOWEEN_COLLECTION_TEMPLATE_ID,
+    name: HALLOWEEN_COLLECTION_EMAIL_CONFIG.name,
+    subject: HALLOWEEN_COLLECTION_EMAIL_CONFIG.subject,
+    buildHtml: () => buildHalloweenCollectionEmailHtml(),
   },
   {
     templateId: FREE_SHIPPING_TEMPLATE_ID,

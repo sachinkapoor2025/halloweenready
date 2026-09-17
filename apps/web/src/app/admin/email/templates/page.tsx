@@ -6,6 +6,7 @@ import { PremiumMarketingEmailEditor } from "@/components/admin/PremiumMarketing
 import { ensureStarterEmailTemplates } from "@/lib/ensure-starter-email-templates";
 import {
   FREE_SHIPPING_TEMPLATE_ID,
+  HALLOWEEN_COLLECTION_TEMPLATE_ID,
   PREMIUM_RAKSHA_BANDHAN_TEMPLATE_ID,
   RAKSHA_BANDHAN_TEMPLATE_ID,
   STARTING_PRICE_TEMPLATE_ID,
@@ -50,7 +51,9 @@ export default function TemplatesPage() {
   const load = useCallback(async () => {
     const { templates: list, installed, updated } = await ensureStarterEmailTemplates(api);
     setTemplates(list);
-    if (
+    if (installed.includes(HALLOWEEN_COLLECTION_TEMPLATE_ID) || updated.includes(HALLOWEEN_COLLECTION_TEMPLATE_ID)) {
+      setMessage("Halloween Collection Mailer is ready — real catalog products, Shop Now CTAs, and editable campaign config.");
+    } else if (
       installed.includes(FREE_SHIPPING_TEMPLATE_ID) ||
       installed.includes(STARTING_PRICE_TEMPLATE_ID)
     ) {

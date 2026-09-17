@@ -211,9 +211,94 @@ export declare const SHOP_MORE_SAVE_MORE_EMAIL_CONFIG: {
     readonly copyrightText: "© 2026 HalloweenReady. All Rights Reserved.";
     readonly unsubscribeLabel: "Unsubscribe";
 };
+/**
+ * Flagship Halloween collection mailer.
+ * Swap banner, products, offers, copy, and links in this CONFIG for future campaigns.
+ * Product photos and prices are from the live HalloweenReady homepage catalog.
+ */
+export declare const HALLOWEEN_COLLECTION_EMAIL_CONFIG: {
+    readonly templateId: "halloween-collection-mailer";
+    readonly name: "Halloween Collection Mailer";
+    readonly subject: "Celebrate Halloween in Style — Decor, Costumes & Party Supplies";
+    readonly preheader: "Shop real HalloweenReady favorites: inflatables, décor, costumes, and hampers. 20% off selected picks. Free shipping on $49+.";
+    readonly logoUrl: "https://www.halloweenready.com/logo.png";
+    readonly logoHref: "https://www.halloweenready.com";
+    readonly logoAlt: "HalloweenReady";
+    readonly logoTagline: "Halloween Decorations, Costumes & Party Supplies";
+    readonly promoStrip: "20% OFF selected picks  ·  Free shipping on orders $49+";
+    readonly heroImageUrl: "https://www.halloweenready.com/banners/bannerpage1.png";
+    readonly heroImageHref: "https://www.halloweenready.com/products";
+    readonly heroImageAlt: "Halloween decorations, costumes, and party supplies — HalloweenReady";
+    readonly heroEyebrow: "HALLOWEEN 2026 · SHOP WORLDWIDE";
+    readonly heroHeadline: "Celebrate Halloween in Style";
+    readonly heroSubhead: "Premium décor, costumes, and party supplies";
+    readonly heroBody: "Haunt the porch, dress the party, and gift a hamper — all from HalloweenReady. Delivering in 5–7 days. Confirm shipping on each product page.";
+    readonly heroButtonText: "Shop Now";
+    readonly heroButtonHref: "https://www.halloweenready.com/products";
+    readonly productsHeading: "Featured Halloween Picks";
+    readonly productsSubheading: "Live catalog favorites — tap Shop Now to view each product.";
+    readonly products: {
+        name: string;
+        description: string;
+        imageUrl: string;
+        href: string;
+        buttonText: string;
+        badge: string;
+        priceLabel: string;
+    }[];
+    readonly offerHeading: "Season Offer";
+    readonly offerTitle: "Free shipping on $49+";
+    readonly offerBody: "Selected picks show 20% off on the site. Carts of $49 or more ship free. Smaller orders use a stepped shipping fee — totals match checkout.";
+    readonly offerButtonText: "Shop the Collection";
+    readonly offerButtonHref: "https://www.halloweenready.com/products";
+    readonly categoriesHeading: "Shop by Category";
+    readonly categoriesSubheading: "Real product photography from each HalloweenReady collection.";
+    readonly categories: {
+        name: string;
+        description: string;
+        imageUrl: string;
+        href: string;
+        buttonText: string;
+    }[];
+    readonly hampersHeading: "Ready-to-Gift Hampers";
+    readonly hampersSubheading: "Curated kits with swap-able items — same hamper price.";
+    readonly hampers: {
+        name: string;
+        description: string;
+        imageUrl: string;
+        href: string;
+        buttonText: string;
+        badge: string;
+        priceLabel: string;
+    }[];
+    readonly whyHeading: "Why Shop HalloweenReady";
+    readonly whySubheading: "The same promises we make on halloweenready.com.";
+    readonly whyBenefits: {
+        icon: string;
+        title: string;
+        description: string;
+    }[];
+    readonly midCtaHeading: "Your Halloween night starts here";
+    readonly midCtaBody: "Shop decorations, costumes, and hampers now — October 31 will be here before you know it.";
+    readonly midCtaText: "Shop Now";
+    readonly midCtaHref: "https://www.halloweenready.com/products";
+    readonly footerTagline: "Halloween Decorations, Costumes & Party Supplies";
+    readonly footerLogoUrl: "https://www.halloweenready.com/logo.png";
+    readonly websiteUrl: "https://www.halloweenready.com";
+    readonly websiteLabel: "www.halloweenready.com";
+    readonly orderEmail: "order@halloweenready.com";
+    readonly facebookUrl: "https://www.facebook.com/halloweenready/";
+    readonly facebookIconUrl: "https://www.halloweenready.com/email-templates/icons/facebook.png";
+    readonly instagramUrl: "https://www.instagram.com/halloweenready/";
+    readonly instagramIconUrl: "https://www.halloweenready.com/email-templates/icons/instagram.png";
+    readonly copyrightText: "© 2026 HalloweenReady. All Rights Reserved.";
+    readonly unsubscribeLabel: "Unsubscribe";
+};
 /** Template 1 HTML — Free shipping above $7. */
 export declare function buildFreeShippingEmailHtml(cfg?: typeof FREE_SHIPPING_EMAIL_CONFIG): string;
 /** Template 2 HTML — Starting at ₹343 / $3.99. */
 export declare function buildStartingPriceEmailHtml(cfg?: typeof STARTING_PRICE_EMAIL_CONFIG): string;
 /** Template 3 HTML — Shop More, Save More (free shipping at $49+). */
 export declare function buildShopMoreSaveMoreEmailHtml(cfg?: typeof SHOP_MORE_SAVE_MORE_EMAIL_CONFIG): string;
+/** Flagship collection mailer — edit HALLOWEEN_COLLECTION_EMAIL_CONFIG for future campaigns. */
+export declare function buildHalloweenCollectionEmailHtml(cfg?: typeof HALLOWEEN_COLLECTION_EMAIL_CONFIG): string;

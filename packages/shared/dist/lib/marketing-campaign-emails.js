@@ -8,10 +8,11 @@
  * Both builders emit table + inline-CSS HTML for Gmail / Outlook / Apple Mail.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = exports.STARTING_PRICE_EMAIL_CONFIG = exports.FREE_SHIPPING_EMAIL_CONFIG = void 0;
+exports.HALLOWEEN_COLLECTION_EMAIL_CONFIG = exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = exports.STARTING_PRICE_EMAIL_CONFIG = exports.FREE_SHIPPING_EMAIL_CONFIG = void 0;
 exports.buildFreeShippingEmailHtml = buildFreeShippingEmailHtml;
 exports.buildStartingPriceEmailHtml = buildStartingPriceEmailHtml;
 exports.buildShopMoreSaveMoreEmailHtml = buildShopMoreSaveMoreEmailHtml;
+exports.buildHalloweenCollectionEmailHtml = buildHalloweenCollectionEmailHtml;
 const SITE = "https://www.halloweenready.com";
 const SITE_SHORT = "https://halloweenready.com";
 const SHOP = `${SITE}/products`;
@@ -25,6 +26,7 @@ const GOLD = "#ff6b00";
 const RED = "#e11d48";
 const CREAM = "#fff8ef";
 const PAGE_BG = "#f3eee6";
+const PAGE_BG_HALLOWEEN = "#14081f";
 /** ═══════════════ TEMPLATE 1 — Free Shipping Above $7 ═══════════════ */
 exports.FREE_SHIPPING_EMAIL_CONFIG = {
     templateId: "free-shipping-above-7",
@@ -374,6 +376,177 @@ exports.SHOP_MORE_SAVE_MORE_EMAIL_CONFIG = {
     copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
     unsubscribeLabel: "Unsubscribe",
 };
+function productUrl(slug) {
+    return `${SITE}/products/${slug}`;
+}
+function categoryUrl(slug) {
+    return `${SITE}/categories/${slug}`;
+}
+/**
+ * Flagship Halloween collection mailer.
+ * Swap banner, products, offers, copy, and links in this CONFIG for future campaigns.
+ * Product photos and prices are from the live HalloweenReady homepage catalog.
+ */
+exports.HALLOWEEN_COLLECTION_EMAIL_CONFIG = {
+    templateId: "halloween-collection-mailer",
+    name: "Halloween Collection Mailer",
+    subject: "Celebrate Halloween in Style — Decor, Costumes & Party Supplies",
+    preheader: "Shop real HalloweenReady favorites: inflatables, décor, costumes, and hampers. 20% off selected picks. Free shipping on $49+.",
+    logoUrl: LOGO,
+    logoHref: SITE,
+    logoAlt: "HalloweenReady",
+    logoTagline: "Halloween Decorations, Costumes & Party Supplies",
+    promoStrip: "20% OFF selected picks  ·  Free shipping on orders $49+",
+    heroImageUrl: HERO,
+    heroImageHref: SHOP,
+    heroImageAlt: "Halloween decorations, costumes, and party supplies — HalloweenReady",
+    heroEyebrow: "HALLOWEEN 2026 · SHOP WORLDWIDE",
+    heroHeadline: "Celebrate Halloween in Style",
+    heroSubhead: "Premium décor, costumes, and party supplies",
+    heroBody: "Haunt the porch, dress the party, and gift a hamper — all from HalloweenReady. Delivering in 5–7 days. Confirm shipping on each product page.",
+    heroButtonText: "Shop Now",
+    heroButtonHref: SHOP,
+    productsHeading: "Featured Halloween Picks",
+    productsSubheading: "Live catalog favorites — tap Shop Now to view each product.",
+    products: [
+        {
+            name: "12-ft Inflatable Ghost",
+            description: "A statement yard haunt with LED presence for trick-or-treat night.",
+            imageUrl: "https://cf.cjdropshipping.com/doba-import/4ce1e41b08c7458eb8719c11f0d40956.jpg",
+            href: productUrl("12-feet-halloween-inflatable-ghost-decoration-20953423"),
+            buttonText: "Shop Now",
+            badge: "STATEMENT",
+            priceLabel: "$142.08",
+        },
+        {
+            name: "Luminous Hanging Ghost",
+            description: "Inverted mummy induction ghost — electric glow for indoor or porch drama.",
+            imageUrl: "https://cf.cjdropshipping.com/quick/product/6ff22050-8c31-449f-bf04-51533fae2f02.jpg",
+            href: productUrl("halloween-inverted-mummy-induction-electric-luminous-hanging-ghost-25090702"),
+            buttonText: "Shop Now",
+            badge: "HOT",
+            priceLabel: "$20.90",
+        },
+        {
+            name: "Wooden Pumpkin Welcome Sign",
+            description: "Door-hanging pumpkin garland to greet guests before they knock.",
+            imageUrl: "https://cf.cjdropshipping.com/4ff4ee46-2dd4-4deb-baf7-fef328cffb69.jpg",
+            href: productUrl("welcome-sign-garland-door-hanging-halloween-wooden-pumpkin-14347162"),
+            buttonText: "Shop Now",
+            badge: "PORCH",
+            priceLabel: "$5.32",
+        },
+        {
+            name: "Orange Ghost Pillowcase",
+            description: "Linen ghost pillow cover — instant indoor Halloween refresh.",
+            imageUrl: "https://cf.cjdropshipping.com/6522b69c-c237-4d2d-88b1-98e4b404b07f.jpg",
+            href: productUrl("halloween-orange-ghost-linen-pillowcase-14303924"),
+            buttonText: "Shop Now",
+            badge: "HOME",
+            priceLabel: "$1.70",
+        },
+        {
+            name: "Pumpkin Crew Neck Sweatshirt",
+            description: "Women’s Halloween pumpkin print — cozy, festive, and photo-ready.",
+            imageUrl: "https://cf.cjdropshipping.com/a9024d86-3403-40f7-9e9d-d740f6d2849c.jpg",
+            href: productUrl("womens-halloween-print-pumpkin-crew-neck-sweatshirt-15706440"),
+            buttonText: "Shop Now",
+            badge: "APPAREL",
+            priceLabel: "$6.52",
+        },
+        {
+            name: "Kids Ghost Doll Dress",
+            description: "Children’s horror-ghost cosplay dress for parties and school events.",
+            imageUrl: "https://cf.cjdropshipping.com/quick/product/f0776e39-02a0-4f94-b22b-cf37cb4013a1.jpg",
+            href: productUrl("halloween-costume-childrens-cosplay-horror-ghost-doll-white-dress-25082808"),
+            buttonText: "Shop Now",
+            badge: "COSTUME",
+            priceLabel: "$13.26",
+        },
+    ],
+    offerHeading: "Season Offer",
+    offerTitle: "Free shipping on $49+",
+    offerBody: "Selected picks show 20% off on the site. Carts of $49 or more ship free. Smaller orders use a stepped shipping fee — totals match checkout.",
+    offerButtonText: "Shop the Collection",
+    offerButtonHref: SHOP,
+    categoriesHeading: "Shop by Category",
+    categoriesSubheading: "Real product photography from each HalloweenReady collection.",
+    categories: [
+        {
+            name: "Home Decorations",
+            description: "Skull lights, inflatables, and haunted-house décor.",
+            imageUrl: "https://cf.cjdropshipping.com/4aa3fe2b-d04c-4b07-a0fe-28626693745a.jpg",
+            href: categoryUrl("home-decoration"),
+            buttonText: "Shop Now",
+        },
+        {
+            name: "Costumes",
+            description: "Looks for kids, adults, and every Halloween party.",
+            imageUrl: "https://cf.cjdropshipping.com/quick/product/f0776e39-02a0-4f94-b22b-cf37cb4013a1.jpg",
+            href: categoryUrl("costumesandaccessories"),
+            buttonText: "Shop Now",
+        },
+        {
+            name: "Party Supplies",
+            description: "Balloons, tableware, and host-ready kits.",
+            imageUrl: "https://cf.cjdropshipping.com/97fe4de0-2531-4b27-b1a3-8f59f1eea12e.jpg",
+            href: categoryUrl("partysupplier"),
+            buttonText: "Shop Now",
+        },
+        {
+            name: "Halloween Hampers",
+            description: "Ready-to-gift kits from $49 — free shipping.",
+            imageUrl: "https://cf.cjdropshipping.com/0ceac233-1580-45f5-b2b2-f9c660947db1.jpg",
+            href: categoryUrl("halloween-hampers"),
+            buttonText: "Shop Now",
+        },
+    ],
+    hampersHeading: "Ready-to-Gift Hampers",
+    hampersSubheading: "Curated kits with swap-able items — same hamper price.",
+    hampers: [
+        {
+            name: "Apartment Haunt Hamper",
+            description: "Compact indoor haunt kit — candles, lights, and décor in one box.",
+            imageUrl: "https://cf.cjdropshipping.com/0ceac233-1580-45f5-b2b2-f9c660947db1.jpg",
+            href: productUrl("apartment-haunt-hamper"),
+            buttonText: "Shop Now",
+            badge: "FROM $99",
+            priceLabel: "$99.00",
+        },
+        {
+            name: "Party in a Box Hamper",
+            description: "Host-ready party supplies bundled for a complete Halloween night.",
+            imageUrl: "https://cf.cjdropshipping.com/15958656/26524287831.jpg",
+            href: productUrl("party-in-a-box-hamper"),
+            buttonText: "Shop Now",
+            badge: "HOST",
+            priceLabel: "$129.00",
+        },
+    ],
+    whyHeading: "Why Shop HalloweenReady",
+    whySubheading: "The same promises we make on halloweenready.com.",
+    whyBenefits: [
+        { icon: "🎃", title: "Premium Collection", description: "Decor, costumes, and party supplies in one store." },
+        { icon: "🚚", title: "5–7 Day Delivery", description: "Confirm the product-page quote for your country." },
+        { icon: "🔒", title: "Secure Checkout", description: "Pay with Stripe (USD) or Razorpay (INR)." },
+        { icon: "💬", title: "Human Support", description: "WhatsApp and email before and after delivery." },
+    ],
+    midCtaHeading: "Your Halloween night starts here",
+    midCtaBody: "Shop decorations, costumes, and hampers now — October 31 will be here before you know it.",
+    midCtaText: "Shop Now",
+    midCtaHref: SHOP,
+    footerTagline: "Halloween Decorations, Costumes & Party Supplies",
+    footerLogoUrl: LOGO,
+    websiteUrl: SITE,
+    websiteLabel: "www.halloweenready.com",
+    orderEmail: "order@halloweenready.com",
+    facebookUrl: "https://www.facebook.com/halloweenready/",
+    facebookIconUrl: FB,
+    instagramUrl: "https://www.instagram.com/halloweenready/",
+    instagramIconUrl: IG,
+    copyrightText: "© 2026 HalloweenReady. All Rights Reserved.",
+    unsubscribeLabel: "Unsubscribe",
+};
 // ─── Shared HTML helpers ───────────────────────────────────────────────────
 function escapeHtml(value) {
     return value
@@ -444,8 +617,8 @@ function productCard(card, opts) {
                           <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#6b5e4e;padding-bottom:12px;">${desc}</div>
                           <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
                             <tr>
-                              <td align="center" bgcolor="${GOLD}" style="background-color:${GOLD};border-radius:8px;">
-                                <a href="${href}" target="_blank" style="display:inline-block;padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:bold;color:${NAVY};text-decoration:none;border-radius:8px;">${btn}</a>
+                              <td align="center" bgcolor="${opts?.buttonFill ?? GOLD}" style="background-color:${opts?.buttonFill ?? GOLD};border-radius:8px;">
+                                <a href="${href}" target="_blank" style="display:inline-block;padding:10px 18px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:bold;color:${opts?.buttonColor ?? NAVY};text-decoration:none;border-radius:8px;">${btn}</a>
                               </td>
                             </tr>
                           </table>
@@ -453,7 +626,7 @@ function productCard(card, opts) {
                       </tr>
                     </table>`;
 }
-function twoColCards(cards) {
+function twoColCards(cards, cardOpts) {
     const a = cards[0];
     const b = cards[1];
     if (!a)
@@ -462,13 +635,20 @@ function twoColCards(cards) {
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
                 <tr>
                   <td class="stack-col" width="50%" valign="top" style="width:50%;padding:0 6px 14px 0;">
-                    ${productCard(a)}
+                    ${productCard(a, cardOpts)}
                   </td>
                   <td class="stack-col" width="50%" valign="top" style="width:50%;padding:0 0 14px 6px;">
-                    ${b ? productCard(b) : "&nbsp;"}
+                    ${b ? productCard(b, cardOpts) : "&nbsp;"}
                   </td>
                 </tr>
               </table>`;
+}
+function cardGrid(cards, cardOpts) {
+    const rows = [];
+    for (let i = 0; i < cards.length; i += 2) {
+        rows.push(twoColCards([cards[i], cards[i + 1]].filter(Boolean), cardOpts));
+    }
+    return rows.join("");
 }
 function benefitsRow(benefits) {
     const cells = benefits
@@ -493,9 +673,15 @@ function benefitsRow(benefits) {
 }
 function emailShell(opts) {
     const f = opts.footer;
+    const pageBg = opts.pageBg ?? PAGE_BG;
+    const headerBg = opts.headerBg ?? "#fffdf8";
+    const barLeft = opts.barLeft ?? NAVY;
+    const barRight = opts.barRight ?? GOLD;
+    const taglineColor = opts.taglineColor ?? NAVY;
+    const logoAlt = opts.logoAlt ?? "HalloweenReady";
     const logoTagline = opts.logoTagline
         ? `
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;line-height:18px;font-style:italic;color:${NAVY};padding-top:10px;">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;line-height:18px;font-style:italic;color:${taglineColor};padding-top:10px;">
                 ${escapeHtml(opts.logoTagline)}
               </div>`
         : "";
@@ -545,29 +731,29 @@ function emailShell(opts) {
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:${PAGE_BG};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background-color:${pageBg};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
   <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
     ${escapeHtml(opts.preheader)}
   </div>
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background-color:${PAGE_BG};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background-color:${pageBg};">
     <tr>
       <td align="center" style="padding:20px 10px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="border-collapse:collapse;width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;">
           <!-- Logo -->
           <tr>
-            <td align="center" bgcolor="#fffdf8" style="padding:20px 24px 14px 24px;background-color:#fffdf8;">
+            <td align="center" bgcolor="${headerBg}" style="padding:20px 24px 14px 24px;background-color:${headerBg};">
               <a href="${escAttr(opts.logoHref)}" target="_blank" style="text-decoration:none;">
-                <img src="${escAttr(opts.logoUrl)}" width="168" alt="HalloweenReady — Connecting Hearts Across Borders" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
+                <img src="${escAttr(opts.logoUrl)}" width="168" alt="${escAttr(logoAlt)}" style="display:block;width:168px;max-width:70%;height:auto;border:0;margin:0 auto;" />
               </a>
               ${logoTagline}
             </td>
           </tr>
           <tr>
-            <td height="5" style="height:5px;line-height:5px;font-size:0;background-color:${NAVY};">
+            <td height="5" style="height:5px;line-height:5px;font-size:0;background-color:${barLeft};">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
                 <tr>
-                  <td width="70%" height="5" bgcolor="${NAVY}" style="background-color:${NAVY};font-size:0;line-height:5px;">&nbsp;</td>
-                  <td width="30%" height="5" bgcolor="${GOLD}" style="background-color:${GOLD};font-size:0;line-height:5px;">&nbsp;</td>
+                  <td width="70%" height="5" bgcolor="${barLeft}" style="background-color:${barLeft};font-size:0;line-height:5px;">&nbsp;</td>
+                  <td width="30%" height="5" bgcolor="${barRight}" style="background-color:${barRight};font-size:0;line-height:5px;">&nbsp;</td>
                 </tr>
               </table>
             </td>
@@ -920,6 +1106,150 @@ function buildShopMoreSaveMoreEmailHtml(cfg = exports.SHOP_MORE_SAVE_MORE_EMAIL_
         logoUrl: cfg.logoUrl,
         logoHref: cfg.logoHref,
         logoTagline: cfg.logoTagline,
+        bodyRows,
+        footer: footerFrom(cfg),
+    });
+}
+const COLLECTION_CARD_CTA = { buttonFill: GOLD, buttonColor: "#ffffff" };
+/** Flagship collection mailer — edit HALLOWEEN_COLLECTION_EMAIL_CONFIG for future campaigns. */
+function buildHalloweenCollectionEmailHtml(cfg = exports.HALLOWEEN_COLLECTION_EMAIL_CONFIG) {
+    const bodyRows = `
+          <!-- Promo strip -->
+          <tr>
+            <td align="center" bgcolor="${RED}" style="padding:11px 16px;background-color:${RED};">
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;font-weight:bold;letter-spacing:0.4px;color:#ffffff;">
+                ${escapeHtml(cfg.promoStrip)}
+              </div>
+            </td>
+          </tr>
+          <!-- Hero banner -->
+          <tr>
+            <td align="center" style="padding:0;line-height:0;font-size:0;">
+              <a href="${escAttr(cfg.heroImageHref)}" target="_blank" style="text-decoration:none;">
+                <img class="fluid" src="${escAttr(cfg.heroImageUrl)}" width="600" alt="${escAttr(cfg.heroImageAlt)}" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+              </a>
+            </td>
+          </tr>
+          <!-- Hero copy -->
+          <tr>
+            <td class="mobile-pad" align="center" bgcolor="${NAVY}" style="padding:34px 28px 32px 28px;background-color:${NAVY};">
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;letter-spacing:2.2px;text-transform:uppercase;color:${GOLD};font-weight:bold;padding-bottom:10px;">
+                ${escapeHtml(cfg.heroEyebrow)}
+              </div>
+              <div class="hero-title" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:40px;font-weight:bold;color:#ffffff;padding-bottom:8px;">
+                ${escapeHtml(cfg.heroHeadline)}
+              </div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:26px;color:#f0d78c;padding-bottom:12px;">
+                ${escapeHtml(cfg.heroSubhead)}
+              </div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#d7dde8;padding:0 4px 22px 4px;max-width:480px;margin:0 auto;">
+                ${escapeHtml(cfg.heroBody)}
+              </div>
+              ${ctaButton(cfg.heroButtonHref, cfg.heroButtonText, { fill: GOLD, textColor: "#ffffff", width: 180, pad: "16px 36px", fontSize: "16px" })}
+            </td>
+          </tr>
+          <!-- Featured products -->
+          <tr>
+            <td class="mobile-pad" style="padding:32px 20px 8px 20px;background-color:#ffffff;">
+              <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:30px;font-weight:bold;color:${NAVY};text-align:center;padding-bottom:6px;">
+                ${escapeHtml(cfg.productsHeading)}
+              </div>
+              <div style="width:56px;height:3px;background-color:${GOLD};margin:0 auto 12px auto;font-size:0;line-height:0;">&nbsp;</div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#6b5e4e;text-align:center;padding-bottom:18px;">
+                ${escapeHtml(cfg.productsSubheading)}
+              </div>
+              ${cardGrid(cfg.products, COLLECTION_CARD_CTA)}
+            </td>
+          </tr>
+          <!-- Seasonal offer -->
+          <tr>
+            <td class="mobile-pad" style="padding:8px 24px 20px 24px;background-color:#ffffff;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:${CREAM};border:1px solid #efe6d6;border-radius:14px;">
+                <tr>
+                  <td align="center" style="padding:28px 22px;">
+                    <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:${RED};font-weight:bold;padding-bottom:8px;">
+                      ${escapeHtml(cfg.offerHeading)}
+                    </div>
+                    <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:30px;font-weight:bold;color:${NAVY};padding-bottom:10px;">
+                      ${escapeHtml(cfg.offerTitle)}
+                    </div>
+                    <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#5c5348;padding-bottom:18px;">
+                      ${escapeHtml(cfg.offerBody)}
+                    </div>
+                    ${ctaButton(cfg.offerButtonHref, cfg.offerButtonText, { fill: RED, width: 220 })}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Categories -->
+          <tr>
+            <td class="mobile-pad" style="padding:16px 20px 8px 20px;background-color:#ffffff;">
+              <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:30px;font-weight:bold;color:${NAVY};text-align:center;padding-bottom:6px;">
+                ${escapeHtml(cfg.categoriesHeading)}
+              </div>
+              <div style="width:56px;height:3px;background-color:${GOLD};margin:0 auto 12px auto;font-size:0;line-height:0;">&nbsp;</div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#6b5e4e;text-align:center;padding-bottom:18px;">
+                ${escapeHtml(cfg.categoriesSubheading)}
+              </div>
+              ${cardGrid(cfg.categories, COLLECTION_CARD_CTA)}
+            </td>
+          </tr>
+          <!-- Hampers -->
+          <tr>
+            <td class="mobile-pad" style="padding:16px 20px 8px 20px;background-color:#fffaf2;">
+              <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:30px;font-weight:bold;color:${NAVY};text-align:center;padding-bottom:6px;">
+                ${escapeHtml(cfg.hampersHeading)}
+              </div>
+              <div style="width:56px;height:3px;background-color:${GOLD};margin:0 auto 12px auto;font-size:0;line-height:0;">&nbsp;</div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#6b5e4e;text-align:center;padding-bottom:18px;">
+                ${escapeHtml(cfg.hampersSubheading)}
+              </div>
+              ${cardGrid(cfg.hampers, COLLECTION_CARD_CTA)}
+            </td>
+          </tr>
+          <!-- Why shop -->
+          <tr>
+            <td class="mobile-pad" style="padding:24px 20px 12px 20px;background-color:#ffffff;">
+              <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:30px;font-weight:bold;color:${NAVY};text-align:center;padding-bottom:6px;">
+                ${escapeHtml(cfg.whyHeading)}
+              </div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#6b5e4e;text-align:center;padding-bottom:18px;">
+                ${escapeHtml(cfg.whySubheading)}
+              </div>
+              ${benefitsRow(cfg.whyBenefits)}
+            </td>
+          </tr>
+          <!-- Closing CTA -->
+          <tr>
+            <td class="mobile-pad" style="padding:8px 24px 36px 24px;background-color:#ffffff;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:${NAVY};border-radius:14px;">
+                <tr>
+                  <td align="center" style="padding:34px 22px;">
+                    <div class="section-title" style="font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:28px;font-weight:bold;color:#ffffff;padding-bottom:8px;">
+                      ${escapeHtml(cfg.midCtaHeading)}
+                    </div>
+                    <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#e8e0d0;padding-bottom:18px;">
+                      ${escapeHtml(cfg.midCtaBody)}
+                    </div>
+                    ${ctaButton(cfg.midCtaHref, cfg.midCtaText, { fill: GOLD, textColor: "#ffffff", width: 180 })}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`;
+    return emailShell({
+        title: `${cfg.heroHeadline} | HalloweenReady`,
+        preheader: cfg.preheader,
+        logoUrl: cfg.logoUrl,
+        logoHref: cfg.logoHref,
+        logoAlt: cfg.logoAlt,
+        logoTagline: cfg.logoTagline,
+        pageBg: PAGE_BG_HALLOWEEN,
+        headerBg: "#fffdf8",
+        barLeft: GOLD,
+        barRight: RED,
+        taglineColor: NAVY,
         bodyRows,
         footer: footerFrom(cfg),
     });
