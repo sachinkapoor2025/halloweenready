@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
@@ -13,6 +14,7 @@ import { TrackingProvider } from "@/components/TrackingProvider";
 import { JsonLd } from "@/components/JsonLd";
 import { HalloweenCountdown } from "@/components/HalloweenCountdown";
 import { ClientDeferredWidgets } from "@/components/ClientDeferredWidgets";
+import { LocationUrlSync } from "@/components/LocationUrlSync";
 import { AnalyticsScripts, GoogleAnalytics } from "@/components/AnalyticsScripts";
 import { getSiteVerification } from "@/lib/analytics-config";
 import { site } from "@/lib/site";
@@ -88,6 +90,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <TrackingProvider />
             <HalloweenCountdown />
             <HeaderShell />
+            <Suspense fallback={null}>
+              <LocationUrlSync />
+            </Suspense>
             <main className="flex-1">{children}</main>
             <FooterShell />
             <CurrencySwitcher />

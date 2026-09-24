@@ -9,6 +9,8 @@ import { SearchBar } from "@/components/SearchBar";
 import { SiteLogoLink } from "@/components/SiteLogo";
 import { CountrySelector } from "@/components/CountrySelector";
 import { CurrencySelect } from "@/components/CurrencySelect";
+import { useMarket } from "@/lib/market-context";
+import { canonicalStorePath, toLocationPath } from "@/lib/location-urls";
 
 function CitiesMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -168,19 +170,22 @@ function DesktopCartAction() {
 export function Header() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { countryCode } = useMarket();
   const activeCategory = searchParams.get("category");
+  const canonicalPath = canonicalStorePath(pathname);
+  const loc = (href: string) => toLocationPath(href, countryCode);
   const [menuOpen, setMenuOpen] = useState(false);
   const [citiesOpen, setCitiesOpen] = useState(false);
 
   const isActive = (href: string, category?: string) => {
-    if (href === "/") return pathname === "/" && !activeCategory;
+    if (href === "/") return canonicalPath === "/" && !activeCategory;
     if (category) {
       return (
-        (pathname === "/products" && activeCategory === category) ||
-        pathname === `/categories/${category}`
+        (canonicalPath === "/products" && activeCategory === category) ||
+        canonicalPath === `/categories/${category}`
       );
     }
-    return pathname.startsWith(href.split("?")[0]) && href !== "/";
+    return canonicalPath.startsWith(href.split("?")[0]) && href !== "/";
   };
 
   const closeMenu = () => {
@@ -274,7 +279,7 @@ export function Header() {
               {navItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={loc(item.href)}
                   className={`btn-nav shrink-0 px-3 py-1.5 text-[13px] ${isActive(item.href, "category" in item ? item.category : undefined) ? "btn-nav-active" : ""}`}
                 >
                   {item.label}
@@ -318,7 +323,7 @@ export function Header() {
               {navItems.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={loc(item.href)}
                 onClick={closeMenu}
                 className={`block rounded-lg px-4 py-3 text-sm font-semibold ${
                   isActive(item.href, "category" in item ? item.category : undefined)
@@ -331,10 +336,10 @@ export function Header() {
             ))}
 
             <Link
-              href="/wishlist"
+              href={loc("/wishlist")}
               onClick={closeMenu}
               className={`block rounded-lg px-4 py-3 text-sm font-semibold ${
-                pathname === "/wishlist"
+                canonicalPath === "/wishlist"
                   ? "bg-nav text-white"
                   : "text-primary hover:bg-orange-50 hover:text-nav"
               }`}

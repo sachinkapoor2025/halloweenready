@@ -2,10 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
+import { useMarket } from "@/lib/market-context";
+import { toLocationPath } from "@/lib/location-urls";
 
 function SearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { countryCode } = useMarket();
   const [q, setQ] = useState(searchParams.get("search") ?? "");
 
   useEffect(() => {
@@ -17,7 +20,7 @@ function SearchBarInner() {
     const params = new URLSearchParams(searchParams.toString());
     if (q) params.set("search", q);
     else params.delete("search");
-    router.push(`/products?${params.toString()}`);
+    router.push(toLocationPath(`/products?${params.toString()}`, countryCode));
   };
 
   return (

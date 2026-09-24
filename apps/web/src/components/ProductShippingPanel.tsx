@@ -2,6 +2,7 @@
 
 import { quoteItemShipping } from "@/lib/quote-cart-shipping";
 import { useCurrency } from "@/lib/currency-context";
+import { useMarket } from "@/lib/market-context";
 import { FREE_SHIPPING_MIN_SUBTOTAL_USD } from "@halloweenready/shared";
 
 export function ProductShippingPanel({
@@ -12,6 +13,7 @@ export function ProductShippingPanel({
   currency?: string;
 }) {
   const { format, usdInrRate } = useCurrency();
+  const { market } = useMarket();
   const quote = quoteItemShipping(price, currency, usdInrRate);
   const shippingLabel = quote.qualifiesForFreeShipping
     ? "FREE"
@@ -36,7 +38,9 @@ export function ProductShippingPanel({
         </svg>
         <div className="min-w-0">
           <p>
-            <span className="font-semibold text-primary">Delivering in 5–7 days</span>
+            <span className="font-semibold text-primary">
+              Delivering to {market?.name ?? "your country"} in 5–7 days
+            </span>
           </p>
           <p className="mt-1 text-slate-800">
             Shipping for this item:{" "}
